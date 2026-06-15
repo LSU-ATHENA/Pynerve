@@ -77,7 +77,7 @@ jobs:
           python-version: "3.11"
           cache: pip
       - uses: hendrikmuhs/ccache-action@v1.2
-      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis ninja
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=OFF -DBUILD_CUDA=OFF -DNERVE_SIMD=${{ matrix.simd }} -DNERVE_ENABLE_AVX512_COMPONENTS=ON
       - run: cmake --build build --parallel
@@ -92,7 +92,7 @@ jobs:
           python-version: "3.11"
           cache: pip
       - uses: hendrikmuhs/ccache-action@v1.2
-      - run: sudo apt-get update && sudo apt-get install -y clang-tidy cppcheck ninja-build
+      - run: sudo apt-get update && sudo apt-get install -y clang-tidy cppcheck ninja-build libeigen3-dev libomp-dev
       - run: python -m pip install pytest
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DBUILD_PYTHON=OFF -DBUILD_CUDA=OFF
       - name: Static analyze full native build
@@ -113,6 +113,8 @@ jobs:
           python-version: "3.11"
           cache: pip
       - uses: hendrikmuhs/ccache-action@v1.2
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_TESTS=ON -DBUILD_PYTHON=OFF -DENABLE_MPI=OFF
       - run: cmake --build build --parallel
@@ -136,7 +138,8 @@ jobs:
           python-version: "3.11"
           cache: pip
       - uses: hendrikmuhs/ccache-action@v1.2
-      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DNERVE_NATIVE_ARCH=ON
       - run: cmake --build build --parallel
@@ -158,6 +161,7 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: pip
       - uses: hendrikmuhs/ccache-action@v1.2
+      - run: sudo apt-get update && sudo apt-get install -y libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy build
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DPython_EXECUTABLE=${{ env.pythonLocation }}/bin/python -DPython3_EXECUTABLE=${{ env.pythonLocation }}/bin/python
       - run: cmake --build build --target pynerve_python_binding_smoke --parallel
@@ -178,7 +182,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: sudo apt-get update && sudo apt-get install -y clang-tidy cppcheck
+      - run: sudo apt-get update && sudo apt-get install -y clang-tidy cppcheck libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis numpy ninja scikit-build-core pybind11
       - name: Install latest PyTorch CPU
         run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
@@ -198,7 +202,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: sudo apt-get update && sudo apt-get install -y ninja-build ccache openmpi-bin libopenmpi-dev
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev ccache openmpi-bin libopenmpi-dev
       - run: python -m pip install -U pip pytest hypothesis
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DENABLE_MPI=ON -DBUILD_PYTHON=OFF
       - run: cmake --build build --parallel
