@@ -199,6 +199,7 @@ def _cppcheck_command(sources: list[Path]) -> list[str]:
         "cppcheck",
         f"--enable={CPP_CPPCHECK_CHECKS}",
         "--error-exitcode=1",
+        "--inline-suppr",
         *[source.relative_to(ROOT).as_posix() for source in sources],
     ]
 
