@@ -27,7 +27,8 @@ namespace
 std::size_t estimateHeapUsagePortable()
 {
 #if defined(__linux__) || defined(__APPLE__)
-    struct rusage usage{};
+    struct rusage usage
+    {};
     if (getrusage(RUSAGE_SELF, &usage) == 0)
     {
         return static_cast<std::size_t>(usage.ru_maxrss) * 1024ULL;

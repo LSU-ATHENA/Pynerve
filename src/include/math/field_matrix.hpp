@@ -21,7 +21,7 @@ concept FieldCompatible = std::copyable<T> && requires(T f) {
     { T::one() } -> std::same_as<T>;
     { f + f } -> std::same_as<T>;
     { f - f } -> std::same_as<T>;
-    { f * f } -> std::same_as<T>;
+    { f *f } -> std::same_as<T>;
     { f / f } -> std::same_as<T>;
     { -f } -> std::same_as<T>;
     { f == f } -> std::convertible_to<bool>;
