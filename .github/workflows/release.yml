@@ -38,7 +38,7 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: python -m twine upload dist/*
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sdist
           path: dist/*.tar.gz
@@ -67,7 +67,7 @@ jobs:
           CIBW_ENVIRONMENT: "CMAKE_ARGS='-DBUILD_PYTHON=ON -DBUILD_TESTS=OFF -DBUILD_CUDA=OFF'"
           CIBW_BEFORE_BUILD: "python -m pip install scikit-build-core pybind11 numpy"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-${{ matrix.os }}
           path: wheelhouse/*.whl
