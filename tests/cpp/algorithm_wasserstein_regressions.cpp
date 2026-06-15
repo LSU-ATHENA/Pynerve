@@ -1,7 +1,10 @@
 #include "nerve/common/accelerated_types.hpp"
+#include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core_types.hpp"
+#include "nerve/filtration/vietoris_rips.hpp"
 #include "nerve/metrics/distances.hpp"
 #include "nerve/persistence/core/core_types.hpp"
+#include "nerve/persistence/vr/vr_distance_tiled_ops.hpp"
 
 #include <algorithm>
 #include <array>

@@ -3,7 +3,6 @@
 #include "nerve/algorithms/mapper.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/metrics/distances.hpp"
-#include "nerve/persistence/accelerated/accelerated_error_tools.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 
 #include <algorithm>

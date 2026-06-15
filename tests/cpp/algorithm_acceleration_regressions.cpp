@@ -2,7 +2,7 @@
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/core/core_types.hpp"
-#include "nerve/persistence/kernels/h6_config.hpp"
+#include "nerve/persistence/kernels/kernel_h6_streaming_ops.hpp"
 
 #include <algorithm>
 #include <array>

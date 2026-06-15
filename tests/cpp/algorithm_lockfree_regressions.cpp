@@ -1,7 +1,6 @@
 #include "nerve/core_types.hpp"
-#include "nerve/persistence/lockfree/lockfree_pivot_table.hpp"
-#include "nerve/streaming/lockfree/lockfree_queue.hpp"
-#include "nerve/streaming/lockfree/mpmc_queue.hpp"
+#include "nerve/persistence/reduction/reduction_lock_free_structures.hpp"
+#include "nerve/streaming/lock_free_streaming.hpp"
 
 #include <algorithm>
 #include <array>

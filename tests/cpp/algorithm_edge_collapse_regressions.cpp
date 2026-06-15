@@ -3,7 +3,7 @@
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/core/core_types.hpp"
-#include "nerve/persistence/reduction/edge_collapse.hpp"
+#include "nerve/persistence/reduction/reduction_edge_collapse_ops.hpp"
 #include "nerve/persistence/utils/early_exit.hpp"
 
 #include <algorithm>

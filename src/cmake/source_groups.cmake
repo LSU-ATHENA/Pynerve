@@ -208,6 +208,7 @@ set(NERVE_CORE_SOURCES
     persistence/vr/vr_large_witness_ops.cpp
     persistence/vr/vr_lazy_witness_ops.cpp
     persistence/vr/vr_medium_hybrid_ops.cpp
+    persistence/vr/vr_medium_hybrid_expander.cpp
     persistence/vr/vr_sparse_rips_ops.cpp
     persistence/vr/vr_fast_ops_detail.cpp
     persistence/vr/vr_dispatch_ops.cpp
@@ -479,6 +480,7 @@ set(NERVE_MPI_SOURCES
     determinism/mpi_ops.cpp
     distributed/distributed_persistence.cpp
     distributed/mpi_communicator.cpp
+    distributed/mpi_communicator_mpi.cpp
     distributed/mpi_cuda_ops.cpp
     distributed/nvshmem_bridge.cpp
     distributed/sharded_boundary_matrix.cpp
@@ -507,6 +509,7 @@ set(NERVE_EIGEN3_SOURCES
 # Non-Eigen basic sources
 set(NERVE_NON_EIGEN_SOURCES
     persistence/core/persistence_gradient_basic.cpp
+    distributed/mpi_communicator_stub.cpp
 )
 
 # NUMA-dependent sources
