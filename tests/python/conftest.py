@@ -101,9 +101,9 @@ try:
 
     sys.modules["nerve_test_matrix"] = sys.modules["test_matrix"]  # compatibility shim
 except ImportError:
-    _iter_cases = lambda *a, **kw: []  # noqa: E731
-    _select_cases = lambda cases, *a, **kw: []  # noqa: E731
-    _total_case_count = lambda *a, **kw: 0  # noqa: E731
+    _iter_cases = lambda *_, **__: []  # noqa: E731
+    _select_cases = lambda cases, *_, **__: []  # noqa: E731
+    _total_case_count = lambda *_, **__: 0  # noqa: E731
 
 
 @pytest.fixture(scope="session")  # noqa: N802

@@ -30,22 +30,21 @@ def _estimate_n_points(points: Any) -> int:
 
 _MAX_RADIUS_CAP = float(os.environ.get("NERVE_MAX_RADIUS_CAP", "1e15"))
 
-_CAP_WARNED = False
+_CAP_WARNED = [False]  # mutable to avoid global statement
 _CAP_WARN_LOCK = threading.Lock()
 
 
 def _warn_large_max_radius_cap() -> None:
     """Emit a one-time warning when the large default max_radius_cap is activated."""
-    global _CAP_WARNED
-    if _CAP_WARNED or _MAX_RADIUS_CAP < 1e14:
+    if _CAP_WARNED[0] or _MAX_RADIUS_CAP < 1e14:
         return
     with _CAP_WARN_LOCK:
-        if _CAP_WARNED:
+        if _CAP_WARNED[0]:
             return
-        _CAP_WARNED = True
-    import warnings as _warnings
+        _CAP_WARNED[0] = True
+    import warnings  # noqa: PLC0415
 
-    _warnings.warn(
+    warnings.warn(
         f"NERVE_MAX_RADIUS_CAP is {_MAX_RADIUS_CAP:.0e} (default 1e15). "
         "This very large default can cause out-of-memory errors. "
         "Set NERVE_MAX_RADIUS_CAP to a smaller value (e.g. your data's max pairwise distance) "

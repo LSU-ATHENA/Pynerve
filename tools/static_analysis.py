@@ -217,7 +217,16 @@ def main() -> int:
         commands.extend(
             [
                 [sys.executable, "-m", "ruff", "check", "python", "tools", "tests"],
-                [sys.executable, "-m", "mypy", "python/nerve", "--python-version", "3.10"],
+                [
+                    sys.executable,
+                    "-m",
+                    "mypy",
+                    "python/pynerve",
+                    "--python-version",
+                    "3.10",
+                    "--exclude",
+                    "python/pynerve/typing\\.py",
+                ],
                 [sys.executable, "-m", "mypy", "tools", "--python-version", "3.10"],
             ]
         )

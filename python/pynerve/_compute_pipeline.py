@@ -22,9 +22,7 @@ def _is_likely_distance_matrix(array: np.ndarray) -> bool:
         return False
     if not np.allclose(np.diag(array), 0.0):
         return False
-    if not np.allclose(array, array.T):
-        return False
-    return True
+    return bool(np.allclose(array, array.T))
 
 
 def _clone_options(options: PersistenceOptions | None) -> PersistenceOptions:

@@ -143,14 +143,14 @@ def check_pybind_schema() -> list[Finding]:
 
     # Known internal-only C++ functions that are intentionally wrapped
     # by the unified compute_persistence() public API rather than exposed directly.
-    _KNOWN_INTERNAL_ONLY = {
+    _known_internal_only = {
         "compute_persistence_ph4",
         "compute_persistence_ph5",
         "compute_persistence_ph6",
         "compute_persistence_cohomology",
         "determinism_seed",
     }
-    missing_wrappers = sorted(set(module_defs) - exports - _KNOWN_INTERNAL_ONLY)
+    missing_wrappers = sorted(set(module_defs) - exports - _known_internal_only)
     for name in missing_wrappers:
         findings.append(
             Finding(

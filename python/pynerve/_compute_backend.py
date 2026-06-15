@@ -175,9 +175,7 @@ def _persistence_from_distance_matrix(
 ) -> PersistenceResult:
     """Compute persistence from a distance matrix using torch."""
     _, _, pytorch = _nerve_state()
-    import torch  # noqa: PLC0415
-
-    from pynerve.torch import persistence_from_matrix
+    from pynerve.torch import persistence_from_matrix  # noqa: PLC0415
 
     dm_tensor = pytorch.as_tensor(distance_matrix, dtype=pytorch.float64)
     diagram = persistence_from_matrix(dm_tensor, max_dim=max_dim)
