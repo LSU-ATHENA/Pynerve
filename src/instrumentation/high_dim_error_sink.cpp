@@ -28,9 +28,8 @@ public:
         {
             return;
         }
-        std::cerr << "[high_dim_error_sink]"
-                  << " code=" << static_cast<int>(event.code) << " ts_ns=" << event.timestamp_ns
-                  << " max_dim=" << event.max_dimension_attempted
+        std::cerr << "[high_dim_error_sink]" << " code=" << static_cast<int>(event.code)
+                  << " ts_ns=" << event.timestamp_ns << " max_dim=" << event.max_dimension_attempted
                   << " boundary_ops=" << event.num_boundary_ops
                   << " truncated=" << (event.truncated_by_budget ? 1 : 0)
                   << " precision=" << static_cast<int>(event.precision_level) << '\n';

@@ -212,8 +212,8 @@ void PH5PH6Microbenchmark::generateBenchmarkReport(
         if (!result.success)
         {
             std::cout << "  " << result.benchmark_name << " (N=" << result.point_count
-                      << ", D=" << result.max_dimension << ")"
-                      << ": " << result.failure_reason << '\n';
+                      << ", D=" << result.max_dimension << ")" << ": " << result.failure_reason
+                      << '\n';
         }
     }
 }
@@ -239,8 +239,7 @@ void PH5PH6Microbenchmark::exportMetricsCsv(const std::vector<PH5PH6Microbenchma
              << result.p95_runtime_ms << "," << result.p99_runtime_ms << ","
              << result.peak_memory_mb << "," << result.num_simplices << "," << result.failure_rate
              << "," << result.stability_score << "," << result.condition_estimate << ","
-             << result.precision_events << ","
-             << "\"" << result.failure_reason << "\"\n";
+             << result.precision_events << "," << "\"" << result.failure_reason << "\"\n";
     }
     file.close();
 }

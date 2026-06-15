@@ -79,8 +79,8 @@ HybridTuner::Prediction HybridTuner::predict(const GpuHardwareSpecs &specs,
                 0.10f * pred.performance.estimatedBandwidthUtilization - 0.12f * spread);
 
     std::ostringstream reasoning;
-    reasoning << "model=max(memory,compute)+overhead; "
-              << "occ=" << std::fixed << std::setprecision(2) << pred.performance.estimatedOccupancy
+    reasoning << "model=max(memory,compute)+overhead; " << "occ=" << std::fixed
+              << std::setprecision(2) << pred.performance.estimatedOccupancy
               << ", bw=" << pred.performance.estimatedBandwidthUtilization;
     pred.performance.reasoning = reasoning.str();
 

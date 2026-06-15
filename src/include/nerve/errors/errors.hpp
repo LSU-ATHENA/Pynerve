@@ -219,12 +219,10 @@ struct ErrorContext
         const double safe_duration_ms =
             std::isfinite(durationMs) && durationMs >= 0.0 ? durationMs : 0.0;
         std::ostringstream oss;
-        oss << "{"
-            << "\"operation_name\":\"" << escapeJsonString(operation_name) << "\","
+        oss << "{" << "\"operation_name\":\"" << escapeJsonString(operation_name) << "\","
             << "\"component_name\":\"" << escapeJsonString(component_name) << "\","
-            << "\"session_id\":\"" << escapeJsonString(session_id) << "\","
-            << "\"request_id\":\"" << escapeJsonString(request_id) << "\","
-            << "\"timestampNs\":" << timestampNs << ","
+            << "\"session_id\":\"" << escapeJsonString(session_id) << "\"," << "\"request_id\":\""
+            << escapeJsonString(request_id) << "\"," << "\"timestampNs\":" << timestampNs << ","
             << "\"durationMs\":" << std::fixed << std::setprecision(3) << safe_duration_ms;
 
         if (!metadata.empty())

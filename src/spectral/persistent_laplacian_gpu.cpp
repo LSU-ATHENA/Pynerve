@@ -416,8 +416,7 @@ std::string PersistentLaplacianSolverGPU::getGpuInfo() const
     std::ostringstream ss;
     ss << "GPU probe device: " << gpu.name << ", cc " << gpu.compute_capability_major << "."
        << gpu.compute_capability_minor << ", total " << (gpu.total_memory_bytes / kBytesPerMb)
-       << " MB"
-       << ", free " << (gpu.free_memory_bytes / kBytesPerMb) << " MB"
+       << " MB" << ", free " << (gpu.free_memory_bytes / kBytesPerMb) << " MB"
        << ", spectral GPU execution: Lanczos CSR SpMV";
     return ss.str();
 }
