@@ -11,9 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace nerve::persistence
-{
-namespace
+namespace nerve::persistence::detail
 {
 
 constexpr size_t FAST_PATH_THRESHOLD = 1024;
@@ -25,7 +23,7 @@ struct ExecutionPlan
     int numa_nodes;
 };
 
-bool checkedProduct(size_t lhs, size_t rhs, size_t &out)
+inline bool checkedProduct(size_t lhs, size_t rhs, size_t &out)
 {
     if (lhs != 0 && rhs > std::numeric_limits<size_t>::max() / lhs)
     {
@@ -36,12 +34,12 @@ bool checkedProduct(size_t lhs, size_t rhs, size_t &out)
     return true;
 }
 
-bool checkedSquareCount(size_t count, size_t &out)
+inline bool checkedSquareCount(size_t count, size_t &out)
 {
     return checkedProduct(count, count, out);
 }
 
-ExecutionPlan computeExecutionPlan(size_t n_points, size_t point_dim, const VRConfig &config)
+inline ExecutionPlan computeExecutionPlan(size_t n_points, size_t point_dim, const VRConfig &config)
 {
     (void)config;
 
@@ -86,13 +84,13 @@ struct SimplexKeyHash
 
 using SimplexSet = std::unordered_set<std::vector<int>, SimplexKeyHash>;
 
-bool hasValidShape(const core::BufferView<const double> &points, Size point_dim)
+inline bool hasValidShape(const core::BufferView<const double> &points, Size point_dim)
 {
     return point_dim > 0 && !points.empty() && (points.size() % point_dim) == 0;
 }
 
-bool hasValidMediumHybridInput(const core::BufferView<const double> &points, Size point_dim,
-                               const VRConfig &config)
+inline bool hasValidMediumHybridInput(const core::BufferView<const double> &points, Size point_dim,
+                                      const VRConfig &config)
 {
     if (!hasValidShape(points, point_dim))
     {
@@ -125,5 +123,4 @@ bool hasValidMediumHybridInput(const core::BufferView<const double> &points, Siz
     return true;
 }
 
-} // namespace
-} // namespace nerve::persistence
+} // namespace nerve::persistence::detail

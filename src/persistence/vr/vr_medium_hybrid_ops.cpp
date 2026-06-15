@@ -11,6 +11,8 @@
 namespace nerve::persistence
 {
 
+using namespace detail;
+
 class ParallelCliqueExpander
 {
 public:
