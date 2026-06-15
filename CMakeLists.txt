@@ -303,6 +303,7 @@ if(BUILD_TESTS)
     include(CTest)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)
+        set(NERVE_TESTS_ADDED TRUE CACHE INTERNAL "Tests subdirectory already added")
     endif()
 endif()
 

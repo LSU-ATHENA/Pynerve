@@ -53,7 +53,7 @@ if(NOT TARGET nerve_core)
     add_subdirectory("${NERVE_SRC_ROOT}" "${CMAKE_CURRENT_BINARY_DIR}/nerve-src")
 endif()
 
-if(BUILD_TESTS)
+if(BUILD_TESTS AND NOT NERVE_TESTS_ADDED)
     include(CTest)
     if(EXISTS "${NERVE_SOURCE_ROOT}/tests/CMakeLists.txt")
         add_subdirectory("${NERVE_SOURCE_ROOT}/tests" "${CMAKE_CURRENT_BINARY_DIR}/tests")

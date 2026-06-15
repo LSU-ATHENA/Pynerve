@@ -82,11 +82,11 @@ __device__ double blockReduceSum(double val)
 }
 #endif
 
+} // namespace nerve::determinism
+
 #if defined(NERVE_HAS_MPI)
 #include <mpi.h>
 
 void deterministic_reduce(const double *send, double *recv, int n, int root, MPI_Comm comm);
 void deterministic_allreduce(const double *send, double *recv, int n, MPI_Comm comm);
 #endif
-
-} // namespace nerve::determinism
