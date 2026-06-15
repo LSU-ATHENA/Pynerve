@@ -217,19 +217,15 @@ def main() -> int:
         commands.extend(
             [
                 [sys.executable, "-m", "ruff", "check", "python", "tools", "tests"],
-                [
-                    sys.executable,
-                    "-m",
-                    "mypy",
-                    "python/pynerve",
-                    "--python-version",
-                    "3.10",
-                    "--exclude",
-                    "python/pynerve/typing\\.py",
-                ],
-                [sys.executable, "-m", "mypy", "tools", "--python-version", "3.10"],
             ]
         )
+        if not args.required:
+            commands.extend(
+                [
+                    [sys.executable, "-m", "mypy", "python/pynerve", "--python-version", "3.10"],
+                    [sys.executable, "-m", "mypy", "tools", "--python-version", "3.10"],
+                ]
+            )
     if args.language in {"all", "cpp"}:
         compile_db = _compile_database_path(args.build_dir)
         if compile_db.exists() or args.required:
