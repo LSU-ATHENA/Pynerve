@@ -8,8 +8,6 @@
 
 namespace nerve::persistence
 {
-namespace
-{
 
 class ParallelCliqueExpander
 {
@@ -146,5 +144,4 @@ private:
     }
 };
 
-} // namespace
 } // namespace nerve::persistence

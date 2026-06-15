@@ -30,7 +30,6 @@ int main()
 #include "nerve/persistence/approximate/bloom_filter.hpp"
 #include "nerve/persistence/approximate/distilled_vr_filtration.hpp"
 #include "nerve/persistence/approximate/perfect_hash.hpp"
-#include "nerve/persistence/approximate/robin_hood_hash.hpp"
 #include "nerve/persistence/approximate/sketching_approximation.hpp"
 #include "nerve/persistence/core/flood_complex.hpp"
 #include "nerve/persistence/core/high_dimensional_exact.hpp"

@@ -10,8 +10,7 @@
 
 namespace nerve::persistence
 {
-namespace
-{
+
 class ParallelCliqueExpander
 {
 public:
@@ -20,7 +19,7 @@ public:
                            double max_radius);
     void expand(size_t num_points, nerve::algebra::SimplicialComplex &complex, SimplexSet &seen);
 };
-} // namespace
+
 } // namespace nerve::persistence
 
 #ifdef NERVE_HAS_CUDA

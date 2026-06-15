@@ -4,7 +4,7 @@
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/reduction/reduction_edge_collapse_ops.hpp"
-#include "nerve/persistence/utils/early_exit.hpp"
+#include "nerve/persistence/utils/early_exit_optimizer.hpp"
 
 #include <algorithm>
 #include <array>
