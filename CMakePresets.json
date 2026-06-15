@@ -1,0 +1,76 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "default",
+            "displayName": "Release (CPU, no CUDA)",
+            "description": "Default Release build with CPU backends, no CUDA",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTS": "ON",
+                "BUILD_PYTHON": "OFF",
+                "BUILD_CUDA": "OFF"
+            }
+        },
+        {
+            "name": "debug",
+            "displayName": "Debug (CPU, no CUDA)",
+            "description": "Debug build for development",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTS": "ON",
+                "BUILD_PYTHON": "OFF",
+                "BUILD_CUDA": "OFF"
+            }
+        },
+        {
+            "name": "python",
+            "displayName": "Release with Python bindings",
+            "description": "Release build with Python bindings, no CUDA",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-python",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTS": "ON",
+                "BUILD_PYTHON": "ON",
+                "BUILD_CUDA": "OFF"
+            }
+        },
+        {
+            "name": "cuda",
+            "displayName": "Release with CUDA and Python bindings",
+            "description": "Release build with CUDA, Python bindings, and tests",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-cuda",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTS": "ON",
+                "BUILD_PYTHON": "ON",
+                "BUILD_CUDA": "ON",
+                "ENABLE_CUDA": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "default",
+            "configurePreset": "default"
+        },
+        {
+            "name": "debug",
+            "configurePreset": "debug"
+        },
+        {
+            "name": "python",
+            "configurePreset": "python"
+        },
+        {
+            "name": "cuda",
+            "configurePreset": "cuda"
+        }
+    ]
+}

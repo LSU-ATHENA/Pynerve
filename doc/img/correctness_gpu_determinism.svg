@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <style>
+      text { font-family: sans-serif; }
+      .title { font-size: 15px; fill: #111; font-weight: bold; }
+      .node-label { font-size: 11px; fill: #fff; font-weight: bold; }
+      .cond-label { font-size: 10px; fill: #555; }
+    </style>
+  </defs>
+
+  <text x="20" y="25" class="title">GPU Determinism  --  Hierarchical Reduction Tree</text>
+
+  <!-- Root: blockReduceSum<256>(val) -->
+  <rect x="180" y="45" width="200" height="36" rx="8" fill="#333"/>
+  <text x="280" y="68" class="node-label" text-anchor="middle">blockReduceSum&lt;256&gt;(val)</text>
+
+  <!-- Decision diamond: kBlockSize > 512 -->
+  <polygon points="280,105 350,140 280,175 210,140" fill="#d97a2b" stroke="#b85a1a" stroke-width="1.5"/>
+  <text x="280" y="138" class="node-label" text-anchor="middle" font-size="9">kBlockSize</text>
+  <text x="280" y="150" class="node-label" text-anchor="middle" font-size="9">&gt; 512?</text>
+
+  <line x1="280" y1="81" x2="280" y2="105" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Yes branch - reduce 512 apart -->
+  <rect x="380" y="125" width="180" height="30" rx="6" fill="#2b5a9a"/>
+  <text x="470" y="145" class="node-label" text-anchor="middle">reduce pairs 512 apart</text>
+  <line x1="350" y1="140" x2="380" y2="140" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="352" y="132" class="cond-label">yes</text>
+
+  <!-- Decision: kBlockSize > 256 -->
+  <polygon points="280,205 350,240 280,275 210,240" fill="#d97a2b" stroke="#b85a1a" stroke-width="1.5"/>
+  <text x="280" y="238" class="node-label" text-anchor="middle" font-size="9">kBlockSize</text>
+  <text x="280" y="250" class="node-label" text-anchor="middle" font-size="9">&gt; 256?</text>
+
+  <line x1="280" y1="175" x2="280" y2="205" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Yes branch - reduce 256 apart -->
+  <rect x="380" y="225" width="180" height="30" rx="6" fill="#2b5a9a"/>
+  <text x="470" y="245" class="node-label" text-anchor="middle">reduce pairs 256 apart</text>
+  <line x1="350" y1="240" x2="380" y2="240" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="352" y="232" class="cond-label">yes</text>
+
+  <!-- Decision: tid < 64 -->
+  <polygon points="280,300 340,330 280,360 220,330" fill="#d97a2b" stroke="#b85a1a" stroke-width="1.5"/>
+  <text x="280" y="328" class="node-label" text-anchor="middle" font-size="9">tid &lt; 64?</text>
+
+  <line x1="280" y1="275" x2="280" y2="300" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Yes - shmem reduction -->
+  <rect x="370" y="315" width="160" height="28" rx="6" fill="#4a9a4a"/>
+  <text x="450" y="334" class="node-label" text-anchor="middle" font-size="10">shared mem reduction</text>
+  <line x1="340" y1="330" x2="370" y2="330" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="342" y="322" class="cond-label">yes</text>
+
+  <!-- No: tid < 32 -->
+  <rect x="90" y="315" width="130" height="28" rx="6" fill="#4a9a4a"/>
+  <text x="155" y="334" class="node-label" text-anchor="middle" font-size="10">warp shuffle reduction</text>
+  <line x1="220" y1="330" x2="155" y2="330" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="188" y="322" class="cond-label" text-anchor="middle">no: tid &lt; 32</text>
+
+  <!-- Final result -->
+  <rect x="200" y="380" width="160" height="36" rx="8" fill="#333"/>
+  <text x="280" y="403" class="node-label" text-anchor="middle">Bitwise deterministic</text>
+
+  <line x1="280" y1="360" x2="280" y2="380" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="155" y1="343" x2="200" y2="380" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="450" y1="343" x2="400" y2="380" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>

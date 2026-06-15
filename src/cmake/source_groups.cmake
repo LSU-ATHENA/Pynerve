@@ -1,0 +1,576 @@
+# Source File Organization by Dependencies
+# Generated from explicit source groups; keep entries repository-relative.
+
+# Core sources
+set(NERVE_CORE_SOURCES
+    determinism/ops.cpp
+    acceleration/algebra_acceleration.cpp
+    acceleration/algorithms_acceleration.cpp
+    acceleration/autodiff_acceleration.cpp
+    acceleration/compression_acceleration.cpp
+    acceleration/core_acceleration.cpp
+    acceleration/dmt_acceleration.cpp
+    acceleration/encoders_acceleration.cpp
+    acceleration/filtration_acceleration.cpp
+    acceleration/graphs_acceleration.cpp
+    acceleration/metrics_acceleration.cpp
+    acceleration/ml_acceleration.cpp
+    acceleration/nn_acceleration.cpp
+    acceleration/optimization_acceleration.cpp
+    acceleration/persistence_acceleration.cpp
+    acceleration/probabilistic_acceleration.cpp
+    acceleration/runtime_acceleration.cpp
+    acceleration/sheaf_acceleration.cpp
+    acceleration/spectral_acceleration.cpp
+    acceleration/streaming_acceleration.cpp
+    algebra/boundary/boundary_matrix_access_ops.cpp
+    algebra/boundary/boundary_matrix_build_ops.cpp
+    algebra/boundary/boundary_matrix_reduction_ops.cpp
+    algebra/complex/cellular_cw_ops.cpp
+    algebra/complex/cellular_ops.cpp
+    algebra/complex/chain_complex_ops.cpp
+    algebra/complex/complex_ops.cpp
+    algebra/complex/simplex_set_ops.cpp
+    algebra/geometry/distance_simd_avx_ops.cpp
+    algebra/geometry/distance_simd_ops.cpp
+    algebra/geometry/distance_sse_ops.cpp
+    algebra/geometry/geometry_analytic_ops.cpp
+    algebra/geometry/geometry_volume_ops.cpp
+    algebra/mpi/distance_mpi_ops.cpp
+    algebra/operations/simplex_ops.cpp
+    algorithms/mapper_clustering.cpp
+    algorithms/mapper_core.cpp
+    algorithms/mapper_cover.cpp
+    algorithms/distance.cpp
+    algorithms/distance_ops.cpp
+    algorithms/persistence_vectorization.cpp
+    algorithms/mapper/mapper_statistics_ops.cpp
+    algorithms/mapper/mapper_visualization_ops.cpp
+    algorithms/mapper_filters.cpp
+    anomaly/topology_drift_ops.cpp
+    approximation/distance_approximation_ops.cpp
+    dmt/discrete_gradient_parallel.cpp
+    dmt/dmt_simd_ops.cpp
+    core/core_simd_ops.cpp
+    core/thread_affinity_ops.cpp
+    core/compact_summary/compact_summary_extensions.cpp
+    core/error/error_event_extensions.cpp
+    core/error/error_highdim_ops.cpp
+    core/memory/memory_pool_deterministic_ops.cpp
+    core/memory/memory_pool_ops.cpp
+    core/rng/rng_determinism_metadata_ops.cpp
+    core/rng/rng_determinism_ops.cpp
+    core/rng/rng_factory_ops.cpp
+    core/rng/rng_ops.cpp
+    core/rng/rng_random_ops.cpp
+    core/rng/rng_sequence_state_ops.cpp
+    autodiff/autodiff_gradients.cpp
+    autodiff/autodiff_graph.cpp
+    autodiff/autodiff_tensor.cpp
+    autodiff/simd/autodiff_simd_ops.cpp
+    batching/micro_batching_ops.cpp
+    cache/feature_cache_ops.cpp
+    cpu/avx512_ph_ops.cpp
+    nn/diagram_conv.cpp
+    nn/diagram_conv_kernels.cpp
+    nn/simd_nn_ops.cpp
+    nn/diagram_conv_image_ops.cpp
+    nn/diagram_conv_image_ops_detail.cpp
+    runtime/calibration_model.cpp
+    runtime/calibration_model_detail.cpp
+    runtime/hardware_probe.cpp
+    runtime/runtime_simd_ops.cpp
+    persistence/accelerated/cuda_edge_extraction.cpp
+    persistence/accelerated/determinism.cpp
+    persistence/accelerated/determinism_validation.cpp
+    persistence/accelerated/error_code_registry.cpp
+    persistence/accelerated/error_handling.cpp
+    persistence/accelerated/exception_safety.cpp
+    persistence/accelerated/fast_vr_gpu_integration.cpp
+    persistence/accelerated/gpu_memory_monitor.cpp
+    persistence/accelerated/gpu_reduction_engine.cpp
+    persistence/accelerated/heterogeneous_fast_vr.cpp
+    persistence/accelerated/hybrid_reduction_engine.cpp
+    persistence/accelerated/optimization_advice.cpp
+    persistence/accelerated/performance.cpp
+    persistence/accelerated/performance_impact.cpp
+    persistence/accelerated/thread_safe_allocator.cpp
+    persistence/accelerated/nerve_interface.cpp
+    persistence/accelerated/validation.cpp
+    persistence/acceleration_runtime/acceleration_runtime_engine.cpp
+    persistence/adaptive_acceleration/adaptive_acceleration_engine.cpp
+    persistence/adaptive_acceleration/adaptive_acceleration_problem_analysis.cpp
+    persistence/adaptive_acceleration/adaptive_acceleration_system_capabilities.cpp
+    persistence/adaptive_acceleration/adaptive_algorithm_selector.cpp
+    persistence/adaptive_acceleration/adaptive_algorithm_selector_exec.cpp
+    persistence/adaptive_acceleration/adaptive_selector_calibration.cpp
+    persistence/adaptive_acceleration/lockfree_multicore.cpp
+    persistence/adaptive_acceleration/matrix_multiplication_framework.cpp
+    persistence/adaptive_acceleration/representative_cycles.cpp
+    persistence/adaptive_acceleration/sparse_matrix.cpp
+    persistence/adaptive_acceleration/sparsification_engine.cpp
+    persistence/adaptive_acceleration/streaming/approximate_processor.cpp
+    persistence/adaptive_acceleration/streaming/approximate_processor_ops.cpp
+    persistence/adaptive_acceleration/streaming/representative_cycles.cpp
+    persistence/adaptive_acceleration/streaming/representative_cycles_conversion.cpp
+    persistence/adaptive_acceleration/streaming/representative_cycles_visualization.cpp
+    persistence/adaptive_acceleration/streaming/approximate_processor_adaptive.cpp
+    persistence/adaptive_acceleration/streaming/streaming_processor.cpp
+    persistence/adaptive_acceleration/cuda/hybrid_algorithms.cpp
+    persistence/adaptive_acceleration/cuda/tensor_core_optimizer.cpp
+    persistence/approximate/approximate_bloom_filter_ops.cpp
+    persistence/approximate/approximate_distilled_vr_ops.cpp
+    persistence/approximate/approximate_nearest_neighbor_ops.cpp
+    persistence/approximate/approximate_perfect_hash_benchmark.cpp
+    persistence/approximate/approximate_perfect_hash_io.cpp
+    persistence/approximate/approximate_perfect_hash_ops.cpp
+    persistence/approximate/approximate_sketching_ops.cpp
+    persistence/cohomology/cohomology_involuted_ops.cpp
+    persistence/cohomology/cohomology_persistent_ops.cpp
+    persistence/cohomology/cohomology_ops.cpp
+    persistence/cohomology/cohomology_rref_ops.cpp
+    persistence/cohomology/cohomology_structures.cpp
+    persistence/core/delaunay3d.cpp
+    persistence/core/extreme_memory_reduction.cpp
+    persistence/core/flood_complex.cpp
+    persistence/core/flood_complex_utils.cpp
+    persistence/core/per_dimension_h0.cpp
+    persistence/core/per_dimension_h1.cpp
+    persistence/core/per_dimension_h2.cpp
+    persistence/core/per_dimension_exact.cpp
+    persistence/core/roaring_bitmap.cpp
+    persistence/core/roaring_bitmap_column.cpp
+    persistence/core/roaring_bitmap_container.cpp
+    persistence/core/roaring_bitmap_hybrid.cpp
+    persistence/core/roaring_bitmap_ops.cpp
+    persistence/core/vram_efficient_algorithms.cpp
+    persistence/core/high_dimensional_exact.cpp
+    persistence/differentiable/differentiable_finite_diff_ops.cpp
+    persistence/differentiable/differentiable_manager.cpp
+    persistence/differentiable/differentiable_ops.cpp
+    persistence/differentiable/differentiable_ph5_ops.cpp
+    persistence/differentiable/differentiable_ph6_ops.cpp
+    persistence/distributed/mpi_distributed_ph.cpp
+    persistence/kernels/kernel_dimension_specialized_ops.cpp
+    persistence/kernels/kernel_h1_ops.cpp
+    persistence/kernels/kernel_h2_alpha_ops.cpp
+    persistence/kernels/kernel_h3_tetrahedra_ops.cpp
+    persistence/kernels/kernel_h4_chunked_ops.cpp
+    persistence/kernels/kernel_h5_prefetch_ops.cpp
+    persistence/kernels/kernel_h6_streaming_ops.cpp
+    persistence/kernels/ph4_ops.cpp
+    persistence/kernels/ph4_summary_ops.cpp
+    persistence/kernels/ph5_high_dim_ops.cpp
+    persistence/kernels/ph6_high_dim_ops.cpp
+    persistence/kernels/thread_block_cluster.cpp
+    persistence/memory/memory_clear_compress_ops.cpp
+    persistence/memory/memory_pool_ops.cpp
+    persistence/reduction/reduction_clearing_ops.cpp
+    persistence/reduction/reduction_cohomology_ops.cpp
+    persistence/reduction/reduction_control_ops.cpp
+    persistence/reduction/reduction_edge_collapse_ops.cpp
+    persistence/reduction/reduction_lock_free_structures.cpp
+    persistence/reduction/reduction_lockfree_ops.cpp
+    persistence/reduction/reduction_ops.cpp
+    persistence/reduction/reduction_union_find_ops.cpp
+    persistence/streaming/bron_kerbosch.cpp
+    persistence/streaming/simplex_hash.cpp
+    persistence/streaming/streaming_column_generator.cpp
+    persistence/streaming/streaming_reducer_impl.cpp
+    persistence/streaming/streaming_vr.cpp
+    persistence/streaming/tile_streaming_ph.cpp
+    persistence/utils/adaptive_selector.cpp
+    persistence/utils/api.cpp
+    persistence/utils/avx512_optimizer.cpp
+    persistence/utils/avx512_optimizer_kernels.cpp
+    persistence/utils/bit_parallel_z2.cpp
+    persistence/utils/cpp20_parallel_ph.cpp
+    persistence/utils/diagram_statistics.cpp
+    persistence/utils/exact_engine.cpp
+    persistence/utils/exact_engine_fast.cpp
+    persistence/utils/filtration_simplifier.cpp
+    persistence/utils/incremental_updates.cpp
+    persistence/utils/incremental_updates_complex_builder.cpp
+    persistence/utils/persistence_diagram.cpp
+    persistence/vr/vr_algorithm_selector_ops.cpp
+    persistence/vr/vr_distance_tiled_ops.cpp
+    persistence/vr/vr_fast_api.cpp
+    persistence/vr/vr_fast_engine.cpp
+    persistence/vr/vr_fast_factory.cpp
+    persistence/vr/vr_fast_impl.cpp
+    persistence/vr/vr_fast_ops.cpp
+    persistence/vr/vr_cohomology_ops.cpp
+    persistence/vr/vr_fast_runtime_support.cpp
+    persistence/vr/vr_fast_runtime.cpp
+    persistence/vr/vr_fast_simd_ops.cpp
+    persistence/vr/vr_h1_reduction_ops.cpp
+    persistence/vr/vr_landmark_ops.cpp
+    persistence/vr/vr_large_witness_ops.cpp
+    persistence/vr/vr_lazy_witness_ops.cpp
+    persistence/vr/vr_medium_hybrid_ops.cpp
+    persistence/vr/vr_sparse_rips_ops.cpp
+    persistence/vr/vr_fast_ops_detail.cpp
+    persistence/vr/vr_dispatch_ops.cpp
+    filtration/level_set/level_set_analysis_ops.cpp
+    filtration/level_set/level_set_base_ops.cpp
+    filtration/level_set/level_set_connectivity_ops.cpp
+    filtration/vr/vr_ann_search_ops.cpp
+    filtration/vr/vr_api_ops.cpp
+    filtration/vr/vr_builder_ops.cpp
+    filtration/vr/vr_construction_ops.cpp
+    filtration/vr/vr_distance_ops.cpp
+    filtration/vr/vr_parallel_construction_ops.cpp
+    filtration/vr/vr_sparse_ops.cpp
+    filtration/vr/vr_weighted_ops.cpp
+    filtration/mpi/filtration_mpi_ops.cpp
+    filtration/simd_filtration_ops.cpp
+    metrics/bottleneck/distance_bottleneck_ops.cpp
+    metrics/diagram/diagram_distance_ops.cpp
+    metrics/frechet/distance_frechet_ops.cpp
+    metrics/general/distance_transport_ops.cpp
+    metrics/general/distance_transport_ops_detail.cpp
+    metrics/general/distance_complex_point_ops.cpp
+    metrics/general/distance_factory_ops.cpp
+    metrics/general/distance_general_ops.cpp
+    metrics/hungarian/assignment_hungarian_gpu_impl.cpp
+    metrics/matrix/matrix_distance_ops.cpp
+    metrics/matrix/matrix_lazy_distance_ops.cpp
+    metrics/matrix/matrix_sparse_distance_ops.cpp
+    metrics/vr/vr_lazy_build_ops.cpp
+    metrics/wasserstein/distance_sinkhorn_ops.cpp
+    optimization/compact_summaries.cpp
+     optimization/gpu_primitives.cpp
+     optimization/gpu_primitives_helpers.cpp
+     optimization/simd/optimizer_simd_ops.cpp
+    optimization/streaming_ph.cpp
+    precision/precision_policy.cpp
+    probabilistic/probabilistic.cpp
+    probabilistic/probabilistic_models.cpp
+    probabilistic/probabilistic_sampling.cpp
+    probabilistic/probabilistic_statistics.cpp
+    serialization/ph5_ph6_schema_registry.cpp
+    serialization/ph5_ph6_schema_serializer.cpp
+    serialization/serialization_arrow.cpp
+    serialization/serialization_flatbuffers.cpp
+    serialization/serialization_manager_base.cpp
+    serialization/serialization_schema.cpp
+    serialization/serialization_utilities.cpp
+    serialization/serialization_version_negotiator.cpp
+    sheaf/sheaf_construction_parallel.cpp
+    sheaf/sheaf_engine.cpp
+    sheaf/sheaf_morphism_async.cpp
+    sheaf/sheaf_morphism_optimizer.cpp
+    sheaf/sheaf_simd_ops.cpp
+    spectral/dirac_operator.cpp
+    spectral/laplacian.cpp
+    spectral/laplacian_gpu_impl.cpp
+    spectral/spectral_simd_ops.cpp
+    streaming/core/streaming_distributed_realtime_ops.cpp
+    streaming/core/streaming_incremental_ops.cpp
+    streaming/core/streaming_windowed_ops.cpp
+    streaming/core/streaming_zigzag_filters_ops.cpp
+    streaming/core/streaming_zigzag_ops.cpp
+    streaming/core/streaming_diagram_sort_ops.cpp
+    streaming/gpu/gpu_multi_stream_ops.cpp
+    streaming/gpu/streaming_gpu_impl.cpp
+    streaming/gpu/streaming_simd_ops.cpp
+    streaming/lockfree/streaming_lockfree_ops.cpp
+    streaming/lockfree/streaming_lockfree_runtime_ops.cpp
+    streaming/lockfree/streaming_mpi_ops.cpp
+    streaming/windowed/windowed_ph_benchmark_ops.cpp
+    streaming/windowed/windowed_ph_core_ops.cpp
+    streaming/windowed/windowed_ph_ops.cpp
+    streaming/laplacian/streaming_laplacian_ops.cpp
+    streaming/windowed/windowed_ph_runtime_ops.cpp
+    summary/compact_summary.cpp
+    summary/compact_summary_factory_validator.cpp
+    summary/compact_summary_serialization.cpp
+    encoders/cnn_encoder.cpp
+    encoders/encoder_factory.cpp
+    encoders/encoder_fusion.cpp
+    encoders/encoder_fusion_helpers.cpp
+    encoders/encoder_tensor_cores_benchmark.cpp
+    encoders/encoder_utils.cpp
+    encoders/encoder_utils_reporting.cpp
+    encoders/graph_encoder.cpp
+    encoders/graph_encoder_helpers.cpp
+    encoders/graph_encoder_layers.cpp
+    encoders/hybrid_encoder.cpp
+    encoders/mlp_encoder.cpp
+    encoders/persistence_encoder.cpp
+    encoders/topological_encoder.cpp
+    error/error_registry.cpp
+    errors/configurable_error_system_base.cpp
+    errors/configurable_error_system_core.cpp
+    errors/configurable_error_system_tda.cpp
+    errors/errors.cpp
+    feature_access/feature_flags.cpp
+    feature_access/feature_flags_config.cpp
+    feature_access/feature_flags_validation.cpp
+    features/feature_flags.cpp
+    graphs/graph.cpp
+    graphs/graph_neural_layer.cpp
+    graphs/graph_homology.cpp
+    graphs/graph_persistent.cpp
+    graphs/graph_persistent_homology.cpp
+    graphs/graph_sheaf.cpp
+    graphs/graph_topology.cpp
+    graphs/graph_weighted.cpp
+    graphs/graph_weighted_simplicial.cpp
+    graphs/mpi/graph_mpi_ops.cpp
+    gpu/manager_compute.cpp
+    gpu/manager_compute_init.cpp
+    gpu/manager_compute_ops.cpp
+    gpu/manager_compute_ops_filtration.cpp
+    gpu/manager_compute_ops_geometry.cpp
+    gpu/manager_compute_ops_hungarian.cpp
+    gpu/matrix_diagram_cost_ops.cpp
+    gpu/matrix_distance_ops.cpp
+    gpu/ops_column.cpp
+    gpu/ops_streaming.cpp
+    gpu/tuner_nvidia_auto.cpp
+    gpu/tuner_nvidia_auto_reporting.cpp
+    instrumentation/high_dim_error_sink.cpp
+    instrumentation/stability_certificates.cpp
+    io/async_io_ops.cpp
+    io/diagram_io_ops.cpp
+    io/mmap_io_ops.cpp
+    io/npy_io_ops.cpp
+    memory/memory_allocator_ops.cpp
+    memory/memory_pool_ops.cpp
+    optimization/compact_summaries_memory.cpp
+)
+
+# CUDA-dependent sources
+set(NERVE_CUDA_SOURCES
+    determinism/gpu.cu
+    algebra/gpu/cech_complex_cuda.cu
+    algebra/gpu/cech_gpu_impl.cpp
+    algebra/gpu/vr_complex_cuda.cu
+    algebra/gpu/vr_gpu_impl.cpp
+    algorithms/gpu/distance_gpu_kernels.cu
+    autodiff/autodiff_gpu_kernels.cu
+    core/gpu/gpu_kernels.cu
+    cuda/kernels/distance_kernels.cu
+    cuda/kernels/reduction_kernels.cu
+    cuda/kernels/reduction_kernels_launcher.cpp
+    dmt/gpu/dmt_kernels.cu
+    filtration/gpu/level_set_cuda.cu
+    graphs/graph_algorithms_gpu.cu
+    graphs/graph_engine_gpu.cu
+    graphs/graph_multi_gpu_ops.cpp
+    graphs/graph_zigzag_gpu.cu
+    gpu/context/manager_context_gpu.cpp
+    gpu/memory/manager_batch_memory.cpp
+    optimization/gpu_primitives_kernels.cu
+    persistence/cuda/error_handling_cuda.cpp
+    persistence/cuda/multi_gpu_reduction_ops.cpp
+    persistence/cuda/distance_filtration_cuda.cu
+    persistence/cuda/distance_filtration_wrappers_cuda.cu
+    persistence/cuda/matrix_distance_config_cuda.cu
+    persistence/cuda/matrix_distance_cuda.cu
+    persistence/cuda/matrix_distance_tiled_cuda.cu
+    persistence/cuda/matrix_distance_api_cuda.cu
+    persistence/cuda/matrix_distance_api_entrypoints.cu
+)
+
+# Extended CUDA sources
+set(NERVE_CUDA_EXTENDED_SOURCES
+    cuda/kernels/bottleneck_distance.cu
+    cuda/kernels/distance_fasted.cu
+    cuda/kernels/distance_tedjoin.cu
+    cuda/kernels/gpu_persistence_launcher.cu
+    cuda/kernels/gpu_persistence_reduction.cu
+    cuda/kernels/mapper_gpu.cu
+    cuda/kernels/persistence_image.cu
+    cuda/kernels/specseq_reduction.cu
+    cuda/kernels/wasserstein_distance.cu
+    persistence/cuda/kernel_hypha_scan.cu
+    persistence/reduction/reduction_hypha_ops.cpp
+    encoders/encoder_gpu_kernels.cu
+    filtration/gpu/vr_sparse_cuda.cu
+    metrics/cuda/diagram_distance_gpu_kernels.cu
+    nn/cuda/nn_kernels.cu
+    metrics/hungarian/assignment_hungarian_cuda.cu
+    metrics/hungarian/assignment_hungarian_tiled_cuda.cu
+    ml/diff/simplex_autodiff.cu
+    ml/nn/diagram_message_passing.cu
+    optimization/gpu/opt_kernels.cu
+    probabilistic/probabilistic_gpu.cu
+    probabilistic/simd/probabilistic_simd_ops.cpp
+    regularization/augmentation_gpu.cu
+    regularization/loss_kernels.cu
+    regularization/regularizer_gpu.cu
+    runtime/calibration_gpu.cu
+    sheaf/sheaf_laplacian_gpu.cu
+    sheaf/sheaf_laplacian_tensorcore.cu
+    specialized/cup_product.cu
+    specialized/reeb_graph.cu
+    specialized/zigzag_persistence.cu
+    spectral/cuda_laplacian.cu
+    spectral/dirac_clifford_product_gpu.cu
+    spectral/dirac_operator_gpu.cu
+    spectral/eigensolver_gpu.cu
+    streaming/gpu/gpu_multi_stream_ops.cpp
+    streaming/gpu/streaming_persistence_cuda.cu
+    streaming/gpu/windowed_ph_cuda.cu
+    cuda/kernels/distance_kernels_ext.cu
+    gpu/context/manager_multi_gpu.cpp
+    gpu/dispatch/distance_matrix_optimizer_cuda.cpp
+    gpu/dispatch/dispatch_cuda.cpp
+    gpu/error_handling_cuda_ops.cpp
+    gpu/executor_async_ops.cpp
+    gpu/hybrid_tuning.cpp
+    gpu/hybrid_tuning_runtime.cpp
+    gpu/kernels/kernel_ada_lovelace_cuda.cu
+    metrics/hungarian/assignment_hungarian_cuda.cu
+    metrics/hungarian/assignment_hungarian_tiled_cuda.cu
+    persistence/cuda/cuda_blackwell_benchmark.cu
+    persistence/cuda/cuda_blackwell_tma.cu
+    persistence/cuda/kernel_ptx_micro_ops_cuda.cu
+    persistence/cuda/kernel_tma_cuda.cu
+    persistence/cuda/tensor_core_cuda.cu
+    persistence/cuda/tensor_core_wrappers_cuda.cu
+    persistence/cuda/tensor_core_benchmark.cu
+    persistence/cuda/tuning_tma_cuda.cu
+)
+
+# PyTorch-dependent sources
+set(NERVE_PYTORCH_SOURCES
+    algorithms/kernel_methods.cpp
+    autodiff/autodiff_graph_optimizer.cpp
+    autodiff/autodiff_variable.cpp
+    compression/autoencoder_gpu.cu
+    persistence/differentiable/differentiable_ops.cpp
+    probabilistic/probabilistic_gpu.cu
+    probabilistic/simd/probabilistic_simd_ops.cpp
+)
+
+# Validation benchmark sources
+set(NERVE_VALIDATION_SOURCES
+    validation/microbenchmarks.cpp
+    validation/ph5_ph6_benchmark_ci.cpp
+    validation/ph5_ph6_benchmark_metrics.cpp
+    validation/ph5_ph6_microbenchmarks.cpp
+    validation/ph5_ph6_microbenchmarks_spectral.cpp
+)
+
+# Benchmark harness sources
+set(NERVE_BENCHMARK_SOURCES
+    benchmarks/performance_benchmark.cpp
+    benchmarks/vr_algorithm_benchmark.cpp
+)
+
+# cuDNN-dependent sources
+set(NERVE_CUDNN_SOURCES
+    compression/decoder_cudnn.cpp
+    compression/encoder_cudnn.cpp
+    encoders/encoder_tensor_cores.cpp
+    graphs/gnn_gpu.cu
+)
+
+# Advanced differentiable sources
+set(NERVE_ADVANCED_DIFFERENTIABLE_SOURCES
+    differentiable/autodiff_persistence.cpp
+)
+
+# MPI-dependent sources
+set(NERVE_MPI_SOURCES
+    determinism/mpi_ops.cpp
+    distributed/distributed_persistence.cpp
+    distributed/mpi_communicator.cpp
+    distributed/mpi_cuda_ops.cpp
+    distributed/nvshmem_bridge.cpp
+    distributed/sharded_boundary_matrix.cpp
+    distributed/work_stealing_scheduler.cpp
+    persistence/reduction/reduction_distributed_ops.cpp
+    persistence/reduction/reduction_mpi_ops.cpp
+)
+
+# Eigen3-dependent sources
+set(NERVE_EIGEN3_SOURCES
+    ml/diff/persistence_gradient.cpp
+    persistence/core/persistence_gradient.cpp
+    sheaf/sheaf_laplacian.cpp
+    sheaf/sheaf_laplacian_factory.cpp
+    sheaf/sheaf_laplacian_matrices.cpp
+    sheaf/sheaf_learning.cpp
+    sheaf/sheaf_learning_ops.cpp
+    spectral/persistent_laplacian.cpp
+    spectral/persistent_laplacian_support.cpp
+    spectral/persistent_laplacian_gpu.cpp
+    spectral/spectral_anomaly_detector.cpp
+    spectral/spectral_feature_extractor.cpp
+    spectral/spectral_stack_manager.cpp
+)
+
+# Non-Eigen basic sources
+set(NERVE_NON_EIGEN_SOURCES
+    persistence/core/persistence_gradient_basic.cpp
+)
+
+# NUMA-dependent sources
+set(NERVE_NUMA_SOURCES
+    core/memory/memory_numa_allocator_ops.cpp
+    core/memory/numa_aware_pool.cpp
+    instrumentation/scale_tests.cpp
+    persistence/memory/memory_numa_optimizer.cpp
+)
+
+# AVX-512-dependent sources
+set(NERVE_AVX512_SOURCES
+    algebra/geometry/distance_simd_avx_ops.cpp
+    algebra/geometry/distance_simd_ops.cpp
+    compression/simd/compression_simd_ops.cpp
+    encoders/simd_encoder_ops.cpp
+    metrics/matrix/matrix_distance_avx512_ops.cpp
+    persistence/utils/avx512_optimizer.cpp
+)
+
+# Staged AVX-512 sources
+set(NERVE_AVX512_STAGED_SOURCES
+)
+
+# Experimental tuning sources
+set(NERVE_EXPERIMENTAL_TUNING_SOURCES
+    gpu/manager_compute.cpp
+    graphs/attention_gpu.cu
+    graphs/message_passing_gpu.cu
+    gpu/matrix_diagram_cost_ops.cpp
+    gpu/matrix_distance_ops.cpp
+    gpu/ops_column.cpp
+    gpu/ops_streaming.cpp
+    persistence/accelerated/gpu_apparent_pairs.cu
+    persistence/accelerated/gpu_distance_matrix.cu
+    gpu/tuning/tuning_distributed_ops.cpp
+    metrics/diagram/diagram_distance_cuda.cu
+    metrics/diagram/diagram_distance_cuda_impl.cpp
+    gpu/tuning/tuning_cache_ops.cpp
+    persistence/adaptive_acceleration/cuda/distance_kernels.cu
+    persistence/adaptive_acceleration/cuda/distance_kernels_inst.cu
+    persistence/adaptive_acceleration/cuda/distance_reduction_kernels.cu
+    persistence/adaptive_acceleration/cuda/reduction_kernels.cu
+    persistence/cuda/adaptive_selector_gpu.cu
+    persistence/cuda/cluster_16_block.cu
+    persistence/cuda/cluster_distributed_l2.cu
+    persistence/cuda/cluster_tma_multicast.cu
+    persistence/cuda/cohomology_clearing_cuda.cu
+    persistence/cuda/cuda_matrix_reduction_apparent_pairs.cu
+    persistence/cuda/cuda_matrix_reduction_compute.cu
+    persistence/cuda/cuda_matrix_reduction_diagram.cu
+    persistence/cuda/cuda_matrix_reduction_kernels.cu
+    persistence/cuda/cuda_matrix_reduction_warp.cu
+    persistence/cuda/error_mapping_cuda.cpp
+    persistence/cuda/kernel_apparent_pairs_cuda.cu
+    persistence/cuda/kernel_clearing_cuda.cu
+    persistence/cuda/kernel_edge_extraction_cuda.cu
+    persistence/cuda/kernel_tile_cuda.cu
+    persistence/cuda/kernel_warp_specialized_cuda.cu
+    persistence/cuda/matrix_reduction_launch_cuda.cu
+    persistence/cuda/multi_gpu_cuda.cu
+    streaming/gpu/streaming_persistence_cuda.cu
+    streaming/gpu/windowed_ph_cuda.cu
+    persistence/cuda/gpu_clearing_impl.cpp
+    persistence/cuda/gpu_cohomology_impl.cpp
+    persistence/cuda/gpu_reduction_impl.cpp
+)

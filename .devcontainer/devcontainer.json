@@ -1,0 +1,60 @@
+{
+    "name": "Nerve Development Environment",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "runArgs": [
+        "--gpus=all",
+        "--shm-size=8gb",
+        "--cap-add=SYS_PTRACE",
+        "--security-opt=seccomp=unconfined"
+    ],
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/python:1": {
+            "version": "3.11"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-python.python",
+                "charliermarsh.ruff",
+                "ms-vscode.cmake-tools",
+                "ms-vscode.cmake",
+                "llvm-vs-code-extensions.vscode-clangd"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.linting.enabled": true,
+                "python.linting.ruffEnabled": true,
+                "[python]": {
+                    "editor.defaultFormatter": "charliermarsh.ruff"
+                },
+                "files.associations": {
+                    "*.hpp": "cpp",
+                    "*.cpp": "cpp",
+                    "*.cu": "cpp",
+                    "*.cuh": "cpp"
+                },
+                "C_Cpp.default.cppStandard": "c++20",
+                "C_Cpp.formatting": "clangFormat"
+            }
+        }
+    },
+    "postCreateCommand": "pre-commit install",
+    "remoteUser": "vscode",
+    "mounts": [
+        "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+        "target=/workspace/build,type=volume"
+    ],
+    "portsAttributes": {
+        "8888": {
+            "label": "Jupyter Notebook",
+            "onAutoForward": "notify"
+        }
+    }
+}

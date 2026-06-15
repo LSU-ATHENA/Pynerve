@@ -1,0 +1,19 @@
+{
+  "include": ["python/pynerve"],
+  "exclude": ["**/__pycache__", "**/tests", "**/node_modules"],
+  "pythonVersion": "3.10",
+  "typeCheckingMode": "standard",
+  "reportMissingImports": "none",
+  "reportImportCycles": "none",
+  "reportConstantRedefinition": "none",
+  "reportMissingTypeArgument": "none",
+  "reportUnusedVariable": "warning",
+  "reportUnusedImport": "warning",
+  "reportOptionalSubscript": "warning",
+  "reportUnknownMemberType": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownParameterType": "none",
+  "reportAttributeAccessIssue": "warning",
+  "reportArgumentType": "warning",
+  "reportGeneralTypeIssues": "warning"
+}

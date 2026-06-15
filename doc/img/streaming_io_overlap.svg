@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 300">
+  <defs>
+    <style>
+      text { font-family: sans-serif; }
+      .title { font-size: 15px; fill: #111; font-weight: bold; }
+      .time-label { font-size: 10px; fill: #666; }
+      .bar-label { font-size: 10px; fill: #fff; font-weight: bold; }
+      .legend-label { font-size: 11px; fill: #333; }
+    </style>
+  </defs>
+
+  <text x="20" y="25" class="title">I/O Overlap Timeline  --  Streaming Throughput</text>
+
+  <!-- Y-axis labels -->
+  <text x="15" y="85" class="legend-label" font-weight="bold">I/O</text>
+  <text x="15" y="205" class="legend-label" font-weight="bold">Compute</text>
+
+  <!-- Time axis -->
+  <line x1="60" y1="250" x2="670" y2="250" stroke="#ccc" stroke-width="1.5"/>
+  <line x1="60" y1="250" x2="60" y2="50" stroke="#ccc" stroke-width="1.5"/>
+
+  <!-- Time labels -->
+  <text x="60" y="268" class="time-label" text-anchor="middle">0s</text>
+  <text x="195" y="268" class="time-label" text-anchor="middle">1s</text>
+  <text x="330" y="268" class="time-label" text-anchor="middle">2s</text>
+  <text x="465" y="268" class="time-label" text-anchor="middle">3s</text>
+  <text x="600" y="268" class="time-label" text-anchor="middle">4s</text>
+
+  <!-- I/O bars (top row) -->
+  <rect x="80" y="60" width="200" height="40" rx="6" fill="#2b5a9a"/>
+  <text x="180" y="86" class="bar-label" text-anchor="middle">Read chunk 0</text>
+
+  <rect x="280" y="60" width="200" height="40" rx="6" fill="#2b5a9a"/>
+  <text x="380" y="86" class="bar-label" text-anchor="middle">Read chunk 1</text>
+
+  <rect x="480" y="60" width="200" height="40" rx="6" fill="#2b5a9a"/>
+  <text x="580" y="86" class="bar-label" text-anchor="middle">Read chunk 2</text>
+
+  <!-- Compute bars (bottom row) -->
+  <rect x="80" y="150" width="260" height="40" rx="6" fill="#d97a2b"/>
+  <text x="210" y="176" class="bar-label" text-anchor="middle">Compute chunk 0</text>
+
+  <rect x="280" y="150" width="260" height="40" rx="6" fill="#d97a2b"/>
+  <text x="410" y="176" class="bar-label" text-anchor="middle">Compute chunk 1</text>
+
+  <rect x="480" y="150" width="260" height="40" rx="6" fill="#d97a2b"/>
+  <text x="610" y="176" class="bar-label" text-anchor="middle">Compute chunk 2</text>
+
+  <!-- Overlap indicator brackets -->
+  <rect x="280" y="102" width="60" height="48" rx="2" fill="none" stroke="#4a9a4a" stroke-width="2" stroke-dasharray="6,3"/>
+  <text x="310" y="138" class="bar-label" fill="#4a9a4a" font-size="10" text-anchor="middle">OVERLAP</text>
+
+  <!-- Legend -->
+  <rect x="550" y="10" width="14" height="14" rx="3" fill="#2b5a9a"/>
+  <text x="570" y="23" class="legend-label">I/O (HDF5 read)</text>
+  <rect x="550" y="28" width="14" height="14" rx="3" fill="#d97a2b"/>
+  <text x="570" y="41" class="legend-label">Compute (PH)</text>
+
+  <text x="60" y="288" class="time-label" fill="#4a9a4a" font-weight="bold">Effective throughput with I/O overlap: up to 1.5x vs sequential read+compute</text>
+</svg>

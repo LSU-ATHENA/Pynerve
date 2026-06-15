@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 850" width="100%">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#666"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2b5a9a"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a9a4a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="850" fill="#fafbfc" rx="4"/>
+
+  <text x="500" y="28" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#333">Workflow Data Flow</text>
+
+  <!-- Python call -->
+  <rect x="300" y="45" width="400" height="36" rx="8" fill="#2b5a9a"/>
+  <text x="500" y="63" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">Python: compute_persistence(points, max_dim=2, max_radius=1.0)</text>
+  <text x="500" y="75" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#c0d8f0">Python call</text>
+
+  <line x1="500" y1="81" x2="500" y2="105" stroke="#666" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- pybind11 dispatch -->
+  <rect x="310" y="108" width="380" height="34" rx="8" fill="#2b5a9a"/>
+  <text x="500" y="130" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="white">pybind11 -> nerve::persistence::compute()</text>
+
+  <line x1="500" y1="142" x2="500" y2="165" stroke="#666" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- Backend selection -->
+  <rect x="350" y="168" width="300" height="34" rx="8" fill="#2b5a9a"/>
+  <text x="500" y="190" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="white">Backend selection</text>
+
+  <line x1="500" y1="202" x2="500" y2="215" stroke="#666" stroke-width="1.5"/>
+  <line x1="320" y1="215" x2="320" y2="228" stroke="#2b5a9a" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <line x1="680" y1="215" x2="680" y2="228" stroke="#4a9a4a" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <!-- CPU path -->
+  <rect x="80" y="231" width="280" height="34" rx="8" fill="#2b5a9a"/>
+  <text x="220" y="253" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="white">CPU_ADAPTIVE_ACCELERATION (default)</text>
+
+  <line x1="220" y1="265" x2="220" y2="285" stroke="#2b5a9a" stroke-width="2" marker-end="url(#arr-blue)"/>
+
+  <rect x="80" y="288" width="280" height="34" rx="6" fill="#e8eef5"/>
+  <text x="220" y="305" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#2b5a9a">DistanceMatrixComputer::compute()</text>
+  <text x="220" y="316" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#888">SIMD dispatch, OpenMP parallel</text>
+
+  <line x1="220" y1="322" x2="220" y2="342" stroke="#2b5a9a" stroke-width="2" marker-end="url(#arr-blue)"/>
+
+  <rect x="80" y="345" width="280" height="34" rx="6" fill="#e8eef5"/>
+  <text x="220" y="362" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#2b5a9a">VRFiltration::build()</text>
+  <text x="220" y="373" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#888">edge extraction, simplex gen, sorting</text>
+
+  <line x1="220" y1="379" x2="220" y2="399" stroke="#2b5a9a" stroke-width="2" marker-end="url(#arr-blue)"/>
+
+  <rect x="80" y="402" width="280" height="34" rx="6" fill="#e8eef5"/>
+  <text x="220" y="419" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#2b5a9a">PH5PH6Engine / computePersistenceCohomology()</text>
+  <text x="220" y="430" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#888">cohomology reduction with clearing</text>
+
+  <line x1="220" y1="436" x2="220" y2="456" stroke="#2b5a9a" stroke-width="2" marker-end="url(#arr-blue)"/>
+
+  <rect x="80" y="459" width="280" height="34" rx="6" fill="#e8eef5"/>
+  <text x="220" y="481" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#2b5a9a">Pair extraction from reduced matrix</text>
+
+  <line x1="220" y1="493" x2="220" y2="518" stroke="#2b5a9a" stroke-width="2" marker-end="url(#arr-blue)"/>
+
+  <rect x="80" y="521" width="280" height="34" rx="8" fill="#2b5a9a"/>
+  <text x="220" y="543" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="white">PersistenceResult -> Python dict</text>
+
+  <!-- GPU path -->
+  <rect x="640" y="231" width="280" height="34" rx="8" fill="#4a9a4a"/>
+  <text x="780" y="253" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="white">CUDA_HYBRID</text>
+
+  <line x1="780" y1="265" x2="780" y2="285" stroke="#4a9a4a" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <rect x="640" y="288" width="280" height="34" rx="6" fill="#e8f5e8"/>
+  <text x="780" y="310" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#4a9a4a">cudaMemcpy H2D (points -> GPU)</text>
+
+  <line x1="780" y1="322" x2="780" y2="342" stroke="#4a9a4a" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <rect x="640" y="345" width="280" height="34" rx="6" fill="#e8f5e8"/>
+  <text x="780" y="367" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#4a9a4a">matrix_distance_api_cuda.cu (Tensor Core)</text>
+
+  <line x1="780" y1="379" x2="780" y2="399" stroke="#4a9a4a" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <rect x="640" y="402" width="280" height="34" rx="6" fill="#e8f5e8"/>
+  <text x="780" y="419" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">edge_extraction -> apparent_pairs</text>
+
+  <line x1="780" y1="436" x2="780" y2="456" stroke="#4a9a4a" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <rect x="640" y="459" width="280" height="34" rx="6" fill="#e8f5e8"/>
+  <text x="780" y="476" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#4a9a4a">cuda_matrix_reduction_compute.cu</text>
+  <text x="780" y="487" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#888">warp-shuffle reduction</text>
+
+  <line x1="780" y1="493" x2="780" y2="506" stroke="#4a9a4a" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <rect x="640" y="509" width="280" height="28" rx="6" fill="#e8f5e8"/>
+  <text x="780" y="528" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#4a9a4a">cuda_matrix_reduction_diagram.cu</text>
+
+  <line x1="780" y1="537" x2="780" y2="550" stroke="#4a9a4a" stroke-width="1"/>
+
+  <rect x="640" y="553" width="280" height="28" rx="6" fill="#e8f5e8"/>
+  <text x="780" y="572" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#4a9a4a">cudaMemcpy D2H (results -> host)</text>
+
+  <line x1="780" y1="581" x2="780" y2="595" stroke="#4a9a4a" stroke-width="2" marker-end="url(#arr-green)"/>
+
+  <rect x="640" y="598" width="280" height="34" rx="8" fill="#4a9a4a"/>
+  <text x="780" y="620" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="white">PersistenceResult -> Python dict</text>
+
+  <!-- Merge indicator at bottom -->
+  <line x1="360" y1="555" x2="500" y2="650" stroke="#888" stroke-width="1" stroke-dasharray="5,3"/>
+  <line x1="640" y1="632" x2="500" y2="650" stroke="#888" stroke-width="1" stroke-dasharray="5,3"/>
+
+  <rect x="380" y="650" width="240" height="30" rx="15" fill="#888"/>
+  <text x="500" y="670" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">Both paths produce identical results</text>
+</svg>

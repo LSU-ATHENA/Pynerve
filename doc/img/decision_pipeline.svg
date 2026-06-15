@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 820" font-family="sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#555"/></marker>
+    <marker id="arrow-b" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2b5a9a"/></marker>
+  </defs>
+  <!-- Start: What is your n? -->
+  <rect x="320" y="20" width="260" height="40" rx="6" fill="#2b5a9a" stroke="#1a3d6e" stroke-width="1.5"/>
+  <text x="450" y="45" text-anchor="middle" fill="#fff" font-weight="bold">What is n (number of points)?</text>
+  <line x1="450" y1="60" x2="450" y2="85" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Decision: n < 1,000 -->
+  <polygon points="450,85 510,120 450,155 390,120" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="450" y="124" text-anchor="middle" fill="#333" font-size="12" font-weight="bold">n &lt; 1,000</text>
+  <!-- yes branch -->
+  <line x1="390" y1="120" x2="290" y2="120" stroke="#d97a2b" marker-end="url(#arrow)"/>
+  <text x="340" y="115" text-anchor="middle" fill="#d97a2b" font-size="11">yes</text>
+  <!-- Decision: dim <= 3 -->
+  <polygon points="290,95 340,120 290,145 240,120" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="290" y="118" text-anchor="middle" fill="#333" font-size="11">dim<=3</text>
+  <line x1="240" y1="120" x2="190" y2="120" stroke="#4a9a4a" marker-end="url(#arrow)"/>
+  <text x="215" y="115" text-anchor="middle" fill="#4a9a4a" font-size="11">yes</text>
+  <rect x="30" y="100" width="160" height="40" rx="6" fill="#4a9a4a" stroke="#2d6e2d" stroke-width="1.5"/>
+  <text x="110" y="118" text-anchor="middle" fill="#fff" font-size="11">VR exact</text>
+  <text x="110" y="132" text-anchor="middle" fill="#fff" font-size="11">(PH4 / Alpha)</text>
+  <line x1="340" y1="120" x2="390" y2="120" stroke="#c93" marker-end="url(#arrow)"/>
+  <text x="365" y="115" text-anchor="middle" fill="#c93" font-size="11">no</text>
+  <rect x="410" y="98" width="120" height="44" rx="6" fill="#2b5a9a" stroke="#1a3d6e" stroke-width="1.5"/>
+  <text x="470" y="118" text-anchor="middle" fill="#fff" font-size="11">VR exact</text>
+  <text x="470" y="132" text-anchor="middle" fill="#fff" font-size="11">custom metric</text>
+
+  <!-- Decision: 1,000 < n < 10,000 -->
+  <line x1="510" y1="120" x2="570" y2="120" stroke="#555" stroke-width="1.5"/>
+  <line x1="570" y1="120" x2="570" y2="175" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <polygon points="570,175 630,210 570,245 510,210" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="570" y="208" text-anchor="middle" fill="#333" font-size="11">1k &lt; n &lt; 10k</text>
+  <line x1="510" y1="210" x2="440" y2="210" stroke="#d97a2b" marker-end="url(#arrow)"/>
+  <text x="475" y="205" text-anchor="middle" fill="#d97a2b" font-size="11">yes</text>
+  <polygon points="440,185 490,210 440,235 390,210" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="440" y="208" text-anchor="middle" fill="#333" font-size="11">dim<=3</text>
+  <line x1="390" y1="210" x2="340" y2="210" stroke="#4a9a4a" marker-end="url(#arrow)"/>
+  <text x="365" y="205" text-anchor="middle" fill="#4a9a4a" font-size="11">yes</text>
+  <rect x="220" y="192" width="120" height="36" rx="6" fill="#2b5a9a" stroke="#1a3d6e" stroke-width="1.5"/>
+  <text x="280" y="214" text-anchor="middle" fill="#fff" font-size="11">VR exact (PH4)</text>
+  <line x1="490" y1="210" x2="530" y2="210" stroke="#c93" marker-end="url(#arrow)"/>
+  <text x="510" y="205" text-anchor="middle" fill="#c93" font-size="11">no</text>
+  <rect x="530" y="193" width="140" height="34" rx="6" fill="#2b5a9a" stroke="#1a3d6e" stroke-width="1.5"/>
+  <text x="600" y="215" text-anchor="middle" fill="#fff" font-size="11">VR exact / Sparse VR</text>
+
+  <!-- Decision: 10,000 < n < 100,000 -->
+  <line x1="630" y1="210" x2="680" y2="210" stroke="#555" stroke-width="1.5"/>
+  <line x1="680" y1="210" x2="680" y2="265" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <polygon points="680,265 740,300 680,335 620,300" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="680" y="298" text-anchor="middle" fill="#333" font-size="11">10k &lt; n &lt; 100k</text>
+  <line x1="620" y1="300" x2="560" y2="300" stroke="#d97a2b" marker-end="url(#arrow)"/>
+  <text x="590" y="295" text-anchor="middle" fill="#d97a2b" font-size="11">yes</text>
+  <polygon points="560,275 610,300 560,325 510,300" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="560" y="298" text-anchor="middle" fill="#333" font-size="11">dim<=3</text>
+  <line x1="510" y1="300" x2="460" y2="300" stroke="#4a9a4a" marker-end="url(#arrow)"/>
+  <text x="485" y="295" text-anchor="middle" fill="#4a9a4a" font-size="11">yes</text>
+  <rect x="320" y="283" width="140" height="34" rx="6" fill="#2b5a9a" stroke="#1a3d6e" stroke-width="1.5"/>
+  <text x="390" y="303" text-anchor="middle" fill="#fff" font-size="11">Sparse VR</text>
+  <text x="390" y="316" text-anchor="middle" fill="#fff" font-size="10">(PH5, 1-5%)</text>
+  <line x1="610" y1="300" x2="650" y2="300" stroke="#c93" marker-end="url(#arrow)"/>
+  <text x="630" y="295" text-anchor="middle" fill="#c93" font-size="11">no</text>
+  <rect x="650" y="283" width="150" height="34" rx="6" fill="#2b5a9a" stroke="#1a3d6e" stroke-width="1.5"/>
+  <text x="725" y="303" text-anchor="middle" fill="#fff" font-size="11">Sparse VR + HNSW</text>
+
+  <!-- Decision: 100,000 < n < 1,000,000 -->
+  <line x1="740" y1="300" x2="780" y2="300" stroke="#555" stroke-width="1.5"/>
+  <line x1="780" y1="300" x2="780" y2="355" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <polygon points="780,355 840,390 780,425 720,390" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="780" y="388" text-anchor="middle" fill="#333" font-size="11">100k &lt; n &lt; 1M</text>
+  <line x1="720" y1="390" x2="640" y2="390" stroke="#d97a2b" marker-end="url(#arrow)"/>
+  <text x="680" y="385" text-anchor="middle" fill="#d97a2b" font-size="11">yes</text>
+  <polygon points="640,365 690,390 640,415 590,390" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="640" y="388" text-anchor="middle" fill="#333" font-size="11">dim<=3</text>
+  <line x1="590" y1="390" x2="520" y2="390" stroke="#4a9a4a" marker-end="url(#arrow)"/>
+  <text x="555" y="385" text-anchor="middle" fill="#4a9a4a" font-size="11">yes</text>
+  <rect x="360" y="373" width="160" height="34" rx="6" fill="#2b5a9a" stroke="#1a3d6e" stroke-width="1.5"/>
+  <text x="440" y="394" text-anchor="middle" fill="#fff" font-size="11">Sparse VR / Witness</text>
+  <text x="440" y="407" text-anchor="middle" fill="#fff" font-size="10">(PH6)</text>
+  <line x1="690" y1="390" x2="730" y2="390" stroke="#c93" marker-end="url(#arrow)"/>
+  <text x="710" y="385" text-anchor="middle" fill="#c93" font-size="11">no</text>
+  <rect x="730" y="373" width="140" height="34" rx="6" fill="#2b5a9a" stroke="#1a3d6e" stroke-width="1.5"/>
+  <text x="800" y="394" text-anchor="middle" fill="#fff" font-size="11">Witness + HNSW</text>
+
+  <!-- GPU available? -->
+  <line x1="585" y1="390" x2="585" y2="480" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <polygon points="585,480 645,515 585,550 525,515" fill="#fff3cd" stroke="#4a9a4a" stroke-width="1.5"/>
+  <text x="585" y="513" text-anchor="middle" fill="#333" font-size="11">GPU available?</text>
+  <line x1="525" y1="515" x2="450" y2="515" stroke="#d97a2b" marker-end="url(#arrow)"/>
+  <text x="488" y="510" text-anchor="middle" fill="#4a9a4a" font-size="11">yes</text>
+  <rect x="290" y="498" width="160" height="34" rx="6" fill="#4a9a4a" stroke="#2d6e2d" stroke-width="1.5"/>
+  <text x="370" y="519" text-anchor="middle" fill="#fff" font-size="11">CUDA_HYBRID backend</text>
+  <line x1="645" y1="515" x2="700" y2="515" stroke="#555" stroke-width="1.5"/>
+  <!-- Continue down to n > 1,000,000 -->
+  <line x1="700" y1="515" x2="700" y2="570" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Decision: n > 1,000,000 -->
+  <polygon points="700,570 760,605 700,640 640,605" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="700" y="603" text-anchor="middle" fill="#333" font-size="11">n &gt; 1,000,000</text>
+  <line x1="640" y1="605" x2="560" y2="605" stroke="#d97a2b" marker-end="url(#arrow)"/>
+  <text x="600" y="600" text-anchor="middle" fill="#d97a2b" font-size="11">yes</text>
+  <polygon points="560,580 610,605 560,630 510,605" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="560" y="603" text-anchor="middle" fill="#333" font-size="11">dim<=3</text>
+  <line x1="510" y1="605" x2="440" y2="605" stroke="#4a9a4a" marker-end="url(#arrow)"/>
+  <text x="475" y="600" text-anchor="middle" fill="#4a9a4a" font-size="11">yes</text>
+  <rect x="280" y="588" width="160" height="34" rx="6" fill="#2b5a9a" stroke="#1a3d6e" stroke-width="1.5"/>
+  <text x="360" y="602" text-anchor="middle" fill="#fff" font-size="10">Witness + streaming</text>
+  <text x="360" y="616" text-anchor="middle" fill="#fff" font-size="10">+ GPU</text>
+  <line x1="610" y1="605" x2="650" y2="605" stroke="#c93" marker-end="url(#arrow)"/>
+  <text x="630" y="600" text-anchor="middle" fill="#c93" font-size="11">no</text>
+  <rect x="650" y="588" width="160" height="34" rx="6" fill="#2b5a9a" stroke="#1a3d6e" stroke-width="1.5"/>
+  <text x="730" y="602" text-anchor="middle" fill="#fff" font-size="10">Witness + HNSW</text>
+  <text x="730" y="616" text-anchor="middle" fill="#fff" font-size="10">+ streaming</text>
+
+  <!-- Cluster? and Data > RAM? -->
+  <line x1="440" y1="605" x2="440" y2="680" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <polygon points="440,680 500,715 440,750 380,715" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="440" y="713" text-anchor="middle" fill="#333" font-size="11">Cluster?</text>
+  <line x1="380" y1="715" x2="300" y2="715" stroke="#4a9a4a" marker-end="url(#arrow)"/>
+  <text x="340" y="710" text-anchor="middle" fill="#4a9a4a" font-size="11">yes</text>
+  <rect x="140" y="698" width="160" height="34" rx="6" fill="#d97a2b" stroke="#a65e1f" stroke-width="1.5"/>
+  <text x="220" y="719" text-anchor="middle" fill="#fff" font-size="11">Distributed + MPI</text>
+
+  <line x1="500" y1="715" x2="550" y2="715" stroke="#555" stroke-width="1.5"/>
+  <line x1="550" y1="715" x2="550" y2="770" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <polygon points="550,770 610,805 550,840 490,805" fill="#fff3cd" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="550" y="803" text-anchor="middle" fill="#333" font-size="11">Data &gt; RAM?</text>
+  <line x1="490" y1="805" x2="400" y2="805" stroke="#4a9a4a" marker-end="url(#arrow)"/>
+  <text x="445" y="800" text-anchor="middle" fill="#4a9a4a" font-size="11">yes</text>
+  <rect x="230" y="788" width="170" height="34" rx="6" fill="#d97a2b" stroke="#a65e1f" stroke-width="1.5"/>
+  <text x="315" y="809" text-anchor="middle" fill="#fff" font-size="11">StreamingPersistence</text>
+</svg>

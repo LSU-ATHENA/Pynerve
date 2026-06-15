@@ -1,0 +1,97 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+# This pyproject.toml at the project root provides tool configuration
+# (ruff, mypy, pytest, coverage) that applies to the entire workspace.
+# The Python package build metadata lives in python/pyproject.toml
+# (the one scikit-build-core reads during pip install).
+
+[project]
+name = "pynerve"
+version = "0.9.6"
+description = "Fast TDA library"
+requires-python = ">=3.10,<3.14"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "ARG", "PTH", "PLC", "PLE", "PLR", "PLW"]
+ignore = ["E501", "PLR0913", "PLR2004", "PLW2901"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "PLC0415", "PLR2004", "SIM108"]
+"python/pynerve/exceptions.py" = ["N812"]
+"python/pynerve/_error_translation.py" = ["F401"]
+"python/pynerve/_compute_core.py" = ["N806", "PLW0603"]
+"python/pynerve/_validation.py" = ["N812"]
+"python/pynerve/diagnostics.py" = ["N806"]
+"python/pynerve/cache.py" = ["N806"]
+"python/pynerve/_utils.py" = ["N806"]
+"python/pynerve/torch/*" = ["N803", "N806"]
+"python/pynerve/torch/_persistence_helpers.py" = ["N803", "N806", "B023"]
+"python/pynerve/nn/*" = ["N803", "N806"]
+"python/pynerve/diff/*" = ["N803", "N806"]
+"python/pynerve/mapper/*" = ["N803", "N806"]
+"python/pynerve/ssl/*" = ["N803", "N806"]
+"doc/guides/transform_gpu.py" = ["PLR0911", "PLR0912", "PLR0915"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/python"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--strict-markers --tb=short -ra --timeout=120"
+markers = [
+    "slow: tests that take a long time (skip for quick dev iteration)",
+    "generated: generated test matrix cases",
+    "cpu: CPU-only tests",
+    "cuda: CUDA-dependent tests",
+    "fast: quick tests (not slow, cuda, or distributed); auto-applied in conftest",
+    "xpu: Intel XPU tests (reserved)",
+    "gradient: gradient/autograd tests",
+    "autograd: autograd-specific tests",
+    "operators: operator case matrix tests",
+    "distributed: MPI/distributed tests",
+    "performance: performance regression tests",
+    "quality: static analysis / contract checks",
+    "torch: PyTorch-dependent tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::RuntimeWarning",
+    "ignore::FutureWarning",
+]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+no_implicit_reexport = false
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+mypy_path = ["python/pynerve/", "tools/", "tests/"]
+exclude = ['\.pyi$']
+
+[tool.coverage.run]
+source = ["python/pynerve"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+omit = ["*/_version.py", "*/tests/*"]
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = true
+ignore-semiprivate = true
+fail-under = 80
+exclude = ["_version.py", "tests/*", ".pyi$"]
+paths = ["python/pynerve"]

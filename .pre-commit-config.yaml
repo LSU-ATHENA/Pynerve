@@ -1,0 +1,46 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.10
+    hooks:
+      - id: ruff-format
+        args: [--check]
+      - id: ruff
+        args: [check, --output-format=concise]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+      - id: mypy
+        args: [--ignore-missing-imports]
+        additional_dependencies: [numpy, torch]
+        stages: [pre-commit]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: debug-statements
+      - id: check-case-conflict
+      - id: no-commit-to-branch
+        args: [--branch, main]
+
+  - repo: local
+    hooks:
+      - id: generate-stubs
+        name: Generate .pyi stubs
+        entry: python -m tools.generate_stubs
+        language: system
+        files: ^python/pynerve/.*\.py$
+        pass_filenames: false
+      - id: clang-format
+        name: clang-format (C++)
+        entry: clang-format
+        language: system
+        files: \.(cpp|hpp|cu|cuh|h)$
+        args: [--style=file, -i]

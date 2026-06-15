@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#666"/>
+    </marker>
+    <linearGradient id="hdr" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0f4f8"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="800" height="500" fill="#fafbfc" rx="4"/>
+
+  <text x="400" y="28" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#333">Memory Model Hierarchy</text>
+
+  <!-- GlobalPagePool -->
+  <rect x="280" y="50" width="240" height="50" rx="8" fill="#2b5a9a"/>
+  <text x="400" y="75" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="white">GlobalPagePool</text>
+  <text x="400" y="90" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#c0d8f0">hugepages, megabytes pages</text>
+
+  <line x1="400" y1="100" x2="400" y2="130" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- SlabAllocator -->
+  <rect x="270" y="135" width="260" height="50" rx="8" fill="#2b5a9a"/>
+  <text x="400" y="155" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="white">SlabAllocator&lt;T&gt;</text>
+  <text x="400" y="173" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#c0d8f0">lock-free CAS free list</text>
+
+  <line x1="400" y1="185" x2="400" y2="215" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ThreadLocalPool -->
+  <rect x="260" y="220" width="280" height="50" rx="8" fill="#2b5a9a"/>
+  <text x="400" y="240" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="white">ThreadLocalPool&lt;T&gt;</text>
+  <text x="400" y="258" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#c0d8f0">per-thread, slab-cached</text>
+
+  <line x1="400" y1="270" x2="400" y2="300" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- PooledPtr -->
+  <rect x="280" y="305" width="240" height="45" rx="8" fill="#2b5a9a"/>
+  <text x="400" y="333" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="white">PooledPtr&lt;T&gt;</text>
+  <text x="400" y="345" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#c0d8f0">RAII handle</text>
+
+  <!-- Side allocators -->
+  <rect x="70" y="135" width="160" height="45" rx="8" fill="#d97a2b"/>
+  <text x="150" y="155" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="white">RawArrayPool</text>
+  <text x="150" y="170" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#f0d8c0">linear bump allocator</text>
+
+  <rect x="70" y="195" width="160" height="45" rx="8" fill="#d97a2b"/>
+  <text x="150" y="215" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="white">NumaAwareAllocator</text>
+  <text x="150" y="230" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#f0d8c0">per-node allocation</text>
+
+  <rect x="570" y="135" width="160" height="45" rx="8" fill="#4a9a4a"/>
+  <text x="650" y="155" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="white">DeviceMemoryPool</text>
+  <text x="650" y="170" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#d0f0d0">GPU cudaMalloc wrapper</text>
+
+  <!-- Labels -->
+  <text x="70" y="125" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="bold" fill="#666">Siblings:</text>
+</svg>

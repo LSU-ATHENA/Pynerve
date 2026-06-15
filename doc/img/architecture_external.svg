@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2b5a9a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="800" height="500" fill="#fafbfc" rx="4"/>
+
+  <text x="400" y="25" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#333">External Dependency Graph</text>
+
+  <!-- Root: Nerve -->
+  <rect x="310" y="40" width="180" height="36" rx="8" fill="#2b5a9a"/>
+  <text x="400" y="63" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="white">Nerve</text>
+
+  <!-- Lines to children -->
+  <line x1="370" y1="76" x2="370" y2="100" stroke="#2b5a9a" stroke-width="1.5"/>
+  <line x1="400" y1="76" x2="400" y2="100" stroke="#2b5a9a" stroke-width="1.5"/>
+  <line x1="430" y1="76" x2="430" y2="100" stroke="#2b5a9a" stroke-width="1.5"/>
+  <line x1="450" y1="76" x2="450" y2="100" stroke="#2b5a9a" stroke-width="1.5"/>
+
+  <!-- CUDA 12.4+ -->
+  <rect x="40" y="100" width="200" height="36" rx="8" fill="#4a9a4a"/>
+  <text x="140" y="118" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">CUDA 12.4+ (optional)</text>
+  <text x="140" y="130" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#d0f0d0">for GPU acceleration</text>
+
+  <line x1="110" y1="136" x2="110" y2="155" stroke="#4a9a4a" stroke-width="1"/>
+  <line x1="140" y1="136" x2="140" y2="155" stroke="#4a9a4a" stroke-width="1"/>
+  <line x1="170" y1="136" x2="170" y2="155" stroke="#4a9a4a" stroke-width="1"/>
+  <line x1="200" y1="136" x2="200" y2="155" stroke="#4a9a4a" stroke-width="1"/>
+
+  <rect x="40" y="158" width="95" height="26" rx="6" fill="#e8f5e8"/>
+  <text x="87" y="175" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">cuBLAS 12.x</text>
+
+  <rect x="145" y="158" width="95" height="26" rx="6" fill="#e8f5e8"/>
+  <text x="192" y="175" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">cuSOLVER 12.x</text>
+
+  <rect x="40" y="192" width="95" height="26" rx="6" fill="#e8f5e8"/>
+  <text x="87" y="209" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">cuSPARSE 12.x</text>
+
+  <rect x="145" y="192" width="95" height="26" rx="6" fill="#e8f5e8"/>
+  <text x="192" y="209" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">cuRAND 12.x</text>
+
+  <rect x="40" y="226" width="95" height="26" rx="6" fill="#e8f5e8"/>
+  <text x="87" y="243" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">NCCL 2.19+</text>
+
+  <rect x="145" y="226" width="95" height="26" rx="6" fill="#e8f5e8"/>
+  <text x="192" y="243" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#4a9a4a">NVSHMEM 2.8+</text>
+
+  <!-- MPI 3.1+ -->
+  <rect x="270" y="100" width="260" height="36" rx="8" fill="#d97a2b"/>
+  <text x="400" y="118" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">MPI 3.1+ (optional)</text>
+  <text x="400" y="130" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#f0d8c0">for distributed computation</text>
+
+  <line x1="400" y1="136" x2="400" y2="158" stroke="#d97a2b" stroke-width="1"/>
+
+  <rect x="255" y="161" width="290" height="26" rx="6" fill="#f5e6d8"/>
+  <text x="400" y="178" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#d97a2b">OpenMPI 4.1+ / MPICH 4.0+ / MVAPICH2 2.3+</text>
+
+  <!-- PyTorch -->
+  <rect x="560" y="100" width="200" height="36" rx="8" fill="#2b5a9a"/>
+  <text x="660" y="123" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="white">PyTorch 2.1+ (opt)</text>
+
+  <!-- Python -->
+  <rect x="560" y="150" width="200" height="36" rx="8" fill="#2b5a9a"/>
+  <text x="660" y="168" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">Python 3.10+ (req.)</text>
+  <text x="660" y="180" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#c0d8f0">for Python bindings</text>
+
+  <line x1="660" y1="136" x2="660" y2="150" stroke="#2b5a9a" stroke-width="1"/>
+
+  <!-- Bundled deps -->
+  <rect x="40" y="275" width="200" height="26" rx="6" fill="#e8eef5"/>
+  <text x="140" y="292" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#2b5a9a">pybind11 2.11+ (bundled)</text>
+
+  <rect x="250" y="275" width="200" height="26" rx="6" fill="#e8eef5"/>
+  <text x="350" y="292" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#2b5a9a">mimalloc 2.1+ (bundled)</text>
+
+  <rect x="460" y="275" width="150" height="26" rx="6" fill="#e8eef5"/>
+  <text x="535" y="292" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#2b5a9a">fmt 10+ (bundled)</text>
+
+  <rect x="620" y="275" width="150" height="26" rx="6" fill="#e8eef5"/>
+  <text x="695" y="292" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#2b5a9a">spdlog 1.12+ (bundled)</text>
+
+  <!-- Eigen3 -->
+  <rect x="280" y="320" width="240" height="36" rx="8" fill="#2b5a9a"/>
+  <text x="400" y="338" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">Eigen3 3.4+ (optional)</text>
+  <text x="400" y="350" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#c0d8f0">for spectral operations</text>
+
+  <line x1="400" y1="356" x2="400" y2="375" stroke="#2b5a9a" stroke-width="1"/>
+
+  <rect x="310" y="378" width="180" height="26" rx="6" fill="#e8eef5"/>
+  <text x="400" y="395" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#2b5a9a">BLAS (OpenBLAS or MKL)</text>
+
+  <!-- Connector lines from Nerve to bundled deps -->
+  <line x1="370" y1="76" x2="370" y2="275" stroke="#2b5a9a" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- Legend -->
+  <rect x="40" y="440" width="14" height="14" rx="3" fill="#2b5a9a"/>
+  <text x="60" y="452" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#555">Primary / Required</text>
+  <rect x="190" y="440" width="14" height="14" rx="3" fill="#4a9a4a"/>
+  <text x="210" y="452" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#555">GPU / CUDA</text>
+  <rect x="330" y="440" width="14" height="14" rx="3" fill="#d97a2b"/>
+  <text x="350" y="452" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#555">MPI / Distributed</text>
+</svg>

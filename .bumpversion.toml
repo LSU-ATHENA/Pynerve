@@ -1,0 +1,29 @@
+[tool.bumpversion]
+current_version = "0.9.6"
+commit = true
+tag = true
+
+[[tool.bumpversion.files]]
+filename = "python/pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "CMakeLists.txt"
+search = 'project(Nerve VERSION {current_version}'
+replace = 'project(Nerve VERSION {new_version}'
+
+[[tool.bumpversion.files]]
+filename = "src/CMakeLists.txt"
+search = 'project(NerveCore VERSION {current_version}'
+replace = 'project(NerveCore VERSION {new_version}'
+
+[[tool.bumpversion.files]]
+filename = "python/CMakeLists.txt"
+search = 'project(NervePython VERSION {current_version}'
+replace = 'project(NervePython VERSION {new_version}'
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'

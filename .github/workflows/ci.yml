@@ -1,0 +1,282 @@
+name: pynerve-ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"  # Every Monday at 6am UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CMAKE_GENERATOR: Ninja
+  NERVE_TEST_RETRIES: 1
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -U pip ruff mypy pyright
+      - run: python tools/static_analysis.py --language python --required
+      - run: python tools/quality.py --check all
+      - run: python -m pyright python/pynerve/ || echo "pyright warnings (non-blocking)"
+      - name: Verify .pyi stubs are up to date
+        run: python tools/generate_stubs.py --check
+      - name: Check C++ formatting
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: clang-format --all-files
+
+  version-compat:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        target: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.target }}
+          cache: pip
+      - run: python -m pip install -U pip ruff
+      - name: Check syntax compatibility with Python ${{ matrix.target }}
+        run: python -m ruff check python/pynerve/ --target-version py${{ matrix.target }}
+
+  test-coverage:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install -U pip pytest hypothesis pytest-cov
+      - run: python tools/test_matrix.py --label cpu --output build/test-matrix-cpu.json
+      - run: python -m pytest tests/python/ --cov=python/pynerve --cov-branch --cov-report=term-missing --cov-fail-under=80
+
+  simd-modes:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        simd: [auto, scalar, avx2, avx512]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - uses: hendrikmuhs/ccache-action@v1.2
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: python -m pip install -U pip pytest hypothesis ninja
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=OFF -DBUILD_CUDA=OFF -DNERVE_SIMD=${{ matrix.simd }} -DNERVE_ENABLE_AVX512_COMPONENTS=ON
+      - run: cmake --build build --parallel
+      - run: ctest --test-dir build -L "cpu|generated" --output-on-failure --parallel 2
+
+  static-native:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - uses: hendrikmuhs/ccache-action@v1.2
+      - run: sudo apt-get update && sudo apt-get install -y clang-tidy cppcheck ninja-build
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DBUILD_PYTHON=OFF -DBUILD_CUDA=OFF
+      - name: Static analyze full native build
+        run: python tools/static_analysis.py --language cpp --build-dir build --required --clang-tidy-scope all
+
+  cpu:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14, macos-13]
+        build_type: [Debug, Release]
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - uses: hendrikmuhs/ccache-action@v1.2
+      - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_TESTS=ON -DBUILD_PYTHON=OFF -DENABLE_MPI=OFF
+      - run: cmake --build build --parallel
+      - if: matrix.shard == 0
+        run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
+      - if: matrix.shard == 0
+        run: python tools/cpp_install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
+      - if: matrix.shard == 0 && matrix.os == 'ubuntu-24.04' && matrix.build_type == 'Release'
+        run: python tools/cpp_install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install" --header-sweep
+      - run: python tools/run_tests.py --build-dir build --label cpu --label generated --shard-index ${{ matrix.shard }} --shard-count 4
+
+  native-arch:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - uses: hendrikmuhs/ccache-action@v1.2
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DNERVE_NATIVE_ARCH=ON
+      - run: cmake --build build --parallel
+      - run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
+      - run: python tools/cpp_install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
+      - run: python tools/install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
+      - run: ctest --test-dir build -L "cpu|generated|bindings" --output-on-failure --parallel 2
+
+  python-bindings:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - uses: hendrikmuhs/ccache-action@v1.2
+      - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy build
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DPython_EXECUTABLE=${{ env.pythonLocation }}/bin/python -DPython3_EXECUTABLE=${{ env.pythonLocation }}/bin/python
+      - run: cmake --build build --target pynerve_python_binding_smoke --parallel
+      - run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
+      - run: python tools/cpp_install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
+      - run: python tools/install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
+      - if: matrix.python == '3.11'
+        run: python -m build --sdist python --outdir "$RUNNER_TEMP/pynerve-dist"
+      - if: matrix.python == '3.11'
+        run: python -m pip wheel "$RUNNER_TEMP/pynerve-dist"/pynerve-*.tar.gz --wheel-dir "$RUNNER_TEMP/pynerve-wheel-from-sdist" --no-deps
+      - run: ctest --test-dir build -L "bindings" --output-on-failure --parallel 2
+
+  torch-cpu:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: sudo apt-get update && sudo apt-get install -y clang-tidy cppcheck
+      - run: python -m pip install -U pip pytest hypothesis numpy ninja scikit-build-core pybind11
+      - name: Install latest PyTorch CPU
+        run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: python tools/run_tests.py --python --label torch --label gradient --shard-index 0 --shard-count 4
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DENABLE_PYTORCH=ON -DCMAKE_PREFIX_PATH=$(python -c "import torch; print(torch.utils.cmake_prefix_path)") -DPython_EXECUTABLE=${{ env.pythonLocation }}/bin/python -DPython3_EXECUTABLE=${{ env.pythonLocation }}/bin/python
+      - run: cmake --build build --target pynerve_torch_binding_smoke --parallel
+      - name: Static analyze Torch-native build
+        run: python tools/static_analysis.py --language cpp --build-dir build --required --clang-tidy-scope all
+      - run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
+      - run: python tools/install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install" --require-torch
+      - run: ctest --test-dir build -R pynerve_torch_binding_smoke --output-on-failure
+
+  mpi:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build ccache openmpi-bin libopenmpi-dev
+      - run: python -m pip install -U pip pytest hypothesis
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DENABLE_MPI=ON -DBUILD_PYTHON=OFF
+      - run: cmake --build build --parallel
+      - run: ctest --test-dir build -L "distributed|build|cpu" --output-on-failure --parallel 2
+
+  cuda-aware-mpi:
+    runs-on: [self-hosted, linux, x64, gpu, mpi]
+    env:
+      NERVE_TEST_CUDA: "1"
+      NERVE_TEST_CUDA_AWARE_MPI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: nvidia-smi
+      - name: Check CUDA version
+        run: |
+          CUDA_VER=$(nvcc --version | grep "release" | sed 's/.*release //' | sed 's/,.*//')
+          echo "CUDA version: $CUDA_VER"
+          echo "CUDA_MAJOR=$(echo $CUDA_VER | cut -d. -f1)" >> $GITHUB_ENV
+      - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_CUDA=ON -DENABLE_CUDA=ON -DENABLE_MPI=ON -DBUILD_PYTHON=OFF
+      - run: cmake --build build --parallel
+      - run: python tools/backend_checks.py --backend mpi --build-dir build --required --require-cuda-aware-mpi
+
+  cuda:
+    runs-on: [self-hosted, linux, x64, gpu]
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    env:
+      NERVE_TEST_CUDA: "1"
+      NERVE_SHARD_INDEX: ${{ matrix.shard }}
+      NERVE_SHARD_COUNT: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: nvidia-smi
+      - name: Check CUDA version
+        run: |
+          CUDA_VER=$(nvcc --version | grep "release" | sed 's/.*release //' | sed 's/,.*//')
+          echo "CUDA version: $CUDA_VER"
+          CUDA_MAJOR=$(echo $CUDA_VER | cut -d. -f1)
+          CUDA_MINOR=$(echo $CUDA_VER | cut -d. -f2)
+          echo "CUDA_TAG=cu${CUDA_MAJOR}${CUDA_MINOR}" >> $GITHUB_ENV
+      - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy
+      - name: Install PyTorch matching system CUDA
+        run: python -m pip install torch --index-url https://download.pytorch.org/whl/${{ env.CUDA_TAG }}
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_CUDA=ON -DENABLE_CUDA=ON -DENABLE_PYTORCH=ON -DBUILD_PYTHON=ON
+      - run: cmake --build build --parallel
+      - run: python tools/run_tests.py --build-dir build --label cuda --label generated --retries 2
+      - run: python tools/static_analysis.py --language cuda --required
+      - run: python tools/backend_checks.py --backend cuda --build-dir build --required
+
+  xpu:
+    runs-on: [self-hosted, linux, x64, xpu]
+    env:
+      NERVE_TEST_XPU: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -U pip pytest hypothesis numpy
+      - name: Install PyTorch XPU
+        run: python -m pip install torch --index-url https://download.pytorch.org/whl/xpu
+      - run: python tools/run_tests.py --python --label xpu --label generated --require-hardware --retries 2
+      - run: python tools/backend_checks.py --backend xpu --required
+
+  changed-module-selection:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -U pip pytest hypothesis
+      - run: python tools/run_tests.py --python --changed-from origin/main --shard-index 0 --shard-count 8

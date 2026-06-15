@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 900" width="100%">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="900" fill="#fafbfc" rx="4"/>
+
+  <text x="500" y="28" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#333">Kernel Launch Hierarchy</text>
+
+  <!-- Root: compute_persistence -->
+  <rect x="340" y="45" width="320" height="36" rx="8" fill="#2b5a9a"/>
+  <text x="500" y="68" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold" fill="white">compute_persistence (Python/C++)</text>
+
+  <!-- Connections to level 2 -->
+  <line x1="440" y1="81" x2="440" y2="110" stroke="#666" stroke-width="1.5"/>
+  <line x1="500" y1="81" x2="500" y2="110" stroke="#666" stroke-width="1.5"/>
+  <line x1="560" y1="81" x2="560" y2="110" stroke="#666" stroke-width="1.5"/>
+  <line x1="610" y1="81" x2="610" y2="110" stroke="#666" stroke-width="1.5"/>
+
+  <!-- Level 2 -->
+  <rect x="50" y="113" width="220" height="34" rx="8" fill="#2b5a9a"/>
+  <text x="160" y="135" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">Distance computation</text>
+  <text x="160" y="145" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#c0d8f0">CPU SIMD or GPU</text>
+
+  <rect x="330" y="113" width="220" height="34" rx="8" fill="#2b5a9a"/>
+  <text x="440" y="135" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">Filtration construction</text>
+
+  <rect x="610" y="113" width="220" height="34" rx="8" fill="#2b5a9a"/>
+  <text x="720" y="135" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">Matrix reduction</text>
+
+  <rect x="870" y="113" width="130" height="34" rx="8" fill="#2b5a9a"/>
+  <text x="935" y="135" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="bold" fill="white">Pair extraction</text>
+
+  <!-- Distance computation children -->
+  <line x1="160" y1="147" x2="160" y2="175" stroke="#666" stroke-width="1.5"/>
+
+  <rect x="15" y="178" width="290" height="28" rx="6" fill="#4a9a4a"/>
+  <text x="160" y="196" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="bold" fill="white">matrix_distance_api_cuda.cu (GPU dispatch)</text>
+
+  <line x1="160" y1="206" x2="120" y2="225" stroke="#4a9a4a" stroke-width="1"/>
+  <line x1="160" y1="206" x2="160" y2="225" stroke="#4a9a4a" stroke-width="1"/>
+  <line x1="160" y1="206" x2="200" y2="225" stroke="#4a9a4a" stroke-width="1"/>
+
+  <rect x="15" y="228" width="130" height="24" rx="5" fill="#e8f5e8"/>
+  <text x="80" y="244" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">distance_kernels.cu</text>
+
+  <rect x="155" y="228" width="140" height="24" rx="5" fill="#e8f5e8"/>
+  <text x="225" y="244" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">tensor_core_cuda.cu</text>
+
+  <rect x="15" y="257" width="170" height="24" rx="5" fill="#e8f5e8"/>
+  <text x="100" y="273" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">distance_filtration_cuda.cu</text>
+
+  <!-- CPU SIMD dispatch -->
+  <rect x="250" y="178" width="200" height="28" rx="6" fill="#d97a2b"/>
+  <text x="350" y="196" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="bold" fill="white">CPU SIMD dispatch</text>
+
+  <line x1="350" y1="206" x2="300" y2="225" stroke="#d97a2b" stroke-width="1"/>
+  <line x1="350" y1="206" x2="350" y2="225" stroke="#d97a2b" stroke-width="1"/>
+  <line x1="350" y1="206" x2="400" y2="225" stroke="#d97a2b" stroke-width="1"/>
+
+  <rect x="250" y="228" width="100" height="24" rx="5" fill="#f5e6d8"/>
+  <text x="300" y="244" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#d97a2b">_mm512_fmadd_ps</text>
+
+  <rect x="360" y="228" width="100" height="24" rx="5" fill="#f5e6d8"/>
+  <text x="410" y="244" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#d97a2b">_mm256_fmadd_ps</text>
+
+  <rect x="305" y="257" width="100" height="24" rx="5" fill="#f5e6d8"/>
+  <text x="355" y="273" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#d97a2b">_mm_dp_ps (SSE4.1)</text>
+
+  <!-- Filtration children -->
+  <line x1="440" y1="147" x2="440" y2="175" stroke="#666" stroke-width="1.5"/>
+
+  <rect x="330" y="178" width="220" height="28" rx="6" fill="#e8eef5"/>
+  <text x="440" y="196" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#2b5a9a">kernel_edge_extraction_cuda.cu (GPU)</text>
+
+  <rect x="330" y="212" width="220" height="28" rx="6" fill="#e8eef5"/>
+  <text x="440" y="230" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#2b5a9a">CPU vectorized sort (SIMD bitonic)</text>
+
+  <!-- Matrix reduction children -->
+  <line x1="720" y1="147" x2="720" y2="175" stroke="#666" stroke-width="1.5"/>
+
+  <!-- GPU path -->
+  <rect x="540" y="178" width="220" height="28" rx="6" fill="#4a9a4a"/>
+  <text x="650" y="196" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="bold" fill="white">GPU path</text>
+
+  <line x1="650" y1="206" x2="580" y2="225" stroke="#4a9a4a" stroke-width="1"/>
+  <line x1="650" y1="206" x2="650" y2="225" stroke="#4a9a4a" stroke-width="1"/>
+  <line x1="650" y1="206" x2="720" y2="225" stroke="#4a9a4a" stroke-width="1"/>
+  <line x1="650" y1="206" x2="760" y2="225" stroke="#4a9a4a" stroke-width="1"/>
+
+  <rect x="465" y="228" width="150" height="24" rx="5" fill="#e8f5e8"/>
+  <text x="540" y="244" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">apparent_pairs_cuda.cu</text>
+
+  <rect x="625" y="228" width="130" height="24" rx="5" fill="#e8f5e8"/>
+  <text x="690" y="244" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">clearing_cuda.cu</text>
+
+  <rect x="540" y="257" width="180" height="24" rx="5" fill="#e8f5e8"/>
+  <text x="630" y="273" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">cuda_matrix_reduction_compute.cu</text>
+
+  <line x1="630" y1="281" x2="590" y2="298" stroke="#4a9a4a" stroke-width="1"/>
+  <line x1="630" y1="281" x2="680" y2="298" stroke="#4a9a4a" stroke-width="1"/>
+
+  <rect x="500" y="301" width="170" height="24" rx="5" fill="#e8f5e8"/>
+  <text x="585" y="317" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#4a9a4a">warp_shuffle reduction</text>
+
+  <rect x="680" y="301" width="170" height="24" rx="5" fill="#e8f5e8"/>
+  <text x="765" y="317" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#4a9a4a">shared mem tree reduction</text>
+
+  <rect x="545" y="333" width="210" height="24" rx="5" fill="#e8f5e8"/>
+  <text x="650" y="349" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#4a9a4a">kernel_hypha_scan.cu (column skipping)</text>
+
+  <!-- CPU path -->
+  <rect x="795" y="178" width="190" height="28" rx="6" fill="#d97a2b"/>
+  <text x="890" y="196" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="bold" fill="white">CPU path</text>
+
+  <line x1="890" y1="206" x2="860" y2="225" stroke="#d97a2b" stroke-width="1"/>
+  <line x1="890" y1="206" x2="920" y2="225" stroke="#d97a2b" stroke-width="1"/>
+
+  <rect x="795" y="228" width="190" height="24" rx="5" fill="#f5e6d8"/>
+  <text x="890" y="244" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#d97a2b">column_reduction (serial/parallel)</text>
+
+  <rect x="795" y="258" width="190" height="24" rx="5" fill="#f5e6d8"/>
+  <text x="890" y="274" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#d97a2b">work-stealing across threads</text>
+
+  <!-- Pair extraction -->
+  <line x1="935" y1="147" x2="935" y2="210" stroke="#666" stroke-width="1.5"/>
+  <rect x="870" y="213" width="130" height="24" rx="5" fill="#e8eef5"/>
+  <text x="935" y="229" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#2b5a9a">cuda_matrix_reduction_diagram.cu</text>
+</svg>

@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 340" font-family="sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#555"/></marker>
+    <marker id="arrow-g" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#4a9a4a"/></marker>
+    <marker id="arrow-o" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#d97a2b"/></marker>
+  </defs>
+  <!-- Node 0 box -->
+  <rect x="20" y="20" width="330" height="300" rx="12" fill="#e8f0fa" stroke="#2b5a9a" stroke-width="2.5"/>
+  <text x="185" y="48" text-anchor="middle" fill="#2b5a9a" font-weight="bold" font-size="18">Node 0</text>
+
+  <!-- Node 1 box -->
+  <rect x="390" y="20" width="330" height="300" rx="12" fill="#e8f0fa" stroke="#2b5a9a" stroke-width="2.5"/>
+  <text x="555" y="48" text-anchor="middle" fill="#2b5a9a" font-weight="bold" font-size="18">Node 1</text>
+
+  <!-- GPUs on Node 0 -->
+  <rect x="45" y="75" width="130" height="50" rx="8" fill="#4a9a4a" stroke="#2d6e2d" stroke-width="2"/>
+  <text x="110" y="100" text-anchor="middle" fill="#fff" font-weight="bold" font-size="15">GPU 0</text>
+  <text x="110" y="115" text-anchor="middle" fill="#d4edda" font-size="10">NCCL rank 0</text>
+
+  <rect x="195" y="75" width="130" height="50" rx="8" fill="#4a9a4a" stroke="#2d6e2d" stroke-width="2"/>
+  <text x="260" y="100" text-anchor="middle" fill="#fff" font-weight="bold" font-size="15">GPU 1</text>
+  <text x="260" y="115" text-anchor="middle" fill="#d4edda" font-size="10">NCCL rank 1</text>
+
+  <rect x="45" y="155" width="130" height="50" rx="8" fill="#4a9a4a" stroke="#2d6e2d" stroke-width="2"/>
+  <text x="110" y="180" text-anchor="middle" fill="#fff" font-weight="bold" font-size="15">GPU 2</text>
+  <text x="110" y="195" text-anchor="middle" fill="#d4edda" font-size="10">NCCL rank 2</text>
+
+  <rect x="195" y="155" width="130" height="50" rx="8" fill="#4a9a4a" stroke="#2d6e2d" stroke-width="2"/>
+  <text x="260" y="180" text-anchor="middle" fill="#fff" font-weight="bold" font-size="15">GPU 3</text>
+  <text x="260" y="195" text-anchor="middle" fill="#d4edda" font-size="10">NCCL rank 3</text>
+
+  <!-- NVLink connections on Node 0 -->
+  <line x1="175" y1="100" x2="195" y2="100" stroke="#9b59b6" stroke-width="2.5" marker-end="url(#arrow-g)"/>
+  <line x1="175" y1="180" x2="195" y2="180" stroke="#9b59b6" stroke-width="2.5" marker-end="url(#arrow-g)"/>
+  <line x1="110" y1="125" x2="110" y2="155" stroke="#9b59b6" stroke-width="2.5" marker-end="url(#arrow-g)"/>
+  <line x1="260" y1="125" x2="260" y2="155" stroke="#9b59b6" stroke-width="2.5" marker-end="url(#arrow-g)"/>
+
+  <!-- NVLink label on Node 0 -->
+  <text x="140" y="270" text-anchor="middle" fill="#9b59b6" font-weight="bold" font-size="13">NVLink</text>
+  <text x="140" y="285" text-anchor="middle" fill="#9b59b6" font-size="11">(GPU<->GPU)</text>
+
+  <!-- NCCL ring label on Node 0 -->
+  <text x="260" y="270" text-anchor="middle" fill="#4a9a4a" font-weight="bold" font-size="13">NCCL</text>
+  <text x="260" y="285" text-anchor="middle" fill="#4a9a4a" font-size="11">(within node)</text>
+
+  <!-- GPUs on Node 1 -->
+  <rect x="415" y="75" width="130" height="50" rx="8" fill="#4a9a4a" stroke="#2d6e2d" stroke-width="2"/>
+  <text x="480" y="100" text-anchor="middle" fill="#fff" font-weight="bold" font-size="15">GPU 4</text>
+  <text x="480" y="115" text-anchor="middle" fill="#d4edda" font-size="10">NCCL rank 4</text>
+
+  <rect x="565" y="75" width="130" height="50" rx="8" fill="#4a9a4a" stroke="#2d6e2d" stroke-width="2"/>
+  <text x="630" y="100" text-anchor="middle" fill="#fff" font-weight="bold" font-size="15">GPU 5</text>
+  <text x="630" y="115" text-anchor="middle" fill="#d4edda" font-size="10">NCCL rank 5</text>
+
+  <rect x="415" y="155" width="130" height="50" rx="8" fill="#4a9a4a" stroke="#2d6e2d" stroke-width="2"/>
+  <text x="480" y="180" text-anchor="middle" fill="#fff" font-weight="bold" font-size="15">GPU 6</text>
+  <text x="480" y="195" text-anchor="middle" fill="#d4edda" font-size="10">NCCL rank 6</text>
+
+  <rect x="565" y="155" width="130" height="50" rx="8" fill="#4a9a4a" stroke="#2d6e2d" stroke-width="2"/>
+  <text x="630" y="180" text-anchor="middle" fill="#fff" font-weight="bold" font-size="15">GPU 7</text>
+  <text x="630" y="195" text-anchor="middle" fill="#d4edda" font-size="10">NCCL rank 7</text>
+
+  <!-- NVLink connections on Node 1 -->
+  <line x1="545" y1="100" x2="565" y2="100" stroke="#9b59b6" stroke-width="2.5" marker-end="url(#arrow-g)"/>
+  <line x1="545" y1="180" x2="565" y2="180" stroke="#9b59b6" stroke-width="2.5" marker-end="url(#arrow-g)"/>
+  <line x1="480" y1="125" x2="480" y2="155" stroke="#9b59b6" stroke-width="2.5" marker-end="url(#arrow-g)"/>
+  <line x1="630" y1="125" x2="630" y2="155" stroke="#9b59b6" stroke-width="2.5" marker-end="url(#arrow-g)"/>
+
+  <!-- NVLink label on Node 1 -->
+  <text x="510" y="270" text-anchor="middle" fill="#9b59b6" font-weight="bold" font-size="13">NVLink</text>
+  <text x="510" y="285" text-anchor="middle" fill="#9b59b6" font-size="11">(GPU<->GPU)</text>
+
+  <!-- NCCL ring label on Node 1 -->
+  <text x="630" y="270" text-anchor="middle" fill="#4a9a4a" font-weight="bold" font-size="13">NCCL</text>
+  <text x="630" y="285" text-anchor="middle" fill="#4a9a4a" font-size="11">(within node)</text>
+
+  <!-- MPI arrow between nodes -->
+  <line x1="350" y1="170" x2="390" y2="170" stroke="#d97a2b" stroke-width="3" marker-end="url(#arrow-o)"/>
+  <line x1="390" y1="175" x2="350" y2="175" stroke="#d97a2b" stroke-width="3" marker-end="url(#arrow-o)"/>
+
+  <!-- MPI label -->
+  <rect x="330" y="190" width="80" height="24" rx="5" fill="#fde8c8" stroke="#d97a2b" stroke-width="1.5"/>
+  <text x="370" y="207" text-anchor="middle" fill="#a65e1f" font-weight="bold" font-size="12">MPI</text>
+</svg>

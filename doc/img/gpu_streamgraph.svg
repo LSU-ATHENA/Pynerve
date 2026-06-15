@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 340">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <style>
+      text { font-family: sans-serif; font-size: 13px; fill: #333; }
+      .label { font-size: 12px; fill: #fff; font-weight: bold; }
+      .title { font-size: 15px; fill: #111; font-weight: bold; }
+      .axis-label { font-size: 11px; fill: #666; }
+    </style>
+  </defs>
+
+  <text x="20" y="25" class="title">CUDA Stream Graph  --  Concurrent Kernel Execution</text>
+
+  <!-- Y-axis labels (stream names) -->
+  <text x="10" y="100" class="axis-label" text-anchor="end">Stream 2</text>
+  <text x="10" y="170" class="axis-label" text-anchor="end">Stream 1</text>
+  <text x="10" y="240" class="axis-label" text-anchor="end">Stream 0</text>
+
+  <!-- X-axis time -->
+  <text x="350" y="310" class="axis-label" text-anchor="middle">Time -></text>
+  <line x1="40" y1="280" x2="660" y2="280" stroke="#ccc" stroke-width="1"/>
+  <line x1="40" y1="280" x2="40" y2="60" stroke="#ccc" stroke-width="1"/>
+
+  <!-- Stream 2: Data transfer -->
+  <rect x="80" y="80" width="180" height="36" rx="6" fill="#2b5a9a"/>
+  <text x="170" y="103" class="label" text-anchor="middle">data_transfer(level_i+1)</text>
+
+  <rect x="380" y="80" width="180" height="36" rx="6" fill="#2b5a9a"/>
+  <text x="470" y="103" class="label" text-anchor="middle">data_transfer(level_i+2)</text>
+
+  <!-- Stream 1: Compute distance -->
+  <rect x="100" y="150" width="220" height="36" rx="6" fill="#4a9a4a"/>
+  <text x="210" y="173" class="label" text-anchor="middle">compute_distance(level_i)</text>
+
+  <rect x="400" y="150" width="200" height="36" rx="6" fill="#4a9a4a"/>
+  <text x="500" y="173" class="label" text-anchor="middle">compute_distance(level_i+1)</text>
+
+  <!-- Stream 0: Reduce -->
+  <rect x="50" y="220" width="180" height="36" rx="6" fill="#d97a2b"/>
+  <text x="140" y="243" class="label" text-anchor="middle">reduce(level_i-1)</text>
+
+  <rect x="250" y="220" width="180" height="36" rx="6" fill="#d97a2b"/>
+  <text x="340" y="243" class="label" text-anchor="middle">reduce(level_i)</text>
+
+  <rect x="460" y="220" width="180" height="36" rx="6" fill="#d97a2b"/>
+  <text x="550" y="243" class="label" text-anchor="middle">reduce(level_i+1)</text>
+
+  <!-- Barrier -->
+  <rect x="650" y="60" width="6" height="225" rx="3" fill="#e74c3c"/>
+  <text x="656" y="45" class="axis-label" fill="#e74c3c" font-size="12" font-weight="bold">barrier</text>
+</svg>

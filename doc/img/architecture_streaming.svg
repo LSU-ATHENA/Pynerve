@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 620" width="100%">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#666"/>
+    </marker>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fafbfc"/>
+      <stop offset="100%" stop-color="#f0f2f5"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="800" height="620" fill="url(#bg)" rx="4"/>
+
+  <text x="400" y="28" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="#333">Streaming Architecture Flow</text>
+
+  <!-- Data source -->
+  <rect x="200" y="50" width="400" height="50" rx="8" fill="#2b5a9a"/>
+  <text x="400" y="75" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="white">Data source</text>
+  <text x="400" y="90" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#c0d8f0">file / network / async iterator</text>
+  <line x1="400" y1="100" x2="400" y2="125" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Chunk reader -->
+  <rect x="200" y="130" width="400" height="50" rx="8" fill="#2b5a9a"/>
+  <text x="400" y="152" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="white">Chunk reader</text>
+  <text x="400" y="170" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#c0d8f0">HDF5 / NPY / memory-mapped</text>
+  <line x1="400" y1="180" x2="400" y2="205" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Lock-free chunk queue -->
+  <rect x="200" y="210" width="400" height="50" rx="8" fill="#2b5a9a"/>
+  <text x="400" y="232" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="white">Lock-free chunk queue</text>
+  <text x="400" y="250" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#c0d8f0">MPMC queue, atomic indices, no mutex</text>
+  <line x1="400" y1="260" x2="400" y2="285" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Worker threads -->
+  <rect x="200" y="290" width="400" height="50" rx="8" fill="#2b5a9a"/>
+  <text x="400" y="312" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="white">Worker threads (or GPU streams)</text>
+  <text x="400" y="330" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#c0d8f0">each processes one chunk independently</text>
+  <line x1="400" y1="340" x2="400" y2="365" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Persistence computation -->
+  <rect x="200" y="370" width="400" height="50" rx="8" fill="#2b5a9a"/>
+  <text x="400" y="392" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="white">Persistence computation per chunk</text>
+  <text x="400" y="410" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#c0d8f0">distance + filtration + reduction</text>
+  <line x1="400" y1="420" x2="400" y2="445" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Result merger -->
+  <rect x="200" y="450" width="400" height="50" rx="8" fill="#d97a2b"/>
+  <text x="400" y="472" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="white">Result merger</text>
+  <text x="400" y="490" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#f0d8c0">overlap handling + cross-window matching</text>
+  <line x1="400" y1="500" x2="400" y2="525" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Async iterator -->
+  <rect x="200" y="530" width="400" height="50" rx="8" fill="#4a9a4a"/>
+  <text x="400" y="555" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="white">Async iterator yielding merged results</text>
+  <text x="400" y="570" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#d0f0d0">concat / mean / max (configurable)</text>
+</svg>

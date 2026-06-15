@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 700" width="100%">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="700" height="700" fill="#fafbfc" rx="4"/>
+
+  <text x="350" y="25" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold" fill="#333">Simplex Object Lifecycle</text>
+
+  <!-- Step 1 -->
+  <circle cx="30" cy="65" r="11" fill="#2b5a9a"/>
+  <text x="30" y="70" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">1</text>
+  <rect x="55" y="50" width="320" height="30" rx="8" fill="#e8eef5"/>
+  <text x="215" y="69" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#2b5a9a">compute_persistence() called</text>
+
+  <!-- Step 2 -->
+  <circle cx="30" cy="115" r="11" fill="#2b5a9a"/>
+  <text x="30" y="120" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">2</text>
+  <rect x="55" y="100" width="320" height="30" rx="8" fill="#e8eef5"/>
+  <text x="215" y="119" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#2b5a9a">Simplex constructed during VR filtration</text>
+
+  <line x1="215" y1="80" x2="215" y2="100" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="215" y1="130" x2="215" y2="155" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 3 -->
+  <circle cx="30" cy="180" r="11" fill="#2b5a9a"/>
+  <text x="30" y="185" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">3</text>
+  <rect x="55" y="165" width="380" height="28" rx="8" fill="#2b5a9a"/>
+  <text x="245" y="183" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="white">ThreadLocalPool&lt;Simplex&gt;::instance().allocate()</text>
+
+  <line x1="245" y1="193" x2="245" y2="210" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Sub-steps of 3 -->
+  <rect x="75" y="215" width="340" height="80" rx="8" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/>
+  <text x="245" y="233" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#555">SlabAllocator&lt;Simplex&gt;::allocate()</text>
+
+  <circle cx="100" cy="255" r="5" fill="#888"/>
+  <text x="112" y="259" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#666">CAS on free list head</text>
+
+  <circle cx="100" cy="273" r="5" fill="#888"/>
+  <text x="112" y="277" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#666">If empty: allocate new slab from GlobalPagePool</text>
+
+  <circle cx="100" cy="290" r="5" fill="#888"/>
+  <text x="112" y="293" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#666">Return object from free list</text>
+
+  <line x1="245" y1="210" x2="245" y2="215" stroke="#666" stroke-width="1"/>
+
+  <line x1="245" y1="295" x2="245" y2="325" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 4 -->
+  <circle cx="30" cy="350" r="11" fill="#2b5a9a"/>
+  <text x="30" y="355" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">4</text>
+  <rect x="55" y="335" width="320" height="30" rx="8" fill="#e8eef5"/>
+  <text x="215" y="354" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#2b5a9a">Simplex used in boundary matrix</text>
+
+  <!-- Step 5 -->
+  <circle cx="30" cy="400" r="11" fill="#d97a2b"/>
+  <text x="30" y="405" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">5</text>
+  <rect x="55" y="385" width="350" height="30" rx="8" fill="#f5e6d8"/>
+  <text x="230" y="404" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#d97a2b">Simplex destroyed after reduction completes</text>
+
+  <line x1="215" y1="365" x2="215" y2="385" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 6 -->
+  <circle cx="30" cy="460" r="11" fill="#2b5a9a"/>
+  <text x="30" y="465" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">6</text>
+  <rect x="55" y="445" width="400" height="28" rx="8" fill="#2b5a9a"/>
+  <text x="255" y="463" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="bold" fill="white">ThreadLocalPool&lt;Simplex&gt;::deallocate()</text>
+
+  <line x1="230" y1="415" x2="255" y2="445" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <line x1="255" y1="473" x2="255" y2="490" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Sub-steps of 6 -->
+  <rect x="75" y="495" width="340" height="70" rx="8" fill="#f5f5f5" stroke="#ccc" stroke-width="1"/>
+  <text x="245" y="513" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="#555">SlabAllocator&lt;Simplex&gt;::deallocate()</text>
+
+  <circle cx="100" cy="533" r="5" fill="#888"/>
+  <text x="112" y="537" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#666">CAS return to free list</text>
+
+  <circle cx="100" cy="553" r="5" fill="#888"/>
+  <text x="112" y="557" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#666">Slab remains in pool for next call</text>
+
+  <line x1="255" y1="490" x2="255" y2="495" stroke="#666" stroke-width="1"/>
+
+  <line x1="255" y1="565" x2="255" y2="595" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step 7 -->
+  <circle cx="30" cy="620" r="11" fill="#d97a2b"/>
+  <text x="30" y="625" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold" fill="white">7</text>
+  <rect x="55" y="605" width="370" height="30" rx="8" fill="#f5e6d8"/>
+  <text x="240" y="624" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#d97a2b">Pool::reset() called at end of compute_persistence()</text>
+
+  <rect x="75" y="643" width="340" height="26" rx="6" fill="#f5e6d8" stroke="#d97a2b" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="245" y="660" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#d97a2b">Frees all slabs back to GlobalPagePool</text>
+
+  <line x1="240" y1="635" x2="245" y2="643" stroke="#d97a2b" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>

@@ -1,0 +1,21 @@
+# Development dependencies for Nerve
+# Install with: pip install -r requirements-dev.txt
+
+# Core
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-xdist>=3.0.0
+hypothesis>=6.0.0
+
+ruff>=0.6.0
+mypy>=1.8.0
+pre-commit
+
+# Documentation (built with pdoc, see Makefile)
+pdoc
+
+# Profiling (optional)
+psutil
+
+# Disk caching (optional)
+diskcache

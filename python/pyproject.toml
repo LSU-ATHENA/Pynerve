@@ -1,0 +1,80 @@
+[build-system]
+requires = ["scikit-build-core>=0.8", "pybind11", "numpy>=1.21.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "pynerve"
+version = "0.9.6"
+description = "Fast TDA library"
+readme = "../README.md"
+authors = [
+    {name = "Nerve contributors"}
+]
+license = {text = "MIT"}
+requires-python = ">=3.10,<3.14"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: C++",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy>=1.21.0",
+    "scipy>=1.7.0",
+]
+
+[project.optional-dependencies]
+all = [
+    "pynerve[torch,dev,ml,cache]",
+]
+torch = [
+    "torch>=2.4",
+]
+ml = [
+    "scikit-learn>=1.0.0",
+    "numba>=0.56.0",
+]
+cache = [
+    "diskcache>=5.0.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-xdist>=3.0.0",
+    "hypothesis>=6.0.0",
+    "ruff>=0.6.0",
+    "mypy>=1.8.0",
+    "pyright>=1.1.0",
+    "interrogate>=1.0.0",
+    "build>=1.0.0",
+    "twine>=4.0.0",
+    "pre-commit>=3.0.0",
+]
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+cmake.source-dir = "."
+cmake.args = [
+    "-DBUILD_PYTHON=ON",
+    "-DBUILD_TESTS=OFF",
+    "-DBUILD_CUDA=OFF",
+    "-DENABLE_CUDA=OFF",
+    "-DENABLE_MPI=OFF",
+]
+install.components = ["python"]
+wheel.packages = ["pynerve"]
+sdist.include = [
+    "src/**",
+    "tools/**",
+]
+
+
+

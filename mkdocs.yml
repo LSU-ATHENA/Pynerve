@@ -1,0 +1,400 @@
+site_name: Pynerve
+site_description: Fast TDA library
+repo_url: https://github.com/LSU-ATHENA/Pynerve
+docs_dir: doc
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - API Reference:
+    - Python API: reference/api_python.md
+    - pynerve (auto): reference/pynerve.md
+    - pynerve.torch (auto): reference/pynerve.torch.md
+    - pynerve.nn (auto): reference/pynerve.nn.md
+    - pynerve.diff (auto): reference/pynerve.diff.md
+    - pynerve.mapper (auto): reference/pynerve.mapper.md
+    - pynerve.fast_ops (auto): reference/pynerve.fast_ops.md
+    - pynerve.formats (auto): reference/pynerve.formats.md
+    - pynerve.datasets (auto): reference/pynerve.datasets.md
+    - pynerve.diagnostics (auto): reference/pynerve.diagnostics.md
+    - pynerve.cache (auto): reference/pynerve.cache.md
+    - pynerve.async_api (auto): reference/pynerve.async_api.md
+    - pynerve.benchmark (auto): reference/pynerve.benchmark.md
+    - pynerve.numba_kernels (auto): reference/pynerve.numba_kernels.md
+    - pynerve.mp_shared (auto): reference/pynerve.mp_shared.md
+    - pynerve.jit (auto): reference/pynerve.jit.md
+    - pynerve.pipeline (auto): reference/pynerve.pipeline.md
+    - pynerve.random (auto): reference/pynerve.random.md
+    - pynerve.cupy_ops (auto): reference/pynerve.cupy_ops.md
+    - pynerve.regularization (auto): reference/pynerve.regularization.md
+    - pynerve.ssl (auto): reference/pynerve.ssl.md
+    - pynerve.training (auto): reference/pynerve.training.md
+    - C++ API:
+      - Overview: reference/cpp_api/index.md
+      - Namespace Structure: reference/cpp_api/overview.md
+      - Persistence: reference/cpp_api/persistence.md
+      - Algorithms: reference/cpp_api/algorithms.md
+      - Memory: reference/cpp_api/memory.md
+      - Core: reference/cpp_api/core.md
+      - Determinism: reference/cpp_api/determinism.md
+      - SIMD: reference/cpp_api/simd.md
+      - Distributed: reference/cpp_api/distributed.md
+      - Sheaf: reference/cpp_api/sheaf.md
+      - Streaming: reference/cpp_api/streaming.md
+      - Algebra: reference/cpp_api/algebra.md
+      - Spectral: reference/cpp_api/spectral.md
+      - Filtration: reference/cpp_api/filtration.md
+      - I/O: reference/cpp_api/io.md
+      - Serialization: reference/cpp_api/serialization.md
+      - FAQ: reference/cpp_api/faq.md
+    - Architecture:
+      - Overview: reference/arch/index.md
+      - Stack: reference/arch/stack.md
+      - Kernels: reference/arch/kernels.md
+      - Memory: reference/arch/memory.md
+      - Threading: reference/arch/threading.md
+      - SIMD: reference/arch/simd.md
+      - Determinism: reference/arch/determinism.md
+      - CUDA Graphs: reference/arch/cuda_graphs.md
+      - Error Propagation: reference/arch/errors.md
+      - Build: reference/arch/build.md
+      - Design Decisions: reference/arch/design_decisions.md
+      - FAQ: reference/arch/faq.md
+    - Correctness:
+      - Overview: reference/correctness_detail/index.md
+      - Fields: reference/correctness_detail/fields.md
+      - Determinism: reference/correctness_detail/determinism.md
+      - Floating Point: reference/correctness_detail/floating_point.md
+      - GPU Determinism: reference/correctness_detail/gpu_determinism.md
+      - MPI Determinism: reference/correctness_detail/mpi_determinism.md
+      - Validation: reference/correctness_detail/validation.md
+      - Runtime Validation: reference/correctness_detail/runtime_validation.md
+      - Precision: reference/correctness_detail/precision.md
+      - Reproducibility: reference/correctness_detail/reproducibility.md
+      - Security: reference/correctness_detail/security.md
+      - FAQ: reference/correctness_detail/faq.md
+    - Decision Guide: reference/decision_guide.md
+  - Algorithms:
+    - Overview: algorithms/algorithms.md
+    - Distance: algorithms/distance.md
+    - Kernel Methods: algorithms/kernel_methods.md
+    - Mapper: algorithms/mapper.md
+    - Vectorization: algorithms/vectorization.md
+    - Encoders:
+      - Overview: encoders/encoders.md
+      - GPU: encoders/gpu.md
+      - SIMD: encoders/simd.md
+  - Persistence:
+    - Standard Reduction:
+      - Overview: persistence/standard/index.md
+      - Algorithm: persistence/standard/algorithm.md
+      - Clearing: persistence/standard/clearing.md
+      - Compression: persistence/standard/compression.md
+      - Complexity: persistence/standard/complexity.md
+      - Code Examples: persistence/standard/code_examples.md
+      - Implementation: persistence/standard/implementation.md
+      - Pitfalls: persistence/standard/pitfalls.md
+    - Cohomology:
+      - Overview: persistence/cohomology/index.md
+      - Algorithm: persistence/cohomology/algorithm.md
+      - SIMD: persistence/cohomology/simd.md
+      - GPU: persistence/cohomology/gpu.md
+      - Complexity: persistence/cohomology/complexity.md
+      - Implementation: persistence/cohomology/implementation.md
+    - PH4 Engine:
+      - Overview: persistence/ph4/index.md
+      - Features: persistence/ph4/features.md
+      - API Reference: persistence/ph4/api.md
+      - Internals: persistence/ph4/internals.md
+      - Practical Guidance: persistence/ph4/guidance.md
+    - PH5 Engine:
+      - Overview: persistence/ph5/index.md
+      - Features: persistence/ph5/features.md
+      - Implementation: persistence/ph5/implementation.md
+      - Pitfalls: persistence/ph5/pitfalls.md
+    - PH6 Engine:
+      - Overview: persistence/ph6/index.md
+      - Features: persistence/ph6/features.md
+      - Compatibility: persistence/ph6/compatibility.md
+      - Internals: persistence/ph6/internals.md
+      - Benchmarking: persistence/ph6/benchmarking.md
+      - Configuration: persistence/ph6/configuration.md
+  - Filtrations:
+    - Vietoris-Rips:
+      - Overview: filtrations/vr/index.md
+      - Definition: filtrations/vr/definition.md
+      - Complexity: filtrations/vr/complexity.md
+      - Memory Layout: filtrations/vr/memory_layout.md
+      - SIMD Dispatch: filtrations/vr/simd_dispatch.md
+      - Sparse Flag: filtrations/vr/sparse_flag.md
+      - Code Examples: filtrations/vr/code_examples.md
+      - API Reference: filtrations/vr/api_reference.md
+      - Failure Modes: filtrations/vr/failure_modes.md
+    - Alpha Complex:
+      - Overview: filtrations/alpha_complex/index.md
+      - Definition: filtrations/alpha_complex/definition.md
+      - Complexity: filtrations/alpha_complex/complexity.md
+      - Code Examples: filtrations/alpha_complex/code_examples.md
+      - API: filtrations/alpha_complex/api.md
+      - Theory: filtrations/alpha_complex/theory.md
+    - Level Set / Cubical: filtrations/level_set.md
+    - Sparse VR:
+      - Overview: filtrations/sparse/index.md
+      - Epsilon-Net: filtrations/sparse/epsilon_net.md
+      - Interleaving: filtrations/sparse/interleaving.md
+      - Landmarks: filtrations/sparse/landmarks.md
+      - Code Examples: filtrations/sparse/code_examples.md
+      - API: filtrations/sparse/api.md
+    - Witness Complex:
+      - Overview: filtrations/witness/index.md
+      - Definition: filtrations/witness/definition.md
+      - Landmarks: filtrations/witness/landmarks.md
+      - Code Examples: filtrations/witness/code_examples.md
+      - API: filtrations/witness/api.md
+      - Theory: filtrations/witness/theory.md
+  - PyTorch:
+    - Overview: torch/torch.md
+    - Autograd: torch/autograd.md
+    - Persistence Diagram: torch/persistence_diagram.md
+    - Float8: torch/float8.md
+    - ML: torch/ml.md
+    - Simplex Tree: torch/simplex_tree.md
+  - Neural Networks:
+    - Overview: nn/nn.md
+    - Diagram Convolution: nn/diagram_conv.md
+    - Image Ops: nn/image_ops.md
+    - GPU: nn/gpu.md
+    - SIMD: nn/simd.md
+  - Streaming: streaming/streaming.md
+  - CUDA:
+    - Overview: cuda/cuda.md
+    - Determinism: cuda/determinism.md
+    - Graphs: cuda/graphs.md
+    - Kernels: cuda/kernels.md
+    - Streams: cuda/streams.md
+  - GPU:
+    - Tuning: gpu/gpu.md
+  - Distributed:
+    - Overview: guides/distributed/index.md
+    - MPI Init: guides/distributed/mpi_init.md
+    - Column Distribution: guides/distributed/column_distribution.md
+    - Pivot Exchange: guides/distributed/pivot_exchange.md
+    - CUDA-Aware MPI: guides/distributed/cuda_aware_mpi.md
+    - Multi-GPU + MPI: guides/distributed/multi_gpu_mpi.md
+    - NVSHMEM: guides/distributed/nvshmem.md
+    - Checkpoint: guides/distributed/checkpoint.md
+  - Performance:
+    - Overview: guides/perf/index.md
+    - Complexity: guides/perf/complexity.md
+    - SIMD: guides/perf/simd.md
+    - GPU Occupancy: guides/perf/gpu_occupancy.md
+    - Memory: guides/perf/memory.md
+    - NUMA: guides/perf/numa.md
+    - Determinism: guides/perf/determinism.md
+    - Patterns: guides/perf/patterns.md
+    - Microarchitecture: guides/perf/microarchitecture.md
+    - Benchmarking: guides/perf/benchmarking.md
+    - Bandwidth: guides/perf/bandwidth.md
+    - Profiling: guides/perf/profiling.md
+    - FAQ: guides/perf/faq.md
+  - Guides:
+    - Custom Metrics:
+      - Overview: guides/metrics/index.md
+      - Distance Function: guides/metrics/distance_function.md
+      - Precomputed Matrix: guides/metrics/precomputed.md
+      - Kernel Methods: guides/metrics/kernel_methods.md
+      - HNSW: guides/metrics/hnsw.md
+      - Performance: guides/metrics/performance.md
+      - PyTorch: guides/metrics/pytorch.md
+    - Sparse Data:
+      - Overview: guides/sparse_data/index.md
+      - Construction: guides/sparse_data/construction.md
+      - Boundary Matrix: guides/sparse_data/boundary_matrix.md
+      - Edge Collapse: guides/sparse_data/edge_collapse.md
+      - Performance: guides/sparse_data/performance.md
+    - GPU Setup:
+      - Overview: guides/gpu_setup/index.md
+      - Operations: guides/gpu_setup/operations.md
+      - Tensor Cores: guides/gpu_setup/tensor_cores.md
+      - Multi-GPU: guides/gpu_setup/multi_gpu.md
+      - Determinism: guides/gpu_setup/determinism.md
+      - Memory: guides/gpu_setup/memory.md
+      - Performance Tuning: guides/gpu_setup/performance_tuning.md
+      - FAQ: guides/gpu_setup/faq.md
+    - Streaming:
+      - Overview: guides/streaming_persistence/index.md
+      - Windowed: guides/streaming_persistence/windowed.md
+      - Zigzag: guides/streaming_persistence/zigzag.md
+      - Lock-Free: guides/streaming_persistence/lock_free.md
+      - GPU Streaming: guides/streaming_persistence/gpu_streaming.md
+      - Performance: guides/streaming_persistence/performance.md
+      - API: guides/streaming_persistence/api.md
+  - Core Concepts:
+    - Overview: core/core.md
+    - Batching: batching/batching.md
+    - Caching: cache/cache.md
+    - Compression:
+      - Overview: compression/compress/index.md
+      - When to Use: compression/compress/when_to_use.md
+      - Methods: compression/compress/methods.md
+      - Configuration: compression/compress/configuration.md
+      - Manager: compression/compress/manager.md
+      - SIMD: compression/compress/simd.md
+      - Practical Guidance: compression/compress/guidance.md
+      - Advanced: compression/compress/advanced.md
+      - Benchmarking: compression/compress/benchmarking.md
+      - FAQ: compression/compress/faq.md
+    - Determinism: determinism/determinism.md
+    - Error Handling:
+      - Overview: errors/errors.md
+      - Quick Start: errors/reference/quickstart.md
+      - API: errors/reference/api.md
+      - Taxonomy: errors/reference/taxonomy.md
+      - Registry: errors/reference/registry.md
+      - CUDA Errors: errors/reference/cuda.md
+      - Python Wrapping: errors/reference/python_wrapping.md
+      - FAQ: errors/reference/faq.md
+    - Acceleration: acceleration/acceleration.md
+    - Benchmarks: benchmarks/benchmarks.md
+    - RNG: core/rng.md
+    - SIMD Ops: core/simd_ops.md
+    - Thread Pool: core/thread_pool.md
+    - Validation:
+      - Overview: validation/validation.md
+      - Benchmarks: validation/benchmarks.md
+      - Contracts: validation/contracts.md
+      - Determinism Checks: validation/determinism.md
+      - Launch Audit: validation/launch_audit.md
+    - CPU: cpu/cpu.md
+  - Graphs:
+    - Overview: graphs/graphs.md
+    - Algorithms: graphs/algorithms.md
+    - GNN: graphs/gnn.md
+    - GPU: graphs/gpu.md
+    - MPI: graphs/mpi.md
+  - IO & Formats:
+    - File Formats: io/io.md
+    - Async IO: io/async.md
+    - Diagram IO: io/diagram_io.md
+    - Memory-Mapped: io/mmap.md
+    - NPY/NPZ: io/npy.md
+    - Serialization:
+      - Overview: serialization/serialization.md
+      - Arrow: serialization/arrow.md
+      - FlatBuffers: serialization/flatbuffers.md
+      - Manager: serialization/manager.md
+  - Memory:
+    - Overview: memory/memory.md
+    - NUMA: memory/numa.md
+    - Raw Array Pool: memory/raw_array_pool.md
+    - Slab Allocator: memory/slab_allocator.md
+    - Tracking: memory/tracking.md
+  - Metrics:
+    - Overview: metrics/metrics.md
+    - Bottleneck: metrics/bottleneck.md
+    - Diagram Distance: metrics/diagram_distance.md
+    - GPU: metrics/gpu.md
+    - Wasserstein: metrics/wasserstein.md
+  - Precision: precision/precision.md
+  - Optimization:
+    - Overview: optimization/optimization.md
+    - Compact Summary: optimization/compact_summary.md
+    - GPU: optimization/gpu.md
+    - SIMD: optimization/simd.md
+    - Streaming PH: optimization/streaming_ph.md
+  - Probabilistic: probabilistic/probabilistic.md
+  - Regularization: regularization/regularization.md
+  - Algebra:
+    - Overview: algebra/algebra.md
+    - Boundary Matrices: algebra/boundary_matrices.md
+    - Chain Complexes: algebra/chain_complexes.md
+    - Algebra Distance: algebra/distance.md
+    - Simplicial:
+      - Overview: algebra/simplex/index.md
+      - Simplex: algebra/simplex/simplex.md
+      - SimplexSet: algebra/simplex/simplex_set.md
+      - SimplicialComplex: algebra/simplex/complex.md
+  - Sheaf:
+    - Overview: sheaf/sheaf.md
+    - GPU: sheaf/gpu.md
+    - Laplacian: sheaf/laplacian.md
+    - Learning: sheaf/learning.md
+    - Morphism: sheaf/morphism.md
+  - Spectral:
+    - Overview: spectral/spectral.md
+    - Dirac: spectral/dirac.md
+    - Eigensolver: spectral/eigensolver.md
+    - GPU: spectral/gpu.md
+    - Laplacian: spectral/laplacian.md
+  - Autodiff & Tensors:
+    - Overview: autodiff/autodiff.md
+    - GPU Kernels: autodiff/gpu_kernels.md
+    - Gradients: autodiff/gradients.md
+    - Graph Ops: autodiff/graph_ops.md
+    - Tensor Ops: autodiff/tensor_ops.md
+  - Approximation: approximation/approximation.md
+  - Feature Extraction: features/features.md
+  - Instrumentation: instrumentation/instrumentation.md
+  - ML:
+    - Overview: ml/ml.md
+    - Message Passing: ml/message_passing.md
+    - Simplex Differences: ml/simplex_diff.md
+    - Vectorization: ml/vectorization.md
+  - Anomaly Detection: anomaly/anomaly.md
+  - Specialized:
+    - Overview: specialized/advanced/index.md
+    - API: specialized/advanced/api.md
+    - Cup Product: specialized/advanced/cup_product.md
+    - Reeb Graph: specialized/advanced/reeb_graph.md
+    - Zigzag: specialized/advanced/zigzag.md
+    - Examples: specialized/advanced/examples.md
+    - Benchmarks: specialized/advanced/benchmarks.md
+  - Summary:
+    - Overview: summary/summaries/index.md
+    - Quick Start: summary/summaries/quickstart.md
+    - API: summary/summaries/api.md
+    - Pipeline: summary/summaries/pipeline.md
+    - Advanced: summary/summaries/advanced.md
+    - Entropy: summary/summaries/entropy.md
+  - Differentiable TDA: differentiable/differentiable.md
+  - DMT:
+    - Overview: dmt/dmt.md
+    - GPU: dmt/gpu.md
+    - Gradient Field: dmt/gradient_field.md
+    - Parallel: dmt/parallel.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [python]
+          import:
+            - https://docs.python.org/3/objects.inv
+          options:
+            docstring_style: sphinx
+            docstring_section_style: list
+            show_root_heading: true
+            show_root_full_path: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_source: true
+            heading_level: 2
+            members_order: source
+            merge_init_into_class: true
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - admonition
+  - footnotes
+  - toc:
+      permalink: true

@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+  <defs>
+    <style>
+      text { font-family: sans-serif; }
+      .title { font-size: 15px; fill: #111; font-weight: bold; }
+      .thread-label { font-size: 11px; fill: #333; }
+      .word-label { font-size: 10px; fill: #666; }
+      .row-label { font-size: 9px; fill: #888; }
+    </style>
+  </defs>
+
+  <text x="20" y="25" class="title">GPU Column Partitioning  --  1024 Rows (16 uint64_t Words)</text>
+
+  <!-- Column outline -->
+  <rect x="120" y="45" width="80" height="420" rx="4" fill="#f0f4f8" stroke="#2b5a9a" stroke-width="2"/>
+
+  <!-- Word 0 top label -->
+  <text x="160" y="42" class="word-label" text-anchor="middle">Column</text>
+
+  <!-- 16 word slots -->
+  <rect x="120" y="45" width="80" height="24" rx="2" fill="#2b5a9a" opacity="0.15"/>
+  <rect x="120" y="69" width="80" height="24" rx="2" fill="#4a9a4a" opacity="0.15"/>
+  <rect x="120" y="93" width="80" height="24" rx="2" fill="#d97a2b" opacity="0.15"/>
+  <rect x="120" y="117" width="80" height="24" rx="2" fill="#2b5a9a" opacity="0.15"/>
+  <rect x="120" y="141" width="80" height="24" rx="2" fill="#4a9a4a" opacity="0.15"/>
+  <rect x="120" y="165" width="80" height="24" rx="2" fill="#d97a2b" opacity="0.15"/>
+  <rect x="120" y="189" width="80" height="24" rx="2" fill="#2b5a9a" opacity="0.15"/>
+  <rect x="120" y="213" width="80" height="24" rx="2" fill="#4a9a4a" opacity="0.15"/>
+  <rect x="120" y="237" width="80" height="24" rx="2" fill="#d97a2b" opacity="0.15"/>
+  <rect x="120" y="261" width="80" height="24" rx="2" fill="#2b5a9a" opacity="0.15"/>
+  <rect x="120" y="285" width="80" height="24" rx="2" fill="#4a9a4a" opacity="0.15"/>
+  <rect x="120" y="309" width="80" height="24" rx="2" fill="#d97a2b" opacity="0.15"/>
+  <rect x="120" y="333" width="80" height="24" rx="2" fill="#2b5a9a" opacity="0.15"/>
+  <rect x="120" y="357" width="80" height="24" rx="2" fill="#4a9a4a" opacity="0.15"/>
+  <rect x="120" y="381" width="80" height="24" rx="2" fill="#d97a2b" opacity="0.15"/>
+  <rect x="120" y="405" width="80" height="24" rx="2" fill="#2b5a9a" opacity="0.15"/>
+
+  <!-- Word numbers inside column -->
+  <text x="160" y="62" class="word-label" text-anchor="middle" font-weight="bold">w[0]</text>
+  <text x="160" y="86" class="word-label" text-anchor="middle" font-weight="bold">w[1]</text>
+  <text x="160" y="110" class="word-label" text-anchor="middle" font-weight="bold">w[2]</text>
+  <text x="160" y="134" class="word-label" text-anchor="middle" font-weight="bold">w[3]</text>
+  <text x="160" y="158" class="word-label" text-anchor="middle" font-weight="bold">w[4]</text>
+  <text x="160" y="182" class="word-label" text-anchor="middle" font-weight="bold">...</text>
+  <text x="160" y="230" class="word-label" text-anchor="middle" font-weight="bold">w[8]</text>
+  <text x="160" y="374" class="word-label" text-anchor="middle" font-weight="bold">...</text>
+  <text x="160" y="422" class="word-label" text-anchor="middle" font-weight="bold">w[15]</text>
+
+  <!-- Thread boxes and arrows -->
+  <!-- Thread 0 -->
+  <rect x="270" y="45" width="140" height="24" rx="4" fill="#2b5a9a"/>
+  <text x="340" y="62" class="thread-label" fill="#fff" text-anchor="middle">Thread 0: w[0:0]</text>
+  <line x1="200" y1="57" x2="270" y2="57" stroke="#2b5a9a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Thread 1 -->
+  <rect x="270" y="69" width="140" height="24" rx="4" fill="#4a9a4a"/>
+  <text x="340" y="86" class="thread-label" fill="#fff" text-anchor="middle">Thread 1: w[1:1]</text>
+  <line x1="200" y1="81" x2="270" y2="81" stroke="#4a9a4a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Thread 2 -->
+  <rect x="270" y="93" width="140" height="24" rx="4" fill="#d97a2b"/>
+  <text x="340" y="110" class="thread-label" fill="#fff" text-anchor="middle">Thread 2: w[2:2]</text>
+  <line x1="200" y1="105" x2="270" y2="105" stroke="#d97a2b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Thread 3 -->
+  <rect x="270" y="117" width="140" height="24" rx="4" fill="#2b5a9a"/>
+  <text x="340" y="134" class="thread-label" fill="#fff" text-anchor="middle">Thread 3: w[3:3]</text>
+  <line x1="200" y1="129" x2="270" y2="129" stroke="#2b5a9a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <text x="340" y="175" class="thread-label" fill="#666" text-anchor="middle">...</text>
+
+  <!-- Thread 31 -->
+  <rect x="270" y="405" width="160" height="24" rx="4" fill="#2b5a9a"/>
+  <text x="350" y="422" class="thread-label" fill="#fff" text-anchor="middle">Thread 31: w[31:31]</text>
+  <line x1="200" y1="417" x2="270" y2="417" stroke="#2b5a9a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Key -->
+  <rect x="470" y="45" width="12" height="12" rx="2" fill="#2b5a9a" opacity="0.15" stroke="#2b5a9a" stroke-width="1"/>
+  <text x="488" y="56" class="row-label">words [0:0] (rows 0-63)</text>
+  <rect x="470" y="63" width="12" height="12" rx="2" fill="#4a9a4a" opacity="0.15" stroke="#4a9a4a" stroke-width="1"/>
+  <text x="488" y="74" class="row-label">words [1:1] (rows 64-127)</text>
+  <rect x="470" y="81" width="12" height="12" rx="2" fill="#d97a2b" opacity="0.15" stroke="#d97a2b" stroke-width="1"/>
+  <text x="488" y="92" class="row-label">words [2:2] (rows 128-191)</text>
+
+  <text x="470" y="120" class="row-label" font-weight="bold">One warp = 32 threads</text>
+  <text x="470" y="138" class="row-label">Each thread -> 1 word (64 rows)</text>
+  <text x="470" y="156" class="row-label">Total: 32 words x 64 rows = 2048 rows</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+  </defs>
+</svg>
