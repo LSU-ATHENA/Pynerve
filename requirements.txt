@@ -9,5 +9,5 @@
 # This file is kept in sync for users who prefer pip install -r.
 # See README.md and python/pyproject.toml for details.
 
-numpy>=1.21.0
+numpy>=2.2.6
 scipy>=1.7.0
