@@ -1,6 +1,6 @@
-#include <cuda_runtime.h>
-
 #include "nerve/gpu/device_array.hpp"
+
+#include <cuda_runtime.h>
 
 #include <cassert>
 #include <cmath>
@@ -9,24 +9,30 @@
 #include <stdexcept>
 #include <vector>
 
-namespace {
+namespace
+{
 
-bool check_cuda(cudaError_t code, const char* expression) {
-    if (code == cudaSuccess) return true;
+bool check_cuda(cudaError_t code, const char *expression)
+{
+    if (code == cudaSuccess)
+        return true;
     std::cerr << expression << " failed: " << cudaGetErrorString(code) << '\n';
     return false;
 }
 
-bool has_gpu() {
+bool has_gpu()
+{
     int device_count = 0;
     cudaError_t err = cudaGetDeviceCount(&device_count);
     return err == cudaSuccess && device_count > 0;
 }
 
-}  // namespace
+} // namespace
 
-int main() {
-    if (!has_gpu()) {
+int main()
+{
+    if (!has_gpu())
+    {
         std::cerr << "No CUDA device available  --  skipping DeviceArray tests\n";
         return 0;
     }
@@ -50,7 +56,7 @@ int main() {
     // Test 3: Move construction
     {
         nerve::gpu::DeviceArray<double> src(50);
-        double* src_ptr = src.get();
+        double *src_ptr = src.get();
         assert(src_ptr != nullptr);
         assert(src.size() == 50);
 
@@ -64,7 +70,7 @@ int main() {
     // Test 4: Move assignment
     {
         nerve::gpu::DeviceArray<float> src(25);
-        float* src_ptr = src.get();
+        float *src_ptr = src.get();
 
         nerve::gpu::DeviceArray<float> dst(10);
         assert(dst.get() != nullptr);
@@ -81,7 +87,8 @@ int main() {
     {
         const size_t count = 16;
         std::vector<int> host_src(count);
-        for (size_t i = 0; i < count; ++i) host_src[i] = static_cast<int>(i + 1);
+        for (size_t i = 0; i < count; ++i)
+            host_src[i] = static_cast<int>(i + 1);
 
         nerve::gpu::DeviceArray<int> arr(count);
         arr.copyFromHost(host_src.data(), count);
@@ -89,7 +96,8 @@ int main() {
         std::vector<int> host_dst(count, 0);
         arr.copyToHost(host_dst.data(), count);
 
-        for (size_t i = 0; i < count; ++i) {
+        for (size_t i = 0; i < count; ++i)
+        {
             assert(host_dst[i] == static_cast<int>(i + 1));
         }
     }
@@ -98,7 +106,8 @@ int main() {
     {
         const size_t count = 32;
         std::vector<float> host_src(count);
-        for (size_t i = 0; i < count; ++i) host_src[i] = static_cast<float>(i) * 1.5f;
+        for (size_t i = 0; i < count; ++i)
+            host_src[i] = static_cast<float>(i) * 1.5f;
 
         nerve::gpu::DeviceArray<float> arr(count);
         arr.copyFromHost(host_src.data(), count);
@@ -106,39 +115,48 @@ int main() {
         std::vector<float> host_mid(count, 0.0f);
         arr.copyToHost(host_mid.data(), count);
 
-        for (size_t i = 0; i < count; ++i) {
+        for (size_t i = 0; i < count; ++i)
+        {
             assert(std::abs(host_mid[i] - host_src[i]) < 1e-6f);
         }
 
         std::vector<float> host_modified(count);
-        for (size_t i = 0; i < count; ++i) host_modified[i] = static_cast<float>(i) * 3.0f;
+        for (size_t i = 0; i < count; ++i)
+            host_modified[i] = static_cast<float>(i) * 3.0f;
         arr.copyFromHost(host_modified.data(), count);
 
         std::vector<float> host_final(count, 0.0f);
         arr.copyToHost(host_final.data(), count);
 
-        for (size_t i = 0; i < count; ++i) {
+        for (size_t i = 0; i < count; ++i)
+        {
             assert(std::abs(host_final[i] - host_modified[i]) < 1e-6f);
         }
     }
 
     // Test 7: Large allocation (try 1GB, expect graceful handling)
     {
-        const size_t large_bytes = 1024ULL * 1024ULL * 1024ULL;  // 1 GB
+        const size_t large_bytes = 1024ULL * 1024ULL * 1024ULL; // 1 GB
         const size_t large_count = large_bytes / sizeof(char);
 
         bool large_ok = false;
-        try {
+        try
+        {
             nerve::gpu::DeviceArray<char> large_arr(large_count);
             assert(large_arr.get() != nullptr);
             large_ok = true;
-        } catch (const std::runtime_error&) {
+        }
+        catch (const std::runtime_error &)
+        {
             large_ok = false;
-        } catch (const std::bad_alloc&) {
+        }
+        catch (const std::bad_alloc &)
+        {
             large_ok = false;
         }
 
-        if (large_ok) {
+        if (large_ok)
+        {
             assert(true);
         }
     }
@@ -146,7 +164,7 @@ int main() {
     // Test 8: Double-move: verify source is nulled after each move
     {
         nerve::gpu::DeviceArray<int> a(5);
-        int* a_ptr = a.get();
+        int *a_ptr = a.get();
         assert(a_ptr != nullptr);
 
         nerve::gpu::DeviceArray<int> b(std::move(a));
@@ -163,7 +181,7 @@ int main() {
     // Test 9: Self-move-assignment guard
     {
         nerve::gpu::DeviceArray<float> arr(10);
-        float* orig_ptr = arr.get();
+        float *orig_ptr = arr.get();
 
         // Self-move assignment via std::move
         arr = std::move(arr);
@@ -187,7 +205,8 @@ int main() {
     {
         const size_t count = 8;
         std::vector<unsigned long long> host_src(count);
-        for (size_t i = 0; i < count; ++i) host_src[i] = i * 100ULL;
+        for (size_t i = 0; i < count; ++i)
+            host_src[i] = i * 100ULL;
 
         nerve::gpu::DeviceArray<unsigned long long> arr(count);
         arr.copyFromHost(host_src.data(), count);
@@ -195,7 +214,8 @@ int main() {
         std::vector<unsigned long long> host_dst(count, 0);
         arr.copyToHost(host_dst.data(), count);
 
-        for (size_t i = 0; i < count; ++i) {
+        for (size_t i = 0; i < count; ++i)
+        {
             assert(host_dst[i] == host_src[i]);
         }
     }
@@ -203,7 +223,7 @@ int main() {
     // Test 12: Const accessor
     {
         nerve::gpu::DeviceArray<int> arr(5);
-        const auto& const_arr = arr;
+        const auto &const_arr = arr;
         assert(const_arr.get() == arr.get());
         assert(const_arr.size() == 5);
     }

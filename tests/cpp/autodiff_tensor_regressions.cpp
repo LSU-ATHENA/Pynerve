@@ -5,7 +5,8 @@
 #include <stdexcept>
 #include <vector>
 
-int main() {
+int main()
+{
     using nerve::autodiff::Shape;
     using nerve::autodiff::Tensor;
 
@@ -16,19 +17,25 @@ int main() {
     assert(empty_with_zero_dim.size() == 0);
 
     bool rejected_constructor_overflow = false;
-    try {
+    try
+    {
         Tensor tensor(std::vector<double>{},
                       Shape{std::numeric_limits<nerve::Size>::max() / 2 + 1, 3});
         (void)tensor;
-    } catch (const std::length_error&) {
+    }
+    catch (const std::length_error &)
+    {
         rejected_constructor_overflow = true;
     }
     assert(rejected_constructor_overflow);
 
     bool rejected_zeros_overflow = false;
-    try {
+    try
+    {
         (void)Tensor::zeros(Shape{std::numeric_limits<nerve::Size>::max() / 2 + 1, 3});
-    } catch (const std::length_error&) {
+    }
+    catch (const std::length_error &)
+    {
         rejected_zeros_overflow = true;
     }
     assert(rejected_zeros_overflow);

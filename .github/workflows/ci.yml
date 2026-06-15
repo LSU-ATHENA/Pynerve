@@ -61,7 +61,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: python -m pip install -U pip pytest hypothesis pytest-cov
+      - run: python -m pip install -U pip pytest hypothesis pytest-cov numpy
       - run: python tools/test_matrix.py --label cpu --output build/test-matrix-cpu.json
       - run: python -m pytest tests/python/ --cov=python/pynerve --cov-branch --cov-report=term-missing --cov-fail-under=80
 
@@ -183,7 +183,7 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: sudo apt-get update && sudo apt-get install -y clang-tidy cppcheck libeigen3-dev libomp-dev
-      - run: python -m pip install -U pip pytest hypothesis numpy ninja scikit-build-core pybind11
+      - run: python -m pip install -U pip pytest hypothesis numpy scipy ninja scikit-build-core pybind11 pytest-asyncio
       - name: Install latest PyTorch CPU
         run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: python tools/run_tests.py --python --label torch --label gradient --shard-index 0 --shard-count 4
@@ -285,5 +285,5 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m pip install -U pip pytest hypothesis
+      - run: python -m pip install -U pip pytest hypothesis numpy
       - run: python tools/run_tests.py --python --changed-from origin/main --shard-index 0 --shard-count 8

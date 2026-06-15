@@ -1,8 +1,8 @@
+#include "memory/safe_memory_pool.hpp"
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core/memory/memory_pool.hpp"
 #include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core_types.hpp"
-#include "memory/safe_memory_pool.hpp"
 
 #include <algorithm>
 #include <cmath>

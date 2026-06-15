@@ -8,7 +8,8 @@
 #include <stdexcept>
 #include <vector>
 
-int main() {
+int main()
+{
 #if HAS_EIGEN && __has_include(<Eigen/Sparse>) && __has_include(<Eigen/Dense>)
     using Node = nerve::sheaf::SheafLaplacianRuntime::SheafNode;
 
@@ -53,10 +54,13 @@ int main() {
     auto invalid_config = config;
     invalid_config.attribute_weight = std::numeric_limits<double>::quiet_NaN();
     bool rejected_invalid_constructor_config = false;
-    try {
+    try
+    {
         nerve::sheaf::SheafLaplacianRuntime invalid_runtime(invalid_config);
         (void)invalid_runtime;
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_invalid_constructor_config = true;
     }
     assert(rejected_invalid_constructor_config);
@@ -64,9 +68,12 @@ int main() {
     invalid_config = config;
     invalid_config.topological_weight = std::numeric_limits<double>::infinity();
     bool rejected_invalid_set_config = false;
-    try {
+    try
+    {
         runtime.setConfig(invalid_config);
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_invalid_set_config = true;
     }
     assert(rejected_invalid_set_config);
@@ -75,10 +82,13 @@ int main() {
     auto invalid_learning_config = learning_config;
     invalid_learning_config.learning_rate = std::numeric_limits<double>::quiet_NaN();
     bool rejected_invalid_learning_constructor_config = false;
-    try {
+    try
+    {
         nerve::sheaf::learning::SheafLearner invalid_learner(invalid_learning_config);
         (void)invalid_learner;
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_invalid_learning_constructor_config = true;
     }
     assert(rejected_invalid_learning_constructor_config);
@@ -87,16 +97,19 @@ int main() {
     invalid_learning_config = learning_config;
     invalid_learning_config.convergence_tolerance = std::numeric_limits<double>::infinity();
     bool rejected_invalid_learning_set_config = false;
-    try {
+    try
+    {
         learner.setConfig(invalid_learning_config);
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_invalid_learning_set_config = true;
     }
     assert(rejected_invalid_learning_set_config);
 
     Eigen::SparseMatrix<double> adjacency(2, 2);
-    std::vector<Eigen::Triplet<double>> adjacency_triplets{
-        Eigen::Triplet<double>(0, 1, 1.0), Eigen::Triplet<double>(1, 0, 1.0)};
+    std::vector<Eigen::Triplet<double>> adjacency_triplets{Eigen::Triplet<double>(0, 1, 1.0),
+                                                           Eigen::Triplet<double>(1, 0, 1.0)};
     adjacency.setFromTriplets(adjacency_triplets.begin(), adjacency_triplets.end());
     std::vector<Eigen::MatrixXd> node_data(2, Eigen::MatrixXd::Ones(1, 2));
     std::vector<size_t> node_dimensions{1, 1};
@@ -105,9 +118,12 @@ int main() {
     auto invalid_adjacency = adjacency;
     invalid_adjacency.coeffRef(0, 1) = std::numeric_limits<double>::infinity();
     bool rejected_nonfinite_learning_graph = false;
-    try {
+    try
+    {
         (void)learner.learnSheafClosedForm(invalid_adjacency, node_data, node_dimensions);
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_nonfinite_learning_graph = true;
     }
     assert(rejected_nonfinite_learning_graph);
@@ -115,20 +131,26 @@ int main() {
     auto invalid_node_data = node_data;
     invalid_node_data[1](0, 0) = std::numeric_limits<double>::quiet_NaN();
     bool rejected_nonfinite_learning_data = false;
-    try {
+    try
+    {
         (void)learner.learnSheafClosedForm(adjacency, invalid_node_data, node_dimensions);
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_nonfinite_learning_data = true;
     }
     assert(rejected_nonfinite_learning_data);
 
     bool rejected_nonfinite_graph_signal = false;
-    try {
+    try
+    {
         const std::vector<std::pair<uint32_t, uint32_t>> graph_edges{{0, 1}};
         const std::vector<std::vector<double>> node_signals{
             {0.0, 1.0}, {std::numeric_limits<double>::quiet_NaN(), 2.0}};
         (void)nerve::sheaf::learning::learnSheafFromGraphSignal(graph_edges, node_signals);
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_nonfinite_graph_signal = true;
     }
     assert(rejected_nonfinite_graph_signal);
@@ -148,8 +170,7 @@ int main() {
     assert(!invalid_result.isValid());
 
     invalid_result = result;
-    invalid_result.learned_sheaf_laplacian.coeffRef(0, 0) =
-        std::numeric_limits<double>::infinity();
+    invalid_result.learned_sheaf_laplacian.coeffRef(0, 0) = std::numeric_limits<double>::infinity();
     assert(!invalid_result.isValid());
 
     invalid_result = result;
@@ -167,12 +188,10 @@ int main() {
     sheaf_result.attribute_names = {"signal"};
     assert(nerve::sheaf::sheaf_utils::validateSheafProperties(sheaf_result));
     assert(std::isfinite(nerve::sheaf::sheaf_utils::computeAttributeInfluence(sheaf_result)));
-    assert(std::isfinite(
-        nerve::sheaf::sheaf_utils::computeTopologicalInfluence(sheaf_result)));
+    assert(std::isfinite(nerve::sheaf::sheaf_utils::computeTopologicalInfluence(sheaf_result)));
 
     auto invalid_sheaf_result = sheaf_result;
-    invalid_sheaf_result.sheaf_laplacian.coeffRef(0, 0) =
-        std::numeric_limits<double>::quiet_NaN();
+    invalid_sheaf_result.sheaf_laplacian.coeffRef(0, 0) = std::numeric_limits<double>::quiet_NaN();
     assert(!nerve::sheaf::sheaf_utils::validateSheafProperties(invalid_sheaf_result));
 
     invalid_sheaf_result = sheaf_result;
@@ -183,8 +202,8 @@ int main() {
     invalid_sheaf_result.attribute_laplacian.coeffRef(0, 0) =
         std::numeric_limits<double>::infinity();
     assert(!nerve::sheaf::sheaf_utils::validateSheafProperties(invalid_sheaf_result));
-    assert(std::isfinite(
-        nerve::sheaf::sheaf_utils::computeAttributeInfluence(invalid_sheaf_result)));
+    assert(
+        std::isfinite(nerve::sheaf::sheaf_utils::computeAttributeInfluence(invalid_sheaf_result)));
     assert(std::isfinite(
         nerve::sheaf::sheaf_utils::computeTopologicalInfluence(invalid_sheaf_result)));
     const auto contributions =

@@ -17,13 +17,13 @@ namespace
 #ifdef NERVE_HAS_TORCH
 
 using at::Tensor;
+using nerve::torch::ClustererType;
+using nerve::torch::CoverType;
 using nerve::torch::Mapper;
 using nerve::torch::MapperConfig;
+using nerve::torch::MapperEdge;
 using nerve::torch::MapperGraph;
 using nerve::torch::MapperNode;
-using nerve::torch::MapperEdge;
-using nerve::torch::CoverType;
-using nerve::torch::ClustererType;
 
 bool check_mapper_construction()
 {
@@ -61,7 +61,7 @@ bool check_mapper_node_pullback()
     Mapper mapper(config);
     Tensor points = at::randn({15, 2});
     MapperGraph graph = mapper.fit_transform(points);
-    for (const auto& node : graph.nodes)
+    for (const auto &node : graph.nodes)
     {
         if (node.point_indices.empty())
         {
@@ -74,7 +74,7 @@ bool check_mapper_node_pullback()
             return false;
         }
     }
-    for (const auto& edge : graph.edges)
+    for (const auto &edge : graph.edges)
     {
         if (edge.weight < 0.0)
         {

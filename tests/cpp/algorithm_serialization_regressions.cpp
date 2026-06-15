@@ -1,3 +1,8 @@
+#include "nerve/core/determinism_ops.hpp"
+#include "nerve/core_types.hpp"
+#include "nerve/persistence/perfect/perfect_persistence.hpp"
+#include "nerve/serialization/serialization_manager.hpp"
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -13,19 +18,14 @@
 #include <utility>
 #include <vector>
 
-#include "nerve/core_types.hpp"
-#include "nerve/serialization/serialization_manager.hpp"
-#include "nerve/core/determinism_ops.hpp"
-#include "nerve/persistence/perfect/perfect_persistence.hpp"
-
-int main() {
+int main()
+{
     using namespace nerve::serialization;
 
     assert(SchemaVersion::fromString("2.3.4") == SchemaVersion(2, 3, 4));
     assert(SchemaVersion::fromString("not-a-version") == SchemaVersion(1, 0, 0));
     assert(SchemaVersion::fromString("4294967296.0.0") == SchemaVersion(1, 0, 0));
-    assert(SchemaVersion::fromString("999999999999999999999.0.0") ==
-           SchemaVersion(1, 0, 0));
+    assert(SchemaVersion::fromString("999999999999999999999.0.0") == SchemaVersion(1, 0, 0));
     assert(SchemaVersion::fromString("4294967295.0.0") ==
            SchemaVersion(std::numeric_limits<std::uint32_t>::max(), 0, 0));
 
@@ -59,16 +59,13 @@ int main() {
     assert(wrapped_versions.size() == 2);
     assert(wrapped_versions[0] ==
            SchemaVersion(1, std::numeric_limits<std::uint32_t>::max() - 1U, 0));
-    assert(wrapped_versions[1] ==
-           SchemaVersion(1, std::numeric_limits<std::uint32_t>::max(), 0));
+    assert(wrapped_versions[1] == SchemaVersion(1, std::numeric_limits<std::uint32_t>::max(), 0));
 
     const std::vector<std::uint8_t> payload{'t', 'd', 'a'};
-    const SerializationContext context(SerializationFormat::FLATBUFFERS,
-                                       SchemaVersion(1, 2, 3));
+    const SerializationContext context(SerializationFormat::FLATBUFFERS, SchemaVersion(1, 2, 3));
     FlatBuffersSerializer serializer;
 
-    const auto serialized =
-        serializer.serialize(payload.data(), payload.size(), context);
+    const auto serialized = serializer.serialize(payload.data(), payload.size(), context);
     assert(!serialized.isError());
     const auto &bytes = serialized.value();
     assert(bytes.size() == payload.size() + 12);
@@ -95,16 +92,15 @@ int main() {
     metadata.version = SchemaVersion(2, 3, 4);
     metadata.minCompatibleVersion = SchemaVersion(2, 0, 0);
     metadata.maxCompatibleVersion = SchemaVersion(2, 9, 0);
-    const auto serialized_with_metadata = serializer.serializeWithMetadata(
-        payload.data(), payload.size(), metadata, context);
+    const auto serialized_with_metadata =
+        serializer.serializeWithMetadata(payload.data(), payload.size(), metadata, context);
     assert(!serialized_with_metadata.isError());
     const auto &metadata_bytes = serialized_with_metadata.value();
     assert(metadata_bytes.size() >= 4);
-    const std::uint32_t metadata_size =
-        static_cast<std::uint32_t>(metadata_bytes[0]) |
-        (static_cast<std::uint32_t>(metadata_bytes[1]) << 8U) |
-        (static_cast<std::uint32_t>(metadata_bytes[2]) << 16U) |
-        (static_cast<std::uint32_t>(metadata_bytes[3]) << 24U);
+    const std::uint32_t metadata_size = static_cast<std::uint32_t>(metadata_bytes[0]) |
+                                        (static_cast<std::uint32_t>(metadata_bytes[1]) << 8U) |
+                                        (static_cast<std::uint32_t>(metadata_bytes[2]) << 16U) |
+                                        (static_cast<std::uint32_t>(metadata_bytes[3]) << 24U);
     assert(metadata_bytes.size() >= 4 + metadata_size);
     const std::string metadata_json(metadata_bytes.begin() + 4,
                                     metadata_bytes.begin() + 4 + metadata_size);
@@ -112,8 +108,7 @@ int main() {
     assert(metadata_json.find("\\\\") != std::string::npos);
     assert(metadata_json.find("\\n") != std::string::npos);
 
-    const auto decoded_with_metadata =
-        serializer.deserializeWithMetadata(metadata_bytes, context);
+    const auto decoded_with_metadata = serializer.deserializeWithMetadata(metadata_bytes, context);
     assert(!decoded_with_metadata.isError());
     assert(decoded_with_metadata.value().first == payload);
     assert(decoded_with_metadata.value().second.schema_name == metadata.schema_name);
@@ -130,18 +125,16 @@ int main() {
     corrupt_size[10] = 0xFF;
     corrupt_size[11] = 0xFF;
     assert(serializer.deserialize(corrupt_size, context).isError());
-  }
+}
 
-  {
+{
     using namespace nerve::serialization;
 
     const std::vector<std::uint8_t> payload{'p', 'h'};
-    const SerializationContext context(SerializationFormat::ARROW,
-                                       SchemaVersion(4, 5, 6));
+    const SerializationContext context(SerializationFormat::ARROW, SchemaVersion(4, 5, 6));
     ArrowSerializer serializer;
 
-    const auto serialized =
-        serializer.serialize(payload.data(), payload.size(), context);
+    const auto serialized = serializer.serialize(payload.data(), payload.size(), context);
     assert(!serialized.isError());
     const auto &bytes = serialized.value();
     assert(bytes.size() == payload.size() + 12);
@@ -164,16 +157,15 @@ int main() {
     metadata.version = SchemaVersion(4, 7, 8);
     metadata.minCompatibleVersion = SchemaVersion(4, 0, 0);
     metadata.maxCompatibleVersion = SchemaVersion(4, 9, 0);
-    const auto serialized_with_metadata = serializer.serializeWithMetadata(
-        payload.data(), payload.size(), metadata, context);
+    const auto serialized_with_metadata =
+        serializer.serializeWithMetadata(payload.data(), payload.size(), metadata, context);
     assert(!serialized_with_metadata.isError());
     const auto &metadata_bytes = serialized_with_metadata.value();
     assert(metadata_bytes.size() >= 4);
-    const std::uint32_t metadata_size =
-        static_cast<std::uint32_t>(metadata_bytes[0]) |
-        (static_cast<std::uint32_t>(metadata_bytes[1]) << 8U) |
-        (static_cast<std::uint32_t>(metadata_bytes[2]) << 16U) |
-        (static_cast<std::uint32_t>(metadata_bytes[3]) << 24U);
+    const std::uint32_t metadata_size = static_cast<std::uint32_t>(metadata_bytes[0]) |
+                                        (static_cast<std::uint32_t>(metadata_bytes[1]) << 8U) |
+                                        (static_cast<std::uint32_t>(metadata_bytes[2]) << 16U) |
+                                        (static_cast<std::uint32_t>(metadata_bytes[3]) << 24U);
     assert(metadata_bytes.size() >= 4 + metadata_size);
     const std::string metadata_json(metadata_bytes.begin() + 4,
                                     metadata_bytes.begin() + 4 + metadata_size);
@@ -181,8 +173,7 @@ int main() {
     assert(metadata_json.find("\\\\") != std::string::npos);
     assert(metadata_json.find("\\n") != std::string::npos);
 
-    const auto decoded_with_metadata =
-        serializer.deserializeWithMetadata(metadata_bytes, context);
+    const auto decoded_with_metadata = serializer.deserializeWithMetadata(metadata_bytes, context);
     assert(!decoded_with_metadata.isError());
     assert(decoded_with_metadata.value().first == payload);
     assert(decoded_with_metadata.value().second.schema_name == metadata.schema_name);
@@ -192,9 +183,9 @@ int main() {
            metadata.minCompatibleVersion);
     assert(decoded_with_metadata.value().second.maxCompatibleVersion ==
            metadata.maxCompatibleVersion);
-  }
+}
 
-  {
+{
     using namespace nerve::serialization;
 
     PH5PH6ArtifactMetadata metadata;
@@ -229,11 +220,10 @@ int main() {
     assert(decoded_metadata.extension_fields[0] == "x");
 
     const std::vector<std::uint8_t> payload{'h', 'd'};
-    const SerializationContext context(SerializationFormat::FLATBUFFERS,
-                                       SchemaVersion(1, 0, 0));
+    const SerializationContext context(SerializationFormat::FLATBUFFERS, SchemaVersion(1, 0, 0));
     PH5PH6SchemaSerializer serializer;
-    const auto serialized = serializer.serializePh5Artifact(
-        payload.data(), payload.size(), metadata, context);
+    const auto serialized =
+        serializer.serializePh5Artifact(payload.data(), payload.size(), metadata, context);
     assert(!serialized.isError());
     const auto &bytes = serialized.value();
     assert(bytes[0] == 0x32);
@@ -250,23 +240,20 @@ int main() {
 
     const std::vector<std::uint8_t> legacy{0x31, 0x35, 0x48, 0x50, 'o', 'k'};
     assert(PH5PH6SchemaMigrator::validateData(legacy));
-    const auto migrated =
-        PH5PH6SchemaMigrator::migrateToExtended(legacy, context);
+    const auto migrated = PH5PH6SchemaMigrator::migrateToExtended(legacy, context);
     assert(migrated.success);
-    assert(PH5PH6SchemaMigrator::validateExtendedData(migrated.migrated_data,
-                                                      migrated.new_metadata));
-  }
+    assert(
+        PH5PH6SchemaMigrator::validateExtendedData(migrated.migrated_data, migrated.new_metadata));
+}
 
-  {
+{
     nerve::summary::CompactSummary summary{};
     summary.lifetime_count = 1;
-    summary.top_lifetimes[0] =
-        nerve::summary::CompactSummary::Lifetime{1.0F, 2.0F, 7U, 3.0F};
+    summary.top_lifetimes[0] = nerve::summary::CompactSummary::Lifetime{1.0F, 2.0F, 7U, 3.0F};
     summary.betti_dimension_count = 1;
     summary.betti_counts[0] = 513U;
     summary.eigenvalue_count = 1;
-    summary.top_eigenvalues[0] =
-        nerve::summary::CompactSummary::Eigenvalue{4.0F, 7U};
+    summary.top_eigenvalues[0] = nerve::summary::CompactSummary::Eigenvalue{4.0F, 7U};
     summary.persistence_entropy = 0.5F;
     summary.betti_entropy = 0.25F;
     summary.spectral_entropy = 0.125F;
@@ -336,17 +323,15 @@ int main() {
     invalid = summary;
     invalid.has_highdim_extension = true;
     invalid.highdim_extension.dimension_complexity.fill(0.0F);
-    invalid.highdim_extension.dimension_complexity[0] =
-        std::numeric_limits<float>::infinity();
+    invalid.highdim_extension.dimension_complexity[0] = std::numeric_limits<float>::infinity();
     assert(!invalid.isValid());
-  }
+}
 
-  {
+{
     using namespace nerve::core;
 
     DeterminismContract contract(DeterminismLevel::STRICT, "component");
-    contract.max_execution_time =
-        std::chrono::milliseconds(0x0102030405060708LL);
+    contract.max_execution_time = std::chrono::milliseconds(0x0102030405060708LL);
     contract.max_memory_usage_mb = static_cast<size_t>(0x1122334455667788ULL);
     contract.params_hash.fill(0xAB);
     contract.params_hash_valid = true;
@@ -373,10 +358,8 @@ int main() {
     metadata.result_checksum.fill(0x02);
     metadata.rng_seed_used.fill(0x03);
     metadata.achieved_level = DeterminismLevel::AUDIT;
-    metadata.actual_execution_time =
-        std::chrono::milliseconds(0x0102030405060708LL);
-    metadata.actual_memory_usage_mb =
-        static_cast<size_t>(0x1122334455667788ULL);
+    metadata.actual_execution_time = std::chrono::milliseconds(0x0102030405060708LL);
+    metadata.actual_memory_usage_mb = static_cast<size_t>(0x1122334455667788ULL);
     metadata.was_deterministic = true;
     metadata.warnings = {"w"};
     metadata.error_message = "e";
@@ -394,16 +377,14 @@ int main() {
     DeterminismMetadata decoded_metadata;
     assert(decoded_metadata.deserialize(metadata_bytes));
     assert(decoded_metadata.achieved_level == DeterminismLevel::AUDIT);
-    assert(decoded_metadata.actual_execution_time ==
-           metadata.actual_execution_time);
-    assert(decoded_metadata.actual_memory_usage_mb ==
-           metadata.actual_memory_usage_mb);
+    assert(decoded_metadata.actual_execution_time == metadata.actual_execution_time);
+    assert(decoded_metadata.actual_memory_usage_mb == metadata.actual_memory_usage_mb);
     assert(decoded_metadata.was_deterministic);
     assert(decoded_metadata.warnings == metadata.warnings);
     assert(decoded_metadata.error_message == "e");
-  }
+}
 
-  {
+{
     using namespace nerve::persistence::perfect;
 
     PerfectPivotMap map;
@@ -422,26 +403,25 @@ int main() {
 
     const char *corrupt_path = "nerve_perfect_hash_corrupt.bin";
     {
-      std::FILE *file = std::fopen(corrupt_path, "wb");
-      assert(file != nullptr);
-      const std::uint32_t magic = 0x54504831U;
-      const std::uint32_t version = 1;
-      const std::uint64_t seed = 0;
-      const std::size_t num_keys = 1;
-      const int min_key = 0;
-      const std::uint8_t direct = 0;
-      const std::size_t impossible_vector_size =
-          std::numeric_limits<std::size_t>::max() / sizeof(std::uint8_t);
-      assert(std::fwrite(&magic, sizeof(magic), 1, file) == 1);
-      assert(std::fwrite(&version, sizeof(version), 1, file) == 1);
-      assert(std::fwrite(&seed, sizeof(seed), 1, file) == 1);
-      assert(std::fwrite(&seed, sizeof(seed), 1, file) == 1);
-      assert(std::fwrite(&num_keys, sizeof(num_keys), 1, file) == 1);
-      assert(std::fwrite(&min_key, sizeof(min_key), 1, file) == 1);
-      assert(std::fwrite(&direct, sizeof(direct), 1, file) == 1);
-      assert(std::fwrite(&impossible_vector_size,
-                         sizeof(impossible_vector_size), 1, file) == 1);
-      std::fclose(file);
+        std::FILE *file = std::fopen(corrupt_path, "wb");
+        assert(file != nullptr);
+        const std::uint32_t magic = 0x54504831U;
+        const std::uint32_t version = 1;
+        const std::uint64_t seed = 0;
+        const std::size_t num_keys = 1;
+        const int min_key = 0;
+        const std::uint8_t direct = 0;
+        const std::size_t impossible_vector_size =
+            std::numeric_limits<std::size_t>::max() / sizeof(std::uint8_t);
+        assert(std::fwrite(&magic, sizeof(magic), 1, file) == 1);
+        assert(std::fwrite(&version, sizeof(version), 1, file) == 1);
+        assert(std::fwrite(&seed, sizeof(seed), 1, file) == 1);
+        assert(std::fwrite(&seed, sizeof(seed), 1, file) == 1);
+        assert(std::fwrite(&num_keys, sizeof(num_keys), 1, file) == 1);
+        assert(std::fwrite(&min_key, sizeof(min_key), 1, file) == 1);
+        assert(std::fwrite(&direct, sizeof(direct), 1, file) == 1);
+        assert(std::fwrite(&impossible_vector_size, sizeof(impossible_vector_size), 1, file) == 1);
+        std::fclose(file);
     }
     PerfectPivotMap rejected;
     assert(!rejected.load(corrupt_path));
@@ -451,44 +431,49 @@ int main() {
     assert(static_map.build(keys, values));
     assert(static_map.find(4).value() == 40);
     assert(!static_map.build({1, 1}, {10, 20}));
-  }
+}
 
-  {
+{
     bool rejected_bloom_nan_fpp = false;
-    try {
-      nerve::persistence::bloom::BloomFilter bloom(
-          128, std::numeric_limits<double>::quiet_NaN());
-      (void)bloom;
-    } catch (const std::invalid_argument &) {
-      rejected_bloom_nan_fpp = true;
+    try
+    {
+        nerve::persistence::bloom::BloomFilter bloom(128, std::numeric_limits<double>::quiet_NaN());
+        (void)bloom;
+    }
+    catch (const std::invalid_argument &)
+    {
+        rejected_bloom_nan_fpp = true;
     }
     assert(rejected_bloom_nan_fpp);
 
     bool rejected_bloom_oversize = false;
-    try {
-      nerve::persistence::bloom::BloomFilter bloom(
-          std::numeric_limits<size_t>::max(), 0.01);
-      (void)bloom;
-    } catch (const std::length_error &) {
-      rejected_bloom_oversize = true;
+    try
+    {
+        nerve::persistence::bloom::BloomFilter bloom(std::numeric_limits<size_t>::max(), 0.01);
+        (void)bloom;
+    }
+    catch (const std::length_error &)
+    {
+        rejected_bloom_oversize = true;
     }
     assert(rejected_bloom_oversize);
 
     nerve::persistence::bloom::BloomFilter clamped_bloom(128, 0.0);
     assert(clamped_bloom.numHashFunctions() > 0);
-  }
+}
 
-  {
-    nerve::persistence::robin_hood::RobinHoodHashMap<int, int> pivot_map(
-        1024);
-    for (int i = 0; i < 300; ++i) {
-      pivot_map.insert(i * 1024, i);
+{
+    nerve::persistence::robin_hood::RobinHoodHashMap<int, int> pivot_map(1024);
+    for (int i = 0; i < 300; ++i)
+    {
+        pivot_map.insert(i * 1024, i);
     }
     assert(pivot_map.size() == 300);
-    for (int i = 0; i < 300; ++i) {
-      const auto value = pivot_map.find(i * 1024);
-      assert(value.has_value());
-      assert(value.value() == i);
+    for (int i = 0; i < 300; ++i)
+    {
+        const auto value = pivot_map.find(i * 1024);
+        assert(value.has_value());
+        assert(value.value() == i);
     }
 
     using namespace nerve::persistence::bitparallel;
@@ -506,9 +491,9 @@ int main() {
     assert(result.speedup_estimate >= 1.0);
     assert(columns[1].pivot == 2);
     assert(columns[1].words.size() == 8);
-  }
+}
 
-  {
+{
     using namespace nerve::persistence::bitparallel;
 
     std::vector<BitColumn> columns;
@@ -518,92 +503,96 @@ int main() {
 
     BitParallelConfig config;
     config.use_clearing = false;
-    const auto result =
-        reduceMatrixBitParallel(columns, config, {0.0, 0.0, 2.0});
+    const auto result = reduceMatrixBitParallel(columns, config, {0.0, 0.0, 2.0});
 
     bool found_finite_pair = false;
     bool found_stale_infinite_pair = false;
-    for (const auto &pair : result.pairs) {
-      found_finite_pair = found_finite_pair ||
-                          (pair.birth_index == 1 && pair.death_index == 2 &&
-                           pair.birth_time == 0.0 && pair.death_time == 2.0);
-      found_stale_infinite_pair =
-          found_stale_infinite_pair ||
-          (pair.birth_index == 1 && pair.death_index < 0);
+    for (const auto &pair : result.pairs)
+    {
+        found_finite_pair = found_finite_pair || (pair.birth_index == 1 && pair.death_index == 2 &&
+                                                  pair.birth_time == 0.0 && pair.death_time == 2.0);
+        found_stale_infinite_pair =
+            found_stale_infinite_pair || (pair.birth_index == 1 && pair.death_index < 0);
     }
     assert(found_finite_pair);
     assert(!found_stale_infinite_pair);
-  }
+}
 
-  {
+{
     nerve::persistence::DistilledVRConfig config;
-    nerve::persistence::DistilledVRFiltration filtration(
-        config);
+    nerve::persistence::DistilledVRFiltration filtration(config);
     const std::vector<double> points{
         0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
     };
-    const auto distilled =
-        filtration.distill(points, 2, 2.0);
+    const auto distilled = filtration.distill(points, 2, 2.0);
     assert(!distilled.landmark_indices.empty());
 
     bool rejected_distilled_nan_ratio = false;
-    try {
-      auto invalid_config = config;
-      invalid_config.target_reduction_ratio =
-          std::numeric_limits<double>::quiet_NaN();
-      nerve::persistence::DistilledVRFiltration invalid_filtration(
-          invalid_config);
-      (void)invalid_filtration.distill(points, 2, 2.0);
-    } catch (const std::invalid_argument &) {
-      rejected_distilled_nan_ratio = true;
+    try
+    {
+        auto invalid_config = config;
+        invalid_config.target_reduction_ratio = std::numeric_limits<double>::quiet_NaN();
+        nerve::persistence::DistilledVRFiltration invalid_filtration(invalid_config);
+        (void)invalid_filtration.distill(points, 2, 2.0);
+    }
+    catch (const std::invalid_argument &)
+    {
+        rejected_distilled_nan_ratio = true;
     }
     assert(rejected_distilled_nan_ratio);
 
     bool rejected_distilled_nan_radius = false;
-    try {
-      (void)filtration.distill(
-          points, 2, std::numeric_limits<double>::quiet_NaN());
-    } catch (const std::invalid_argument &) {
-      rejected_distilled_nan_radius = true;
+    try
+    {
+        (void)filtration.distill(points, 2, std::numeric_limits<double>::quiet_NaN());
+    }
+    catch (const std::invalid_argument &)
+    {
+        rejected_distilled_nan_radius = true;
     }
     assert(rejected_distilled_nan_radius);
 
     bool rejected_distilled_nan_point = false;
-    try {
-      const std::vector<double> invalid_points{
-          0.0, 0.0, std::numeric_limits<double>::quiet_NaN(), 1.0};
-      (void)filtration.distill(invalid_points, 2, 2.0);
-    } catch (const std::invalid_argument &) {
-      rejected_distilled_nan_point = true;
+    try
+    {
+        const std::vector<double> invalid_points{0.0, 0.0, std::numeric_limits<double>::quiet_NaN(),
+                                                 1.0};
+        (void)filtration.distill(invalid_points, 2, 2.0);
+    }
+    catch (const std::invalid_argument &)
+    {
+        rejected_distilled_nan_point = true;
     }
     assert(rejected_distilled_nan_point);
 
     bool rejected_distilled_nan_weight = false;
-    try {
-      nerve::persistence::DistilledVRResult invalid_distilled;
-      invalid_distilled.landmark_indices = {0, 1};
-      invalid_distilled.landmark_edges = {{0, 1}};
-      invalid_distilled.landmark_edge_weights = {
-          std::numeric_limits<double>::quiet_NaN()};
-      (void)filtration.computeApproximatePersistence(
-          invalid_distilled);
-    } catch (const std::invalid_argument &) {
-      rejected_distilled_nan_weight = true;
+    try
+    {
+        nerve::persistence::DistilledVRResult invalid_distilled;
+        invalid_distilled.landmark_indices = {0, 1};
+        invalid_distilled.landmark_edges = {{0, 1}};
+        invalid_distilled.landmark_edge_weights = {std::numeric_limits<double>::quiet_NaN()};
+        (void)filtration.computeApproximatePersistence(invalid_distilled);
+    }
+    catch (const std::invalid_argument &)
+    {
+        rejected_distilled_nan_weight = true;
     }
     assert(rejected_distilled_nan_weight);
-  }
+}
 
-  {
+{
     using namespace nerve::persistence::distilled;
 
     DistilledFiltration filtration;
-    for (int i = 0; i < 1001; ++i) {
-      DistilledSimplex simplex;
-      simplex.vertices = {i};
-      simplex.dimension = 0;
-      simplex.filtration_value = 0.0;
-      simplex.original_index = i;
-      filtration.simplices.push_back(simplex);
+    for (int i = 0; i < 1001; ++i)
+    {
+        DistilledSimplex simplex;
+        simplex.vertices = {i};
+        simplex.dimension = 0;
+        simplex.filtration_value = 0.0;
+        simplex.original_index = i;
+        filtration.simplices.push_back(simplex);
     }
     DistilledSimplex edge;
     edge.vertices = {0, 1};
@@ -618,21 +607,22 @@ int main() {
     const auto result = computePersistenceDistilled(filtration, config);
 
     bool found_distilled_pair = false;
-    for (const auto &pair : result.pairs) {
-      if (pair.death_index >= 0) {
-        assert(pair.birth_time <= pair.death_time);
-      }
-      found_distilled_pair =
-          found_distilled_pair ||
-          (pair.birth_index == 1 && pair.death_index == 1001 &&
-           pair.birth_time == 0.0 && pair.death_time == 2.0);
+    for (const auto &pair : result.pairs)
+    {
+        if (pair.death_index >= 0)
+        {
+            assert(pair.birth_time <= pair.death_time);
+        }
+        found_distilled_pair =
+            found_distilled_pair || (pair.birth_index == 1 && pair.death_index == 1001 &&
+                                     pair.birth_time == 0.0 && pair.death_time == 2.0);
     }
     assert(result.used_bit_parallel);
     assert(found_distilled_pair);
-  }
-
-  return 0;
 }
 
-  return 0;
+return 0;
+}
+
+return 0;
 }

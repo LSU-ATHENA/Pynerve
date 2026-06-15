@@ -3,7 +3,6 @@
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/utils/diagram_statistics.hpp"
-#include "nerve/persistence/core/core_types.hpp"
 
 #include <algorithm>
 #include <cmath>

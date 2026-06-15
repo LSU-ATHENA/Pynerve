@@ -12,8 +12,8 @@ namespace
 {
 
 using nerve::core::NumaAwareMemoryPool;
-using nerve::core::NumaPoolConfig;
 using nerve::core::NumaPolicy;
+using nerve::core::NumaPoolConfig;
 
 bool check_numa_pool_construction()
 {
@@ -29,7 +29,7 @@ bool check_alloc_dealloc()
     NumaPoolConfig config;
     config.enableNumaBinding = false;
     NumaAwareMemoryPool pool(config);
-    void* ptr = pool.allocate(256);
+    void *ptr = pool.allocate(256);
     if (ptr == nullptr)
     {
         std::cerr << "allocation returned null\n";
@@ -60,20 +60,22 @@ bool check_multiple_alloc_free_cycles()
     NumaPoolConfig config;
     config.enableNumaBinding = false;
     NumaAwareMemoryPool pool(config);
-    std::vector<void*> ptrs;
+    std::vector<void *> ptrs;
     ptrs.reserve(10);
     for (int i = 0; i < 10; ++i)
     {
-        void* p = pool.allocate(64);
+        void *p = pool.allocate(64);
         if (p == nullptr)
         {
             std::cerr << "cycle allocation failed at " << i << "\n";
-            for (auto* pp : ptrs) pool.deallocate(pp, 64);
+            for (auto *pp : ptrs)
+                pool.deallocate(pp, 64);
             return false;
         }
         ptrs.push_back(p);
     }
-    for (auto* p : ptrs) pool.deallocate(p, 64);
+    for (auto *p : ptrs)
+        pool.deallocate(p, 64);
     return true;
 }
 
@@ -82,7 +84,7 @@ bool check_allocate_on_node()
     NumaPoolConfig config;
     config.enableNumaBinding = false;
     NumaAwareMemoryPool pool(config);
-    void* ptr = pool.allocateOnNode(128, 0);
+    void *ptr = pool.allocateOnNode(128, 0);
     if (ptr == nullptr)
     {
         std::cerr << "node allocation returned null\n";

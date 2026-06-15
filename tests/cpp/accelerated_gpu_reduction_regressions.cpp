@@ -1,8 +1,8 @@
 
 #include "nerve/core_types.hpp"
 #include "nerve/errors/errors.hpp"
-#include "nerve/persistence/cuda/cuda_edge_types.hpp"
 #include "nerve/persistence/cuda/cuda_edge_extraction.hpp"
+#include "nerve/persistence/cuda/cuda_edge_types.hpp"
 #include "nerve/persistence/cuda/gpu_reduction_engine.hpp"
 #include "nerve/persistence/hybrid_reduction_engine.hpp"
 

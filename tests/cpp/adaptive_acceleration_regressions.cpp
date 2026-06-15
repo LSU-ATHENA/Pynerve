@@ -12,7 +12,8 @@
 #include <limits>
 #include <vector>
 
-int main() {
+int main()
+{
     using namespace nerve::persistence::adaptive_acceleration;
     namespace approx = nerve::persistence::adaptive_acceleration::approximation;
     namespace stream = nerve::persistence::adaptive_acceleration::streaming;
@@ -23,7 +24,7 @@ int main() {
 
     auto engine_result = MatrixMultiplicationEngine::create(MatrixMultiplicationConfig{});
     assert(engine_result.isSuccess());
-    auto& engine = engine_result.value();
+    auto &engine = engine_result.value();
 
     ProblemCharacteristics problem;
     auto valid = engine->compute(matrix, problem);
@@ -49,7 +50,7 @@ int main() {
 
     auto sparsifier_result = SparsificationEngine::create(SparsificationConfig{});
     assert(sparsifier_result.isSuccess());
-    auto& sparsifier = sparsifier_result.value();
+    auto &sparsifier = sparsifier_result.value();
 
     auto rectangular_result = SparseMatrix::fromDenseMatrix({1.0, 2.0}, 1, 2);
     assert(rectangular_result.isSuccess());
@@ -74,8 +75,8 @@ int main() {
 
     auto huge_shape = SparseMatrix::fromBoundaryMatrix({}, 46341, 46341);
     assert(huge_shape.isSuccess());
-    auto rejected_dense = sparsifier->sparsify(huge_shape.value(),
-                                               SparsificationStrategy::SWAP_REDUCTION, 0.5);
+    auto rejected_dense =
+        sparsifier->sparsify(huge_shape.value(), SparsificationStrategy::SWAP_REDUCTION, 0.5);
     assert(rejected_dense.isError());
     assert(rejected_dense.errorCode() == nerve::errors::ErrorCode::E41_RESOURCE_LIMIT);
 
@@ -83,7 +84,7 @@ int main() {
     vr_config.max_dim = 1;
     auto vr_engine_result = AdaptiveAccelerationVrEngine::create(vr_config);
     assert(vr_engine_result.isSuccess());
-    auto& vr_engine = vr_engine_result.value();
+    auto &vr_engine = vr_engine_result.value();
 
     auto invalid_points = vr_engine->computeVrPersistence(
         {0.0, std::numeric_limits<double>::quiet_NaN()}, 1, vr_config);
@@ -99,7 +100,7 @@ int main() {
     std::vector<double> extreme_points = {-std::numeric_limits<double>::max(),
                                           std::numeric_limits<double>::max()};
     nerve::core::BufferView<const double> extreme_view(extreme_points.data(),
-                                                         extreme_points.size());
+                                                       extreme_points.size());
     auto characteristics = ProblemAnalyzer::analyzeProblem(extreme_view, 1);
     assert(std::isfinite(characteristics.density));
     assert(std::isfinite(characteristics.estimated_complexity));
@@ -107,13 +108,11 @@ int main() {
 
     auto selector_result = AdaptiveAlgorithmSelector::create(AdaptiveConfig{});
     assert(selector_result.isSuccess());
-    auto& selector = selector_result.value();
-    std::vector<double> invalid_adaptive_points = {
-        0.0, std::numeric_limits<double>::quiet_NaN()};
-    nerve::core::BufferView<const double> invalid_adaptive_view(
-        invalid_adaptive_points.data(), invalid_adaptive_points.size());
-    auto invalid_adaptive =
-        selector->executeAdaptive(invalid_adaptive_view, 1, vr_config);
+    auto &selector = selector_result.value();
+    std::vector<double> invalid_adaptive_points = {0.0, std::numeric_limits<double>::quiet_NaN()};
+    nerve::core::BufferView<const double> invalid_adaptive_view(invalid_adaptive_points.data(),
+                                                                invalid_adaptive_points.size());
+    auto invalid_adaptive = selector->executeAdaptive(invalid_adaptive_view, 1, vr_config);
     assert(invalid_adaptive.isError());
     assert(invalid_adaptive.errorCode() == nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT);
 
@@ -124,7 +123,7 @@ int main() {
 
     auto reducer_result = LockfreeReducer::create(LockfreeConfig{});
     assert(reducer_result.isSuccess());
-    auto& reducer = reducer_result.value();
+    auto &reducer = reducer_result.value();
     auto valid_reduction = reducer->reduceParallel({oversized_column}, 1);
     assert(valid_reduction.isSuccess());
 
@@ -138,20 +137,17 @@ int main() {
     invalid_approx_config.max_error = std::numeric_limits<double>::quiet_NaN();
     auto invalid_approx_processor = approx::ApproximateProcessor::create(invalid_approx_config);
     assert(invalid_approx_processor.isError());
-    assert(invalid_approx_processor.errorCode() ==
-           nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT);
+    assert(invalid_approx_processor.errorCode() == nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT);
 
     auto approx_processor = approx::ApproximateProcessor::create(approx::ApproximationConfig{});
     assert(approx_processor.isSuccess());
-    std::vector<double> invalid_approx_points = {
-        0.0, std::numeric_limits<double>::quiet_NaN()};
-    nerve::core::BufferView<const double> invalid_approx_view(
-        invalid_approx_points.data(), invalid_approx_points.size());
+    std::vector<double> invalid_approx_points = {0.0, std::numeric_limits<double>::quiet_NaN()};
+    nerve::core::BufferView<const double> invalid_approx_view(invalid_approx_points.data(),
+                                                              invalid_approx_points.size());
     auto invalid_approx_result = approx_processor.value()->computeApproximate(
         invalid_approx_view, 1, approx::ApproximationLevel::LOW_PRECISION, vr_config);
     assert(invalid_approx_result.isError());
-    assert(invalid_approx_result.errorCode() ==
-           nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT);
+    assert(invalid_approx_result.errorCode() == nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT);
 
     std::vector<nerve::persistence::Pair> infinite_pairs = {
         nerve::persistence::Pair{0.0, std::numeric_limits<double>::infinity(), 0}};
@@ -165,20 +161,16 @@ int main() {
     assert(estimated_bounds.isSuccess());
     assert(std::isfinite(estimated_bounds.value().wasserstein_distance));
 
-    std::vector<nerve::persistence::Pair> invalid_bound_pairs = {
-        nerve::persistence::Pair{
-            std::numeric_limits<double>::infinity(),
-            std::numeric_limits<double>::infinity(), 0}};
+    std::vector<nerve::persistence::Pair> invalid_bound_pairs = {nerve::persistence::Pair{
+        std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0}};
     auto invalid_bounds = approx::ErrorBoundsCalculator::calculateErrorBounds(
         invalid_bound_pairs, infinite_pairs, approx::ApproximationLevel::VERY_FAST);
     assert(invalid_bounds.isError());
-    assert(invalid_bounds.errorCode() ==
-           nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT);
+    assert(invalid_bounds.errorCode() == nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT);
     auto invalid_estimated_bounds = approx::ErrorBoundsCalculator::estimateErrorBounds(
         invalid_bound_pairs, approx::ApproximationLevel::VERY_FAST, characteristics);
     assert(invalid_estimated_bounds.isError());
-    assert(invalid_estimated_bounds.errorCode() ==
-           nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT);
+    assert(invalid_estimated_bounds.errorCode() == nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT);
 
     stream::StreamingConfig invalid_stream_config;
     invalid_stream_config.target_efficiency = std::numeric_limits<double>::quiet_NaN();
@@ -203,7 +195,8 @@ int main() {
     invalid_chunk.point_dim = 1;
     invalid_chunk.num_points = 1;
     invalid_chunk.max_radius = 1.0;
-    auto invalid_parallel = chunk_processor.value()->processChunksParallel({invalid_chunk}, vr_config);
+    auto invalid_parallel =
+        chunk_processor.value()->processChunksParallel({invalid_chunk}, vr_config);
     assert(invalid_parallel.isError());
     assert(invalid_parallel.errorCode() == nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT);
 

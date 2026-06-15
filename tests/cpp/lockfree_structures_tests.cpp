@@ -10,31 +10,37 @@
 #include <thread>
 #include <vector>
 
-namespace {
+namespace
+{
 
 using nerve::streaming::lockfree::LockFreeMPMCQueue;
-using nerve::streaming::lockfree::WaitFreeRingBuffer;
 using nerve::streaming::lockfree::LockFreeStreamingWindow;
+using nerve::streaming::lockfree::WaitFreeRingBuffer;
 
-}  // namespace
+} // namespace
 
-int main() {
+int main()
+{
     // Test 1: MPMC queue push/pop with 2 threads  --  verify FIFO order
     {
         LockFreeMPMCQueue<int> queue(8);
 
         std::thread producer([&queue]() {
-            for (int i = 0; i < 4; ++i) {
-                while (!queue.tryEnqueue(i)) {
+            for (int i = 0; i < 4; ++i)
+            {
+                while (!queue.tryEnqueue(i))
+                {
                     std::this_thread::yield();
                 }
             }
         });
 
         std::thread consumer([&queue]() {
-            for (int expected = 0; expected < 4; ++expected) {
+            for (int expected = 0; expected < 4; ++expected)
+            {
                 std::optional<int> value;
-                while (!(value = queue.tryDequeue())) {
+                while (!(value = queue.tryDequeue()))
+                {
                     std::this_thread::yield();
                 }
                 assert(value.has_value());
@@ -58,13 +64,16 @@ int main() {
         std::atomic<long long> sum_consumed{0};
 
         std::vector<std::thread> producers;
-        for (int p = 0; p < num_producers; ++p) {
+        for (int p = 0; p < num_producers; ++p)
+        {
             producers.emplace_back([&queue, &produced, &sum_produced, p]() {
                 int base = p * (total_items / num_producers);
                 int count = total_items / num_producers;
-                for (int i = 0; i < count; ++i) {
+                for (int i = 0; i < count; ++i)
+                {
                     int value = base + i;
-                    while (!queue.tryEnqueue(value)) {
+                    while (!queue.tryEnqueue(value))
+                    {
                         std::this_thread::yield();
                     }
                     produced.fetch_add(1, std::memory_order_relaxed);
@@ -74,22 +83,29 @@ int main() {
         }
 
         std::vector<std::thread> consumers;
-        for (int c = 0; c < num_consumers; ++c) {
+        for (int c = 0; c < num_consumers; ++c)
+        {
             consumers.emplace_back([&queue, &consumed, &sum_consumed, total_items]() {
-                while (consumed.load(std::memory_order_relaxed) < total_items) {
+                while (consumed.load(std::memory_order_relaxed) < total_items)
+                {
                     auto value = queue.tryDequeue();
-                    if (value.has_value()) {
+                    if (value.has_value())
+                    {
                         consumed.fetch_add(1, std::memory_order_relaxed);
                         sum_consumed.fetch_add(*value, std::memory_order_relaxed);
-                    } else {
+                    }
+                    else
+                    {
                         std::this_thread::yield();
                     }
                 }
             });
         }
 
-        for (auto& t : producers) t.join();
-        for (auto& t : consumers) t.join();
+        for (auto &t : producers)
+            t.join();
+        for (auto &t : consumers)
+            t.join();
 
         assert(produced.load() == total_items);
         assert(consumed.load() == total_items);
@@ -139,7 +155,8 @@ int main() {
 
         auto popped = buffer.tryPopBulk(10);
         assert(popped.size() == 5);
-        for (size_t i = 0; i < 5; ++i) {
+        for (size_t i = 0; i < 5; ++i)
+        {
             assert(popped[i] == items[i]);
         }
     }
@@ -167,8 +184,10 @@ int main() {
         std::atomic<bool> producer_done{false};
 
         std::thread producer([&buffer, &producer_done]() {
-            for (int i = 0; i < count; ++i) {
-                while (!buffer.tryPush(i)) {
+            for (int i = 0; i < count; ++i)
+            {
+                while (!buffer.tryPush(i))
+                {
                     std::this_thread::yield();
                 }
             }
@@ -177,14 +196,20 @@ int main() {
 
         std::thread consumer([&buffer, &producer_done]() {
             int expected = 0;
-            while (expected < count) {
+            while (expected < count)
+            {
                 auto val = buffer.tryPop();
-                if (val.has_value()) {
+                if (val.has_value())
+                {
                     assert(*val == expected);
                     ++expected;
-                } else if (producer_done.load(std::memory_order_acquire)) {
+                }
+                else if (producer_done.load(std::memory_order_acquire))
+                {
                     std::this_thread::yield();
-                } else {
+                }
+                else
+                {
                     std::this_thread::yield();
                 }
             }
@@ -228,12 +253,14 @@ int main() {
     // Test 9: WaitFreeRingBuffer approximateSize
     {
         WaitFreeRingBuffer<int> buffer(64);
-        for (int i = 0; i < 30; ++i) {
+        for (int i = 0; i < 30; ++i)
+        {
             assert(buffer.tryPush(i));
         }
         assert(buffer.approximateSize() == 30);
 
-        for (int i = 0; i < 10; ++i) {
+        for (int i = 0; i < 10; ++i)
+        {
             (void)buffer.tryPop();
         }
         assert(buffer.approximateSize() == 20);

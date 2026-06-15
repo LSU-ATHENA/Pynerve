@@ -74,7 +74,7 @@ private:
     PH5PH6ArtifactMetadata deserializeHeader(const std::vector<uint8_t> &data,
                                              size_t &offset) const;
     ErrorResult<std::vector<uint8_t>> deserializePayload(const std::vector<uint8_t> &data,
-                                                               size_t offset) const;
+                                                         size_t offset) const;
     ErrorResult<std::vector<uint8_t>> deserializeExtendedPayload(const std::vector<uint8_t> &data,
                                                                  size_t offset) const;
     bool validateHeader(const PH5PH6ArtifactMetadata &metadata) const;
@@ -115,7 +115,7 @@ public:
         PH5PH6ArtifactMetadata new_metadata;
     };
     static MigrationResult migrateToExtended(const std::vector<uint8_t> &data,
-                                                   const SerializationContext &context);
+                                             const SerializationContext &context);
     static MigrationResult migrateWithExtension(const std::vector<uint8_t> &data,
                                                 const PH5PH6ArtifactMetadata &extension_metadata,
                                                 const SerializationContext &context);
@@ -124,10 +124,9 @@ public:
                                      const PH5PH6ArtifactMetadata &expected_metadata);
 
 private:
-    static std::vector<uint8_t>
-    addHighdimExtension(const std::vector<uint8_t> &data,
-                                const PH5PH6ArtifactMetadata &metadata,
-                                const std::vector<uint8_t> &extension_payload);
+    static std::vector<uint8_t> addHighdimExtension(const std::vector<uint8_t> &data,
+                                                    const PH5PH6ArtifactMetadata &metadata,
+                                                    const std::vector<uint8_t> &extension_payload);
     static std::vector<uint8_t> updateExtendedHeader(const std::vector<uint8_t> &data,
                                                      const PH5PH6ArtifactMetadata &new_metadata);
 };

@@ -6,7 +6,8 @@
 #include <stdexcept>
 #include <vector>
 
-int main() {
+int main()
+{
     using nerve::algebra::compressed::BitPackedZ2Matrix;
 
     BitPackedZ2Matrix matrix(130, 2);
@@ -27,19 +28,26 @@ int main() {
     assert(!matrix.get(64, 0));
 
     bool rejected_row_overflow = false;
-    try {
+    try
+    {
         BitPackedZ2Matrix too_many_rows(std::numeric_limits<size_t>::max(), 1);
-    } catch (const std::overflow_error&) {
+    }
+    catch (const std::overflow_error &)
+    {
         rejected_row_overflow = true;
     }
     assert(rejected_row_overflow);
 
     const size_t vector_capacity = std::vector<uint64_t>().max_size();
-    if (vector_capacity < std::numeric_limits<size_t>::max()) {
+    if (vector_capacity < std::numeric_limits<size_t>::max())
+    {
         bool rejected_capacity = false;
-        try {
+        try
+        {
             BitPackedZ2Matrix too_many_columns(64, vector_capacity + 1);
-        } catch (const std::length_error&) {
+        }
+        catch (const std::length_error &)
+        {
             rejected_capacity = true;
         }
         assert(rejected_capacity);
@@ -57,19 +65,24 @@ int main() {
     assert(!csb.blocks[0].empty());
 
     bool rejected_csb_block_size = false;
-    try {
+    try
+    {
         convertToCSB(columns, csb, 0);
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_csb_block_size = true;
     }
     assert(rejected_csb_block_size);
 
     bool rejected_nonfinite_filtration = false;
-    try {
+    try
+    {
         BitParallelConfig config;
-        (void)reduceMatrixBitParallel(columns, config,
-                                      {std::numeric_limits<double>::quiet_NaN()});
-    } catch (const std::invalid_argument&) {
+        (void)reduceMatrixBitParallel(columns, config, {std::numeric_limits<double>::quiet_NaN()});
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_nonfinite_filtration = true;
     }
     assert(rejected_nonfinite_filtration);

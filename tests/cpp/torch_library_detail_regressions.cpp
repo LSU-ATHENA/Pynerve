@@ -20,8 +20,8 @@ namespace
 
 using at::Tensor;
 using nerve::torch::BoundaryMatrix;
-using nerve::torch::SimplexTree;
 using nerve::torch::PersistenceDiagram;
+using nerve::torch::SimplexTree;
 
 bool check_torch_library_registration()
 {

@@ -1,10 +1,11 @@
+#include "nerve/persistence/utils/adaptive_selector.hpp"
+
 #include <cassert>
 #include <cmath>
 #include <limits>
 
-#include "nerve/persistence/utils/adaptive_selector.hpp"
-
-int main() {
+int main()
+{
     nerve::persistence::AdaptiveSelector selector;
     nerve::persistence::DataCharacteristics invalid_data{};
     invalid_data.num_simplices = std::numeric_limits<std::size_t>::max();

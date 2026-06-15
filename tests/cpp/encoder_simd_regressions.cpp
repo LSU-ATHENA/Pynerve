@@ -1,5 +1,5 @@
-#include "nerve/encoders/simd_encoder.hpp"
 #include "nerve/core_types.hpp"
+#include "nerve/encoders/simd_encoder.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -71,7 +71,8 @@ bool check_simd_vs_scalar_equivalence()
     std::mt19937_64 rng(42);
     std::uniform_real_distribution<double> dist(-10.0, 10.0);
     std::vector<double> input(64);
-    for (auto& v : input) v = dist(rng);
+    for (auto &v : input)
+        v = dist(rng);
     std::vector<double> simd_output(64, 0.0);
     std::vector<double> scalar_output(64, 0.0);
     nerve::encoders::simdEncodeBatch(input.data(), 8, 8, simd_output.data());

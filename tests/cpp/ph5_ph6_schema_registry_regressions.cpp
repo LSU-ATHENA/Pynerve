@@ -12,8 +12,8 @@
 namespace
 {
 
-using nerve::serialization::PH5PH6SchemaRegistry;
 using nerve::serialization::PH5PH6ArtifactMetadata;
+using nerve::serialization::PH5PH6SchemaRegistry;
 using nerve::serialization::SchemaVersion;
 using nerve::serialization::VersionNegotiationResult;
 

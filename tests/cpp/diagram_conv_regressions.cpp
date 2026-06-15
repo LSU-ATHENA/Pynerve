@@ -7,34 +7,40 @@
 #include <stdexcept>
 #include <vector>
 
-namespace {
+namespace
+{
 
 template <typename Exception, typename Func>
-void assertThrows(Func&& func) {
+void assertThrows(Func &&func)
+{
     bool thrown = false;
-    try {
+    try
+    {
         func();
-    } catch (const Exception&) {
+    }
+    catch (const Exception &)
+    {
         thrown = true;
     }
     assert(thrown);
 }
 
 template <typename T>
-std::span<const T> asSpan(const std::vector<T>& values) {
+std::span<const T> asSpan(const std::vector<T> &values)
+{
     return std::span<const T>(values.data(), values.size());
 }
 
 template <typename T>
-bool allFinite(const std::vector<T>& values) {
-    return std::all_of(values.begin(), values.end(), [](T value) {
-        return std::isfinite(value);
-    });
+bool allFinite(const std::vector<T> &values)
+{
+    return std::all_of(values.begin(), values.end(), [](T value) { return std::isfinite(value); });
 }
 
-}  // namespace
+} // namespace
 
-int main() {
+int main()
+{
     {
         nerve::nn::DiagramConv1D<double>::Config config;
         config.in_channels = 2;
@@ -52,9 +58,8 @@ int main() {
         overflow_config.in_channels = std::numeric_limits<int>::max();
         overflow_config.out_channels = std::numeric_limits<int>::max();
         overflow_config.kernel_size = std::numeric_limits<int>::max();
-        assertThrows<std::length_error>([&] {
-            nerve::nn::DiagramConv1D<double> invalid(overflow_config);
-        });
+        assertThrows<std::length_error>(
+            [&] { nerve::nn::DiagramConv1D<double> invalid(overflow_config); });
 
         const std::vector<double> empty;
         const size_t overflowing_batch = std::numeric_limits<size_t>::max() / 3 + 1;
@@ -82,9 +87,8 @@ int main() {
         nerve::nn::DiagramConv1D<double> small(small_config);
         const std::vector<double> bad_kernel{1.0, std::numeric_limits<double>::infinity()};
         const std::vector<double> bias{0.0};
-        assertThrows<std::invalid_argument>([&] {
-            small.set_weights(asSpan(bad_kernel), asSpan(bias));
-        });
+        assertThrows<std::invalid_argument>(
+            [&] { small.set_weights(asSpan(bad_kernel), asSpan(bias)); });
     }
 
     {
@@ -96,9 +100,7 @@ int main() {
         nerve::nn::DiagramConv2D<double> conv(config);
 
         const std::vector<double> input{
-            1.0, 0.0, 0.5,
-            0.2, 0.4, 0.6,
-            0.3, 0.7, 0.9,
+            1.0, 0.0, 0.5, 0.2, 0.4, 0.6, 0.3, 0.7, 0.9,
         };
         const auto output = conv.forward(asSpan(input), 1, 3, 3);
         assert(output.size() == 4);
@@ -109,9 +111,8 @@ int main() {
         overflow_config.out_channels = std::numeric_limits<int>::max();
         overflow_config.kernel_h = std::numeric_limits<int>::max();
         overflow_config.kernel_w = std::numeric_limits<int>::max();
-        assertThrows<std::length_error>([&] {
-            nerve::nn::DiagramConv2D<double> invalid(overflow_config);
-        });
+        assertThrows<std::length_error>(
+            [&] { nerve::nn::DiagramConv2D<double> invalid(overflow_config); });
 
         const std::vector<double> empty;
         const size_t overflowing_batch = std::numeric_limits<size_t>::max() / 3 + 1;
@@ -142,19 +143,17 @@ int main() {
 
         auto bad_config = config;
         bad_config.sigma = std::numeric_limits<double>::quiet_NaN();
-        assertThrows<std::invalid_argument>([&] {
-            nerve::nn::PersistenceImageLayer<double> invalid(bad_config);
-        });
+        assertThrows<std::invalid_argument>(
+            [&] { nerve::nn::PersistenceImageLayer<double> invalid(bad_config); });
 
         auto huge_config = config;
         huge_config.resolution_h = std::numeric_limits<int>::max();
         huge_config.resolution_w = std::numeric_limits<int>::max();
         nerve::nn::PersistenceImageLayer<double> huge_layer(huge_config);
         const std::vector<double> empty;
-        const size_t overflowing_batch =
-            std::numeric_limits<size_t>::max() /
-                static_cast<size_t>(std::numeric_limits<int>::max()) +
-            1;
+        const size_t overflowing_batch = std::numeric_limits<size_t>::max() /
+                                             static_cast<size_t>(std::numeric_limits<int>::max()) +
+                                         1;
         assertThrows<std::length_error>([&] {
             const auto result = huge_layer.forward(asSpan(empty), overflowing_batch, 0);
             (void)result;

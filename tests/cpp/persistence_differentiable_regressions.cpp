@@ -1,5 +1,5 @@
-#include "nerve/common/accelerated_types.hpp"
 #include "nerve/autodiff/autodiff.hpp"
+#include "nerve/common/accelerated_types.hpp"
 #include "nerve/core/budget.hpp"
 #include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core_types.hpp"

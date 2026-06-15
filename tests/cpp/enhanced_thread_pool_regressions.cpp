@@ -1,3 +1,5 @@
+#include "nerve/core/memory/thread_safe_memory_pool.hpp"
+
 #include <atomic>
 #include <cassert>
 #include <chrono>
@@ -6,10 +8,10 @@
 #include <stdexcept>
 #include <thread>
 
-#include "nerve/core/memory/thread_safe_memory_pool.hpp"
-
-int main() {
-    try {
+int main()
+{
+    try
+    {
         {
             nerve::core::EnhancedThreadPool pool(1);
             assert(pool.numThreads() == 1);
@@ -25,9 +27,12 @@ int main() {
             pool.waitForAll();
 
             bool observed_exception = false;
-            try {
+            try
+            {
                 (void)failing.get();
-            } catch (const std::runtime_error &) {
+            }
+            catch (const std::runtime_error &)
+            {
                 observed_exception = true;
             }
             assert(observed_exception);
@@ -44,12 +49,14 @@ int main() {
                 nerve::core::EnhancedThreadPool pool(1);
                 first = pool.submit([&] {
                     first_started.store(true, std::memory_order_release);
-                    while (!release_first.load(std::memory_order_acquire)) {
+                    while (!release_first.load(std::memory_order_acquire))
+                    {
                         std::this_thread::sleep_for(std::chrono::milliseconds(1));
                     }
                 });
 
-                while (!first_started.load(std::memory_order_acquire)) {
+                while (!first_started.load(std::memory_order_acquire))
+                {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
 
@@ -64,7 +71,9 @@ int main() {
         }
 
         return 0;
-    } catch (const std::exception &) {
+    }
+    catch (const std::exception &)
+    {
         return 1;
     }
 }

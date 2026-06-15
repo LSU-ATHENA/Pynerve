@@ -5,38 +5,42 @@
 #include <stdexcept>
 #include <vector>
 
-namespace {
+namespace
+{
 
 template <typename Exception, typename Func>
-void assertThrows(Func&& func) {
+void assertThrows(Func &&func)
+{
     bool rejected = false;
-    try {
+    try
+    {
         func();
-    } catch (const Exception&) {
+    }
+    catch (const Exception &)
+    {
         rejected = true;
     }
     assert(rejected);
 }
 
-}  // namespace
+} // namespace
 
-int main() {
+int main()
+{
     nerve::probabilistic::MonteCarloPersistence monte_carlo;
     const std::vector<std::vector<double>> points{{0.0}, {1.0}};
     const auto samples = monte_carlo.monteCarloSample(points, 1, "uniform");
     assert(samples.size() == 1);
 
-    const std::vector<std::vector<double>> nonfinite{
-        {0.0}, {std::numeric_limits<double>::quiet_NaN()}};
-    assertThrows<std::invalid_argument>([&] {
-        (void)monte_carlo.monteCarloSample(nonfinite, 1, "uniform");
-    });
+    const std::vector<std::vector<double>> nonfinite{{0.0},
+                                                     {std::numeric_limits<double>::quiet_NaN()}};
+    assertThrows<std::invalid_argument>(
+        [&] { (void)monte_carlo.monteCarloSample(nonfinite, 1, "uniform"); });
 
-    const std::vector<std::vector<double>> overflow_prone{
-        {-std::numeric_limits<double>::max()}, {std::numeric_limits<double>::max()}};
-    assertThrows<std::overflow_error>([&] {
-        (void)monte_carlo.monteCarloSample(overflow_prone, 1, "uniform");
-    });
+    const std::vector<std::vector<double>> overflow_prone{{-std::numeric_limits<double>::max()},
+                                                          {std::numeric_limits<double>::max()}};
+    assertThrows<std::overflow_error>(
+        [&] { (void)monte_carlo.monteCarloSample(overflow_prone, 1, "uniform"); });
 
     nerve::persistence::Diagram diagram;
     diagram.addPair({0.0, 1.0, 0});

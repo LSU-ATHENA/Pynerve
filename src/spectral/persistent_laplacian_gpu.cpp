@@ -281,12 +281,14 @@ PersistentLaplacianSolverGPU::gpuArnoldi(const Eigen::SparseMatrix<double> &lapl
 
     for (int j = 0; j < krylov_dim; ++j)
     {
+        // cppcheck-suppress shiftTooManyBits
         csrSpMVKernel<<<grid_size, block_size>>>(csr.n, csr.d_row_offsets, csr.d_col_indices,
                                                  csr.d_values, d_v_curr, d_w);
 
         for (int i = 0; i <= j; ++i)
         {
             H_data[i * krylov_dim + j] = dotProduct(d_v_curr, d_w, n);
+            // cppcheck-suppress shiftTooManyBits
             orthogonalizeKernel<<<grid_size, block_size>>>(n, d_v_curr, d_w,
                                                            H_data[i * krylov_dim + j]);
         }
@@ -295,6 +297,7 @@ PersistentLaplacianSolverGPU::gpuArnoldi(const Eigen::SparseMatrix<double> &lapl
         if (H_data[(j + 1) * krylov_dim + j] < kOrthoTol)
             break;
 
+        // cppcheck-suppress shiftTooManyBits
         scaleKernel<<<grid_size, block_size>>>(n, 1.0 / H_data[(j + 1) * krylov_dim + j], d_w);
         cudaMemcpy(d_v_curr, d_w, n * sizeof(double), cudaMemcpyDeviceToDevice);
     }

@@ -4,9 +4,11 @@
 #include <limits>
 #include <vector>
 
-namespace {
+namespace
+{
 
-nerve::summary::CompactSummaryPipeline makePipeline(bool approximate = false) {
+nerve::summary::CompactSummaryPipeline makePipeline(bool approximate = false)
+{
     nerve::summary::CompactSummaryPipeline::PipelineConfig config;
     config.enable_approximation = approximate;
     config.max_data_points = 2;
@@ -15,21 +17,22 @@ nerve::summary::CompactSummaryPipeline makePipeline(bool approximate = false) {
     return nerve::summary::CompactSummaryPipeline(config);
 }
 
-void assertInvalidInput(
-    const nerve::errors::ErrorResult<nerve::summary::CompactSummary>& result) {
+void assertInvalidInput(const nerve::errors::ErrorResult<nerve::summary::CompactSummary> &result)
+{
     assert(result.isError());
     assert(result.errorCode() == nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT);
 }
 
-void assertResourceLimit(
-    const nerve::errors::ErrorResult<nerve::summary::CompactSummary>& result) {
+void assertResourceLimit(const nerve::errors::ErrorResult<nerve::summary::CompactSummary> &result)
+{
     assert(result.isError());
     assert(result.errorCode() == nerve::errors::ErrorCode::E41_RESOURCE_LIMIT);
 }
 
-}  // namespace
+} // namespace
 
-int main() {
+int main()
+{
     const auto exact = makePipeline();
     const std::vector<std::vector<float>> points{{0.0F, 0.0F}, {1.0F, 0.0F}, {0.0F, 1.0F}};
     const auto summary = exact.computeSummary(points, 123, 7);
@@ -51,8 +54,8 @@ int main() {
         {0.0F, 0.0F}, {std::numeric_limits<float>::max(), 1.0F}};
     assertResourceLimit(exact.computeSummary(unsafe_magnitude, 123, 7));
 
-    const std::vector<std::vector<float>> infinite{
-        {0.0F, 0.0F}, {std::numeric_limits<float>::infinity(), 1.0F}};
+    const std::vector<std::vector<float>> infinite{{0.0F, 0.0F},
+                                                   {std::numeric_limits<float>::infinity(), 1.0F}};
     const auto approximate = makePipeline(true).computeApproximateSummary(infinite, 123, 7);
     assert(approximate.data_points_count == 0);
     assert(approximate.lifetime_count == 0);

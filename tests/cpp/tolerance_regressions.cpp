@@ -3,7 +3,8 @@
 #include <cassert>
 #include <limits>
 
-int main() {
+int main()
+{
     const double points[] = {-2.0, 0.5, 4.0, 1.0};
     const auto valid = nerve::math::Tolerance::estimateScale(points, 2, 2);
     assert(valid.data_scale == 4.0);

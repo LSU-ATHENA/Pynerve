@@ -240,7 +240,7 @@ def verbose(enabled: bool = True, level: str = "info") -> Any:
 
 
 from ._diagnostics_data import DataQualityReport, check_data_quality  # noqa: E402
-from ._diagnostics_failure import diagnose_failure  # noqa: E402
+from ._diagnostics_failure import FailureDiagnosis, diagnose_failure  # noqa: E402
 from ._diagnostics_system import (  # noqa: E402
     DebugMode,
     check_gpu_availability,
@@ -252,6 +252,7 @@ __all__ = [
     "DiagnosticsCollector",
     "DiagnosticInfo",
     "DataQualityReport",
+    "FailureDiagnosis",
     "verbose",
     "diagnose_failure",
     "check_data_quality",

@@ -4,7 +4,8 @@
 #include <cassert>
 #include <limits>
 
-int main() {
+int main()
+{
     using namespace nerve;
     using namespace nerve::persistence;
 
@@ -12,8 +13,8 @@ int main() {
     assert(complex.ok());
     assert(complex.value().numSimplices() > 0);
 
-    auto invalid_point = buildIncrementalComplex(
-        PointCloud{{0.0}, {std::numeric_limits<double>::quiet_NaN()}}, 1);
+    auto invalid_point =
+        buildIncrementalComplex(PointCloud{{0.0}, {std::numeric_limits<double>::quiet_NaN()}}, 1);
     assert(!invalid_point.ok());
     assert(invalid_point.errorCode() == ErrorCode::E54_PH4_INVALID_INPUT);
 

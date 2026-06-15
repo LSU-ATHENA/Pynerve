@@ -442,8 +442,7 @@ PH5PH6SchemaSerializer::serializeHeader(const PH5PH6ArtifactMetadata &metadata) 
     return raw;
 }
 
-std::vector<uint8_t> PH5PH6SchemaSerializer::serializePayload(const void *data,
-                                                                    size_t size) const
+std::vector<uint8_t> PH5PH6SchemaSerializer::serializePayload(const void *data, size_t size) const
 {
     if (size == 0)
     {
@@ -480,8 +479,7 @@ PH5PH6ArtifactMetadata PH5PH6SchemaSerializer::deserializeHeader(const std::vect
 }
 
 ErrorResult<std::vector<uint8_t>>
-PH5PH6SchemaSerializer::deserializePayload(const std::vector<uint8_t> &data,
-                                                 size_t offset) const
+PH5PH6SchemaSerializer::deserializePayload(const std::vector<uint8_t> &data, size_t offset) const
 {
     if (offset > data.size())
     {

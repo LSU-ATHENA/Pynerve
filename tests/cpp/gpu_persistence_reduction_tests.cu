@@ -1,3 +1,7 @@
+#include "nerve/persistence/cuda/cuda_matrix_reduction.hpp"
+#include "nerve/persistence/utils/api.hpp"
+#include "nerve/types.hpp"
+
 #include <cuda_runtime.h>
 
 #include <cassert>
@@ -8,28 +12,30 @@
 #include <stdexcept>
 #include <vector>
 
-#include "nerve/persistence/cuda/cuda_matrix_reduction.hpp"
-#include "nerve/persistence/utils/api.hpp"
-#include "nerve/types.hpp"
+namespace
+{
 
-namespace {
-
-bool check_cuda(cudaError_t code, const char* expression) {
-    if (code == cudaSuccess) return true;
+bool check_cuda(cudaError_t code, const char *expression)
+{
+    if (code == cudaSuccess)
+        return true;
     std::cerr << expression << " failed: " << cudaGetErrorString(code) << '\n';
     return false;
 }
 
-bool has_gpu() {
+bool has_gpu()
+{
     int device_count = 0;
     cudaError_t err = cudaGetDeviceCount(&device_count);
     return err == cudaSuccess && device_count > 0;
 }
 
-}  // namespace
+} // namespace
 
-int main() {
-    if (!has_gpu()) {
+int main()
+{
+    if (!has_gpu())
+    {
         std::cerr << "No CUDA device available  --  skipping GPU persistence reduction tests\n";
         return 0;
     }
@@ -40,10 +46,10 @@ int main() {
         // Simplices: v0(0), v1(1), v2(2), e01(3), e02(4), e12(5), t(6)
         // Boundaries: v0=[], v1=[], v2=[], e01=[0,1], e02=[0,2], e12=[1,2], t=[3,4,5]
         const int columns_data[] = {
-            0, 1,                   // column 3: edge 01
-            0, 2,                   // column 4: edge 02
-            1, 2,                   // column 5: edge 12
-            3, 4, 5                // column 6: triangle
+            0, 1,   // column 3: edge 01
+            0, 2,   // column 4: edge 02
+            1, 2,   // column 5: edge 12
+            3, 4, 5 // column 6: triangle
         };
         const nerve::Size column_sizes[] = {0, 0, 0, 2, 2, 2, 3};
         const double weights[] = {0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0};
@@ -52,11 +58,11 @@ int main() {
             nerve::persistence::accelerated::MatrixReductionConfig{2, true});
         assert(reduction.isSuccess());
 
-        auto result = reduction.value()->compute_reduction(
-            columns_data, column_sizes, weights, 7, 2);
+        auto result =
+            reduction.value()->compute_reduction(columns_data, column_sizes, weights, 7, 2);
         assert(result.isSuccess());
 
-        const auto& stats = reduction.value()->get_performance_stats();
+        const auto &stats = reduction.value()->get_performance_stats();
         assert(stats.columns_processed == 7);
         assert(stats.pairs_created >= 1);
     }
@@ -69,13 +75,13 @@ int main() {
         // Sorted order: v0..v3 (0-3), e*(4-8), t*(9-10)
 
         const int columns_data[] = {
-            0, 1,                   // column 4: e01
-            0, 2,                   // column 5: e02
-            1, 3,                   // column 6: e13
-            2, 3,                   // column 7: e23
-            0, 3,                   // column 8: e03 diagonal
-            4, 6, 8,               // column 9: t1
-            5, 7, 8                // column 10: t2
+            0, 1,    // column 4: e01
+            0, 2,    // column 5: e02
+            1, 3,    // column 6: e13
+            2, 3,    // column 7: e23
+            0, 3,    // column 8: e03 diagonal
+            4, 6, 8, // column 9: t1
+            5, 7, 8  // column 10: t2
         };
         const nerve::Size column_sizes[] = {0, 0, 0, 0, 2, 2, 2, 2, 2, 3, 3};
         const double weights[] = {0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.414, 2.0, 2.0};
@@ -84,24 +90,18 @@ int main() {
             nerve::persistence::accelerated::MatrixReductionConfig{2, true});
         assert(reduction.isSuccess());
 
-        auto result = reduction.value()->compute_reduction(
-            columns_data, column_sizes, weights, 11, 2);
+        auto result =
+            reduction.value()->compute_reduction(columns_data, column_sizes, weights, 11, 2);
         assert(result.isSuccess());
 
-        const auto& stats = reduction.value()->get_performance_stats();
+        const auto &stats = reduction.value()->get_performance_stats();
         assert(stats.columns_processed == 11);
         assert(stats.pairs_created >= 2);
     }
 
     // Test 3: Compare GPU output vs CPU persistence on a small point cloud
     {
-        const double points[] = {
-            0.0, 0.0,
-            1.0, 0.0,
-            0.0, 1.0,
-            1.0, 1.0,
-            0.5, 0.5
-        };
+        const double points[] = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.5, 0.5};
 
         // CPU path
         nerve::persistence::PersistenceOptions cpu_opts;
@@ -131,13 +131,8 @@ int main() {
 
     // Test 4: Cohomology variant via persistence API
     {
-        const double points[] = {
-            0.0, 0.0, 0.0,
-            1.0, 0.0, 0.0,
-            0.0, 1.0, 0.0,
-            1.0, 1.0, 0.0,
-            0.5, 0.5, 0.2
-        };
+        const double points[] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0,
+                                 0.0, 1.0, 1.0, 0.0, 0.5, 0.5, 0.2};
 
         nerve::persistence::PersistenceOptions opts;
         opts.backend = nerve::persistence::PersistenceBackend::CUDA_HYBRID;
@@ -150,9 +145,11 @@ int main() {
         assert(!result.value().pairs.empty());
 
         bool has_h0 = false;
-        for (const auto& pair : result.value().pairs) {
+        for (const auto &pair : result.value().pairs)
+        {
             assert(std::isfinite(pair.birth));
-            if (pair.dimension == 0) has_h0 = true;
+            if (pair.dimension == 0)
+                has_h0 = true;
         }
         assert(has_h0);
     }
@@ -171,12 +168,13 @@ int main() {
         const nerve::Size column_sizes[] = {0, 0, 0, 2, 2, 2, 3};
         const double weights[] = {0.0, 0.0, 0.0, 1.0, 1.5, 2.0, 3.0};
 
-        auto result = reduction.value()->compute_reduction(
-            columns_data, column_sizes, weights, 7, 2);
+        auto result =
+            reduction.value()->compute_reduction(columns_data, column_sizes, weights, 7, 2);
         assert(result.isSuccess());
 
-        const auto& stats = reduction.value()->get_performance_stats();
-        if (config.enable_performance_monitoring) {
+        const auto &stats = reduction.value()->get_performance_stats();
+        if (config.enable_performance_monitoring)
+        {
             assert(stats.total_time_ms >= 0.0);
         }
         assert(stats.pairs_created >= 1);
@@ -209,9 +207,8 @@ int main() {
         int dummy_col = 0;
         nerve::Size dummy_size = 1;
         double dummy_weight = 0.0;
-        auto result = reduction.value()->compute_reduction(
-            &dummy_col, &dummy_size, &dummy_weight, 1,
-            static_cast<nerve::Size>(-1));
+        auto result = reduction.value()->compute_reduction(&dummy_col, &dummy_size, &dummy_weight,
+                                                           1, static_cast<nerve::Size>(-1));
         assert(result.isError());
     }
 

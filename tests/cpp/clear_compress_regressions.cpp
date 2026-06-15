@@ -6,7 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
-int main() {
+int main()
+{
     using namespace nerve::persistence::clearcompress;
 
     ChunkConfig config;
@@ -33,32 +34,41 @@ int main() {
     assert(std::isfinite(result.total_memory_reduction));
 
     bool rejected_zero_chunk_size = false;
-    try {
+    try
+    {
         ChunkConfig invalid = config;
         invalid.chunk_size = 0;
         (void)buildChunks(columns, invalid);
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_zero_chunk_size = true;
     }
     assert(rejected_zero_chunk_size);
 
     bool rejected_negative_build_row = false;
-    try {
+    try
+    {
         (void)buildChunks({{0, -1}}, config);
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_negative_build_row = true;
     }
     assert(rejected_negative_build_row);
 
     bool rejected_negative_reduce_row = false;
-    try {
+    try
+    {
         Chunk bad_chunk;
         bad_chunk.chunk_index = 0;
         bad_chunk.start_column = 0;
         bad_chunk.end_column = 1;
         bad_chunk.columns.push_back(ChunkColumn{0, {0, -1}, false});
         (void)reduceChunk(bad_chunk, pivots, config);
-    } catch (const std::invalid_argument&) {
+    }
+    catch (const std::invalid_argument &)
+    {
         rejected_negative_reduce_row = true;
     }
     assert(rejected_negative_reduce_row);

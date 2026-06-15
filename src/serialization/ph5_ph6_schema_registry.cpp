@@ -281,7 +281,7 @@ PH5PH6ArtifactMetadata PH5PH6SchemaRegistry::createDefaultCompactSummaryMetadata
 }
 PH5PH6SchemaMigrator::MigrationResult
 PH5PH6SchemaMigrator::migrateToExtended(const std::vector<uint8_t> &data,
-                                              const SerializationContext &context)
+                                        const SerializationContext &context)
 {
     MigrationResult result;
     try
@@ -395,8 +395,8 @@ bool PH5PH6SchemaMigrator::validateExtendedData(const std::vector<uint8_t> &data
 }
 std::vector<uint8_t>
 PH5PH6SchemaMigrator::addHighdimExtension(const std::vector<uint8_t> &data,
-                                                  const PH5PH6ArtifactMetadata &metadata,
-                                                  const std::vector<uint8_t> &extension_payload)
+                                          const PH5PH6ArtifactMetadata &metadata,
+                                          const std::vector<uint8_t> &extension_payload)
 {
     std::vector<uint8_t> result = updateExtendedHeader(data, metadata);
     result.insert(result.end(), extension_payload.begin(), extension_payload.end());
@@ -420,8 +420,7 @@ PH5PH6SchemaMigrator::updateExtendedHeader(const std::vector<uint8_t> &data,
     result.insert(result.end(), metadata_bytes.begin(), metadata_bytes.end());
     if (data.size() > sizeof(uint32_t))
     {
-        result.insert(result.end(),
-                      data.begin() + static_cast<std::ptrdiff_t>(sizeof(uint32_t)),
+        result.insert(result.end(), data.begin() + static_cast<std::ptrdiff_t>(sizeof(uint32_t)),
                       data.end());
     }
     return result;

@@ -5,7 +5,8 @@
 #include <limits>
 #include <vector>
 
-int main() {
+int main()
+{
     using nerve::math::PersistenceMetrics;
     using nerve::math::Point2D;
 
@@ -28,9 +29,8 @@ int main() {
     assert(invalid_wasserstein_points.error().value() ==
            static_cast<int>(nerve::error::TDAErrorCode::NaNInInput));
 
-    const auto invalid_wasserstein_power =
-        PersistenceMetrics::wassersteinDistance(first, second,
-                                                std::numeric_limits<double>::quiet_NaN());
+    const auto invalid_wasserstein_power = PersistenceMetrics::wassersteinDistance(
+        first, second, std::numeric_limits<double>::quiet_NaN());
     assert(invalid_wasserstein_power.isErr());
 
     const std::vector<Point2D> overflow_points{
@@ -65,8 +65,8 @@ int main() {
     assert(essential_bottleneck.isOk());
     assert(essential_bottleneck.value() == 0.0);
 
-    const Diagram invalid_exact{{std::numeric_limits<double>::infinity(),
-                                 std::numeric_limits<double>::infinity(), 0}};
+    const Diagram invalid_exact{
+        {std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0}};
     assert(BottleneckDistance::compute(invalid_exact, {}).isErr());
 
     const Diagram exact_overflow{

@@ -9,16 +9,17 @@
 #include <vector>
 
 #ifdef NERVE_HAS_CUDA
-#include <cuda_runtime.h>
 #include "nerve/persistence/cuda/cuda_error_handling.hpp"
+
+#include <cuda_runtime.h>
 #endif
 
 namespace
 {
 
 using nerve::errors::ErrorCode;
-using nerve::errors::ErrorRegistry;
 using nerve::errors::ErrorMetadata;
+using nerve::errors::ErrorRegistry;
 
 #ifdef NERVE_HAS_CUDA
 
@@ -27,7 +28,7 @@ using nerve::persistence::accelerated::cuda_utils;
 
 bool check_cuda_error_handling_init()
 {
-    auto& registry = ErrorRegistry::instance();
+    auto &registry = ErrorRegistry::instance();
     if (!registry.hasOperationFailed("cuda_init"))
     {
         return true;
@@ -101,11 +102,11 @@ bool check_recovery_strategy()
 
 bool check_error_code_descriptions_non_empty()
 {
-    auto& registry = ErrorRegistry::instance();
+    auto &registry = ErrorRegistry::instance();
     std::vector<ErrorCode> codes = registry.getAllCodes();
     for (auto code : codes)
     {
-        const auto& meta = registry.getMetadata(code);
+        const auto &meta = registry.getMetadata(code);
         if (meta.description.empty() && code != ErrorCode::SUCCESS && code != ErrorCode::UNKNOWN)
         {
             std::cerr << "empty description for code " << static_cast<uint32_t>(code) << "\n";

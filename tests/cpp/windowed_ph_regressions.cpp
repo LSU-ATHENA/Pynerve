@@ -5,22 +5,28 @@
 #include <stdexcept>
 #include <vector>
 
-namespace {
+namespace
+{
 
 template <typename Exception, typename Func>
-void assertThrows(Func&& func) {
+void assertThrows(Func &&func)
+{
     bool rejected = false;
-    try {
+    try
+    {
         func();
-    } catch (const Exception&) {
+    }
+    catch (const Exception &)
+    {
         rejected = true;
     }
     assert(rejected);
 }
 
-}  // namespace
+} // namespace
 
-int main() {
+int main()
+{
     using nerve::streaming::PartialRecomputeHeuristic;
 
     PartialRecomputeHeuristic heuristic;

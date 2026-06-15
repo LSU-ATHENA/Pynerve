@@ -5,9 +5,11 @@
 #include <stdexcept>
 #include <vector>
 
-namespace {
+namespace
+{
 
-nerve::persistence::perdim::PerDimensionConfig h0OnlyConfig() {
+nerve::persistence::perdim::PerDimensionConfig h0OnlyConfig()
+{
     nerve::persistence::perdim::PerDimensionConfig config;
     config.max_dim = 0;
     config.max_radius = 2.0;
@@ -22,19 +24,24 @@ nerve::persistence::perdim::PerDimensionConfig h0OnlyConfig() {
 }
 
 template <typename Exception, typename Func>
-void assertThrows(Func&& func) {
+void assertThrows(Func &&func)
+{
     bool rejected = false;
-    try {
+    try
+    {
         func();
-    } catch (const Exception&) {
+    }
+    catch (const Exception &)
+    {
         rejected = true;
     }
     assert(rejected);
 }
 
-}  // namespace
+} // namespace
 
-int main() {
+int main()
+{
     using nerve::persistence::perdim::compute0To6DPerDimension;
 
     const auto config = h0OnlyConfig();
@@ -43,19 +50,16 @@ int main() {
     assert(result.config.max_dim == 0);
 
     const std::vector<double> nonfinite{0.0, std::numeric_limits<double>::quiet_NaN()};
-    assertThrows<std::invalid_argument>([&] {
-        (void)compute0To6DPerDimension(nonfinite, 1, 2, config);
-    });
+    assertThrows<std::invalid_argument>(
+        [&] { (void)compute0To6DPerDimension(nonfinite, 1, 2, config); });
 
     const std::vector<double> mismatched{0.0, 1.0, 2.0};
-    assertThrows<std::invalid_argument>([&] {
-        (void)compute0To6DPerDimension(mismatched, 2, 2, config);
-    });
+    assertThrows<std::invalid_argument>(
+        [&] { (void)compute0To6DPerDimension(mismatched, 2, 2, config); });
 
     const std::vector<double> overflow{0.0, std::numeric_limits<double>::max()};
-    assertThrows<std::overflow_error>([&] {
-        (void)compute0To6DPerDimension(overflow, 1, 2, config);
-    });
+    assertThrows<std::overflow_error>(
+        [&] { (void)compute0To6DPerDimension(overflow, 1, 2, config); });
 
     return 0;
 }

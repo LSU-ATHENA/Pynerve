@@ -6,40 +6,45 @@
 #include <stdexcept>
 #include <vector>
 
-namespace {
+namespace
+{
 
-nerve::Size squareSideAboveVectorCapacity() {
+nerve::Size squareSideAboveVectorCapacity()
+{
+    const nerve::Size capacity = std::vector<double>().max_size();
+    nerve::Size side = static_cast<nerve::Size>(std::sqrt(static_cast<long double>(capacity))) + 1;
+    while (side <= capacity / side)
+    {
+        ++side;
+    }
+    return side;
+}
+
+nerve::Size compressedSideAboveVectorCapacity()
+{
     const nerve::Size capacity = std::vector<double>().max_size();
     nerve::Size side =
-        static_cast<nerve::Size>(std::sqrt(static_cast<long double>(capacity))) + 1;
-    while (side <= capacity / side) {
-        ++side;
-    }
-    return side;
-}
-
-nerve::Size compressedSideAboveVectorCapacity() {
-    const nerve::Size capacity = std::vector<double>().max_size();
-    nerve::Size side = static_cast<nerve::Size>(
-                             (1.0L + std::sqrt(1.0L + 8.0L *
-                                                         static_cast<long double>(capacity))) /
-                             2.0L) +
-                         1;
+        static_cast<nerve::Size>(
+            (1.0L + std::sqrt(1.0L + 8.0L * static_cast<long double>(capacity))) / 2.0L) +
+        1;
     while (side > 1 && side <= std::numeric_limits<nerve::Size>::max() / (side - 1) &&
-           (side * (side - 1)) / 2 <= capacity) {
+           (side * (side - 1)) / 2 <= capacity)
+    {
         ++side;
     }
     return side;
 }
 
-void assertResourceLimit(const nerve::errors::ErrorResult<std::vector<double>>& result) {
+void assertResourceLimit(const nerve::errors::ErrorResult<std::vector<double>> &result)
+{
     assert(result.isError());
     assert(result.errorCode() == nerve::errors::ErrorCode::E41_RESOURCE_LIMIT);
 }
 
-}  // namespace
+} // namespace
 
-int main() {
+int main()
+{
     nerve::algebra::EnhancedSIMDCalculator calculator;
     nerve::algebra::SIMDDistanceCalculator base_calculator;
 
@@ -68,37 +73,49 @@ int main() {
     const double zero_point[] = {0.0};
     const double huge_point[] = {std::numeric_limits<double>::max()};
     bool rejected_euclidean_overflow = false;
-    try {
+    try
+    {
         (void)base_calculator.euclideanDistance(zero_point, huge_point, 1);
-    } catch (const std::overflow_error&) {
+    }
+    catch (const std::overflow_error &)
+    {
         rejected_euclidean_overflow = true;
     }
     assert(rejected_euclidean_overflow);
 
     const double overflow_batch_points[] = {0.0, std::numeric_limits<double>::max()};
     bool rejected_batch_overflow = false;
-    try {
+    try
+    {
         (void)base_calculator.batchEuclideanDistances(overflow_batch_points, 2, 1);
-    } catch (const std::overflow_error&) {
+    }
+    catch (const std::overflow_error &)
+    {
         rejected_batch_overflow = true;
     }
     assert(rejected_batch_overflow);
 
     const double negative_huge_point[] = {-std::numeric_limits<double>::max()};
     bool rejected_manhattan_overflow = false;
-    try {
+    try
+    {
         (void)base_calculator.manhattanDistance(huge_point, negative_huge_point, 1);
-    } catch (const std::overflow_error&) {
+    }
+    catch (const std::overflow_error &)
+    {
         rejected_manhattan_overflow = true;
     }
     assert(rejected_manhattan_overflow);
 
-    const double huge_cosine_point[] = {
-        std::numeric_limits<double>::max(), std::numeric_limits<double>::max()};
+    const double huge_cosine_point[] = {std::numeric_limits<double>::max(),
+                                        std::numeric_limits<double>::max()};
     bool rejected_cosine_overflow = false;
-    try {
+    try
+    {
         (void)base_calculator.cosineDistance(huge_cosine_point, huge_cosine_point, 2);
-    } catch (const std::overflow_error&) {
+    }
+    catch (const std::overflow_error &)
+    {
         rejected_cosine_overflow = true;
     }
     assert(rejected_cosine_overflow);
@@ -109,7 +126,8 @@ int main() {
 
     const double scalar_point[] = {0.0};
     const nerve::Size vector_capacity = std::vector<double>().max_size();
-    if (vector_capacity < std::numeric_limits<nerve::Size>::max()) {
+    if (vector_capacity < std::numeric_limits<nerve::Size>::max())
+    {
         assertResourceLimit(
             calculator.batchEuclideanDistances(scalar_point, scalar_point, vector_capacity + 1, 1));
     }

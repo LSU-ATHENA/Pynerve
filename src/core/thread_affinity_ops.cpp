@@ -7,10 +7,12 @@
 #include <vector>
 
 #ifdef __linux__
-#include <numa.h>
 #include <pthread.h>
 #include <sched.h>
 #include <unistd.h>
+#ifdef NERVE_HAS_NUMA
+#include <numa.h>
+#endif
 #endif
 
 #include "nerve/core/thread_affinity.hpp"

@@ -1,3 +1,5 @@
+#include "nerve/distributed/mpi_persistence.hpp"
+
 #include <mpi.h>
 
 #include <algorithm>
@@ -8,12 +10,11 @@
 #include <stdexcept>
 #include <vector>
 
-#include "nerve/distributed/mpi_persistence.hpp"
-#include "nerve/distributed/mpi_persistence.hpp"
-
-int main(int argc, char** argv) {
+int main(int argc, char **argv)
+{
     int init_code = MPI_Init(&argc, &argv);
-    if (init_code != MPI_SUCCESS) {
+    if (init_code != MPI_SUCCESS)
+    {
         std::cerr << "MPI_Init failed with code " << init_code << '\n';
         return 1;
     }
@@ -23,7 +24,8 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    if (size < 2) {
+    if (size < 2)
+    {
         std::cerr << "MPI distributed tests require at least 2 ranks, got " << size << '\n';
         MPI_Finalize();
         return 1;
@@ -42,14 +44,18 @@ int main(int argc, char** argv) {
 
         std::vector<int> gathered(static_cast<std::size_t>(size), 0);
         comm.allgather(&rank, 1, gathered.data(), 1);
-        for (int i = 0; i < size; ++i) {
+        for (int i = 0; i < size; ++i)
+        {
             assert(gathered[static_cast<std::size_t>(i)] == i);
         }
 
         bool rejected_bad_root = false;
-        try {
+        try
+        {
             comm.broadcast(&broadcast_value, 1, size);
-        } catch (const std::invalid_argument&) {
+        }
+        catch (const std::invalid_argument &)
+        {
             rejected_bad_root = true;
         }
         assert(rejected_bad_root);
@@ -81,11 +87,14 @@ int main(int argc, char** argv) {
     {
         nerve::distributed::MPICommunicator comm;
 
-        if (rank == 0) {
+        if (rank == 0)
+        {
             int send_val = 42;
             auto req = comm.isend(&send_val, 1, 1, 0);
             comm.wait(req);
-        } else if (rank == 1) {
+        }
+        else if (rank == 1)
+        {
             int recv_val = 0;
             int source = 0;
             MPI_Comm_rank(MPI_COMM_WORLD, &source);
@@ -120,7 +129,8 @@ int main(int argc, char** argv) {
         nerve::distributed::MPIRequest req = comm.iallgather(&rank, 1, gathered_nb.data(), 1);
         req.wait();
 
-        for (int i = 0; i < size; ++i) {
+        for (int i = 0; i < size; ++i)
+        {
             assert(gathered_nb[static_cast<std::size_t>(i)] == i);
         }
     }
@@ -145,7 +155,8 @@ int main(int argc, char** argv) {
         nerve::distributed::MPIRequest req = comm.ireduce(&send_val, &recv_val, 1, MPI_SUM, 0);
         req.wait();
 
-        if (rank == 0) {
+        if (rank == 0)
+        {
             int expected = size * (size + 1) / 2;
             assert(recv_val == expected);
         }
@@ -165,7 +176,8 @@ int main(int argc, char** argv) {
 
         req2.wait();
 
-        for (int i = 0; i < size; ++i) {
+        for (int i = 0; i < size; ++i)
+        {
             assert(gathered_nb[static_cast<std::size_t>(i)] == i);
         }
     }
@@ -195,7 +207,8 @@ int main(int argc, char** argv) {
         const auto pairs = persistence.compute(point_clouds);
         assert(!pairs.empty());
 
-        for (const auto& [birth, death, dim] : pairs) {
+        for (const auto &[birth, death, dim] : pairs)
+        {
             const bool valid_death =
                 std::isfinite(death) || death == std::numeric_limits<float>::infinity();
             assert(std::isfinite(birth));
@@ -210,26 +223,35 @@ int main(int argc, char** argv) {
         nerve::distributed::ShardedBoundaryMatrix matrix(rank, size);
 
         bool rejected_negative_boundary = false;
-        try {
+        try
+        {
             matrix.distribute_columns({{0, -1}});
-        } catch (const std::invalid_argument&) {
+        }
+        catch (const std::invalid_argument &)
+        {
             rejected_negative_boundary = true;
         }
         assert(rejected_negative_boundary);
 
         bool rejected_negative_simplex = false;
-        try {
+        try
+        {
             (void)matrix.get_boundary(-1);
-        } catch (const std::invalid_argument&) {
+        }
+        catch (const std::invalid_argument &)
+        {
             rejected_negative_simplex = true;
         }
         assert(rejected_negative_simplex);
 
         nerve::distributed::DistributedPersistence persistence;
         bool rejected_nonfinite = false;
-        try {
+        try
+        {
             (void)persistence.compute({{0.0f, std::numeric_limits<float>::quiet_NaN()}});
-        } catch (const std::invalid_argument&) {
+        }
+        catch (const std::invalid_argument &)
+        {
             rejected_nonfinite = true;
         }
         assert(rejected_nonfinite);
@@ -243,25 +265,29 @@ int main(int argc, char** argv) {
         std::vector<std::vector<int>> results;
         constexpr int num_requests = 10;
 
-        for (int i = 0; i < num_requests; ++i) {
+        for (int i = 0; i < num_requests; ++i)
+        {
             results.emplace_back(static_cast<std::size_t>(size), 0);
-            requests.push_back(
-                comm.iallgather(&rank, 1, results.back().data(), 1));
+            requests.push_back(comm.iallgather(&rank, 1, results.back().data(), 1));
         }
 
-        for (auto& req : requests) {
+        for (auto &req : requests)
+        {
             req.wait();
         }
 
-        for (const auto& result : results) {
-            for (int i = 0; i < size; ++i) {
+        for (const auto &result : results)
+        {
+            for (int i = 0; i < size; ++i)
+            {
                 assert(result[static_cast<std::size_t>(i)] == i);
             }
         }
     }
 
     const int finalize_code = MPI_Finalize();
-    if (finalize_code != MPI_SUCCESS) {
+    if (finalize_code != MPI_SUCCESS)
+    {
         std::cerr << "MPI_Finalize failed with code " << finalize_code << '\n';
         return 1;
     }

@@ -6,7 +6,7 @@ Environment variables:
     NERVE_CACHE_TTL: Cache entry TTL in seconds (default: 30 days).
 """
 
-from ._engine import DiagramCache, PersistentDiagramCache, cached_persistence
+from ._engine import DiagramCache, PersistentDiagramCache, _validate_cache_key, cached_persistence
 from ._memoize import MemoizePersistent, memoize_persistent
 from ._smart import SmartCache, get_cache_stats
 
@@ -17,5 +17,6 @@ __all__ = [
     "MemoizePersistent",
     "memoize_persistent",
     "SmartCache",
+    "_validate_cache_key",
     "get_cache_stats",
 ]
