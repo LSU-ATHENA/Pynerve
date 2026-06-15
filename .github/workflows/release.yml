@@ -12,7 +12,7 @@ jobs:
   build-sdist:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-python@v5
         with:
@@ -38,7 +38,7 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: python -m twine upload dist/*
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sdist
           path: dist/*.tar.gz
@@ -52,7 +52,7 @@ jobs:
         os: [ubuntu-24.04, macos-14, windows-2022]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-python@v5
         with:
@@ -67,7 +67,7 @@ jobs:
           CIBW_ENVIRONMENT: "CMAKE_ARGS='-DBUILD_PYTHON=ON -DBUILD_TESTS=OFF -DBUILD_CUDA=OFF'"
           CIBW_BEFORE_BUILD: "python -m pip install scikit-build-core pybind11 numpy"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheels-${{ matrix.os }}
           path: wheelhouse/*.whl
@@ -76,7 +76,7 @@ jobs:
     needs: [build-wheels]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: wheels-*
           merge-multiple: true
@@ -103,7 +103,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Generate release notes
         id: release_notes
@@ -113,7 +113,7 @@ jobs:
           git log --oneline --no-decorate ${PREV_TAG}..HEAD 2>/dev/null || echo "Initial release" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
           body: ${{ steps.release_notes.outputs.notes }}
