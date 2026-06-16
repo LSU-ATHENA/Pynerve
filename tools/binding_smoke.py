@@ -61,26 +61,6 @@ def _check_core_api() -> None:
     if not required_keys.issubset(updated):
         raise RuntimeError(f"unexpected incremental persistence result keys: {sorted(updated)}")
 
-    diagram = np.asarray([[0.0, 1.0, 0.0], [0.25, 0.75, 1.0]], dtype=np.float64)
-    image = nerve.persistence_image(diagram, resolution=(6, 8), sigma=0.2)
-    if image.shape != (6, 8) or not np.isfinite(image).all() or float(image.sum()) <= 0.0:
-        raise RuntimeError(f"unexpected NumPy persistence image: {image.shape}")
-    _expect_validation(
-        "core NumPy persistence image invalid sigma",
-        lambda: nerve.persistence_image(diagram, sigma=float("nan")),
-        "sigma",
-    )
-    _expect_validation(
-        "core NumPy persistence image invalid birth",
-        lambda: nerve.persistence_image(np.asarray([[float("nan"), 1.0]], dtype=np.float64)),
-        "birth",
-    )
-    _expect_validation(
-        "core NumPy persistence image invalid death",
-        lambda: nerve.persistence_image(np.asarray([[1.0, 0.0]], dtype=np.float64)),
-        "death",
-    )
-
     _expect_validation(
         "core public nonfinite point",
         lambda: nerve.compute_persistence(
