@@ -3,6 +3,8 @@
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/adaptive_acceleration/adaptive_acceleration_problem_analysis.hpp"
+#include "nerve/persistence/adaptive_acceleration/adaptive_algorithm_selector.hpp"
+#include "nerve/persistence/adaptive_acceleration/adaptive_selector_calibration.hpp"
 #include "nerve/persistence/adaptive_acceleration/sparse_matrix.hpp"
 #include "nerve/persistence/approximate/approximate_nearest_neighbor.hpp"
 #include "nerve/persistence/core/core_types.hpp"
@@ -16,6 +18,7 @@
 #include "nerve/persistence/utils/api.hpp"
 #include "nerve/persistence/utils/early_exit_optimizer.hpp"
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
+#include "nerve/spectral/laplacian.hpp"
 
 #include <algorithm>
 #include <array>
@@ -63,9 +66,9 @@ int main()
         assert(invalid_union_find_stats.num_find_operations == 50);
 
         HighDimensionalExactConfig high_dim_defaults;
-        assert(!high_dim_defaults /*use_gpu_acceleration was removed*/ false);
+        (void)high_dim_defaults;
         const auto high_dim_optimal = getOptimalHighDimensionalConfig(50000, 6);
-        assert(!high_dim_optimal /*use_gpu_acceleration was removed*/ false);
+        (void)high_dim_optimal;
         const auto empty_high_dim_benchmark = benchmarkHighDimensional({}, {}, {}, 6);
         assert(std::isfinite(empty_high_dim_benchmark.homology_time_ms));
         assert(std::isfinite(empty_high_dim_benchmark.cohomology_time_ms));

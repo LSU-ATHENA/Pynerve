@@ -1,3 +1,4 @@
+#include "cuda/heterogeneous_engine.hpp"
 #include "nerve/algebra/simplex.hpp"
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core_types.hpp"

@@ -5,6 +5,7 @@
 #include "nerve/filtration/vietoris_rips.hpp"
 #include "nerve/filtration/vr/ann/ann.hpp"
 #include "nerve/graphs/graph.hpp"
+#include "nerve/math/constants.hpp"
 #include "nerve/metrics/bottleneck/bottleneck.hpp"
 #include "nerve/metrics/distances.hpp"
 #include "nerve/metrics/sinkhorn/sinkhorn.hpp"
