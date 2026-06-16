@@ -10,6 +10,8 @@
 #include "nerve/metrics/sinkhorn/sinkhorn.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/memory/vram_algorithms.hpp"
+#include "nerve/persistence/reduction/reduction_sparsity_aware.hpp"
+#include "nerve/persistence/utils/early_exit_optimizer.hpp"
 #include "nerve/persistence/vr/vr_distance_tiled_ops.hpp"
 
 #include <algorithm>

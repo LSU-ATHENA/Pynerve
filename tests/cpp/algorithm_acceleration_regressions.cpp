@@ -1,13 +1,21 @@
 #include "nerve/algebra/simplex.hpp"
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core_types.hpp"
+#include "nerve/gpu/consumer_config.hpp"
 #include "nerve/persistence/accelerated/accelerated_interface.hpp"
 #include "nerve/persistence/accelerated/gpu_apparent_pairs.hpp"
+#include "nerve/persistence/accelerated/heterogeneous_fast_vr.hpp"
+#include "nerve/persistence/accelerated/nerve_interface.hpp"
 #include "nerve/persistence/accelerated/work_distributor.hpp"
+#include "nerve/persistence/approximate/approximate_nearest_neighbor.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/kernels/kernel_h6_streaming_ops.hpp"
+#include "nerve/persistence/sketching_approximation.hpp"
 #include "nerve/persistence/vr/vr_dispatch_ops.hpp"
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
+#include "nerve/persistence/vr/vr_landmark_ops.hpp"
+#include "nerve/persistence/vr/vr_medium_hybrid_ops.hpp"
+#include "nerve/persistence/vr/vr_sparse_rips_ops.hpp"
 
 #include <algorithm>
 #include <array>

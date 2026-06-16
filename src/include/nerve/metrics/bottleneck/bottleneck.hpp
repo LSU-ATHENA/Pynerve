@@ -32,45 +32,27 @@ adaptiveBottleneckDistance(const std::vector<std::pair<float, float>> &diagram_a
         }
     }
     if (diagram_a.empty() && diagram_b.empty())
-    {
         return 0.0;
-    }
     if (diagram_a.empty() || diagram_b.empty())
-    {
         return std::numeric_limits<double>::infinity();
-    }
     double max_diff = 0.0;
     for (const auto &[birth_a, death_a] : diagram_a)
     {
-        double closest_a = std::numeric_limits<double>::max();
+        double closest = std::numeric_limits<double>::max();
         for (const auto &[birth_b, death_b] : diagram_b)
-        {
-            const double diff = std::max(std::abs(birth_a - birth_b), std::abs(death_a - death_b));
-            if (diff < closest_a)
-            {
-                closest_a = diff;
-            }
-        }
-        if (closest_a > max_diff)
-        {
-            max_diff = closest_a;
-        }
+            closest = std::min(closest, std::max(static_cast<double>(std::abs(birth_a - birth_b)),
+                                                 static_cast<double>(std::abs(death_a - death_b))));
+        if (closest > max_diff)
+            max_diff = closest;
     }
     for (const auto &[birth_b, death_b] : diagram_b)
     {
-        double closest_b = std::numeric_limits<double>::max();
+        double closest = std::numeric_limits<double>::max();
         for (const auto &[birth_a, death_a] : diagram_a)
-        {
-            const double diff = std::max(std::abs(birth_a - birth_b), std::abs(death_a - death_b));
-            if (diff < closest_b)
-            {
-                closest_b = diff;
-            }
-        }
-        if (closest_b > max_diff)
-        {
-            max_diff = closest_b;
-        }
+            closest = std::min(closest, std::max(static_cast<double>(std::abs(birth_a - birth_b)),
+                                                 static_cast<double>(std::abs(death_a - death_b))));
+        if (closest > max_diff)
+            max_diff = closest;
     }
     return max_diff;
 }
@@ -78,19 +60,16 @@ adaptiveBottleneckDistance(const std::vector<std::pair<float, float>> &diagram_a
 [[nodiscard]] inline std::vector<double>
 parallelBottleneckDistances(const std::vector<std::vector<std::pair<float, float>>> &diagrams_a,
                             const std::vector<std::vector<std::pair<float, float>>> &diagrams_b,
-                            int num_threads)
+                            int num_threads = 1)
 {
+    (void)num_threads;
     if (num_threads < 1)
-    {
-        throw std::invalid_argument("parallelBottleneckDistances num_threads must be >= 1");
-    }
-    const size_t n = std::min(diagrams_a.size(), diagrams_b.size());
+        throw std::invalid_argument("num_threads must be >= 1");
+    auto n = std::min(diagrams_a.size(), diagrams_b.size());
     std::vector<double> results;
     results.reserve(n);
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (std::size_t i = 0; i < n; ++i)
         results.push_back(adaptiveBottleneckDistance(diagrams_a[i], diagrams_b[i]));
-    }
     return results;
 }
 

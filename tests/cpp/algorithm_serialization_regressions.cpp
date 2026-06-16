@@ -1,6 +1,6 @@
 #include "nerve/core_types.hpp"
 #include "nerve/determinism.hpp"
-#include "nerve/persistence/perfect/perfect_persistence.hpp"
+// perfect_persistence header was removed
 #include "nerve/serialization/serialization_manager.hpp"
 
 #include <algorithm>
