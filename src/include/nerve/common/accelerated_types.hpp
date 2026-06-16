@@ -60,17 +60,13 @@ enum class ApproximationLevel
 
 enum class VRAlgorithmSelection
 {
-    AUTO,
-    EXACT_STANDARD,
-    MEDIUM_HYBRID,
-    FAST_SIMD,
-    SPARSE_RIPS,
-    APPROXIMATE_SKETCHING,
-    LARGE_WITNESS,
-    ADAPTIVE_ACCELERATION,
-    LANDMARK_WITNESS
+    AUTO,           // Automatically select optimal algorithm
+    FAST_SIMD,      // Small exact fast path; uses SIMD kernels when available
+    MEDIUM_HYBRID,  // Medium-scale tiled/parallel path for 1K-10K points
+    LARGE_WITNESS,  // Witness complex approximation for >10K points
+    EXACT_STANDARD, // Standard exact computation (exact path)
+    ACCELERATED     // Combined edge-collapse, union-find, and lock-free paths
 };
-
 using VRAlgorithm = VRAlgorithmSelection;
 
 // Structs (in dependency order - no forward declarations needed)
