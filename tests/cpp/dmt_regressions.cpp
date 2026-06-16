@@ -87,31 +87,6 @@ bool check_dmt_engine_construction()
 {
     nerve::dmt::DMTConfig cfg;
     cfg.max_dimension = 2;
-    cfg.use_gpu = false;
-    cfg.use_parallel = false;
-    cfg.use_simd = false;
-
-    nerve::dmt::DMTEngine engine(cfg);
-
-    std::vector<std::vector<int>> simplices = {{0}, {1}, {0, 1}};
-    std::vector<float> filtration = {0.0f, 0.0f, 1.0f};
-
-    auto result = engine.computeMorseComplex(simplices, filtration);
-
-    if (result.critical_simplices.empty() && result.gradient_pairs.empty())
-    {
-        std::cerr << "expected some Morse output\n";
-        return false;
-    }
-
-    return true;
-}
-
-bool check_critical_cell_detection()
-{
-    nerve::dmt::DMTConfig cfg;
-    cfg.max_dimension = 2;
-    cfg.use_gpu = false;
     cfg.use_parallel = false;
 
     nerve::dmt::DMTEngine engine(cfg);

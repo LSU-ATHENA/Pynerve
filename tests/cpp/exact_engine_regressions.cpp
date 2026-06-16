@@ -22,15 +22,15 @@ namespace
 using nerve::Dimension;
 using nerve::Field;
 using nerve::Index;
+using nerve::Pair;
 using nerve::Size;
 using nerve::algebra::Simplex;
 using nerve::algebra::SimplicialComplex;
+using nerve::common::VRAlgorithmSelection;
 using nerve::common::VRConfig;
 using nerve::core::BufferView;
 using nerve::persistence::ExactPersistenceResult;
 using nerve::persistence::IncrementalExactZ2;
-using nerve::persistence::Pair;
-using nerve::persistence::VRAlgorithmSelection;
 
 BufferView<const double> view_of(const std::vector<double> &v)
 {

@@ -58,18 +58,21 @@ NpyDataType npyDtypeFor()
 {
     if constexpr (std::is_same_v<T, float>)
         return NpyDataType::Float32;
-    if constexpr (std::is_same_v<T, double>)
+    else if constexpr (std::is_same_v<T, double>)
         return NpyDataType::Float64;
-    if constexpr (std::is_same_v<T, int32_t>)
+    else if constexpr (std::is_same_v<T, int32_t>)
         return NpyDataType::Int32;
-    if constexpr (std::is_same_v<T, int64_t>)
+    else if constexpr (std::is_same_v<T, int64_t>)
         return NpyDataType::Int64;
-    if constexpr (std::is_same_v<T, uint32_t>)
+    else if constexpr (std::is_same_v<T, uint32_t>)
         return NpyDataType::Uint32;
-    if constexpr (std::is_same_v<T, uint64_t>)
+    else if constexpr (std::is_same_v<T, uint64_t>)
         return NpyDataType::Uint64;
-    static_assert(sizeof(T) == 0, "Unsupported type for NPY I/O");
-    return NpyDataType::Float64;
+    else
+    {
+        static_assert(sizeof(T) == 0, "Unsupported type for NPY I/O");
+        return NpyDataType::Float64;
+    }
 }
 
 template <typename T>

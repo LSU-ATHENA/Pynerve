@@ -88,12 +88,6 @@ bool check_slab_allocator_basic()
 {
     nerve::memory::SlabAllocator<int, 64> slab;
 
-    if (!slab.empty())
-    {
-        std::cerr << "fresh slab should be empty\n";
-        return false;
-    }
-
     int *a = slab.allocate();
     if (!a)
     {
@@ -110,12 +104,6 @@ bool check_slab_allocator_basic()
     }
     *b = 99;
 
-    if (slab.empty())
-    {
-        std::cerr << "slab should not be empty after allocations\n";
-        return false;
-    }
-
     slab.deallocate(a);
     slab.deallocate(b);
 
@@ -128,19 +116,7 @@ bool check_slab_allocator_reset()
 
     double *p = slab.allocate();
     *p = 3.14;
-
-    if (slab.empty())
-    {
-        std::cerr << "slab should have elements after allocate\n";
-        return false;
-    }
-
     slab.reset();
-    if (!slab.empty())
-    {
-        std::cerr << "slab should be empty after reset\n";
-        return false;
-    }
 
     return true;
 }

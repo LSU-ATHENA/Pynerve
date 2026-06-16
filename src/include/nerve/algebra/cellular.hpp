@@ -17,7 +17,7 @@ class Cell
 {
 public:
     Cell() = default;
-    explicit Cell(int dimension);
+    Cell(int dimension);
     Cell(int dimension, const std::vector<Index> &boundary);
 
     [[nodiscard]] int dimension() const noexcept { return dimension_; }

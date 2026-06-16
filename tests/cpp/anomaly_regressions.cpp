@@ -27,7 +27,6 @@ bool check_betti_change_detector_basic()
     nerve::anomaly::BettiChangeDetector::ChangeConfig cfg;
     cfg.significance_level = 0.05;
     cfg.min_window_size = 10;
-    cfg.enable_adaptive_window = false;
 
     nerve::anomaly::BettiChangeDetector detector(cfg);
 

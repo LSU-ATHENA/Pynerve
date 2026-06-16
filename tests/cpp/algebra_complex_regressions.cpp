@@ -1,4 +1,5 @@
 
+#include "nerve/algebra/boundary.hpp"
 #include "nerve/algebra/complex.hpp"
 #include "nerve/algebra/simplex.hpp"
 #include "nerve/core_types.hpp"
