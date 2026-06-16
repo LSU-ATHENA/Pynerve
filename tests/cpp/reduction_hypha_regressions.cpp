@@ -20,7 +20,7 @@ using nerve::algebra::BoundaryMatrix;
 using nerve::algebra::Simplex;
 using nerve::algebra::SimplicialComplex;
 using nerve::persistence::HyphaReducer;
-using nerve::persistence::Pair;
+using nerve::Pair;
 
 bool check_hypha_construction_default()
 {

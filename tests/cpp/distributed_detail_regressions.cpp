@@ -60,7 +60,7 @@ bool check_sharded_boundary_matrix_construction()
 bool check_work_stealing_scheduler()
 {
     nerve::distributed::MPICommunicator comm;
-    nerve::distributed::WorkStealingScheduler scheduler(comm.rank(), comm.size());
+    nerve::distributed::/*WorkStealingScheduler removed*/ int scheduler(comm.rank(), comm.size());
     std::atomic<int> counter{0};
     for (int i = 0; i < 5; ++i)
     {
@@ -81,7 +81,7 @@ bool check_work_stealing_scheduler()
 bool check_work_stealing_thread_safe()
 {
     nerve::distributed::MPICommunicator comm;
-    nerve::distributed::WorkStealingScheduler scheduler(comm.rank(), comm.size());
+    nerve::distributed::/*WorkStealingScheduler removed*/ int scheduler(comm.rank(), comm.size());
     std::atomic<int> counter{0};
     std::vector<std::thread> submitters;
     for (int t = 0; t < 4; ++t)
@@ -112,7 +112,7 @@ bool check_work_stealing_thread_safe()
 
 bool check_fallback_scheduler()
 {
-    nerve::distributed::WorkStealingScheduler scheduler(0, 1);
+    nerve::distributed::/*WorkStealingScheduler removed*/ int scheduler(0, 1);
     std::atomic<int> counter{0};
     scheduler.submit_work([&counter]() { counter.fetch_add(1, std::memory_order_relaxed); });
     std::thread t([&scheduler]() { scheduler.run(); });

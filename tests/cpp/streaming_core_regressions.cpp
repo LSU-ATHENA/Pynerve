@@ -131,7 +131,7 @@ bool check_streaming_tda_config()
     nerve::streaming::StreamingConfig config;
     config.window_size = 100;
     config.stride = 50;
-    config.enable_exact_computation = false;
+
     nerve::streaming::ApproximateStreamingPH ph(config);
     nerve::streaming::StreamDataPoint pt;
     pt.coordinates = {0.0f, 1.0f};

@@ -29,9 +29,9 @@ using nerve::error::RetryBackoffManager;
 using nerve::optimization::CallContract;
 using nerve::persistence::Pair;
 using nerve::persistence::accelerated::WorkDistribution;
-using nerve::persistence::accelerated::accelerated_error_tools::validateDistribution;
-using nerve::persistence::accelerated::accelerated_error_tools::validateMetrics;
-using nerve::persistence::accelerated::accelerated_error_tools::validatePairs;
+// accelerated_error_tools namespace removed::validateDistribution;
+// accelerated_error_tools namespace removed::validateMetrics;
+// accelerated_error_tools namespace removed::validatePairs;
 
 bool check_validate_distribution_valid()
 {

@@ -18,7 +18,7 @@ bool check_error_policy_get_set_roundtrip()
     nerve::errors::ErrorPolicy policy;
     policy.throw_on_error = false;
     policy.log_all_errors = false;
-    policy.enable_stack_trace = true;
+
     policy.minimum_log_severity = nerve::errors::Severity::Error;
 
     auto &sys = nerve::errors::ConfigurableErrorSystemBase::instance();
@@ -35,9 +35,9 @@ bool check_error_policy_get_set_roundtrip()
         std::cerr << "log_all_errors should be false\n";
         return false;
     }
-    if (retrieved.enable_stack_trace != true)
+
     {
-        std::cerr << "enable_stack_trace should be true\n";
+
         return false;
     }
     if (retrieved.minimum_log_severity != nerve::errors::Severity::Error)

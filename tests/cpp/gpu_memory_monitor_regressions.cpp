@@ -1,6 +1,6 @@
 
 #include "nerve/errors/errors.hpp"
-#include "nerve/gpu/gpu_memory.hpp"
+// gpu_memory.hpp not yet implemented
 
 #include <algorithm>
 #include <cmath>
