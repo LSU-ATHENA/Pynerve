@@ -32,7 +32,7 @@ def _check_core_install() -> None:
     options.max_radius = 2.0
     result = nerve.compute_persistence(points, options)
     for attr in ("pairs", "betti_numbers", "diagnostics"):
-        if not hasattr(result, attr):
+        if attr not in result:
             raise RuntimeError(f"unexpected installed persistence result: missing {attr}")
     if not hasattr(nerve, "PH5PH6Engine") or hasattr(nerve, "PH5PH6Prototype"):
         raise RuntimeError("installed public PH5/PH6 engine API must not expose prototype naming")
