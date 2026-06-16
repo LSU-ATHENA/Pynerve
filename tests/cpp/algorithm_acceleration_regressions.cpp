@@ -2,8 +2,12 @@
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/accelerated/accelerated_interface.hpp"
+#include "nerve/persistence/accelerated/gpu_apparent_pairs.hpp"
+#include "nerve/persistence/accelerated/work_distributor.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/kernels/kernel_h6_streaming_ops.hpp"
+#include "nerve/persistence/vr/vr_dispatch_ops.hpp"
+#include "nerve/persistence/vr/vr_fast_ops.hpp"
 
 #include <algorithm>
 #include <array>

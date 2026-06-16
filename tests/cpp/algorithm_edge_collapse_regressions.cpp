@@ -3,7 +3,13 @@
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/core/core_types.hpp"
+#include "nerve/persistence/core/flood_complex.hpp"
+#include "nerve/persistence/core/high_dimensional_exact.hpp"
+#include "nerve/persistence/memory/memory_pool.hpp"
+#include "nerve/persistence/reduction/reduction_clearing_ops.hpp"
 #include "nerve/persistence/reduction/reduction_edge_collapse_ops.hpp"
+#include "nerve/persistence/reduction/reduction_ops.hpp"
+#include "nerve/persistence/reduction/reduction_union_find_ops.hpp"
 #include "nerve/persistence/utils/early_exit_optimizer.hpp"
 
 #include <algorithm>

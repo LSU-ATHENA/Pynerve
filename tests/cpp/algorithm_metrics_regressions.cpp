@@ -75,40 +75,40 @@ int main()
 #include "nerve/streaming/streaming_tda.hpp"
 
     namespace nerve::persistence::accelerated
-    {
-    namespace accelerated_error_tools
-    {
-    nerve::errors::ErrorResult<void>
-    validateMetrics(const nerve::common::AcceleratedPerformanceStats &)
-    {
-        return nerve::errors::ErrorResult<void>::error(
-            nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT, "noop");
-    }
-    nerve::errors::ErrorResult<void> validatePairs(const std::vector<nerve::persistence::Pair> &)
-    {
-        return nerve::errors::ErrorResult<void>::error(
-            nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT, "noop");
-    }
-    }
+{
+namespace accelerated_error_tools
+{
+nerve::errors::ErrorResult<void>
+validateMetrics(const nerve::common::AcceleratedPerformanceStats &)
+{
+    return nerve::errors::ErrorResult<void>::error(
+    nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT, "noop");
+}
+nerve::errors::ErrorResult<void> validatePairs(const std::vector<nerve::persistence::Pair> &)
+{
+    return nerve::errors::ErrorResult<void>::error(
+    nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT, "noop");
+}
+}
 
-    namespace optimization_recommendations
-    {
-    std::vector<std::string> suggestActions(const nerve::common::PerformanceMetrics &metrics);
-    }
+namespace optimization_recommendations
+{
+std::vector<std::string> suggestActions(const nerve::common::PerformanceMetrics &metrics);
+}
 
-    namespace performance_impact
-    {
-    double computeRuntimeChange(const nerve::common::PerformanceMetrics &baseline,
-                                const nerve::common::PerformanceMetrics &current);
-    double computeMemoryChange(const nerve::common::PerformanceMetrics &baseline,
-                               const nerve::common::PerformanceMetrics &current);
-    double computeOverallImpactScore(const nerve::common::PerformanceMetrics &baseline,
-                                     const nerve::common::PerformanceMetrics &current);
-    }
+namespace performance_impact
+{
+double computeRuntimeChange(const nerve::common::PerformanceMetrics &baseline,
+    const nerve::common::PerformanceMetrics &current);
+double computeMemoryChange(const nerve::common::PerformanceMetrics &baseline,
+    const nerve::common::PerformanceMetrics &current);
+double computeOverallImpactScore(const nerve::common::PerformanceMetrics &baseline,
+    const nerve::common::PerformanceMetrics &current);
+}
 
-    } // namespace nerve::persistence::accelerated
+} // namespace nerve::persistence::accelerated
 
-    int main()
+int main()
     {
         {
             using namespace nerve::algorithms;
