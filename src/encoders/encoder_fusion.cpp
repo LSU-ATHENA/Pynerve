@@ -282,59 +282,49 @@ void FusedEncoderPipeline::encodePersistent(
     impl_->encodePersistent(diagrams, outputs);
 }
 
-// AsyncEncoderExecutor and MemoryOptimizedEncoder split to encoder_fusion_helpers.cpp
-
-FusionBenchmark benchmarkFusedEncoder(int num_diagrams, int features_per_diagram)
+std::vector<std::vector<std::pair<float, float>>> diagrams(static_cast<size_t>(num_diagrams));
+for (int i = 0; i < num_diagrams; ++i)
 {
-    if (num_diagrams < 0 || features_per_diagram < 0)
+    diagrams[static_cast<size_t>(i)].reserve(static_cast<size_t>(features_per_diagram));
+    for (int j = 0; j < features_per_diagram; ++j)
     {
-        throw std::invalid_argument("benchmark dimensions must be non-negative");
+        const float birth = static_cast<float>(j);
+        diagrams[static_cast<size_t>(i)].push_back({birth, birth + kBenchmarkLifetime});
     }
+}
 
-    std::vector<std::vector<std::pair<float, float>>> diagrams(static_cast<size_t>(num_diagrams));
-    for (int i = 0; i < num_diagrams; ++i)
-    {
-        diagrams[static_cast<size_t>(i)].reserve(static_cast<size_t>(features_per_diagram));
-        for (int j = 0; j < features_per_diagram; ++j)
-        {
-            const float birth = static_cast<float>(j);
-            diagrams[static_cast<size_t>(i)].push_back({birth, birth + kBenchmarkLifetime});
-        }
-    }
+FusionConfig unfused_config;
+unfused_config.fuse_persistence = false;
+unfused_config.fuse_activation = false;
+unfused_config.fuse_normalization = false;
+FusedEncoderPipeline unfused(unfused_config);
 
-    FusionConfig unfused_config;
-    unfused_config.fuse_persistence = false;
-    unfused_config.fuse_activation = false;
-    unfused_config.fuse_normalization = false;
-    FusedEncoderPipeline unfused(unfused_config);
+auto start_unfused = std::chrono::steady_clock::now();
+for (const auto &diagram : diagrams)
+{
+    std::vector<float> output;
+    unfused.encodeFused(diagram, output);
+}
+auto end_unfused = std::chrono::steady_clock::now();
 
-    auto start_unfused = std::chrono::steady_clock::now();
-    for (const auto &diagram : diagrams)
-    {
-        std::vector<float> output;
-        unfused.encodeFused(diagram, output);
-    }
-    auto end_unfused = std::chrono::steady_clock::now();
+FusionConfig fused_config;
+FusedEncoderPipeline fused(fused_config);
+auto start_fused = std::chrono::steady_clock::now();
+for (const auto &diagram : diagrams)
+{
+    std::vector<float> output;
+    fused.encodeFused(diagram, output);
+}
+auto end_fused = std::chrono::steady_clock::now();
 
-    FusionConfig fused_config;
-    FusedEncoderPipeline fused(fused_config);
-    auto start_fused = std::chrono::steady_clock::now();
-    for (const auto &diagram : diagrams)
-    {
-        std::vector<float> output;
-        fused.encodeFused(diagram, output);
-    }
-    auto end_fused = std::chrono::steady_clock::now();
-
-    FusionBenchmark bench{};
-    bench.num_diagrams = num_diagrams;
-    bench.features_per_diagram = features_per_diagram;
-    bench.unfused_time_ms =
-        std::chrono::duration<double, std::milli>(end_unfused - start_unfused).count();
-    bench.fused_time_ms =
-        std::chrono::duration<double, std::milli>(end_fused - start_fused).count();
-    bench.speedup = finiteBenchmarkSpeedup(bench.unfused_time_ms, bench.fused_time_ms);
-    return bench;
+FusionBenchmark bench{};
+bench.num_diagrams = num_diagrams;
+bench.features_per_diagram = features_per_diagram;
+bench.unfused_time_ms =
+    std::chrono::duration<double, std::milli>(end_unfused - start_unfused).count();
+bench.fused_time_ms = std::chrono::duration<double, std::milli>(end_fused - start_fused).count();
+bench.speedup = finiteBenchmarkSpeedup(bench.unfused_time_ms, bench.fused_time_ms);
+return bench;
 }
 
 } // namespace nerve::encoders::fusion

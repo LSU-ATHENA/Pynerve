@@ -365,7 +365,3 @@ bool ApproximateProcessor::shouldUseProgressiveRefinement(ApproximationLevel lev
 {
     return config_.enable_progressive_refinement && level != ApproximationLevel::EXACT;
 }
-
-// ProgressiveRefinementProcessor and ErrorBoundsCalculator split to approximate_processor_ops.cpp
-
-} // namespace nerve::persistence::adaptive_acceleration::approximation

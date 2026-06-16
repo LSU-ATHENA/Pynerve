@@ -433,7 +433,4 @@ std::string GraphEncoder::getEncoderType() const
     return "Graph";
 }
 
-// constructGraph, constructGraphFromComplex, constructGraphFromDiagram split to
-// graph_encoder_helpers.cpp
-
 } // namespace nerve::encoders

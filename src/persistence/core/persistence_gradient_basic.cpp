@@ -1,4 +1,3 @@
-// PersistenceGradient basic implementation split into detail includes.
 
 #include "nerve/persistence/core/ph_gradient_basic.hpp"
 

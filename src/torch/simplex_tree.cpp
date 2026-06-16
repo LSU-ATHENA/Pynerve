@@ -291,17 +291,6 @@ double SimplexTree::get_filtration(const std::vector<int64_t> &vertices) const
     return std::numeric_limits<double>::infinity();
 }
 
-// build_vr and build_witness split to simplex_tree_ops.cpp
-
-void SimplexTree::to(at::Device device)
-{
-    vertex_indices_ = vertex_indices_.to(device);
-    parent_pointers_ = parent_pointers_.to(device);
-    first_child_ = first_child_.to(device);
-    next_sibling_ = next_sibling_.to(device);
-    filtration_values_ = filtration_values_.to(device);
-}
-
 at::Tensor SimplexTree::to_boundary_matrix(int64_t dim) const
 {
     TORCH_CHECK(dim >= 0, "dimension must be non-negative");

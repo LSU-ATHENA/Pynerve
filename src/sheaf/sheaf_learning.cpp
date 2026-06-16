@@ -426,9 +426,3 @@ bool SheafLearner::validateInputs(const Eigen::SparseMatrix<double> &graph_adjac
     }
     return true;
 }
-
-// learnSheafFromGraphSignal and benchmarkSheafLearning split to sheaf_learning_ops.cpp
-
-} // namespace learning
-} // namespace sheaf
-} // namespace nerve

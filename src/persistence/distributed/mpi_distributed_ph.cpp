@@ -532,10 +532,6 @@ DistributedResult computeDistributedPHSingleNode(const std::vector<double> &poin
     return final_result;
 }
 
-// Helper APIs are split into a detail include to keep this translation unit
-// within the repository hard-cap while preserving exported symbols.
-#include "detail/mpi_distributed_helpers.inl"
-
 } // namespace nerve::persistence::distributed
 
 extern "C"

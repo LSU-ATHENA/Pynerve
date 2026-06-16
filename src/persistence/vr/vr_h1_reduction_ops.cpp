@@ -349,8 +349,4 @@ H1Result computeH1ReducedVR(const ReducedVRH1Result &reduced_vr, const ReducedVR
     return result;
 }
 
-// Public helper wrappers are split into a detail include so this
-// translation unit stays under the repository hard-cap target.
-#include "detail/vr_h1_reduction_config.inl"
-
 } // namespace nerve::persistence::reduced

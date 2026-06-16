@@ -167,8 +167,6 @@ std::vector<T> DiagramConv1D<T>::forward(std::span<const T> diagram, std::span<c
     return output;
 }
 
-// conv1d and apply_persistence_gate split to diagram_conv_kernels.cpp
-
 template <typename T>
 void DiagramConv1D<T>::set_weights(std::span<const T> kernel, std::span<const T> bias)
 {

@@ -514,5 +514,3 @@ std::vector<T> DistanceMatrixComputer<T>::compute_manhattan(std::span<const T> p
 #include "detail/distance_matrix_knn_sparse.inl"
 
 } // namespace nerve::algorithms
-
-// C API wrapper functions split to distance_ops.cpp
