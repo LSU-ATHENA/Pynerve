@@ -1,10 +1,10 @@
-# Nerve
+# Pynerve
 
 **Topological Data Analysis for Python and C++.**
 
-Nerve is a high-performance framework for Topological Data Analysis (TDA), providing persistent homology, filtration construction, topological feature extraction, differentiable topology, and large-scale computational pipelines through a unified Python and C++ interface.
+Pynerve is a high-performance framework for Topological Data Analysis (TDA), providing persistent homology, filtration construction, topological feature extraction, differentiable topology, and large-scale computational pipelines through a unified Python and C++ interface.
 
-Built around a modern C++ core and designed for both research and production environments, Nerve scales from exploratory analysis on a laptop to distributed workloads spanning multiple nodes and accelerators.
+Built around a modern C++ core and designed for both research and production environments, Pynerve scales from exploratory analysis on a laptop to distributed workloads spanning multiple nodes and accelerators.
 
 ```python
 import pynerve
@@ -22,13 +22,13 @@ print(result.betti_numbers)
 ```
 
 
-## Why Nerve?
+## Why Pynerve?
 
 Topological Data Analysis has matured into an important tool for understanding complex datasets, yet many existing workflows remain fragmented.
 
 Researchers often combine multiple libraries for filtration construction, persistent homology, feature extraction, visualization, machine learning integration, distributed execution, and large-scale processing.
 
-Nerve was created to provide a unified environment for these tasks.
+Pynerve was created to provide a unified environment for these tasks.
 
 The project combines a high-performance computational core with an accessible Python interface while remaining suitable for large-scale scientific computing, machine learning, and research workflows.
 
@@ -76,7 +76,7 @@ Available methods include:
 
 ### Machine Learning Integration
 
-Nerve includes native support for modern machine learning workflows.
+Pynerve includes native support for modern machine learning workflows.
 
 Features include:
 
@@ -89,7 +89,7 @@ Features include:
 
 ### Large-Scale Computing
 
-Nerve is designed for datasets that exceed the limits of traditional in-memory workflows.
+Pynerve is designed for datasets that exceed the limits of traditional in-memory workflows.
 
 Capabilities include:
 
@@ -103,7 +103,7 @@ Capabilities include:
 
 ## Design Goals
 
-Nerve is guided by several principles:
+Pynerve is guided by several principles:
 
 ### Performance
 
@@ -225,7 +225,7 @@ Documentation is organized into several sections.
 | Algorithms            | Mathematical background         |
 | Machine Learning      | PyTorch integration             |
 | Distributed Computing | Large-scale execution           |
-| Developer Guide       | Building and extending Nerve    |
+| Developer Guide       | Building and extending Pynerve    |
 
 
 ## Installation
@@ -278,7 +278,7 @@ pip install -e ./python
 
 ## GPU Support
 
-Nerve requires an NVIDIA GPU with compute capability 7.5 or higher (GeForce RTX 20xx / Turing or later).
+Pynerve requires an NVIDIA GPU with compute capability 7.5 or higher (GeForce RTX 20xx / Turing or later).
 
 | Generation | Compute Capability | Level of Support |
 | ---------- | ------------------ | ---------------- |
@@ -290,7 +290,7 @@ GPUs older than the Turing architecture (compute capability < 7.5) are not suppo
 
 ## Project Status
 
-Nerve is currently maintained by a single developer and is open to future contributors.
+Pynerve is currently maintained by a single developer and is open to future contributors.
 
 Current work focuses on:
 
@@ -312,7 +312,7 @@ Please see the contributor documentation for development setup, coding standards
 
 ## Development History
 
-Nerve was initially developed and validated on a consumer workstation:
+Pynerve was initially developed and validated on a consumer workstation:
 
 - AMD Ryzen 7 2700X
 - NVIDIA GTX 1070
@@ -335,7 +335,7 @@ resources, which enabled large-scale experimentation and validation.
 
 ## Citation
 
-If Nerve contributes to published research, please cite:
+If Pynerve contributes to published research, please cite:
 
 ```bibtex
 @software{Pynerve,
