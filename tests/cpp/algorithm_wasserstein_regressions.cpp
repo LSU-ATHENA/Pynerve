@@ -2,8 +2,11 @@
 #include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/filtration/vietoris_rips.hpp"
+#include "nerve/graphs/graph.hpp"
 #include "nerve/metrics/distances.hpp"
+#include "nerve/metrics/sinkhorn/sinkhorn.hpp"
 #include "nerve/persistence/core/core_types.hpp"
+#include "nerve/persistence/memory/vram_algorithms.hpp"
 #include "nerve/persistence/vr/vr_distance_tiled_ops.hpp"
 
 #include <algorithm>
