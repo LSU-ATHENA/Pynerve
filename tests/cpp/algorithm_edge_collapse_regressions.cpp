@@ -2,6 +2,7 @@
 #include "nerve/algebra/simplex.hpp"
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core_types.hpp"
+#include "nerve/dmt/gpu_dmt.hpp"
 #include "nerve/persistence/adaptive_acceleration/adaptive_acceleration_problem_analysis.hpp"
 #include "nerve/persistence/adaptive_acceleration/adaptive_algorithm_selector.hpp"
 #include "nerve/persistence/adaptive_acceleration/adaptive_selector_calibration.hpp"

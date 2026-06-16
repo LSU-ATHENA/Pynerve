@@ -12,6 +12,7 @@
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/kernels/kernel_h6_streaming_ops.hpp"
 #include "nerve/persistence/sketching_approximation.hpp"
+#include "nerve/persistence/vr/vr_algorithm_selector_ops.hpp"
 #include "nerve/persistence/vr/vr_dispatch_ops.hpp"
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
 #include "nerve/persistence/vr/vr_landmark_ops.hpp"

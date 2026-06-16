@@ -1,4 +1,3 @@
-#include "nerve/core_types.hpp"
 #include "nerve/determinism.hpp"
 #include "nerve/serialization/serialization_manager.hpp"
 
