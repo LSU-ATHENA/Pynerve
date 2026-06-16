@@ -403,6 +403,19 @@ double WassersteinDistance::pairDistance(const nerve::persistence::Pair &pair1,
 
 // GromovHausdorffDistance::embedComplex, computeHausdorffDistance and
 
+double GromovHausdorffDistance::compute(const SimplicialComplex &complex1,
+                                        const SimplicialComplex &complex2)
+{
+    const auto start = std::chrono::steady_clock::now();
+    const double value =
+        use_approximate_embedding_
+            ? computeHausdorffDistance(embedComplex(complex1), embedComplex(complex2))
+            : gromovHausdorffDistance(complex1, complex2);
+    computation_time_ =
+        std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+    return value;
+}
+
 void GromovHausdorffDistance::setEmbeddingDimension(Size dim)
 {
     embedding_dimension_ = std::max(static_cast<Size>(1), dim);

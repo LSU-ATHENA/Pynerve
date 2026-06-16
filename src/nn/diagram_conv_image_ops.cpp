@@ -519,4 +519,10 @@ std::vector<T> PersistenceImageLayer<T>::forward_multi_dim(std::span<const T> di
     return image;
 }
 
+
+template class DiagramConv2D<float>;
+template class DiagramConv2D<double>;
+template class PersistenceImageLayer<float>;
+template class PersistenceImageLayer<double>;
+
 } // namespace nerve::nn

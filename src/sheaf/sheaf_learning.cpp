@@ -55,8 +55,10 @@ collectDirectedEdges(const Eigen::SparseMatrix<double> &adjacency)
             edges.push_back(DirectedEdge{it.row(), it.col(), w});
         }
     }
-    return edges;
+    return true;
 }
+
+} // namespace nerve::sheaf::learning
 
 void validateLearningConfig(const SheafLearningConfig &config)
 {
