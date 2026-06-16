@@ -74,7 +74,9 @@ int main()
 #include "nerve/streaming/lock_free_streaming.hpp"
 #include "nerve/streaming/streaming_tda.hpp"
 
-    namespace nerve::persistence::accelerated::accelerated_error_tools
+    namespace nerve::persistence::accelerated
+    {
+    namespace accelerated_error_tools
     {
     nerve::errors::ErrorResult<void>
     validateMetrics(const nerve::common::AcceleratedPerformanceStats &)
@@ -88,11 +90,13 @@ int main()
             nerve::errors::ErrorCode::E54_PH4_INVALID_INPUT, "noop");
     }
     }
-    namespace nerve::persistence::accelerated::optimization_recommendations
+
+    namespace optimization_recommendations
     {
     std::vector<std::string> suggestActions(const nerve::common::PerformanceMetrics &metrics);
     }
-    namespace nerve::persistence::accelerated::performance_impact
+
+    namespace performance_impact
     {
     double computeRuntimeChange(const nerve::common::PerformanceMetrics &baseline,
                                 const nerve::common::PerformanceMetrics &current);
@@ -101,6 +105,8 @@ int main()
     double computeOverallImpactScore(const nerve::common::PerformanceMetrics &baseline,
                                      const nerve::common::PerformanceMetrics &current);
     }
+
+    } // namespace nerve::persistence::accelerated
 
     int main()
     {

@@ -1,6 +1,7 @@
 #include "nerve/algebra/simplex.hpp"
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core_types.hpp"
+#include "nerve/persistence/accelerated/accelerated_interface.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/kernels/kernel_h6_streaming_ops.hpp"
 
@@ -26,9 +27,6 @@ int main()
 
         nerve::common::AccelerationConfig acceleration_defaults;
         assert(acceleration_defaults.mode == nerve::common::AccelerationMode::CPU_ONLY);
-        assert(!acceleration_defaults.auto_detect_gpu);
-        assert(!acceleration_defaults.enable_gpu);
-        // removed
         assert(acceleration_defaults.gpu_work_ratio == 0.0);
 
         nerve::common::Strategy strategy_defaults;
@@ -41,11 +39,10 @@ int main()
 
         nerve::common::VRConfig fast_vr_defaults;
         assert(fast_vr_defaults.acceleration.mode == nerve::common::AccelerationMode::CPU_ONLY);
-        assert(!fast_vr_defaults.acceleration.enable_gpu);
         assert(fast_vr_defaults.acceleration.gpu_work_ratio == 0.0);
         assert(!fast_vr_defaults.auto_detect_accelerated_runtime);
         assert(!fast_vr_defaults.auto_detect_adaptive_acceleration);
-        assert(!fast_vr_defaults.acceleration.enable_gpu);
+        assert(fast_vr_defaults.acceleration.gpu_work_ratio == 0.0);
 
         nerve::common::ProblemCharacteristics large_problem;
         large_problem.estimated_n_points = 50000;
@@ -62,13 +59,7 @@ int main()
             nerve::persistence::accelerated::utils::createOptimalConfigForProblem(50000, 32, 1.0,
                                                                                   fast_vr_defaults);
         assert(runtime_optimal.acceleration.mode == nerve::common::AccelerationMode::CPU_ONLY);
-        assert(!runtime_optimal.acceleration.enable_gpu);
         assert(runtime_optimal.acceleration.gpu_work_ratio == 0.0);
-        // removed
-        assert(!runtime_optimal.acceleration.enable_gpu);
-        assert(!runtime_optimal.acceleration.enable_gpu);
-        assert(!runtime_optimal.acceleration.enable_gpu);
-        assert(!runtime_optimal.acceleration.enable_gpu);
 
         const auto runtime_estimate = nerve::persistence::accelerated::utils::estimatePerformance(
             50000, 32, 1.0, runtime_optimal);
