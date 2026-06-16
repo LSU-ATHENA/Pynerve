@@ -1,5 +1,5 @@
-#include "nerve/core/determinism_ops.hpp"
 #include "nerve/core_types.hpp"
+#include "nerve/determinism.hpp"
 #include "nerve/persistence/perfect/perfect_persistence.hpp"
 #include "nerve/serialization/serialization_manager.hpp"
 
