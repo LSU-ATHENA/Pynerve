@@ -291,7 +291,6 @@ double SimplexTree::get_filtration(const std::vector<int64_t> &vertices) const
     return std::numeric_limits<double>::infinity();
 }
 
-
 void SimplexTree::to(at::Device device)
 {
     vertex_indices_ = vertex_indices_.to(device);
