@@ -144,6 +144,7 @@ jobs:
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DNERVE_NATIVE_ARCH=ON
       - run: cmake --build build --parallel
       - run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
+      - run: cp -r python/pynerve "$RUNNER_TEMP/pynerve-install/pynerve"
       - run: python tools/cpp_install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
       - run: python tools/install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
       - run: ctest --test-dir build -L "cpu|generated|bindings" --output-on-failure --parallel 2
@@ -166,6 +167,7 @@ jobs:
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DPython_EXECUTABLE=${{ env.pythonLocation }}/bin/python -DPython3_EXECUTABLE=${{ env.pythonLocation }}/bin/python
       - run: cmake --build build --target pynerve_python_binding_smoke --parallel
       - run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
+      - run: cp -r python/pynerve "$RUNNER_TEMP/pynerve-install/pynerve"
       - run: python tools/cpp_install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
       - run: python tools/install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
       - if: matrix.python == '3.11'
@@ -192,6 +194,7 @@ jobs:
       - name: Static analyze Torch-native build
         run: python tools/static_analysis.py --language cpp --build-dir build --required --clang-tidy-scope all
       - run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
+      - run: cp -r python/pynerve "$RUNNER_TEMP/pynerve-install/pynerve"
       - run: python tools/install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install" --require-torch
       - run: ctest --test-dir build -R pynerve_torch_binding_smoke --output-on-failure
 
