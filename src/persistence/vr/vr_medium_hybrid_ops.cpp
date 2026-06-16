@@ -7,7 +7,6 @@
 #include "nerve/persistence/vr/vr_fast_simd_ops.hpp"
 #include "nerve/persistence/vr/vr_medium_hybrid_ops.hpp"
 #include "nerve/runtime/hardware_probe.hpp"
-
 #include "vr_medium_hybrid_expander.hpp"
 
 #ifdef NERVE_HAS_CUDA

@@ -34,6 +34,11 @@ def _check_core_api() -> None:
 
     points = np.asarray([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]], dtype=np.float64)
     required_keys = {"pairs", "betti_numbers", "diagnostics"}
+
+    options = nerve.PersistenceOptions()
+    options.max_dim = 1
+    options.max_radius = 2.0
+
     for operation in (
         nerve.compute_persistence,
         nerve.compute_persistence_ph4,
@@ -41,7 +46,7 @@ def _check_core_api() -> None:
         nerve.compute_persistence_ph6,
         nerve.compute_persistence_cohomology,
     ):
-        result = operation(points, max_dim=1, max_radius=2.0)
+        result = operation(points, options)
         if not required_keys.issubset(result):
             raise RuntimeError(f"{operation.__name__} returned unexpected keys: {sorted(result)}")
         if not result["pairs"]:
@@ -51,7 +56,8 @@ def _check_core_api() -> None:
         raise RuntimeError("public PH5/PH6 engine API must not expose prototype naming")
     _ = nerve.PH5PH6Engine(nerve.PH5PH6Config())
 
-    updated = nerve.update_persistence([("add", [0]), ("add", [1]), ("add", [0, 1])])
+    update_opts = nerve.PersistenceOptions()
+    updated = nerve.update_persistence([("add", [0]), ("add", [1]), ("add", [0, 1])], update_opts)
     if not required_keys.issubset(updated):
         raise RuntimeError(f"unexpected incremental persistence result keys: {sorted(updated)}")
 
@@ -79,59 +85,63 @@ def _check_core_api() -> None:
         "core public nonfinite point",
         lambda: nerve.compute_persistence(
             np.asarray([[0.0, 0.0], [np.nan, 0.0]], dtype=np.float64),
-            max_dim=1,
-            max_radius=2.0,
+            options,
         ),
         "NaN or infinite",
     )
-    _expect_validation(
-        "core invalid max_radius override",
-        lambda: nerve.compute_persistence(points, max_dim=1, max_radius=float("nan")),
-        "max_radius",
-    )
-    _expect_validation(
-        "core invalid error_tolerance override",
-        lambda: nerve.compute_persistence(
-            points, max_dim=1, max_radius=2.0, error_tolerance=float("inf")
-        ),
-        "error_tolerance",
-    )
     invalid_options = nerve.PersistenceOptions()
+    invalid_options.max_dim = 1
     invalid_options.max_radius = float("nan")
     _expect_validation(
-        "core invalid cloned max_radius option",
+        "core invalid max_radius override",
         lambda: nerve.compute_persistence(points, invalid_options),
         "max_radius",
     )
+    invalid_tol_opts = nerve.PersistenceOptions()
+    invalid_tol_opts.max_dim = 1
+    invalid_tol_opts.max_radius = 2.0
+    invalid_tol_opts.error_tolerance = float("inf")
+    _expect_validation(
+        "core invalid error_tolerance override",
+        lambda: nerve.compute_persistence(points, invalid_tol_opts),
+        "error_tolerance",
+    )
+    invalid_radius_opts = nerve.PersistenceOptions()
+    invalid_radius_opts.max_radius = float("nan")
+    _expect_validation(
+        "core invalid cloned max_radius option",
+        lambda: nerve.compute_persistence(points, invalid_radius_opts),
+        "max_radius",
+    )
 
-    direct_options = pynerve_internal.PersistenceOptions()
+    direct_options = nerve.PersistenceOptions()
     direct_options.max_dim = 1
     direct_options.max_radius = 2.0
     _expect_validation(
         "core internal nonfinite point",
-        lambda: pynerve_internal.compute_persistence(
+        lambda: nerve.compute_persistence(
             np.asarray([[0.0, 0.0], [np.nan, 0.0]], dtype=np.float64),
             direct_options,
         ),
         "NaN or infinite",
     )
-    bad_direct_options = pynerve_internal.PersistenceOptions()
+    bad_direct_options = nerve.PersistenceOptions()
     bad_direct_options.max_radius = float("nan")
     _expect_validation(
         "core internal invalid max_radius option",
-        lambda: pynerve_internal.compute_persistence(points, bad_direct_options),
+        lambda: nerve.compute_persistence(points, bad_direct_options),
         "max_radius",
     )
-    bad_direct_options = pynerve_internal.PersistenceOptions()
+    bad_direct_options = nerve.PersistenceOptions()
     bad_direct_options.error_tolerance = float("nan")
     _expect_validation(
         "core internal invalid error_tolerance option",
-        lambda: pynerve_internal.compute_persistence(points, bad_direct_options),
+        lambda: nerve.compute_persistence(points, bad_direct_options),
         "error_tolerance",
     )
     _expect_validation(
         "core invalid event simplex",
-        lambda: nerve.update_persistence([("add", [])]),
+        lambda: nerve.update_persistence([("add", [])], nerve.PersistenceOptions()),
         "simplex",
     )
     engine = nerve.PH5PH6Engine(nerve.PH5PH6Config())
@@ -166,8 +176,7 @@ def _check_core_api() -> None:
         return
     torch_result = nerve.compute_persistence(
         torch.tensor(points, dtype=torch.float32),
-        max_dim=1,
-        max_radius=2.0,
+        options,
     )
     if not required_keys.issubset(torch_result):
         raise RuntimeError(
