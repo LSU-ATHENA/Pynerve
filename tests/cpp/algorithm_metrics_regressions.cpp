@@ -35,7 +35,6 @@ int main()
 #include "nerve/persistence/core/high_dimensional_exact.hpp"
 #include "nerve/persistence/core/roaring_bitmap.hpp"
 #include "nerve/persistence/cuda/cuda_error_handling.hpp"
-#include "nerve/persistence/cuda/cuda_memory_manager.hpp"
 #include "nerve/persistence/cuda/cuda_multi_gpu.hpp"
 #include "nerve/persistence/distilled_vr_filtration.hpp"
 #include "nerve/persistence/distributed/mpi_distributed_ph.hpp"
