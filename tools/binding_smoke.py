@@ -30,7 +30,7 @@ def _prepend_import_paths(build_dir: Path) -> None:
 
 
 def _check_core_api() -> None:
-    import pynerve_internal as _
+    import pynerve_internal as nerve
 
     points = np.asarray([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]], dtype=np.float64)
     required_keys = {"pairs", "betti_numbers", "diagnostics"}
