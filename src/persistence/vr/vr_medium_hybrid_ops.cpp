@@ -8,21 +8,7 @@
 #include "nerve/persistence/vr/vr_medium_hybrid_ops.hpp"
 #include "nerve/runtime/hardware_probe.hpp"
 
-namespace nerve::persistence
-{
-
-using namespace detail;
-
-class ParallelCliqueExpander
-{
-public:
-    ParallelCliqueExpander(const std::vector<std::vector<int>> &neighbors,
-                           const std::vector<std::vector<double>> &distance_matrix, size_t max_dim,
-                           double max_radius);
-    void expand(size_t num_points, nerve::algebra::SimplicialComplex &complex, SimplexSet &seen);
-};
-
-} // namespace nerve::persistence
+#include "vr_medium_hybrid_expander.hpp"
 
 #ifdef NERVE_HAS_CUDA
 #include "nerve/gpu/distance_fasted.cuh"
