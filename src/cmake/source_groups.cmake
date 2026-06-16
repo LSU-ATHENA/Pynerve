@@ -72,8 +72,6 @@ set(NERVE_CORE_SOURCES
     cache/feature_cache_ops.cpp
     cpu/avx512_ph_ops.cpp
     nn/diagram_conv.cpp
-    nn/diagram_conv_kernels.cpp
-    nn/simd_nn_ops.cpp
     nn/diagram_conv_image_ops.cpp
     nn/diagram_conv_image_ops_detail.cpp
     runtime/calibration_model.cpp

@@ -436,6 +436,8 @@ std::vector<T> DiagramVectorizer<T>::betti_curve(std::span<const T> diagram, siz
     return features;
 }
 
+#include "diagram_conv_kernels.inl"
+
 template class DiagramConv1D<float>;
 template class DiagramConv1D<double>;
 template class LandscapeLayer<float>;
