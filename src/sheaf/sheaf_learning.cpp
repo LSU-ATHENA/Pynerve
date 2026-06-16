@@ -55,10 +55,8 @@ collectDirectedEdges(const Eigen::SparseMatrix<double> &adjacency)
             edges.push_back(DirectedEdge{it.row(), it.col(), w});
         }
     }
-    return true;
+    return edges;
 }
-
-} // namespace nerve::sheaf::learning
 
 void validateLearningConfig(const SheafLearningConfig &config)
 {
@@ -428,3 +426,7 @@ bool SheafLearner::validateInputs(const Eigen::SparseMatrix<double> &graph_adjac
     }
     return true;
 }
+
+} // namespace learning
+} // namespace sheaf
+} // namespace nerve
