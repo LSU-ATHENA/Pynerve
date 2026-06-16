@@ -1,3 +1,4 @@
+#include "distance/simd_distance.hpp"
 #include "nerve/algebra/boundary.hpp"
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core/policy/ownership_policy.hpp"

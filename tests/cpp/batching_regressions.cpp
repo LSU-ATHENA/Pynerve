@@ -124,7 +124,6 @@ bool check_micro_batching_engine_construction()
     cfg.max_batch_size = 16;
     cfg.min_batch_size = 1;
     cfg.num_batch_threads = 1;
-    cfg.enable_dynamic_batching = false;
 
     nerve::batching::MicroBatchingEngine<std::vector<double>> engine(cfg);
     auto stats = engine.getStats();
@@ -149,7 +148,6 @@ bool check_symbol_batching_config()
     cfg.symbol_ids = {1, 2, 3};
     cfg.max_batch_size_per_symbol = 8;
     cfg.max_total_batch_size = 32;
-    cfg.enable_cross_symbol_batching = true;
 
     if (cfg.symbol_ids.empty())
     {

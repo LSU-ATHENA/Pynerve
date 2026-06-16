@@ -1,6 +1,8 @@
 #pragma once
 
+#if __has_include(<torch/torch.h>)
 #include <torch/torch.h>
+#endif
 
 #include <functional>
 #include <memory>

@@ -1,7 +1,12 @@
 #include "nerve/config.hpp"
 #include "nerve/runtime/hardware_probe.hpp"
 
+#if defined(__linux__)
 #include <sys/sysinfo.h>
+#elif defined(__APPLE__)
+#include <mach/mach_host.h>
+#include <sys/sysctl.h>
+#endif
 
 #include <algorithm>
 #include <cctype>
@@ -159,6 +164,7 @@ ProbeValue<CpuTopology> probeCpuTopology()
     CpuTopology topology;
     const unsigned int logical = std::thread::hardware_concurrency();
     topology.logical_cores = logical == 0U ? 1U : static_cast<std::size_t>(logical);
+#if defined(__linux__)
     std::ifstream cpuinfo("/proc/cpuinfo");
     std::unordered_set<std::string> physical_cores;
     std::string model_name;
@@ -213,6 +219,35 @@ ProbeValue<CpuTopology> probeCpuTopology()
     topology.physical_cores =
         physical_cores.empty() ? topology.logical_cores : physical_cores.size();
     topology.model = model_name.empty() ? "unknown" : model_name;
+#elif defined(__APPLE__)
+    std::unordered_set<std::string> physical_cores;
+    std::string model_name;
+    {
+        int mib[2] = {CTL_HW, HW_PER_CPU};
+        int core_count = 0;
+        std::size_t len = sizeof(core_count);
+        if (sysctl(mib, 2, &core_count, &len, nullptr, 0) == 0 && core_count > 0)
+        {
+            topology.physical_cores = static_cast<std::size_t>(core_count);
+        }
+        else
+        {
+            topology.physical_cores = topology.logical_cores;
+        }
+    }
+    {
+        char buf[256]{};
+        std::size_t len = sizeof(buf);
+        if (sysctlbyname("machdep.cpu.brand_string", buf, &len, nullptr, 0) == 0)
+        {
+            model_name = buf;
+        }
+    }
+    topology.model = model_name.empty() ? "unknown" : model_name;
+#else
+    topology.physical_cores = topology.logical_cores;
+    topology.model = "unknown";
+#endif
     cpu.status = ProbeStatus::kOk;
     cpu.value = std::move(topology);
     return cpu;
@@ -220,15 +255,15 @@ ProbeValue<CpuTopology> probeCpuTopology()
 ProbeValue<std::uint64_t> probeMemoryValue(bool available_memory)
 {
     ProbeValue<std::uint64_t> out;
-    struct sysinfo info
-    {};
+    std::uint64_t value = 0;
+#if defined(__linux__)
+    struct sysinfo info{};
     if (sysinfo(&info) != 0)
     {
         out.status = ProbeStatus::kError;
         out.diagnostics = "sysinfo failed";
         return out;
     }
-    std::uint64_t value = 0;
     if (available_memory)
     {
         std::ifstream meminfo("/proc/meminfo");
@@ -260,6 +295,39 @@ ProbeValue<std::uint64_t> probeMemoryValue(bool available_memory)
         value = multiplyOrZero(static_cast<std::uint64_t>(info.totalram),
                                static_cast<std::uint64_t>(info.mem_unit));
     }
+#elif defined(__APPLE__)
+    if (available_memory)
+    {
+        mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
+        vm_statistics64_data_t vm_stat;
+        if (host_statistics64(mach_host_self(), HOST_VM_INFO64,
+                              reinterpret_cast<host_info64_t>(&vm_stat), &count) == KERN_SUCCESS)
+        {
+            value = static_cast<std::uint64_t>(vm_stat.free_count) *
+                    static_cast<std::uint64_t>(vm_page_size);
+        }
+    }
+    if (value == 0)
+    {
+        int mib[2] = {CTL_HW, HW_MEMSIZE};
+        std::uint64_t memsize = 0;
+        std::size_t len = sizeof(memsize);
+        if (sysctl(mib, 2, &memsize, &len, nullptr, 0) == 0)
+        {
+            value = memsize;
+        }
+    }
+    if (value == 0)
+    {
+        out.status = ProbeStatus::kError;
+        out.diagnostics = "memory probe failed on macOS";
+        return out;
+    }
+#else
+    out.status = ProbeStatus::kMissing;
+    out.diagnostics = "memory probe not implemented on this platform";
+    return out;
+#endif
     out.status = ProbeStatus::kOk;
     out.value = value;
     return out;

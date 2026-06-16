@@ -114,6 +114,13 @@ errors::ErrorResult<std::vector<Pair>>
 computeVrPersistenceFastResult(const core::BufferView<const double> &points, Size point_dim,
                                const VRConfig &config);
 
+inline std::vector<Pair> computeVrPersistence(const double *points, Size num_points, Size point_dim,
+                                              const VRConfig &config)
+{
+    core::BufferView<const double> view(points, num_points * point_dim);
+    return computeVrPersistenceFast(view, point_dim, config);
+}
+
 bool isAdaptiveAccelerationAvailable();
 bool is_cuda_available();
 errors::ErrorResult<std::string> getAdaptiveAccelerationCapabilities();

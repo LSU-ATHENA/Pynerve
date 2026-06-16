@@ -175,7 +175,7 @@ bool check_simd_batch_filter()
 
 bool check_simd_sort_pairs()
 {
-    std::vector<nerve::persistence::Pair> pairs = {{0.0, 3.0, 0}, {0.0, 1.0, 0}, {0.0, 2.0, 0}};
+    std::vector<nerve::Pair> pairs = {{0.0, 3.0, 0}, {0.0, 1.0, 0}, {0.0, 2.0, 0}};
     nerve::filtration::simdSortPairsByBirth(pairs.data(), static_cast<Size>(pairs.size()));
     return true;
 }

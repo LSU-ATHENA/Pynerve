@@ -3,6 +3,7 @@
 
 #pragma once
 
+#if __has_include(<torch/torch.h>)
 #include <torch/torch.h>
 
 #include <string>
@@ -86,3 +87,4 @@ at::Tensor ml_normalize_kernel_matrix(const at::Tensor &K);
 at::Tensor ml_center_kernel_matrix(const at::Tensor &K);
 
 } // namespace nerve::torch
+#endif

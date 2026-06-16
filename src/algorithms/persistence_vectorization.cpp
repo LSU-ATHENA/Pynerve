@@ -1,8 +1,7 @@
 #include "nerve/algorithms/persistence_vectorization.hpp"
 #include "nerve/cpu/arm_simd.hpp"
 #include "nerve/cpu/simd.hpp"
-
-#include <immintrin.h>
+#include "nerve/cpu/x86_intrinsics.hpp"
 
 #include <algorithm>
 #include <cmath>

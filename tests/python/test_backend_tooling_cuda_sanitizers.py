@@ -48,9 +48,18 @@ def cuda_launch_audit():
     return _get_tool("cuda_launch_audit")
 
 
+def _torch_cuda_available() -> bool:
+    try:
+        import torch
+
+        return torch.cuda.is_available()
+    except ImportError:
+        return False
+
+
 @pytest.mark.quality
-@pytest.mark.skipif(not __import__("torch").cuda.is_available(), reason="CUDA not available")
-@pytest.mark.skipif(not __import__("torch").cuda.is_available(), reason="CUDA not available")
+@pytest.mark.skipif(not _torch_cuda_available(), reason="torch with CUDA not available")
+@pytest.mark.skipif(not _torch_cuda_available(), reason="torch with CUDA not available")
 def test_cuda_backend_runs_memory_race_and_sync_sanitizers(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

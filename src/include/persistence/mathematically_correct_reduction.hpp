@@ -5,7 +5,7 @@
 #include "math/matrix_reduction.hpp"
 #include "math/precision_manager.hpp"
 #include "nerve/error/error_registry.hpp"
-#include "nerve/persistence/reduction/reducer.hpp"
+#include "nerve/persistence/reduction/reduction_ops.hpp"
 
 #include <algorithm>
 #include <chrono>

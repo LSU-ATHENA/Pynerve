@@ -38,7 +38,7 @@ enum class ProblemType
     SMALL,
     MEDIUM,
     LARGE,
-    HUGE
+    VERY_LARGE
 };
 
 enum class AlgorithmType
