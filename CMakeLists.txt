@@ -351,8 +351,9 @@ if(NOT NERVE_HAS_TORCH)
 endif()
 if(NOT NERVE_HAS_CUDA)
     list(APPEND NERVE_INSTALL_HEADER_EXCLUDES
-        PATTERN "nerve/gpu/cuda_dispatch.hpp" EXCLUDE
-        PATTERN "nerve/gpu/*.cuh" EXCLUDE
+        PATTERN "nerve/gpu/*" EXCLUDE
+        PATTERN "nerve/persistence/cuda/*.hpp" EXCLUDE
+        PATTERN "nerve/compression/gpu_autoencoder.hpp" EXCLUDE
     )
 endif()
 

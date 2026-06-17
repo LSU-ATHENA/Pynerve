@@ -25,7 +25,7 @@ static bool hasAvx512()
 void batchVectorAddSimd(double *a, const double *b, Size n)
 {
     Size i = 0;
-#if defined(__AVX512F__)
+#if defined(__AVX512F__) && defined(NERVE_HAS_X86_INTRINSICS)
     if (hasAvx512())
     {
         for (; i + 8 <= n; i += 8)
@@ -36,7 +36,7 @@ void batchVectorAddSimd(double *a, const double *b, Size n)
         }
     }
 #endif
-#if defined(__AVX2__)
+#if defined(__AVX2__) && defined(NERVE_HAS_X86_INTRINSICS)
     if (i + 4 <= n)
     {
         __m256d va = _mm256_loadu_pd(a + i);
@@ -52,7 +52,7 @@ void batchVectorAddSimd(double *a, const double *b, Size n)
 void batchScaleSimd(double *data, double alpha, Size n)
 {
     Size i = 0;
-#if defined(__AVX512F__)
+#if defined(__AVX512F__) && defined(NERVE_HAS_X86_INTRINSICS)
     if (hasAvx512())
     {
         __m512d a = _mm512_set1_pd(alpha);
@@ -63,7 +63,7 @@ void batchScaleSimd(double *data, double alpha, Size n)
         }
     }
 #endif
-#if defined(__AVX2__)
+#if defined(__AVX2__) && defined(NERVE_HAS_X86_INTRINSICS)
     if (i + 4 <= n)
     {
         __m256d a = _mm256_set1_pd(alpha);
@@ -78,7 +78,7 @@ void batchScaleSimd(double *data, double alpha, Size n)
 
 void batchThresholdSimd(double *data, Size n, double lo, double hi)
 {
-#if defined(__AVX512F__)
+#if defined(__AVX512F__) && defined(NERVE_HAS_X86_INTRINSICS)
     if (hasAvx512())
     {
         Size i = 0;
@@ -101,7 +101,7 @@ void batchThresholdSimd(double *data, Size n, double lo, double hi)
         return;
     }
 #endif
-#if defined(__AVX2__)
+#if defined(__AVX2__) && defined(NERVE_HAS_X86_INTRINSICS)
     if (hasAvx2())
     {
         Size i = 0;
