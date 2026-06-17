@@ -1,4 +1,5 @@
 #include "nerve/core_types.hpp"
+#ifdef NERVE_HAS_MPI
 #include "nerve/distributed/mpi_persistence.hpp"
 
 #include <atomic>
@@ -258,3 +259,4 @@ int main()
     }
     return 0;
 }
+#endif
