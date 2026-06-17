@@ -105,7 +105,7 @@ public:
         int max_d = -1;
         for (const auto &s : simplices_)
         {
-            if (s.dimension() > max_d)
+            if (static_cast<int>(s.dimension()) > max_d)
                 max_d = s.dimension();
         }
         return max_d;
@@ -115,7 +115,7 @@ public:
         std::vector<Simplex> result;
         for (const auto &s : simplices_)
         {
-            if (s.dimension() == dim)
+            if (static_cast<int>(s.dimension()) == dim)
                 result.push_back(s);
         }
         return result;

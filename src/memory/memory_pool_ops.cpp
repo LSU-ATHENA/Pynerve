@@ -6,6 +6,7 @@
 #include <new>
 
 #ifdef __linux__
+#include <numa.h>
 #include <sys/mman.h>
 #endif
 
@@ -306,7 +307,7 @@ struct NumaAwareAllocator::NumaPolicy
         , actual_nodes(0)
     {
 #if defined(__linux__) && defined(NERVE_HAS_NUMA)
-        if (numa_available() > 0)
+        if (numa_available() != -1)
         {
             numa_available = true;
             actual_nodes = numa_max_node() + 1;

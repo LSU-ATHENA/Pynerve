@@ -5,13 +5,17 @@
 #include <cmath>
 #include <cstring>
 
+#if defined(__AVX2__) || defined(__AVX512F__)
+#include <immintrin.h>
+#endif
+
 namespace nerve::nn
 {
 
 void simdReLU(double *data, Size n)
 {
 #if defined(__AVX512F__)
-    if (cpu::CPUFeatureDetector::instance().hasAVX512F())
+    if (cpu::simd::CPUFeatureDetector.hasAVX512F())
     {
         __m512d vzero = _mm512_setzero_pd();
         Size i = 0;
@@ -26,7 +30,7 @@ void simdReLU(double *data, Size n)
         return;
     }
 #elif defined(__AVX2__)
-    if (cpu::CPUFeatureDetector::instance().hasAVX2())
+    if (cpu::simd::CPUFeatureDetector.hasAVX2())
     {
         __m256d vzero = _mm256_setzero_pd();
         Size i = 0;
@@ -49,7 +53,7 @@ void simdReLU(double *data, Size n)
 void simdSigmoid(double *data, Size n)
 {
 #if defined(__AVX512F__)
-    if (cpu::CPUFeatureDetector::instance().hasAVX512F())
+    if (cpu::simd::CPUFeatureDetector.hasAVX512F())
     {
         __m512d vone = _mm512_set1_pd(1.0);
         Size i = 0;
@@ -73,7 +77,7 @@ void simdSigmoid(double *data, Size n)
 void simdTanh(double *data, Size n)
 {
 #if defined(__AVX512F__)
-    if (cpu::CPUFeatureDetector::instance().hasAVX512F())
+    if (cpu::simd::CPUFeatureDetector.hasAVX512F())
     {
         __m512d vtwo = _mm512_set1_pd(2.0);
         __m512d vone = _mm512_set1_pd(1.0);
@@ -99,7 +103,7 @@ void simdTanh(double *data, Size n)
 void simdBatchNorm(double *data, Size n, double mean, double std_inv)
 {
 #if defined(__AVX512F__)
-    if (cpu::CPUFeatureDetector::instance().hasAVX512F())
+    if (cpu::simd::CPUFeatureDetector.hasAVX512F())
     {
         __m512d vmean = _mm512_set1_pd(mean);
         __m512d vstd = _mm512_set1_pd(std_inv);
@@ -128,7 +132,7 @@ void simdSoftmax(double *data, Size n)
             max_val = data[i];
     double sum = 0.0;
 #if defined(__AVX512F__)
-    if (cpu::CPUFeatureDetector::instance().hasAVX512F() && n >= 8)
+    if (cpu::simd::CPUFeatureDetector.hasAVX512F() && n >= 8)
     {
         __m512d vmax = _mm512_set1_pd(max_val);
         __m512d vsum = _mm512_setzero_pd();

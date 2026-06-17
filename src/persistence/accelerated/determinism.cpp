@@ -36,7 +36,7 @@ public:
 
     explicit DeterminismContext(const core::DeterminismContract &contract)
         : contract_(contract)
-        , state_(resolveSeed(contract), 0, contract.level >= core::DeterminismLevel::STRICT, false)
+        , state_{resolveSeed(contract), 0, contract.level >= core::DeterminismLevel::STRICT, false}
         , rng_(state_.seed)
     {}
 

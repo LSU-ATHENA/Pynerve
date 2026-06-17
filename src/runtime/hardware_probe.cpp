@@ -223,10 +223,9 @@ ProbeValue<CpuTopology> probeCpuTopology()
     std::unordered_set<std::string> physical_cores;
     std::string model_name;
     {
-        int mib[2] = {CTL_HW, HW_PER_CPU};
         int core_count = 0;
         std::size_t len = sizeof(core_count);
-        if (sysctl(mib, 2, &core_count, &len, nullptr, 0) == 0 && core_count > 0)
+        if (sysctlbyname("hw.physicalcpu", &core_count, &len, nullptr, 0) == 0 && core_count > 0)
         {
             topology.physical_cores = static_cast<std::size_t>(core_count);
         }
@@ -257,8 +256,7 @@ ProbeValue<std::uint64_t> probeMemoryValue(bool available_memory)
     ProbeValue<std::uint64_t> out;
     std::uint64_t value = 0;
 #if defined(__linux__)
-    struct sysinfo info
-    {};
+    struct sysinfo info{};
     if (sysinfo(&info) != 0)
     {
         out.status = ProbeStatus::kError;
