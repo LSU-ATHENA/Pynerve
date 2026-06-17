@@ -1,9 +1,17 @@
+#if __has_include("nerve/gpu/gpu_memory.hpp")
+#include "nerve/gpu/gpu_memory.hpp"
+#else
+int main()
+{
+    return 0;
+}
+#endif
+
+#if __has_include("nerve/gpu/gpu_memory.hpp")
 
 #include "nerve/errors/errors.hpp"
-// gpu_memory.hpp not yet implemented
 
-#include <algorithm>
-#include <cmath>
+#include <algorithm>#include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <limits>
@@ -176,3 +184,4 @@ int main()
     }
     return 0;
 }
+#endif

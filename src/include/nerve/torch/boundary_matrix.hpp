@@ -1,8 +1,7 @@
 #pragma once
-
 #if __has_include(<torch/torch.h>)
+
 #include <torch/torch.h>
-#endif
 
 #include <cstdint>
 #include <vector>
@@ -160,3 +159,5 @@ public:
 };
 
 } // namespace nerve::torch
+
+#endif

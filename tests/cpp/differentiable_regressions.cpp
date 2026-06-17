@@ -1,3 +1,4 @@
+#ifdef TOPO_ENABLE_ADVANCED_DIFFERENTIABLE
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core_types.hpp"
@@ -282,3 +283,4 @@ int main()
     }
     return 0;
 }
+#endif

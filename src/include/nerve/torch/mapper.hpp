@@ -1,8 +1,7 @@
 #pragma once
-
 #if __has_include(<torch/torch.h>)
+
 #include <torch/torch.h>
-#endif
 
 #include <functional>
 #include <memory>
@@ -123,3 +122,5 @@ MapperGraph quick_mapper(const at::Tensor &point_cloud, const std::string &filte
                          int64_t resolution = 10, double overlap = 0.25);
 
 } // namespace nerve::torch
+
+#endif

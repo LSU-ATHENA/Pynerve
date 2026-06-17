@@ -1,4 +1,5 @@
 #include "nerve/torch/boundary_matrix.hpp"
+#if __has_include(<torch/torch.h>)
 #include "nerve/torch/simplex_tree.hpp"
 
 #include <algorithm>
@@ -159,3 +160,4 @@ int main()
     return 0;
 #endif
 }
+#endif
