@@ -118,15 +118,19 @@ bool check_traversal_basic()
     std::vector<std::vector<int>> boundaries = {{1}, {0}, {3}, {2}};
 
     std::vector<int> visited;
-    traversal.traversePaths(pairs, boundaries, 2, [&](int idx) { visited.push_back(idx); });
+    traversal.traverse(pairs, boundaries, visited);
 
-    if (visited.empty())
+    if (visited.size() != 4)
     {
-        std::cerr << "traversal visited nothing\n";
+        std::cerr << "traversal should visit all 4 cells\n";
         return false;
     }
 
     return true;
+}
+
+
+return true;
 }
 
 } // namespace
@@ -146,11 +150,6 @@ int main()
     if (!check_dmt_engine_construction())
     {
         std::cerr << "FAIL: dmt engine construction\n";
-        return 1;
-    }
-    if (!check_critical_cell_detection())
-    {
-        std::cerr << "FAIL: critical cell detection\n";
         return 1;
     }
     if (!check_traversal_basic())

@@ -443,7 +443,7 @@ int main()
             bool rejected_cuda_nan_radius = false;
             try
             {
-                (void)nerve::persistence::accelerated::utils::estimateTotalGpuMemoryUsage(
+                (void)nerve::persistence::accelerated::utils::estimateMemoryUsage(
                     3, 2, std::numeric_limits<double>::quiet_NaN(), 0.5);
             }
             catch (const std::invalid_argument &)

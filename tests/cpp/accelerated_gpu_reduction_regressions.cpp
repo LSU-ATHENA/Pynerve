@@ -23,11 +23,11 @@ using nerve::Field;
 using nerve::Index;
 using nerve::Size;
 using nerve::errors::ErrorCode;
-using nerve::persistence::accelerated::CUDAEgdeExtractor;
-using nerve::persistence::accelerated::Edge;
-using nerve::persistence::accelerated::EdgeExtractionConfig;
-using nerve::persistence::accelerated::EdgeExtractionStats;
-using namespace nerve::persistence::accelerated::factory;
+using nerve::persistence::cuda::CUDAEgdeExtractor;
+using nerve::persistence::cuda::Edge;
+using nerve::persistence::cuda::EdgeExtractionConfig;
+using nerve::persistence::cuda::EdgeExtractionStats;
+using namespace nerve::persistence::cuda;
 
 bool check_edge_extraction_config_default()
 {
@@ -101,7 +101,7 @@ bool check_edge_stats_computation()
 
 bool check_factory_create_accelerated()
 {
-    auto result = factory::createAcceleratedEdgeExtractor(100, 2.0, 0.1);
+    auto result = ::createAcceleratedEdgeExtractor(100, 2.0, 0.1);
     if (result.isError())
     {
         bool acceptable = (result.errorCode() == ErrorCode::E51_PH_INPUT);
@@ -120,7 +120,7 @@ bool check_factory_create_accelerated()
 
 bool check_factory_create_batch()
 {
-    auto result = factory::createBatchEdgeExtractor(4, 500, 1.0);
+    auto result = ::createBatchEdgeExtractor(4, 500, 1.0);
     if (result.isError())
         return true;
     auto extractor = std::move(result.value());
@@ -159,13 +159,13 @@ bool check_factory_create_sparse()
 
 bool check_factory_invalid_parameters()
 {
-    auto r1 = factory::createAcceleratedEdgeExtractor(0, 1.0, 0.1);
+    auto r1 = ::createAcceleratedEdgeExtractor(0, 1.0, 0.1);
     if (!r1.isError())
         return false;
-    auto r2 = factory::createAcceleratedEdgeExtractor(100, -1.0, 0.1);
+    auto r2 = ::createAcceleratedEdgeExtractor(100, -1.0, 0.1);
     if (!r2.isError())
         return false;
-    auto r3 = factory::createAcceleratedEdgeExtractor(100, 1.0, -0.1);
+    auto r3 = ::createAcceleratedEdgeExtractor(100, 1.0, -0.1);
     if (!r3.isError())
         return false;
     return true;

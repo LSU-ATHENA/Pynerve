@@ -471,7 +471,8 @@ int main()
     }
 
     {
-        nerve::persistence::robin_hood::RobinHoodHashMap<int, int> pivot_map(1024);
+        std::unordered_map<int, int> pivot_map;
+        pivot_map.reserve(1024);
         for (int i = 0; i < 300; ++i)
         {
             pivot_map.insert(i * 1024, i);

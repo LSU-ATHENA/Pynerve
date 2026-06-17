@@ -12,7 +12,7 @@
 namespace
 {
 
-using nerve::Size;
+using Size;
 
 constexpr double TOL = 1e-9;
 

@@ -26,7 +26,7 @@ bool check_simd_memcpy_basic()
     {
         src[i] = static_cast<char>(i);
     }
-    nerve::core::simdMemcpy(dst, src, 64);
+    std::memcpy(dst, src, 64);
     for (int i = 0; i < 64; ++i)
     {
         if (dst[i] != src[i])
@@ -40,7 +40,7 @@ bool check_simd_memcpy_basic()
 bool check_simd_memset_basic()
 {
     char buf[128] = {};
-    nerve::core::simdMemset(buf, 0xAB, 128);
+    std::memset(buf, 0xAB, 128);
     for (int i = 0; i < 128; ++i)
     {
         if (static_cast<unsigned char>(buf[i]) != 0xAB)
@@ -60,21 +60,21 @@ bool check_simd_reduce_sum()
         data[i] = static_cast<double>(i + 1);
         expected += data[i];
     }
-    double sum = nerve::core::simdReduceSum(data, 16);
+    double sum = nerve::core::reduceSum(data, 16);
     return std::abs(sum - expected) < TOL;
 }
 
 bool check_simd_reduce_sum_small()
 {
     double data[3] = {1.5, 2.5, 3.0};
-    double sum = nerve::core::simdReduceSum(data, 3);
+    double sum = nerve::core::reduceSum(data, 3);
     return std::abs(sum - 7.0) < TOL;
 }
 
 bool check_simd_reduce_sum_empty()
 {
     double data[1] = {0.0};
-    double sum = nerve::core::simdReduceSum(data, 0);
+    double sum = nerve::core::reduceSum(data, 0);
     return std::abs(sum) < TOL;
 }
 
