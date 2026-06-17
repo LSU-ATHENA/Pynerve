@@ -60,21 +60,21 @@ bool check_simd_reduce_sum()
         data[i] = static_cast<double>(i + 1);
         expected += data[i];
     }
-    double sum = nerve::core::reduceSum(data, 16);
+    double sum = nerve::core::simd::reduceSum(data, 16);
     return std::abs(sum - expected) < TOL;
 }
 
 bool check_simd_reduce_sum_small()
 {
     double data[3] = {1.5, 2.5, 3.0};
-    double sum = nerve::core::reduceSum(data, 3);
+    double sum = nerve::core::simd::reduceSum(data, 3);
     return std::abs(sum - 7.0) < TOL;
 }
 
 bool check_simd_reduce_sum_empty()
 {
     double data[1] = {0.0};
-    double sum = nerve::core::reduceSum(data, 0);
+    double sum = nerve::core::simd::reduceSum(data, 0);
     return std::abs(sum) < TOL;
 }
 
