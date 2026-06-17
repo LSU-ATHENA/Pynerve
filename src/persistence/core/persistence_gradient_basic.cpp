@@ -16,9 +16,7 @@ namespace nerve::persistence::gradient
 
 #include "detail/persistence_gradient_algorithm_helpers.inl"
 #include "detail/persistence_gradient_api_ops.inl"
-#if !HAS_EIGEN
 #include "detail/persistence_gradient_core_ops.inl"
-#endif
 #include "detail/persistence_gradient_matrix_helpers.inl"
 
 } // namespace nerve::persistence::gradient

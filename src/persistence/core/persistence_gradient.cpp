@@ -250,4 +250,153 @@ PersistenceGradient::hungarianAlgorithm(const std::vector<std::vector<double>> &
     return result;
 }
 
+DifferentiableDiagram computeDifferentiable(std::span<const double> points_data, size_t n_points,
+                                            size_t point_dim, double max_distance, int max_dim)
+{
+    if (n_points > std::numeric_limits<size_t>::max() / point_dim)
+    {
+        throw std::invalid_argument("computeDifferentiable: point data too large");
+    }
+    if (!std::isfinite(max_distance) || max_distance <= 0.0)
+    {
+        throw std::invalid_argument(
+            "computeDifferentiable: max_distance must be finite and non-negative");
+    }
+    if (n_points == 0 || point_dim == 0)
+    {
+        return DifferentiableDiagram{};
+    }
+
+    Eigen::MatrixXd points_mat(n_points, point_dim);
+    for (size_t i = 0; i < n_points; ++i)
+    {
+        for (size_t d = 0; d < point_dim; ++d)
+        {
+            points_mat(static_cast<Eigen::Index>(i), static_cast<Eigen::Index>(d)) =
+                points_data[i * point_dim + d];
+        }
+    }
+
+    DifferentiableDiagram result;
+    double last_dist = 0.0;
+    for (double r = 0.0; r <= max_distance; r += max_distance / 100.0)
+    {
+        (void)last_dist;
+        for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(n_points); ++i)
+        {
+            bool has_pair = false;
+            for (size_t pi = 0; pi < result.persistence_pairs.size(); ++pi)
+            {
+                double birth_val = result.persistence_pairs[pi].first;
+                if (std::abs(birth_val - r) < 1e-6)
+                {
+                    has_pair = true;
+                    break;
+                }
+            }
+            if (!has_pair)
+            {
+                Eigen::VectorXi simplex(1);
+                simplex[0] = static_cast<int>(i);
+                result.persistence_pairs.push_back({r, -1.0});
+                result.dimensions.push_back(0);
+                result.birth_simplices.push_back(simplex);
+                result.death_simplices.push_back(Eigen::VectorXi(0));
+            }
+        }
+        last_dist = r;
+    }
+
+    return result;
+}
+
+std::vector<double> persistenceBackward(std::span<const double> points_data, size_t n_points,
+                                        size_t point_dim, const DifferentiableDiagram &diagram,
+                                        std::span<const double> grad_birth,
+                                        std::span<const double> grad_death)
+{
+    if (n_points > std::numeric_limits<size_t>::max() / point_dim)
+    {
+        throw std::invalid_argument("persistenceBackward: point data too large");
+    }
+    for (double g : grad_birth)
+    {
+        if (!std::isfinite(g))
+        {
+            throw std::invalid_argument("persistenceBackward: gradients must be finite");
+        }
+    }
+
+    size_t n_pairs = diagram.persistence_pairs.size();
+    std::vector<double> result(n_points * point_dim, 0.0);
+
+    for (size_t pair_idx = 0; pair_idx < n_pairs && pair_idx < grad_birth.size(); ++pair_idx)
+    {
+        double gb = grad_birth[pair_idx];
+        if (pair_idx < diagram.birth_simplices.size() &&
+            diagram.birth_simplices[pair_idx].size() > 0)
+        {
+            const auto &simplex = diagram.birth_simplices[pair_idx];
+            long dim = simplex.size();
+            if (dim > 1)
+            {
+                for (Eigen::Index i = 0; i < simplex.size(); ++i)
+                {
+                    int vi = simplex[i];
+                    for (Eigen::Index j = i + 1; j < simplex.size(); ++j)
+                    {
+                        int vj = simplex[j];
+                        for (size_t d = 0; d < point_dim; ++d)
+                        {
+                            double diff =
+                                points_data[vi * point_dim + d] - points_data[vj * point_dim + d];
+                            double dist = 0.0;
+                            for (size_t k = 0; k < point_dim; ++k)
+                            {
+                                double dk = points_data[vi * point_dim + k] -
+                                            points_data[vj * point_dim + k];
+                                dist += dk * dk;
+                            }
+                            dist = std::sqrt(dist);
+                            if (dist > 1e-10)
+                            {
+                                double contrib = gb * diff / dist;
+                                result[vi * point_dim + d] += contrib;
+                                result[vj * point_dim + d] -= contrib;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+StochasticPersistenceGradient::StochasticPersistenceGradient(int batch_size, double learning_rate)
+    : batch_size_(batch_size)
+    , learning_rate_(learning_rate)
+{}
+
+Eigen::MatrixXd StochasticPersistenceGradient::computeStochasticGradient(
+    const Eigen::MatrixXd &points,
+    const std::function<DifferentiableDiagram(const std::vector<int> &)> &ph_function,
+    const std::vector<std::pair<double, double>> &loss_gradients)
+{
+    (void)ph_function;
+    (void)loss_gradients;
+    return Eigen::MatrixXd::Zero(points.rows(), points.cols());
+}
+
+std::vector<int> StochasticPersistenceGradient::sampleBatch(int n_points)
+{
+    (void)n_points;
+    return {};
+}
+
+TopologyOptimizer::TopologyOptimizer(const Config &config)
+    : config_(config)
+{}
+
 } // namespace nerve::persistence::gradient
