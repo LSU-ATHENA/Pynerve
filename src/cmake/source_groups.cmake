@@ -128,6 +128,7 @@ set(NERVE_CORE_SOURCES
     persistence/cohomology/cohomology_involuted_ops.cpp
     persistence/cohomology/cohomology_persistent_ops.cpp
     persistence/cohomology/cohomology_ops.cpp
+    persistence/cohomology/cohomology_rref.cpp
     persistence/cohomology/cohomology_rref_ops.cpp
     persistence/cohomology/cohomology_structures.cpp
     persistence/core/delaunay3d.cpp
@@ -308,6 +309,7 @@ set(NERVE_CORE_SOURCES
     encoders/encoder_fusion.cpp
     encoders/encoder_fusion_helpers.cpp
     encoders/encoder_tensor_cores_benchmark.cpp
+    encoders/simd_encoder.cpp
     encoders/encoder_utils.cpp
     encoders/encoder_utils_reporting.cpp
     encoders/graph_encoder.cpp
@@ -317,6 +319,7 @@ set(NERVE_CORE_SOURCES
     encoders/mlp_encoder.cpp
     encoders/persistence_encoder.cpp
     encoders/topological_encoder.cpp
+    error/error_handling_ops.cpp
     error/error_registry.cpp
     errors/configurable_error_system_base.cpp
     errors/configurable_error_system_core.cpp

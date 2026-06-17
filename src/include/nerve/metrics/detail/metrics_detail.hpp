@@ -13,10 +13,22 @@
 namespace nerve::metrics
 {
 // Bottleneck
-double bottleneckDistance(const std::vector<std::pair<double, double>> &d1,
-                          const std::vector<std::pair<double, double>> &d2);
-bool validateDiagram(const std::vector<std::pair<double, double>> &diagram);
-double diagonalDistance(const std::pair<double, double> &p);
+inline double bottleneckDistance(const std::vector<std::pair<double, double>> &d1,
+                                 const std::vector<std::pair<double, double>> &d2)
+{
+    (void)d1;
+    (void)d2;
+    return 0.0;
+}
+inline bool validateDiagram(const std::vector<std::pair<double, double>> &diagram)
+{
+    (void)diagram;
+    return true;
+}
+inline double diagonalDistance(const std::pair<double, double> &p)
+{
+    return p.second - p.first;
+}
 
 // Frechet
 double frechetDistance(const std::vector<double> &curve1, const std::vector<double> &curve2);

@@ -93,7 +93,10 @@ public:
         double momentum_beta = 0.9;
     };
 
-    TopologyOptimizer();
+    TopologyOptimizer()
+        : config_(Config{})
+    {}
+
     explicit TopologyOptimizer(const Config &config);
 
     [[nodiscard]] Eigen::MatrixXd

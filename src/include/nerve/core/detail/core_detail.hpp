@@ -9,6 +9,7 @@
 #include "nerve/core/rng/rng.hpp"
 #include "nerve/core_types.hpp"
 
+#include <cstring>
 #include <memory>
 #include <random>
 
@@ -17,9 +18,23 @@ namespace nerve::core
 // SIMD ops
 namespace simd
 {
-void memcpy(void *dst, const void *src, size_t n);
-void memset(void *dst, int value, size_t n);
-double reduceSum(const double *data, size_t n);
+inline void memcpy(void *dst, const void *src, size_t n)
+{
+    std::memcpy(dst, src, n);
+}
+inline void memset(void *dst, int value, size_t n)
+{
+    std::memset(dst, value, n);
+}
+inline double reduceSum(const double *data, size_t n)
+{
+    double sum = 0.0;
+    for (size_t i = 0; i < n; ++i)
+    {
+        sum += data[i];
+    }
+    return sum;
+}
 } // namespace simd
 
 // RNG determinism
