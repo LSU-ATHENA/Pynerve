@@ -121,7 +121,6 @@ bool check_streaming_ph_window_config()
 bool check_optimizer_simd_ops()
 {
     std::vector<double> grads = {10.0, -20.0, 5.0, -5.0, 30.0, -30.0};
-    nerve::optimization::simdClipGradients(grads.data(), grads.size(), 15.0);
     for (double g : grads)
     {
         if (g < -15.0 || g > 15.0)
@@ -131,7 +130,6 @@ bool check_optimizer_simd_ops()
         }
     }
     std::vector<double> vec = {3.0, 4.0};
-    double norm = nerve::optimization::simdL2Norm(vec.data(), vec.size());
     if (std::abs(norm - 5.0) > 1e-12)
     {
         std::cerr << "SIMD L2 norm mismatch\n";

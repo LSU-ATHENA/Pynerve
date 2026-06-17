@@ -11,16 +11,9 @@ class Tensor;
 class ComputationalGraph;
 class AutogradEngine;
 class GraphNode;
+class ComputationalGraph;
+class AutoDiffUtils;
 class GraphOptimizer;
-namespace grad
-{
-Tensor numericalGradient(const std::function<Tensor(const Tensor &)> &f, const Tensor &x,
-                         double eps = 1e-6);
-double tensorDistance(const Tensor &a, const Tensor &b);
-double tensorNorm(const Tensor &t);
-double tensorVariance(const Tensor &t);
-double tensorSparsity(const Tensor &t);
-} // namespace grad
 class Tensor
 {
 public:
@@ -54,7 +47,7 @@ public:
     Tensor sum() const;
     Tensor grad() const;
     void setGrad(const Tensor &gradient);
-    void setRequiresGrad(bool requires);
+    void setRequiresGrad(bool req);
     bool requiresGrad() const;
     void backward();
     void zeroGrad();

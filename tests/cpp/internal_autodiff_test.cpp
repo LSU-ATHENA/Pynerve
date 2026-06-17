@@ -351,28 +351,28 @@ bool check_tensor_distance()
 {
     nerve::autodiff::Tensor a({1.0, 0.0}, {2});
     nerve::autodiff::Tensor b({4.0, 0.0}, {2});
-    double d = nerve::autodiff::tensorDistance(a, b);
+    double d = nerve::autodiff::grad::tensorDistance(a, b);
     return std::abs(d - 3.0) < TOL;
 }
 
 bool check_tensor_norm()
 {
     nerve::autodiff::Tensor t({3.0, 4.0}, {2});
-    double n = nerve::autodiff::tensorNorm(t);
+    double n = nerve::autodiff::grad::tensorNorm(t);
     return std::abs(n - 5.0) < TOL;
 }
 
 bool check_tensor_variance()
 {
     nerve::autodiff::Tensor t({2.0, 4.0, 6.0}, {3});
-    double v = nerve::autodiff::tensorVariance(t);
+    double v = nerve::autodiff::grad::tensorVariance(t);
     return std::abs(v - 8.0 / 3.0) < TOL;
 }
 
 bool check_tensor_sparsity()
 {
     nerve::autodiff::Tensor t({0.0, 1.0, 0.0, 2.0, 0.0}, {5});
-    double s = nerve::autodiff::tensorSparsity(t, TOL);
+    double s = nerve::autodiff::grad::tensorSparsity(t, TOL);
     return std::abs(s - 0.6) < TOL;
 }
 
