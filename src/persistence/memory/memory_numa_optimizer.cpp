@@ -9,7 +9,7 @@
 #include <limits>
 #include <thread>
 
-#ifdef __linux__
+#if ENABLE_NUMA
 #include <numa.h>
 #include <numaif.h>
 #include <sys/mman.h>
@@ -54,7 +54,7 @@ int safeHardwareThreads()
     return static_cast<int>(hw == 0 ? 1U : hw);
 }
 
-#ifdef __linux__
+#if ENABLE_NUMA
 void tryBindAllocationToNode(void *ptr, size_t size, int node)
 {
     if (ptr == nullptr || size == 0 || node < 0)
@@ -141,7 +141,7 @@ private:
 
 bool isNumaAvailable()
 {
-#ifdef __linux__
+#if ENABLE_NUMA
     return numa_available() >= 0;
 #else
     return false;
@@ -154,7 +154,7 @@ NumaTopology detectNumaTopology()
     topology.num_nodes = 1;
     topology.num_cpus = safeHardwareThreads();
 
-#ifdef __linux__
+#if ENABLE_NUMA
     if (!isNumaAvailable())
     {
         return topology;
@@ -201,7 +201,7 @@ void *allocateOnNode(size_t size, int node)
     {
         return nullptr;
     }
-#ifdef __linux__
+#if ENABLE_NUMA
     tryBindAllocationToNode(ptr, size, node);
 #else
     (void)node;
@@ -221,7 +221,7 @@ void *allocateHugePages(size_t size)
     {
         ptr = std::malloc(size);
     }
-#ifdef __linux__
+#if ENABLE_NUMA
     tryHugePageAdvice(ptr, alloc_size);
 #endif
     return ptr;
@@ -229,7 +229,7 @@ void *allocateHugePages(size_t size)
 
 void bindThreadToNode(int node)
 {
-#ifdef __linux__
+#if ENABLE_NUMA
     if (!isNumaAvailable() || node < 0)
     {
         return;
@@ -245,7 +245,7 @@ void bindThreadToNode(int node)
 
 int getCurrentNode()
 {
-#ifdef __linux__
+#if ENABLE_NUMA
     if (!isNumaAvailable())
     {
         return 0;
@@ -273,7 +273,7 @@ void *allocateInterleaved(size_t size)
     {
         return nullptr;
     }
-#ifdef __linux__
+#if ENABLE_NUMA
     tryInterleaveAllocation(ptr, size);
 #endif
     return ptr;
@@ -285,7 +285,7 @@ void setMemoryPolicy(void *addr, size_t len, int node)
     {
         return;
     }
-#ifdef __linux__
+#if ENABLE_NUMA
     tryBindAllocationToNode(addr, len, node);
 #endif
 }
@@ -296,7 +296,7 @@ void prefetchMemory(void *addr, size_t len)
     {
         return;
     }
-#ifdef __linux__
+#if ENABLE_NUMA
     (void)madvise(addr, len, MADV_WILLNEED);
 #endif
     auto *bytes = static_cast<const char *>(addr);

@@ -75,6 +75,7 @@ set(NERVE_CORE_SOURCES
     nn/diagram_conv.cpp
     nn/diagram_conv_image_ops.cpp
     nn/diagram_conv_image_ops_detail.cpp
+    nn/simd_nn_ops.cpp
     runtime/calibration_model.cpp
     runtime/calibration_model_detail.cpp
     runtime/hardware_probe.cpp
@@ -165,6 +166,7 @@ set(NERVE_CORE_SOURCES
     persistence/kernels/thread_block_cluster.cpp
     persistence/memory/memory_clear_compress_ops.cpp
     persistence/memory/memory_pool_ops.cpp
+    persistence/memory/memory_numa_optimizer.cpp
     persistence/reduction/reduction_clearing_ops.cpp
     persistence/reduction/reduction_cohomology_ops.cpp
     persistence/reduction/reduction_control_ops.cpp
@@ -283,6 +285,7 @@ set(NERVE_CORE_SOURCES
     streaming/core/streaming_windowed_ops.cpp
     streaming/core/streaming_zigzag_filters_ops.cpp
     streaming/core/streaming_zigzag_ops.cpp
+    streaming/core/approximate_streaming_ph.cpp
     streaming/core/streaming_diagram_sort_ops.cpp
     streaming/gpu/gpu_multi_stream_ops.cpp
     streaming/gpu/streaming_gpu_impl.cpp
@@ -293,7 +296,9 @@ set(NERVE_CORE_SOURCES
     streaming/windowed/windowed_ph_benchmark_ops.cpp
     streaming/windowed/windowed_ph_core_ops.cpp
     streaming/windowed/windowed_ph_ops.cpp
+    streaming/laplacian/incremental_graph_laplacian.cpp
     streaming/laplacian/streaming_laplacian_ops.cpp
+    streaming/laplacian/streaming_laplacian_processor.cpp
     streaming/windowed/windowed_ph_runtime_ops.cpp
     summary/compact_summary.cpp
     summary/compact_summary_factory_validator.cpp
@@ -528,7 +533,6 @@ set(NERVE_NUMA_SOURCES
     core/memory/memory_numa_allocator_ops.cpp
     core/memory/numa_aware_pool.cpp
     instrumentation/scale_tests.cpp
-    persistence/memory/memory_numa_optimizer.cpp
 )
 
 # AVX-512-dependent sources

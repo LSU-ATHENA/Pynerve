@@ -88,7 +88,7 @@ option(ENABLE_CUDA "Enable CUDA-accelerated features (GPU memory, kernels)" ${BU
 option(ENABLE_PYTORCH "Enable PyTorch differentiable operations" ON)
 option(ENABLE_MPI "Enable distributed/MPI reduction features" OFF)
 option(ENABLE_EIGEN "Enable Eigen3-backed gradient and sheaf Laplacian components" ON)
-option(ENABLE_NUMA "Enable NUMA memory optimizations (Linux only)" OFF)
+option(ENABLE_NUMA "Enable NUMA memory optimizations" ON)
 option(ENABLE_ALL "Enable all optional dependencies (CUDA, PyTorch, MPI, Eigen, NUMA)" OFF)
 
 # Auto-validate CUDA architectures against installed toolkit before enabling.

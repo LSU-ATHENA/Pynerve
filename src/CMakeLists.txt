@@ -151,7 +151,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/simd.cmake)
 nerve_configure_x86_simd_support()
 
 if(NOT DEFINED ENABLE_NUMA)
-    option(ENABLE_NUMA "Enable NUMA memory optimizations" OFF)
+    option(ENABLE_NUMA "Enable NUMA memory optimizations" ON)
 endif()
 if(ENABLE_NUMA)
     find_library(NUMA_LIB numa)

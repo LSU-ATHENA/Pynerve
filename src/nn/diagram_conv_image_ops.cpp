@@ -526,4 +526,55 @@ template class PersistenceImageLayer<double>;
 
 void __nerve_nn_diagram_conv_image_ops_pin() {}
 
+template <typename T>
+std::vector<T> PersistenceImageLayer<T>::gaussian_kernel_2d(T sigma, int size) const
+{
+    if (sigma <= T(0))
+    {
+        throw_invalid_argument("PersistenceImageLayer::gaussian_kernel_2d",
+                               "sigma must be positive");
+    }
+    if (size <= 0)
+    {
+        throw_invalid_argument("PersistenceImageLayer::gaussian_kernel_2d",
+                               "size must be positive");
+    }
+    if ((size % 2) == 0)
+    {
+        ++size;
+    }
+    const size_t kernel_values = checked_vector_size<T>(
+        {static_cast<size_t>(size), static_cast<size_t>(size)},
+        "PersistenceImageLayer::gaussian_kernel_2d", "kernel size overflows");
+    std::vector<T> kernel(kernel_values, T(0));
+    const int center = size / 2;
+    T sum = T(0);
+    const T two_sigma_sq = T(2) * sigma * sigma;
+    for (int y = 0; y < size; ++y)
+    {
+        for (int x = 0; x < size; ++x)
+        {
+            const T dy = static_cast<T>(y - center);
+            const T dx = static_cast<T>(x - center);
+            const T value = std::exp(-(dx * dx + dy * dy) / two_sigma_sq);
+            if (!std::isfinite(value))
+            {
+                throw_invalid_argument("PersistenceImageLayer::gaussian_kernel_2d",
+                                       "kernel contains non-finite values");
+            }
+            kernel[static_cast<size_t>(y) * static_cast<size_t>(size) + static_cast<size_t>(x)] =
+                value;
+            sum += value;
+        }
+    }
+    if (sum > T(0))
+    {
+        for (auto &value : kernel)
+        {
+            value /= sum;
+        }
+    }
+    return kernel;
+}
+
 } // namespace nerve::nn

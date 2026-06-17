@@ -1,5 +1,10 @@
 #include "nerve/core_types.hpp"
-#ifdef NERVE_HAS_MPI
+#ifndef NERVE_HAS_MPI
+int main()
+{
+    return 0;
+}
+#else
 #include "nerve/distributed/mpi_persistence.hpp"
 
 #include <atomic>

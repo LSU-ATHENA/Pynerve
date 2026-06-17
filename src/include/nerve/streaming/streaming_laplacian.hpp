@@ -74,8 +74,9 @@ private:
     void updateOffDiagonal(Index u, Index v, double delta);
     Size edgeIndex(Index u, Index v) const;
     void rebuildMatrix();
-    std::vector<double> lanczosIteration(const LaplacianState &L, Size k) const;
 };
+
+std::vector<double> lanczosIteration(const LaplacianState &L, Size k, double tolerance);
 
 class StreamingLaplacianProcessor
 {
