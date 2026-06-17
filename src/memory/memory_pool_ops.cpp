@@ -309,7 +309,7 @@ struct NumaAwareAllocator::NumaPolicy
         , actual_nodes(0)
     {
 #if defined(__linux__) && defined(NERVE_HAS_NUMA)
-        if (numa_available() != -1)
+        if ((numa_available)() != -1)
         {
             numa_available = true;
             actual_nodes = numa_max_node() + 1;

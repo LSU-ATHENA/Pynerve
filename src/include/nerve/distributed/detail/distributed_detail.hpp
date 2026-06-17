@@ -10,10 +10,10 @@ namespace nerve::distributed
 class WorkStealingScheduler
 {
 public:
-    WorkStealingScheduler(size_t num_workers) {}
-    WorkStealingScheduler(int rank, int world_size) {}
-    void submit(std::function<void()> task) {}
-    void submit_work(std::function<void()> task) {}
+    WorkStealingScheduler(size_t /*num_workers*/) {}
+    WorkStealingScheduler(int /*rank*/, int /*world_size*/) {}
+    void submit(std::function<void()> /*task*/) {}
+    void submit_work(std::function<void()> /*task*/) {}
     void run() {}
     void waitAll() {}
     size_t numWorkers() const { return 1; }
