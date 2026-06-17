@@ -10,6 +10,7 @@ modules while keeping the top-level surface close to idiomatic PyTorch usage.
 from __future__ import annotations
 
 from importlib import import_module
+from typing import Any
 
 import torch
 from torch import Tensor
@@ -102,7 +103,7 @@ _ATTR_FROM_MODULE: dict[str, str] = {
 }
 
 
-def __getattr__(name: str) -> object:
+def __getattr__(name: str) -> Any:
     if name in _SUBMODULES:
         try:
             module = import_module(f"{__name__}.{name}")

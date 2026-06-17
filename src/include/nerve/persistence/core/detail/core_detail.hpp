@@ -113,6 +113,6 @@ class HybridColumn
 public:
     explicit HybridColumn(int capacity);
     void add(int value);
-    int computePivot();
+    int computePivot() const;
 };
 } // namespace nerve::persistence::roaring

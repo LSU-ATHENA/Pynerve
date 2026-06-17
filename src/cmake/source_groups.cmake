@@ -32,6 +32,8 @@ set(NERVE_CORE_SOURCES
     algebra/complex/complex_ops.cpp
     algebra/complex/simplex_set_ops.cpp
     algebra/geometry/distance_simd_avx_ops.cpp
+    algebra/geometry/distance_simd_avx2.cpp
+    algebra/geometry/distance_simd_avx512.cpp
     algebra/geometry/distance_simd_baseline.cpp
     algebra/geometry/distance_simd_ops.cpp
     algebra/geometry/distance_sse_ops.cpp
@@ -228,6 +230,7 @@ set(NERVE_CORE_SOURCES
     filtration/vr/vr_api_ops.cpp
     filtration/vr/vr_builder_ops.cpp
     filtration/vr/vr_construction_ops.cpp
+    filtration/vr/vr_construction_custom_radii.cpp
     filtration/vr/vr_construction_simplices.cpp
     filtration/vr/vr_distance_ops.cpp
     filtration/vr/vr_parallel_construction_ops.cpp
@@ -541,6 +544,8 @@ set(NERVE_NUMA_SOURCES
 # AVX-512-dependent sources
 set(NERVE_AVX512_SOURCES
     algebra/geometry/distance_simd_avx_ops.cpp
+    algebra/geometry/distance_simd_avx2.cpp
+    algebra/geometry/distance_simd_avx512.cpp
     algebra/geometry/distance_simd_baseline.cpp
     algebra/geometry/distance_simd_ops.cpp
     compression/simd/compression_simd_ops.cpp

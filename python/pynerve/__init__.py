@@ -35,6 +35,17 @@ from ._fallback_classes import (
     PH5PH6Metrics,
 )
 from ._image_utils import persistence_image
+from ._types import (
+    ClusteringAlgorithm,
+    DistanceMatrix,
+    DistanceMetric,
+    FilterFunction,
+    PersistenceComputer,
+    PersistenceDiagramLike,
+    PersistencePair,
+    PointCloud,
+    VectorizationMethod,
+)
 from .exceptions import (  # noqa: F401
     AllocationError,
     BackendRequiredError,
@@ -66,17 +77,6 @@ from .exceptions import (  # noqa: F401
     ValidationError,
 )
 from .formats import Diagram, DiagramLike
-from .typing import (
-    ClusteringAlgorithm,
-    DistanceMatrix,
-    DistanceMetric,
-    FilterFunction,
-    PersistenceComputer,
-    PersistenceDiagramLike,
-    PersistencePair,
-    PointCloud,
-    VectorizationMethod,
-)
 
 logger = logging.getLogger(__name__)
 

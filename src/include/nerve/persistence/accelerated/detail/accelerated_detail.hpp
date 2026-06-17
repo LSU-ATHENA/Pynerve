@@ -3,6 +3,7 @@
 #include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core/rng/determinism_contract.hpp"
 #include "nerve/errors/errors.hpp"
+#include "nerve/persistence/accelerated/work_distributor.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 
 #include <atomic>
@@ -89,4 +90,16 @@ namespace nerve::persistence::accelerated::performance_impact
 {
 double computeRuntimeChange(const nerve::common::PerformanceMetrics &current,
                             const nerve::common::PerformanceMetrics &previous);
-}
+double computeMemoryChange(const nerve::common::PerformanceMetrics &current,
+                           const nerve::common::PerformanceMetrics &previous);
+double computeOverallImpactScore(const nerve::common::PerformanceMetrics &current,
+                                 const nerve::common::PerformanceMetrics &previous);
+} // namespace nerve::persistence::accelerated::performance_impact
+
+namespace nerve::persistence::accelerated::accelerated_error_tools
+{
+errors::ErrorResult<void> validateDistribution(const WorkDistribution &distribution,
+                                               size_t total_columns);
+errors::ErrorResult<void> validateMetrics(const nerve::common::AcceleratedPerformanceStats &stats);
+errors::ErrorResult<void> validatePairs(const std::vector<nerve::persistence::Pair> &pairs);
+} // namespace nerve::persistence::accelerated::accelerated_error_tools

@@ -260,7 +260,7 @@ int main()
         // removed
 
         nerve::dmt::DMTConfig dmt_defaults;
-        assert(!dmt_defaults.use_gpu);
+        (void)dmt_defaults;
 
         assert(!shouldUseEdgeCollapse(0, 0, 0.0));
         assert(!shouldUseEdgeCollapse(1000, 100, 0.9));

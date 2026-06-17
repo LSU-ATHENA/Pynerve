@@ -20,7 +20,7 @@ from ._compute_core import (
     _warn_device_overrides_backend,
 )
 from ._fallback_classes import EventType, PersistenceBackend, PersistenceMode, PersistenceOptions
-from .typing import PointCloud
+from ._types import PointCloud
 
 __all__ = [
     "PersistenceEngine",

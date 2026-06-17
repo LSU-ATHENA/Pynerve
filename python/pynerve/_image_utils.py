@@ -6,9 +6,9 @@ from typing import Any
 
 import numpy as np
 
+from ._types import PersistenceDiagramLike
 from ._validation import validate_diagram_array
 from .exceptions import InvalidArgumentError
-from .typing import PersistenceDiagramLike
 
 
 def _to_diagram_array(diagram: PersistenceDiagramLike) -> np.ndarray:

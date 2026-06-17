@@ -19,7 +19,6 @@ bool check_engine_config_defaults()
     if (config.acceleration.mode != nerve::common::AccelerationMode::CPU_ONLY)
         return false;
 
-        return false;
     return true;
 }
 

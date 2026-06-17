@@ -12,8 +12,6 @@
 namespace nerve::persistence::accelerated
 {
 
-// Note: utils::isAccelerationBeneficial is defined inline in vr_fast_ops.hpp
-
 errors::ErrorResult<std::vector<Pair>>
 computeVrPersistenceAccelerated(const core::BufferView<const double> &points, Size point_dim,
                                 const VRConfig &config)

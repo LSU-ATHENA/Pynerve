@@ -480,9 +480,9 @@ int main()
         assert(pivot_map.size() == 300);
         for (int i = 0; i < 300; ++i)
         {
-            const auto value = pivot_map.find(i * 1024);
-            assert(value.has_value());
-            assert(value.value() == i);
+            const auto it = pivot_map.find(i * 1024);
+            assert(it != pivot_map.end());
+            assert(it->second == i);
         }
 
         using namespace nerve::persistence::bitparallel;
