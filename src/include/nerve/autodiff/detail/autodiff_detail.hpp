@@ -7,6 +7,20 @@
 
 namespace nerve::autodiff
 {
+class Tensor;
+class ComputationalGraph;
+class AutogradEngine;
+class GraphNode;
+class GraphOptimizer;
+namespace grad
+{
+Tensor numericalGradient(const std::function<Tensor(const Tensor &)> &f, const Tensor &x,
+                         double eps = 1e-6);
+double tensorDistance(const Tensor &a, const Tensor &b);
+double tensorNorm(const Tensor &t);
+double tensorVariance(const Tensor &t);
+double tensorSparsity(const Tensor &t);
+} // namespace grad
 class Tensor
 {
 public:
@@ -31,11 +45,19 @@ public:
     Tensor operator-(const Tensor &other) const;
     Tensor operator*(const Tensor &other) const;
     Tensor operator/(const Tensor &other) const;
+    Tensor operator+(double scalar) const;
+    Tensor operator-(double scalar) const;
+    Tensor operator*(double scalar) const;
+    Tensor operator/(double scalar) const;
     Tensor relu() const;
     Tensor sigmoid() const;
     Tensor sum() const;
     Tensor grad() const;
     void setGrad(const Tensor &gradient);
+    void setRequiresGrad(bool requires);
+    bool requiresGrad() const;
+    void backward();
+    void zeroGrad();
 
 private:
     std::vector<double> values_;
