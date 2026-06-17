@@ -524,4 +524,6 @@ template class DiagramConv2D<double>;
 template class PersistenceImageLayer<float>;
 template class PersistenceImageLayer<double>;
 
+void __nerve_nn_diagram_conv_image_ops_pin() {}
+
 } // namespace nerve::nn

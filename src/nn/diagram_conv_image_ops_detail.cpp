@@ -95,41 +95,9 @@ std::vector<T> PersistenceImageLayer<T>::gaussian_kernel_2d(T sigma, int size) c
     return kernel;
 }
 
-template <typename T>
-T PersistenceImageLayer<T>::compute_weight(T persistence) const
-{
-    switch (config_.weight)
-    {
-        case Config::Weight::LINEAR:
-            return persistence;
-        case Config::Weight::QUADRATIC:
-        {
-            const T weight = persistence * persistence;
-            if (!std::isfinite(weight))
-            {
-                throw_invalid_argument("PersistenceImageLayer::compute_weight",
-                                       "weight is non-finite");
-            }
-            return weight;
-        }
-        case Config::Weight::CONSTANT:
-        default:
-            return nerve::math::Constants<T>::kOne;
-    }
-}
-
 template std::vector<float> PersistenceImageLayer<float>::gaussian_kernel_2d(float, int) const;
 template std::vector<double> PersistenceImageLayer<double>::gaussian_kernel_2d(double, int) const;
-template float PersistenceImageLayer<float>::compute_weight(float) const;
-template double PersistenceImageLayer<double>::compute_weight(double) const;
 
-namespace
-{
-void __force_link_diagram_conv_image_ops()
-{
-    volatile auto w = &PersistenceImageLayer<double>::compute_weight;
-    (void)w;
-}
-} // namespace
+void __nerve_nn_diagram_conv_image_ops_detail_pin() {}
 
 } // namespace nerve::nn

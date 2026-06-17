@@ -125,7 +125,19 @@ private:
     Config config_;
 
     [[nodiscard]] std::vector<T> gaussian_kernel_2d(T sigma, int size) const;
-    [[nodiscard]] T compute_weight(T persistence) const;
+    [[nodiscard]] T compute_weight(T persistence) const
+    {
+        switch (config_.weight)
+        {
+            case Config::Weight::LINEAR:
+                return persistence;
+            case Config::Weight::QUADRATIC:
+                return persistence * persistence;
+            case Config::Weight::CONSTANT:
+            default:
+                return T(1);
+        }
+    }
 };
 
 // Landscape Layer (Convert diagram to Betti curve)

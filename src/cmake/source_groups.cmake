@@ -251,8 +251,9 @@ set(NERVE_CORE_SOURCES
      optimization/gpu_primitives.cpp
      optimization/gpu_primitives_helpers.cpp
      optimization/simd/optimizer_simd_ops.cpp
-    optimization/streaming_ph.cpp
-    precision/precision_policy.cpp
+     optimization/streaming_ph.cpp
+     optimization/parameter_sweep.cpp
+     precision/precision_policy.cpp
     probabilistic/probabilistic.cpp
     probabilistic/probabilistic_models.cpp
     probabilistic/probabilistic_sampling.cpp

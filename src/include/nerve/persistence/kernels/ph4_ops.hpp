@@ -76,23 +76,79 @@ public:
     using value_type = Index;
     using size_type = std::size_t;
     SparseBoundaryMatrix() = default;
-    explicit SparseBoundaryMatrix(std::size_t numRows, std::size_t numCols);
-    void addColumn(Index col, const std::vector<std::pair<Index, value_type>> &entries);
-    void addRow(Index row, const std::vector<std::pair<Index, value_type>> &entries);
-    void set(Index row, Index col, value_type value);
-    value_type get(Index row, Index col) const;
-    bool isNonzero(Index row, Index col) const;
+    explicit SparseBoundaryMatrix(std::size_t numRows, std::size_t numCols)
+        : data_(numRows)
+        , num_rows_(numRows)
+        , num_cols_(numCols)
+    {}
+    void addColumn(Index col, const std::vector<std::pair<Index, value_type>> &entries)
+    {
+        if (col >= 0 && static_cast<size_type>(col) < num_cols_)
+        {
+            for (const auto &[row, val] : entries)
+            {
+                set(row, col, val);
+            }
+        }
+    }
+    void addRow(Index row, const std::vector<std::pair<Index, value_type>> &entries)
+    {
+        if (row >= 0 && static_cast<size_type>(row) < num_rows_)
+        {
+            for (const auto &[col, val] : entries)
+            {
+                set(row, col, val);
+            }
+        }
+    }
+    void set(Index row, Index col, value_type value)
+    {
+        if (row >= 0 && static_cast<size_type>(row) < num_rows_ && col >= 0 &&
+            static_cast<size_type>(col) < num_cols_)
+        {
+            data_[static_cast<size_type>(row)][col] = value;
+        }
+    }
+    value_type get(Index row, Index col) const
+    {
+        if (row >= 0 && static_cast<size_type>(row) < num_rows_ && col >= 0 &&
+            static_cast<size_type>(col) < num_cols_)
+        {
+            auto it = data_[static_cast<size_type>(row)].find(col);
+            if (it != data_[static_cast<size_type>(row)].end())
+            {
+                return it->second;
+            }
+        }
+        return value_type{};
+    }
+    bool isNonzero(Index row, Index col) const
+    {
+        if (row >= 0 && static_cast<size_type>(row) < num_rows_ && col >= 0 &&
+            static_cast<size_type>(col) < num_cols_)
+        {
+            return data_[static_cast<size_type>(row)].count(col) > 0;
+        }
+        return false;
+    }
     size_type numRows() const { return num_rows_; }
     size_type numCols() const { return num_cols_; }
-    size_type numNonzero() const;
-    auto beginRow(Index row) const;
-    auto endRow(Index row) const;
+    size_type numNonzero() const
+    {
+        size_type count = 0;
+        for (const auto &row : data_)
+        {
+            count += row.size();
+        }
+        return count;
+    }
+    auto beginRow(Index row) const { return data_[static_cast<size_type>(row)].begin(); }
+    auto endRow(Index row) const { return data_[static_cast<size_type>(row)].end(); }
 
 private:
     std::vector<std::unordered_map<Index, value_type>> data_;
     std::size_t num_rows_;
     std::size_t num_cols_;
-    auto findColumn(Index col) const -> const std::unordered_map<Index, value_type> &;
 };
 class PH4
 {

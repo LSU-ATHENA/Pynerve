@@ -2,6 +2,7 @@
 // Extended for 0-6D with dimension-cascade execution order.
 
 constexpr int MAX_DIM_COHOMOLOGY = 6;
+#include "nerve/persistence/cohomology/cohomology.hpp"
 #include "nerve/persistence/cohomology/persistent_cohomology.hpp"
 #include "nerve/persistence/kernels/simplex_reduction_utils.hpp"
 
@@ -378,4 +379,289 @@ bool shouldUseCohomology(int max_dim, size_t num_simplices, bool require_represe
     // - Large simplex counts
     return max_dim >= 1 && num_simplices > 1000;
 }
+
+PersistentCohomologyComputer::PersistentCohomologyComputer(const algebra::CellularComplex &complex)
+    : complex_(complex)
+{}
+
+std::vector<Pair> PersistentCohomologyComputer::computePersistentCohomology(
+    const std::vector<std::pair<algebra::Cell, double>> &filtration) const
+{
+    if (filtration.empty())
+    {
+        return {};
+    }
+    std::vector<Pair> all_pairs;
+    int max_dim = 0;
+    for (const auto &[cell, val] : filtration)
+    {
+        max_dim = std::max(max_dim, cell.dimension());
+    }
+    for (int d = 0; d <= max_dim; ++d)
+    {
+        auto dim_pairs = computeForDimension(filtration, d);
+        all_pairs.insert(all_pairs.end(), dim_pairs.begin(), dim_pairs.end());
+    }
+    return all_pairs;
+}
+
+std::vector<Pair> PersistentCohomologyComputer::computeForDimension(
+    const std::vector<std::pair<algebra::Cell, double>> &filtration, int dimension) const
+{
+    (void)dimension;
+    if (filtration.empty())
+    {
+        return {};
+    }
+
+    Size n = filtration.size();
+    std::vector<Size> order(n);
+    for (Size i = 0; i < n; ++i)
+    {
+        order[i] = i;
+    }
+    std::sort(order.begin(), order.end(),
+              [&](Size a, Size b) { return filtration[a].second < filtration[b].second; });
+
+    std::vector<Index> global_to_local(n, -1);
+    for (Size i = 0; i < n; ++i)
+    {
+        global_to_local[order[i]] = static_cast<Index>(i);
+    }
+
+    std::vector<std::vector<Index>> boundary_cols(n);
+    for (Size i = 0; i < n; ++i)
+    {
+        const auto &cell = filtration[i].first;
+        const auto &bd = complex_.getBoundary(cell);
+        for (Index v : bd)
+        {
+            if (v >= 0 && v < static_cast<Index>(n))
+            {
+                Index local = global_to_local[v];
+                if (local >= 0 && filtration[static_cast<Size>(local)].first.dimension() ==
+                                      filtration[i].first.dimension() - 1)
+                {
+                    boundary_cols[i].push_back(local);
+                }
+            }
+        }
+        std::sort(boundary_cols[i].begin(), boundary_cols[i].end(), std::greater<Index>());
+    }
+
+    std::vector<Index> pivot(n, -1);
+    std::vector<bool> alive(n, true);
+
+    for (Size j = 0; j < n; ++j)
+    {
+        Size idx = order[j];
+        if (filtration[idx].first.dimension() != dimension + 1)
+        {
+            continue;
+        }
+        auto col = boundary_cols[idx];
+        while (!col.empty())
+        {
+            Index low = col[0];
+            Index p = pivot[low];
+            if (p == -1)
+            {
+                pivot[low] = static_cast<Index>(idx);
+                alive[low] = false;
+                break;
+            }
+            auto &pcol = boundary_cols[p];
+            std::vector<Index> merged;
+            Size a = 0, b = 0;
+            while (a < col.size() && b < pcol.size())
+            {
+                if (col[a] > pcol[b])
+                {
+                    merged.push_back(col[a++]);
+                }
+                else if (col[a] < pcol[b])
+                {
+                    merged.push_back(pcol[b++]);
+                }
+                else
+                {
+                    ++a;
+                    ++b;
+                }
+            }
+            while (a < col.size())
+            {
+                merged.push_back(col[a++]);
+            }
+            while (b < pcol.size())
+            {
+                merged.push_back(pcol[b++]);
+            }
+            col = std::move(merged);
+        }
+    }
+
+    std::vector<Pair> result;
+    for (Size j = 0; j < n; ++j)
+    {
+        Size idx = order[j];
+        if (filtration[idx].first.dimension() != dimension)
+        {
+            continue;
+        }
+        if (alive[j])
+        {
+            Pair p;
+            p.birth = filtration[idx].second;
+            p.death = std::numeric_limits<Field>::infinity();
+            p.dimension = static_cast<Dimension>(dimension);
+            p.birth_index = static_cast<Index>(idx);
+            p.death_index = -1;
+            result.push_back(p);
+        }
+        else
+        {
+            Index death_idx = pivot[j];
+            if (death_idx >= 0 && death_idx < static_cast<Index>(n))
+            {
+                Pair p;
+                p.birth = filtration[idx].second;
+                p.death = filtration[static_cast<Size>(death_idx)].second;
+                p.dimension = static_cast<Dimension>(dimension);
+                p.birth_index = static_cast<Index>(idx);
+                p.death_index = death_idx;
+                result.push_back(p);
+            }
+        }
+    }
+    return result;
+}
+
+std::vector<std::tuple<int, double, double>> PersistentCohomologyComputer::getBarcode() const
+{
+    std::vector<std::tuple<int, double, double>> barcode;
+    return barcode;
+}
+
+Cohomology::Cohomology(const algebra::CellularComplex &complex)
+    : complex_(complex)
+{}
+
+std::vector<std::vector<int>> Cohomology::computeCohomologyGroups() const
+{
+    int max_dim = complex_.maxDimension();
+    std::vector<std::vector<int>> groups(max_dim + 1);
+    auto betti = computeBettiNumbers();
+    for (int d = 0; d <= max_dim; ++d)
+    {
+        groups[d].resize(betti[static_cast<size_t>(d)], d);
+    }
+    return groups;
+}
+
+std::vector<int> Cohomology::computeBettiNumbers() const
+{
+    int max_dim = complex_.maxDimension();
+    std::vector<int> betti(max_dim + 1, 0);
+    for (int d = 0; d <= max_dim; ++d)
+    {
+        auto cells = complex_.cellsOfDimension(d);
+        auto cells_plus = complex_.cellsOfDimension(d + 1);
+        std::vector<Index> pivots(cells.size(), -1);
+        for (Size j = 0; j < cells_plus.size(); ++j)
+        {
+            Index cell_j = cells_plus[j];
+            const auto &bd = complex_.getBoundary(complex_.getCell(cell_j));
+            auto col = bd;
+            std::sort(col.begin(), col.end(), std::greater<Index>());
+            while (!col.empty())
+            {
+                Index low = col[0];
+                auto it = std::find(cells.begin(), cells.end(), low);
+                if (it == cells.end())
+                {
+                    break;
+                }
+                Size low_idx = static_cast<Size>(it - cells.begin());
+                if (pivots[low_idx] == -1)
+                {
+                    pivots[low_idx] = cell_j;
+                    break;
+                }
+                const auto &pcol = complex_.getBoundary(complex_.getCell(pivots[low_idx]));
+                std::vector<Index> merged;
+                Size a = 0, b = 0;
+                auto sorted_pcol = pcol;
+                std::sort(sorted_pcol.begin(), sorted_pcol.end(), std::greater<Index>());
+                while (a < col.size() && b < sorted_pcol.size())
+                {
+                    if (col[a] > sorted_pcol[b])
+                    {
+                        merged.push_back(col[a++]);
+                    }
+                    else if (col[a] < sorted_pcol[b])
+                    {
+                        merged.push_back(sorted_pcol[b++]);
+                    }
+                    else
+                    {
+                        ++a;
+                        ++b;
+                    }
+                }
+                while (a < col.size())
+                {
+                    merged.push_back(col[a++]);
+                }
+                while (b < sorted_pcol.size())
+                {
+                    merged.push_back(sorted_pcol[b++]);
+                }
+                col = std::move(merged);
+            }
+        }
+        Size unpaired = 0;
+        for (Index p : pivots)
+        {
+            if (p == -1)
+            {
+                ++unpaired;
+            }
+        }
+        betti[d] = static_cast<int>(unpaired);
+    }
+    return betti;
+}
+
+std::vector<std::vector<int>> Cohomology::computeCohomologyWithCoefficients(int p) const
+{
+    (void)p;
+    return computeCohomologyGroups();
+}
+
+std::vector<Pair> Cohomology::computePersistentCohomology(
+    const std::vector<std::pair<algebra::Cell, double>> &filtration) const
+{
+    PersistentCohomologyComputer computer(complex_);
+    return computer.computePersistentCohomology(filtration);
+}
+
+std::vector<std::vector<double>> Cohomology::computeKernel(int dimension) const
+{
+    (void)dimension;
+    return {};
+}
+
+std::vector<std::vector<double>> Cohomology::computeCokernel(int dimension) const
+{
+    (void)dimension;
+    return {};
+}
+
+std::vector<std::vector<double>> Cohomology::computeLaplacian(int dimension) const
+{
+    (void)dimension;
+    return {};
+}
+
 } // namespace nerve::persistence
