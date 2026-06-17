@@ -349,6 +349,12 @@ if(NOT NERVE_HAS_TORCH)
         PATTERN "nerve/torch/*" EXCLUDE
     )
 endif()
+if(NOT NERVE_HAS_CUDA)
+    list(APPEND NERVE_INSTALL_HEADER_EXCLUDES
+        PATTERN "nerve/gpu/cuda_dispatch.hpp" EXCLUDE
+        PATTERN "nerve/gpu/*.cuh" EXCLUDE
+    )
+endif()
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/include/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}

@@ -26,25 +26,27 @@ void computeSheafRestrictionSimd(const T *source_stalk, const T *restriction_mat
 #if defined(NERVE_HAS_X86_INTRINSICS)
     if (useSimd() && sizeof(T) == sizeof(double))
     {
-        std::memset(output, 0, stalk_dim * sizeof(T));
-        for (Size i = 0; i < source_dim; ++i)
+        if constexpr (std::is_same_v<T, double>)
         {
-            Size j = 0;
-#if defined(__AVX2__)
-            __m256d src = _mm256_set1_pd(static_cast<double>(source_stalk[i]));
-            for (; j + 4 <= stalk_dim; j += 4)
+            std::memset(output, 0, stalk_dim * sizeof(T));
+            for (Size i = 0; i < source_dim; ++i)
             {
-                __m256d r = _mm256_loadu_pd(restriction_matrix + i * stalk_dim + j);
-                __m256d out = _mm256_loadu_pd(output + j);
-                out = _mm256_fmadd_pd(src, r, out);
-                _mm256_storeu_pd(output + j, out);
-            }
+                Size j = 0;
+#if defined(__AVX2__)
+                __m256d src = _mm256_set1_pd(source_stalk[i]);
+                for (; j + 4 <= stalk_dim; j += 4)
+                {
+                    __m256d r = _mm256_loadu_pd(restriction_matrix + i * stalk_dim + j);
+                    __m256d out = _mm256_loadu_pd(output + j);
+                    out = _mm256_fmadd_pd(src, r, out);
+                    _mm256_storeu_pd(output + j, out);
+                }
 #endif
-            for (; j < stalk_dim; ++j)
-                output[j] += static_cast<double>(source_stalk[i]) *
-                             static_cast<double>(restriction_matrix[i * stalk_dim + j]);
+                for (; j < stalk_dim; ++j)
+                    output[j] += source_stalk[i] * restriction_matrix[i * stalk_dim + j];
+            }
+            return;
         }
-        return;
     }
 #endif
     for (Size i = 0; i < source_dim; ++i)
@@ -66,15 +68,18 @@ void computeSheafLaplacianDiagSimd(const T *restriction_maps, const T *coboundar
 #if defined(__AVX2__)
         if (useSimd() && sizeof(T) == sizeof(double))
         {
-            __m256d acc = _mm256_setzero_pd();
-            for (; j + 4 <= max_stalk_dim * max_stalk_dim; j += 4)
+            if constexpr (std::is_same_v<T, double>)
             {
-                __m256d r = _mm256_loadu_pd(R + j);
-                acc = _mm256_fmadd_pd(r, r, acc);
+                __m256d acc = _mm256_setzero_pd();
+                for (; j + 4 <= max_stalk_dim * max_stalk_dim; j += 4)
+                {
+                    __m256d r = _mm256_loadu_pd(reinterpret_cast<const double *>(R + j));
+                    acc = _mm256_fmadd_pd(r, r, acc);
+                }
+                double tmp[4];
+                _mm256_storeu_pd(tmp, acc);
+                sum = static_cast<T>(tmp[0] + tmp[1] + tmp[2] + tmp[3]);
             }
-            double tmp[4];
-            _mm256_storeu_pd(tmp, acc);
-            sum = static_cast<T>(tmp[0] + tmp[1] + tmp[2] + tmp[3]);
         }
 #endif
         for (; j < max_stalk_dim * max_stalk_dim; ++j)
