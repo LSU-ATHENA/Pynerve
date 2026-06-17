@@ -109,8 +109,9 @@ bool check_compute_for_dimension_returns_pairs()
     complex.addCell(Cell(2, {0, 1, 2}));
 
     std::vector<std::pair<Cell, double>> filtration = {
-        {Cell(0, {0}), 0.0},    {Cell(0, {1}), 0.0},    {Cell(0, {2}), 0.0},      {Cell(1, {0, 1}), 1.0},
-        {Cell(1, {1, 2}), 1.0}, {Cell(1, {0, 2}), 1.0}, {Cell(2, {0, 1, 2}), 2.0}};
+        {Cell(0, {0}), 0.0},      {Cell(0, {1}), 0.0},    {Cell(0, {2}), 0.0},
+        {Cell(1, {0, 1}), 1.0},   {Cell(1, {1, 2}), 1.0}, {Cell(1, {0, 2}), 1.0},
+        {Cell(2, {0, 1, 2}), 2.0}};
 
     PersistentCohomologyComputer computer(complex);
 
@@ -190,8 +191,9 @@ bool check_nonnegative_persistence()
     complex.addCell(Cell(2, {0, 1, 2}));
 
     std::vector<std::pair<Cell, double>> filtration = {
-        {Cell(0, {0}), 0.0},    {Cell(0, {1}), 0.0},    {Cell(0, {2}), 0.0},      {Cell(1, {0, 1}), 0.5},
-        {Cell(1, {1, 2}), 0.5}, {Cell(1, {0, 2}), 0.5}, {Cell(2, {0, 1, 2}), 1.0}};
+        {Cell(0, {0}), 0.0},      {Cell(0, {1}), 0.0},    {Cell(0, {2}), 0.0},
+        {Cell(1, {0, 1}), 0.5},   {Cell(1, {1, 2}), 0.5}, {Cell(1, {0, 2}), 0.5},
+        {Cell(2, {0, 1, 2}), 1.0}};
 
     PersistentCohomologyComputer computer(complex);
     auto pairs = computer.computePersistentCohomology(filtration);
@@ -220,8 +222,9 @@ bool check_determinism()
     complex.addCell(Cell(2, {0, 1, 2}));
 
     std::vector<std::pair<Cell, double>> filtration = {
-        {Cell(0, {0}), 0.0},    {Cell(0, {1}), 0.0},    {Cell(0, {2}), 0.0},      {Cell(1, {0, 1}), 0.5},
-        {Cell(1, {1, 2}), 0.5}, {Cell(1, {0, 2}), 0.5}, {Cell(2, {0, 1, 2}), 1.0}};
+        {Cell(0, {0}), 0.0},      {Cell(0, {1}), 0.0},    {Cell(0, {2}), 0.0},
+        {Cell(1, {0, 1}), 0.5},   {Cell(1, {1, 2}), 0.5}, {Cell(1, {0, 2}), 0.5},
+        {Cell(2, {0, 1, 2}), 1.0}};
 
     PersistentCohomologyComputer computer(complex);
     auto run1 = canonical(computer.computePersistentCohomology(filtration));

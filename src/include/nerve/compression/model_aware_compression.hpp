@@ -32,12 +32,11 @@ struct CompressionResult
 class PCACompression
 {
 public:
-    explicit PCACompression(const CompressionConfig &config) : config_(config) {}
+    explicit PCACompression(const CompressionConfig &config)
+        : config_(config)
+    {}
 
-    void train(const std::vector<std::vector<float>> &data)
-    {
-        (void)data;
-    }
+    void train(const std::vector<std::vector<float>> &data) { (void)data; }
 
     CompressionResult compress(const std::vector<float> &data)
     {

@@ -8,12 +8,12 @@ import numpy as np
 
 from .._compute_api import compute_persistence
 from .._fallback_classes import PersistenceBackend
+from .._types import PersistenceDiagramLike
 from .._validation import (
     validate_nonempty_string,
     validate_nonnegative_int,
     validate_positive_int,
 )
-from ..typing import PersistenceDiagramLike
 from ._common import (
     _benchmark_dataset,
     _compute_nerve_persistence,

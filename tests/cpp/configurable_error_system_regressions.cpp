@@ -37,7 +37,6 @@ bool check_error_policy_get_set_roundtrip()
     }
 
     {
-
         return false;
     }
     if (retrieved.minimum_log_severity != nerve::errors::Severity::Error)

@@ -45,8 +45,7 @@ CpuTopology detectCpuTopology()
             cpu_set_t cpuset;
             CPU_ZERO(&cpuset);
             CPU_SET(i, &cpuset);
-            topo.core_to_numa[i] =
-                numa_bitmask_to_nodemask(numa_allocate_cpumask(), nullptr) ? 0 : 0;
+            topo.core_to_numa[i] = numa_node_of_cpu(i);
         }
     }
 #endif

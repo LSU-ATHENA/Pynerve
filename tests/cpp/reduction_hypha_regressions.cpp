@@ -17,12 +17,12 @@
 namespace
 {
 
+using nerve::Pair;
 using nerve::Size;
 using nerve::algebra::BoundaryMatrix;
 using nerve::algebra::Simplex;
 using nerve::algebra::SimplicialComplex;
 using nerve::persistence::HyphaReducer;
-using nerve::Pair;
 
 bool check_hypha_construction_default()
 {
@@ -181,5 +181,8 @@ int main()
 }
 
 #else
-int main() { return 0; }
+int main()
+{
+    return 0;
+}
 #endif

@@ -12,8 +12,8 @@ import numpy as np
 import torch
 from torch import Tensor
 
+from .._types import PersistenceDiagramLike
 from ..exceptions import ValidationError
-from ..typing import PersistenceDiagramLike
 from ._backend import backend
 from ._statistics_core import _valid_rows, _validate_stat_diagram
 

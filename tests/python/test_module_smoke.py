@@ -33,9 +33,9 @@ class TestInternalModuleImports:
         assert StreamingPersistence is not None
 
     def test_utils_modules_importable(self):
-        from pynerve import typing
+        from pynerve import _types
 
-        assert typing.PointCloud is not None
+        assert _types.PointCloud is not None
 
     def test_cupy_modules_importable(self):
         from pynerve import _cupy_compat
