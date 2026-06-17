@@ -5,6 +5,7 @@
 #include "nerve/errors/errors.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <string>
@@ -30,18 +31,32 @@ class ExceptionGuard
 {
 public:
     using CleanupFn = std::function<void()>;
-    explicit ExceptionGuard(CleanupFn cleanup);
-    ~ExceptionGuard();
+    explicit ExceptionGuard(CleanupFn cleanup)
+        : cleanup_(std::move(cleanup))
+    {}
+    ~ExceptionGuard()
+    {
+        if (cleanup_)
+            cleanup_();
+    }
     ExceptionGuard(const ExceptionGuard &) = delete;
     ExceptionGuard &operator=(const ExceptionGuard &) = delete;
+
+private:
+    CleanupFn cleanup_;
 };
 class AtomicCounter
 {
 public:
-    explicit AtomicCounter(int initial);
-    int increment();
-    int decrement();
-    int get() const;
+    explicit AtomicCounter(int initial)
+        : value_(initial)
+    {}
+    int increment() { return ++value_; }
+    int decrement() { return --value_; }
+    int get() const { return value_; }
+
+private:
+    std::atomic<int> value_;
 };
 } // namespace nerve::persistence::accelerated::exception_safety
 

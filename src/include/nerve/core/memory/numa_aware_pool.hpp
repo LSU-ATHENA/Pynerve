@@ -90,7 +90,7 @@ public:
     explicit NumaAwareMemoryPool(const NumaPoolConfig &config = NumaPoolConfig{});
     explicit NumaAwareMemoryPool(const DeterminismContract &contract,
                                  const NumaPoolConfig &config = NumaPoolConfig{});
-    ~NumaAwareMemoryPool();
+    ~NumaAwareMemoryPool() = default;
     NumaAwareMemoryPool(const NumaAwareMemoryPool &) = delete;
     NumaAwareMemoryPool &operator=(const NumaAwareMemoryPool &) = delete;
     NumaAwareMemoryPool(NumaAwareMemoryPool &&other) noexcept;
@@ -153,7 +153,11 @@ private:
 class NumaPoolManager
 {
 public:
-    static NumaPoolManager &instance();
+    static NumaPoolManager &instance()
+    {
+        static NumaPoolManager mgr;
+        return mgr;
+    }
     NumaAwareMemoryPool &getGlobalPool();
     NumaAwareMemoryPool &getPoolForThread(std::thread::id threadId = std::this_thread::get_id());
     void configureGlobalPool(const NumaPoolConfig &config);

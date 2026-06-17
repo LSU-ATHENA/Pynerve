@@ -16,9 +16,6 @@
 namespace nerve::persistence
 {
 
-namespace
-{
-
 double euclideanDistance(const std::vector<double> &lhs, const std::vector<double> &rhs)
 {
     if (lhs.size() != rhs.size())
@@ -84,8 +81,6 @@ bool hasValidPointCloud(const PointCloud &points)
     }
     return true;
 }
-
-} // namespace
 
 PH6HighDimensional::PH6HighDimensional(const PersistenceBudget &budget)
     : budget_(budget)

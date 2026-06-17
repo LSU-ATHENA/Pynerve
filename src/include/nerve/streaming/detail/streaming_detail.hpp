@@ -8,6 +8,7 @@
 #include "nerve/streaming/streaming_laplacian.hpp"
 #include "nerve/streaming/windowed_ph.hpp"
 
+#include <atomic>
 #include <cstddef>
 #include <memory>
 #include <optional>
@@ -38,12 +39,35 @@ template <typename T>
 class LockFreeSPSCQueue
 {
 public:
-    explicit LockFreeSPSCQueue(size_t capacity);
-    bool push(const T &item);
-    std::optional<T> pop();
-    bool empty() const;
-    size_t size() const;
-    bool isFull() const;
+    explicit LockFreeSPSCQueue(size_t capacity)
+        : capacity_(capacity)
+        , buffer_(capacity)
+    {}
+    bool push(const T &item)
+    {
+        if (size() >= capacity_)
+            return false;
+        buffer_[write_pos_ % capacity_] = item;
+        ++write_pos_;
+        return true;
+    }
+    std::optional<T> pop()
+    {
+        if (empty())
+            return std::nullopt;
+        T item = buffer_[read_pos_ % capacity_];
+        ++read_pos_;
+        return item;
+    }
+    bool empty() const { return read_pos_ >= write_pos_; }
+    size_t size() const { return write_pos_ - read_pos_; }
+    bool isFull() const { return size() >= capacity_; }
+
+private:
+    size_t capacity_;
+    std::atomic<size_t> write_pos_{0};
+    size_t read_pos_{0};
+    std::vector<T> buffer_;
 };
 
 } // namespace nerve::streaming::lockfree

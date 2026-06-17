@@ -54,6 +54,7 @@ void validateDifferentiableDiagram(const DifferentiableDiagram& diagram, const c
 
 }  // namespace
 
+#if !HAS_EIGEN
 StochasticPersistenceGradient::StochasticPersistenceGradient(
     int batch_size,
     double)
@@ -159,6 +160,8 @@ MatrixXd TopologyOptimizer::optimize(
 
     return points;
 }
+
+#endif
 
 // High-level API Implementation
 

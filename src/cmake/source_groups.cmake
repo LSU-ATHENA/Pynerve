@@ -139,7 +139,6 @@ set(NERVE_CORE_SOURCES
     persistence/core/per_dimension_h1.cpp
     persistence/core/per_dimension_h2.cpp
     persistence/core/per_dimension_exact.cpp
-    persistence/core/persistence_gradient_basic.cpp
     persistence/core/roaring_bitmap.cpp
     persistence/core/roaring_bitmap_column.cpp
     persistence/core/roaring_bitmap_container.cpp

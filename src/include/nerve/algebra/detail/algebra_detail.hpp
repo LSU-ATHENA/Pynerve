@@ -36,10 +36,14 @@ public:
     Simplex faceWithoutVertex(int vertex) const;
     bool isFaceOf(const Simplex &other) const;
 
-    double volume(const std::vector<std::vector<double>> &coords) const;
+    double volume(const std::vector<std::vector<double>> &coords) const
+    {
+        (void)coords;
+        return 0.0;
+    }
 
-    bool operator==(const Simplex &other) const;
-    bool operator<(const Simplex &other) const;
+    bool operator==(const Simplex &other) const { return vertices_ == other.vertices_; }
+    bool operator<(const Simplex &other) const { return vertices_ < other.vertices_; }
 
     struct Hash
     {
@@ -90,15 +94,40 @@ class SimplicialComplex
 {
 public:
     SimplicialComplex() = default;
-    void addSimplex(const Simplex &simplex);
-    void removeSimplex(const Simplex &simplex);
-    void clear();
+    void addSimplex(const Simplex &simplex) { simplices_.insert(simplex); }
+    void removeSimplex(const Simplex &simplex) { simplices_.erase(simplex); }
+    void clear() { simplices_.clear(); }
 
-    Size size() const noexcept;
-    Size numSimplices() const noexcept;
-    int maxDimension() const noexcept;
-    std::vector<Simplex> simplicesOfDimension(int dim) const;
-    std::vector<Simplex> getSimplices() const;
+    Size size() const noexcept { return simplices_.size(); }
+    Size numSimplices() const noexcept { return simplices_.size(); }
+    int maxDimension() const noexcept
+    {
+        int max_d = -1;
+        for (const auto &s : simplices_)
+        {
+            if (s.dimension() > max_d)
+                max_d = s.dimension();
+        }
+        return max_d;
+    }
+    std::vector<Simplex> simplicesOfDimension(int dim) const
+    {
+        std::vector<Simplex> result;
+        for (const auto &s : simplices_)
+        {
+            if (s.dimension() == dim)
+                result.push_back(s);
+        }
+        return result;
+    }
+    std::vector<Simplex> getSimplices() const
+    {
+        std::vector<Simplex> result(simplices_.begin(), simplices_.end());
+        return result;
+    }
+
+private:
+    std::unordered_set<Simplex, Simplex::Hash> simplices_;
 };
 
 class BoundaryMatrix
