@@ -284,3 +284,9 @@ int main()
     return 0;
 }
 #endif
+#ifndef TOPO_ENABLE_ADVANCED_DIFFERENTIABLE
+int main()
+{
+    return 0;
+}
+#endif

@@ -18,9 +18,6 @@
 namespace nerve::metrics
 {
 
-namespace
-{
-
 struct DiagramPoint
 {
     double birth = 0.0;
@@ -45,7 +42,7 @@ bool isValidDiagram(const Diagram &diagram)
     return true;
 }
 
-bool hasSupportedMatchingSize(size_t n1, size_t n2)
+inline bool hasSupportedMatchingSize(size_t n1, size_t n2)
 {
     const size_t max_index = static_cast<size_t>(std::numeric_limits<int>::max());
     return n1 <= max_index && n2 <= max_index && n1 <= max_index - n2;
@@ -69,8 +66,6 @@ std::vector<DiagramPoint> diagramToPoints(const Diagram &diagram)
     }
     return points;
 }
-
-} // namespace
 
 double computeBottleneck(const std::vector<DiagramPoint> &points1,
                          const std::vector<DiagramPoint> &points2);

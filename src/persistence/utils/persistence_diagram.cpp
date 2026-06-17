@@ -133,4 +133,36 @@ std::vector<Pair> Diagram::getPairsByDimension(Dimension dim) const
     return result;
 }
 
+double Diagram::getMaxPersistence() const
+{
+    double max_pers = 0.0;
+    for (const auto &pair : pairs_)
+    {
+        if (pair.death >= 0.0 && std::isfinite(pair.death))
+        {
+            double pers = pair.death - pair.birth;
+            if (pers > max_pers)
+            {
+                max_pers = pers;
+            }
+        }
+    }
+    return max_pers;
+}
+
+double Diagram::getAveragePersistence() const
+{
+    double sum = 0.0;
+    size_t count = 0;
+    for (const auto &pair : pairs_)
+    {
+        if (pair.death >= 0.0 && std::isfinite(pair.death))
+        {
+            sum += pair.death - pair.birth;
+            ++count;
+        }
+    }
+    return count > 0 ? sum / static_cast<double>(count) : 0.0;
+}
+
 } // namespace nerve::persistence

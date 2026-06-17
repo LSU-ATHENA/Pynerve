@@ -338,4 +338,21 @@ std::vector<Index> Simplex::computeFaceIndices(Size i) const {
     }
     return face_indices;
 }
-}  // namespace nerve::algebra
+
+std::vector<Simplex> generateAllFaces(const Simplex &simplex)
+{
+    std::vector<Simplex> faces;
+    auto idx = simplex.faces();
+    for (const auto &f : idx)
+    {
+        faces.push_back(f);
+    }
+    return faces;
+}
+
+Simplex join(const Simplex &s1, const Simplex &s2)
+{
+    return s1.join(s2);
+}
+
+} // namespace nerve::algebra

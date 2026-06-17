@@ -7,9 +7,6 @@
 namespace nerve::metrics
 {
 
-namespace
-{
-
 constexpr double kDistanceEpsilon = 1e-12;
 
 struct DiagramPoint
@@ -18,17 +15,17 @@ struct DiagramPoint
     double death = 0.0;
 };
 
-double linfDistance(const DiagramPoint &lhs, const DiagramPoint &rhs)
+inline double linfDistance(const DiagramPoint &lhs, const DiagramPoint &rhs)
 {
     return std::max(std::abs(lhs.birth - rhs.birth), std::abs(lhs.death - rhs.death));
 }
 
-double diagonalDistance(const DiagramPoint &point)
+inline double diagonalDistance(const DiagramPoint &point)
 {
     return std::abs(point.death - point.birth) * 0.5;
 }
 
-bool hasSupportedMatchingSize(size_t n1, size_t n2)
+inline bool hasSupportedMatchingSize(size_t n1, size_t n2)
 {
     const size_t max_index = static_cast<size_t>(std::numeric_limits<int>::max());
     return n1 <= max_index && n2 <= max_index && n1 <= max_index - n2;
@@ -75,8 +72,6 @@ bool tryAugment(size_t left, const std::vector<std::vector<size_t>> &adjacency,
     }
     return false;
 }
-
-} // namespace
 
 bool hasPerfectMatching(const std::vector<DiagramPoint> &points1,
                         const std::vector<DiagramPoint> &points2, double threshold)

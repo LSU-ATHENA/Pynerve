@@ -234,7 +234,10 @@ set(NERVE_CORE_SOURCES
     filtration/mpi/filtration_mpi_ops.cpp
     filtration/simd_filtration_ops.cpp
     metrics/bottleneck/distance_bottleneck_ops.cpp
+    metrics/diagram/diagram_distance_bottleneck.cpp
+    metrics/diagram/diagram_distance_hungarian.cpp
     metrics/diagram/diagram_distance_ops.cpp
+    metrics/diagram/diagram_distance_wasserstein.cpp
     metrics/frechet/distance_frechet_ops.cpp
     metrics/general/distance_transport_ops.cpp
     metrics/general/distance_transport_ops_detail.cpp
