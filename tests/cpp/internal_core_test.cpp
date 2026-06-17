@@ -1,6 +1,6 @@
 
 #include "nerve/core/detail/core_detail.hpp"
-#include "nerve/core/determinism.hpp"
+#include "nerve/core/rng/determinism_contract.hpp"
 #include "nerve/core_types.hpp"
 
 #include <algorithm>

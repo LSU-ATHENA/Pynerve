@@ -1,6 +1,6 @@
 
 #include "nerve/encoders/detail/encoders_detail.hpp"
-#include "nerve/encoders/encoder_factory.hpp"
+#include "nerve/encoders/encoders.hpp"
 
 #include <algorithm>
 #include <cmath>

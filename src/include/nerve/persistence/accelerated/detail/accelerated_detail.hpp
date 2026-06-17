@@ -1,6 +1,6 @@
 #pragma once
 #include "nerve/common/accelerated_types.hpp"
-#include "nerve/core/buffer_view.hpp"
+#include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core/rng/determinism_contract.hpp"
 #include "nerve/errors/errors.hpp"
 #include "nerve/persistence/core/core_types.hpp"

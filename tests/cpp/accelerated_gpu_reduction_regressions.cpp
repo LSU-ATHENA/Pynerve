@@ -27,7 +27,7 @@ using nerve::persistence::accelerated::CUDAEgdeExtractor;
 using nerve::persistence::accelerated::Edge;
 using nerve::persistence::accelerated::EdgeExtractionConfig;
 using nerve::persistence::accelerated::EdgeExtractionStats;
-// factory namespace removed;
+using namespace nerve::persistence::accelerated::factory;
 
 bool check_edge_extraction_config_default()
 {

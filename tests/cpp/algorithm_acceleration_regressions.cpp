@@ -437,7 +437,7 @@ int main()
             assert(rejected_accel_zero_radius);
 
             const auto cuda_memory =
-                nerve::persistence::accelerated::utils::estimateTotalGpuMemoryUsage(3, 2, 2.0, 0.5);
+                nerve::persistence::accelerated::utils::estimateMemoryUsage(3, 2, 2.0, true);
             assert(cuda_memory > 0);
 
             bool rejected_cuda_nan_radius = false;
@@ -455,8 +455,8 @@ int main()
             bool rejected_cuda_nan_density = false;
             try
             {
-                (void)nerve::persistence::accelerated::utils::estimateEdgeExtractionMemoryUsage(
-                    3, std::numeric_limits<double>::quiet_NaN());
+                (void)nerve::persistence::accelerated::utils::estimateVrEdgeDensity(
+                    3, 2, std::numeric_limits<double>::quiet_NaN());
             }
             catch (const std::invalid_argument &)
             {
@@ -467,8 +467,7 @@ int main()
             bool rejected_cuda_large_density = false;
             try
             {
-                (void)nerve::persistence::accelerated::utils::estimateMatrixReductionMemoryUsage(
-                    3, 2, 1.5);
+                (void)nerve::persistence::accelerated::utils::estimateVrEdgeDensity(3, 2, 1.5);
             }
             catch (const std::invalid_argument &)
             {
@@ -480,7 +479,7 @@ int main()
             try
             {
                 const double pressure =
-                    nerve::persistence::accelerated::utils::checkMemoryPressure();
+                    nerve::persistence::accelerated::utils::estimateVrEdgeDensity(1000, 3, 1.0);
                 assert(std::isfinite(pressure));
                 assert(pressure >= 0.0);
                 assert(pressure <= 1.0);
@@ -496,8 +495,7 @@ int main()
             bool cuda_utils_memory_pressure_checked = false;
             try
             {
-                const double pressure =
-                    nerve::persistence::accelerated::cuda_utils::getMemoryPressure();
+                const double pressure = nerve::persistence::cuda::cuda_utils::getMemoryPressure();
                 assert(std::isfinite(pressure));
                 assert(pressure >= 0.0);
                 assert(pressure <= 1.0);

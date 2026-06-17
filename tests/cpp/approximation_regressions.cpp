@@ -61,7 +61,6 @@ bool check_sliced_wasserstein_basic()
     nerve::approximation::ApproximationConfig cfg;
     cfg.num_projections = 50;
     cfg.random_seed = 42;
-    // cfg.enable_gpu_acceleration removed
 
     nerve::approximation::SlicedWasserstein sw(cfg);
 
@@ -90,7 +89,6 @@ bool check_sliced_wasserstein_symmetry()
     nerve::approximation::ApproximationConfig cfg;
     cfg.num_projections = 100;
     cfg.random_seed = 42;
-    // cfg.enable_gpu_acceleration removed
 
     nerve::approximation::SlicedWasserstein sw(cfg);
 
@@ -136,7 +134,6 @@ bool check_distance_matrix()
     nerve::approximation::ApproximationConfig cfg;
     cfg.num_projections = 30;
     cfg.random_seed = 123;
-    // cfg.enable_gpu_acceleration removed
 
     nerve::approximation::SlicedWasserstein sw(cfg);
 

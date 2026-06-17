@@ -50,9 +50,10 @@ bool check_vr_build_filtration()
     std::vector<double> pts{0.0, 0.0, 1.0, 0.0, 0.5, 0.866};
     DeterminismContract contract;
     auto result = vr.buildFiltration(view_of(pts), 2, contract);
-    if (result/*.isError() removed*/ == false)
+    if (result.isError())
     {
-        return true;
+        std::cerr << "VR buildFiltration returned an error\n";
+        return false;
     }
     auto filtration = result.value();
     if (filtration.empty())
@@ -78,9 +79,10 @@ bool check_vr_filtration_monotonic()
     std::vector<double> pts{0.0, 0.0, 1.0, 0.0, 0.5, 0.866};
     DeterminismContract contract;
     auto result = vr.buildFiltration(view_of(pts), 2, contract);
-    if (result/*.isError() removed*/ == false)
+    if (result.isError())
     {
-        return true;
+        std::cerr << "VR buildFiltration returned an error\n";
+        return false;
     }
     auto filtration = result.value();
     for (size_t i = 1; i < filtration.size(); ++i)
@@ -101,9 +103,10 @@ bool check_vr_num_simplices()
     std::vector<double> pts{0.0, 0.0, 1.0, 0.0};
     DeterminismContract contract;
     auto result = vr.buildFiltration(view_of(pts), 2, contract);
-    if (result/*.isError() removed*/ == false)
+    if (result.isError())
     {
-        return true;
+        std::cerr << "VR buildFiltration returned an error\n";
+        return false;
     }
     Size n = vr.getNumSimplices();
     if (n == 0)
@@ -124,12 +127,7 @@ bool check_sparse_vr_construction()
     sparse.setBatchSize(100);
     std::vector<double> pts{0.0, 0.0, 1.0, 0.0, 0.5, 0.866};
     DeterminismContract contract;
-    auto result = sparse.buildFiltration(view_of(pts), 2, contract);
-    if (result/*.isError() removed*/ == false)
-    {
-        return true;
-    }
-    auto filtration = result.value();
+    auto filtration = sparse.buildFiltration(view_of(pts), 2, contract);
     if (filtration.empty())
     {
         std::cerr << "sparse VR filtration empty\n";
@@ -145,18 +143,14 @@ bool check_sparse_vs_full_edges()
     sparse.setBatchSize(100);
     std::vector<double> pts{0.0, 0.0, 1.0, 0.0, 0.5, 0.866};
     DeterminismContract contract;
-    auto sparse_result = sparse.buildFiltration(view_of(pts), 2, contract);
-    if (sparse_result/*.isError() removed*/ == false)
-    {
-        return true;
-    }
-    auto sparse_filt = sparse_result.value();
+    auto sparse_filt = sparse.buildFiltration(view_of(pts), 2, contract);
     VietorisRips vr(2.0);
     vr.setMaxDimension(1);
     auto vr_result = vr.buildFiltration(view_of(pts), 2, contract);
-    if (vr_result/*.isError() removed*/ == false)
+    if (vr_result.isError())
     {
-        return true;
+        std::cerr << "VR buildFiltration returned an error\n";
+        return false;
     }
     (void)sparse_filt.size();
     (void)vr_result.value().size();
@@ -171,12 +165,7 @@ bool check_weighted_vr_construction()
     wvr.setWeightFunction("inverse_distance");
     std::vector<double> pts{0.0, 0.0, 1.0, 0.0, 0.5, 0.866};
     DeterminismContract contract;
-    auto result = wvr.buildFiltration(view_of(pts), 2, contract);
-    if (result/*.isError() removed*/ == false)
-    {
-        return true;
-    }
-    auto filtration = result.value();
+    auto filtration = wvr.buildFiltration(view_of(pts), 2, contract);
     if (filtration.empty())
     {
         std::cerr << "weighted VR filtration empty\n";
@@ -193,12 +182,7 @@ bool check_weighted_vr_weights_respected()
     wvr.setWeightFunction("inverse_distance");
     std::vector<double> pts{0.0, 0.0, 1.0, 0.0, 2.0, 0.0};
     DeterminismContract contract;
-    auto result = wvr.buildFiltration(view_of(pts), 2, contract);
-    if (result/*.isError() removed*/ == false)
-    {
-        return true;
-    }
-    auto filtration = result.value();
+    auto filtration = wvr.buildFiltration(view_of(pts), 2, contract);
     bool has_edge = false;
     for (const auto &entry : filtration)
     {

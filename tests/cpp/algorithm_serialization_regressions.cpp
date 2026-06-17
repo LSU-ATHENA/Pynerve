@@ -1,5 +1,11 @@
-#include "nerve/determinism.hpp"
+#include "nerve/core/rng/determinism_contract.hpp"
+#include "nerve/persistence/approximate/bloom_filter.hpp"
+#include "nerve/persistence/approximate/distilled_vr_filtration.hpp"
+#include "nerve/persistence/approximate/perfect_hash.hpp"
+#include "nerve/persistence/utils/bit_parallel_z2.hpp"
+#include "nerve/serialization/ph5_ph6_schema_serializer.hpp"
 #include "nerve/serialization/serialization_manager.hpp"
+#include "nerve/summary/compact_summary.hpp"
 
 #include <algorithm>
 #include <array>
@@ -13,6 +19,7 @@
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 

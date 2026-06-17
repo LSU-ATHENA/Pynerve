@@ -1,7 +1,7 @@
 #include "nerve/config.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/probabilistic/detail/probabilistic_detail.hpp"
-#include "nerve/probabilistic/probabilistic_models.hpp"
+#include "nerve/probabilistic/probabilistic.hpp"
 
 #include <algorithm>
 #include <cmath>

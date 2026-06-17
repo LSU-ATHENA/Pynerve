@@ -13,11 +13,20 @@ public:
     Tensor();
     explicit Tensor(double value);
     explicit Tensor(const std::vector<double> &data);
+    Tensor(const std::vector<double> &data, const std::vector<Size> &shape);
     static Tensor zeros(size_t n);
+    static Tensor zeros(const std::vector<Size> &shape);
     static Tensor ones(size_t n);
-    double data() const;
+    const std::vector<double> &data() const;
     double at(size_t i) const;
     double &at(size_t i);
+    Size size() const;
+    Size ndim() const;
+    const std::vector<Size> &shape() const;
+    double operator[](Size i) const;
+    double &operator[](Size i);
+    auto begin() const { return values_.begin(); }
+    auto end() const { return values_.end(); }
     Tensor operator+(const Tensor &other) const;
     Tensor operator-(const Tensor &other) const;
     Tensor operator*(const Tensor &other) const;
@@ -25,6 +34,13 @@ public:
     Tensor relu() const;
     Tensor sigmoid() const;
     Tensor sum() const;
+    Tensor grad() const;
+    void setGrad(const Tensor &gradient);
+
+private:
+    std::vector<double> values_;
+    std::vector<Size> shape_;
+    std::vector<double> gradient_;
 };
 
 class AutogradEngine
@@ -77,5 +93,5 @@ void backwardRelu(const double *grad, const double *input, double *out, size_t n
 // Free functions
 void enableGrad(bool enable);
 void backward(const Tensor &loss);
-Tensor grad(const Tensor &var);
+Tensor computeGrad(const Tensor &var);
 } // namespace nerve::autodiff
