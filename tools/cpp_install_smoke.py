@@ -47,8 +47,10 @@ endif()
 #if __has_include("nerve/gpu/cuda_tile_api.hpp")
 #include "nerve/gpu/cuda_tile_api.hpp"
 #endif
-#endif
+#if __has_include("nerve/gpu/gpu_capability_core.hpp")
 #include "nerve/gpu/gpu_capability_core.hpp"
+#endif
+#endif
 
 int main() {
     const std::array<double, 4> points{0.0, 0.0, 3.0, 4.0};
@@ -75,7 +77,7 @@ int main() {
     }
 
 #ifdef __has_include
-#if __has_include("nerve/gpu/cuda_tile_api.hpp")
+#if __has_include("nerve/gpu/cuda_tile_api.hpp") && __has_include("nerve/gpu/gpu_capability_core.hpp")
     const bool tile_available = nerve::gpu::tile::tileApiAvailable();
     const auto capabilities = nerve::gpu::advanced::AdvancedCapabilities::detect();
     if (tile_available && !capabilities.cuda_available) {
@@ -158,7 +160,11 @@ def _sweep_installed_headers(prefix: Path) -> None:
     headers = sorted(
         path
         for path in include_root.rglob("*")
-        if path.suffix in {".h", ".hpp"} and "nerve/torch/" not in path.as_posix()
+        if path.suffix in {".h", ".hpp"}
+        and "nerve/torch/" not in path.as_posix()
+        and "/cuda/" not in path.as_posix()
+        and not path.name.startswith("cuda_")
+        and "gpu/" not in path.as_posix()
     )
     if not headers:
         raise FileNotFoundError(f"missing installed public C++ headers under {include_root}")
