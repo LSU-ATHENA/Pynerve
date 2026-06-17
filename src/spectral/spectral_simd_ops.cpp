@@ -11,7 +11,7 @@ namespace nerve::spectral
 #if defined(NERVE_HAS_X86_INTRINSICS)
 static bool hasSimd()
 {
-    static const bool has = cpu::CPUFeatureDetector::instance().hasAVX2();
+    static const bool has = cpu::simd::CPUFeatureDetector::hasAVX2();
     return has;
 }
 

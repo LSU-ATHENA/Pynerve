@@ -7,6 +7,10 @@
 #include <type_traits>
 #include <vector>
 
+#if defined(__AVX2__) || defined(__AVX512F__)
+#include <immintrin.h>
+#endif
+
 namespace nerve::cpu::simd
 {
 

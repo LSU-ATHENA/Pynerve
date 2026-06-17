@@ -13,7 +13,7 @@ void simdBatchFilterValues(double *values, Size n, Size start_dim, Size end_dim,
     (void)start_dim;
     (void)end_dim;
 #if defined(__AVX512F__)
-    if (cpu::CPUFeatureDetector::instance().hasAVX512F())
+    if (cpu::simd::CPUFeatureDetector::hasAVX512F())
     {
         __m512d v_thresh = _mm512_set1_pd(threshold);
         Size i = 0;
@@ -29,7 +29,7 @@ void simdBatchFilterValues(double *values, Size n, Size start_dim, Size end_dim,
     }
     else
 #elif defined(__AVX2__)
-    if (cpu::CPUFeatureDetector::instance().hasAVX2())
+    if (cpu::simd::CPUFeatureDetector::hasAVX2())
 #endif
     {
         for (Size i = 0; i < n; ++i)

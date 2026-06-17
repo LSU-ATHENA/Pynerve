@@ -5,10 +5,6 @@
 #include <cmath>
 #include <cstring>
 
-#if defined(__AVX2__) || defined(__AVX512F__)
-#include <immintrin.h>
-#endif
-
 namespace nerve::nn
 {
 

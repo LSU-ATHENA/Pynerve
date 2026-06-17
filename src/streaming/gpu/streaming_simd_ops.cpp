@@ -11,13 +11,13 @@ namespace nerve::streaming
 #if defined(NERVE_HAS_X86_INTRINSICS)
 static bool hasAvx2()
 {
-    static const bool has = cpu::CPUFeatureDetector::instance().hasAVX2();
+    static const bool has = cpu::simd::CPUFeatureDetector::hasAVX2();
     return has;
 }
 
 static bool hasAvx512()
 {
-    static const bool has = cpu::CPUFeatureDetector::instance().hasAVX512F();
+    static const bool has = cpu::simd::CPUFeatureDetector::hasAVX512F();
     return has;
 }
 #endif

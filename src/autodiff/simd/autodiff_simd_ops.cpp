@@ -10,7 +10,7 @@ namespace nerve::autodiff
 void simdBackwardAdd(double *grad_a, const double *grad_out, Size n)
 {
 #if defined(__AVX512F__)
-    if (cpu::CPUFeatureDetector::instance().hasAVX512F())
+    if (cpu::simd::CPUFeatureDetector::hasAVX512F())
     {
         Size i = 0;
         for (; i + 8 <= n; i += 8)
@@ -31,7 +31,7 @@ void simdBackwardAdd(double *grad_a, const double *grad_out, Size n)
 void simdBackwardMul(double *grad_a, const double *grad_out, const double *b, Size n)
 {
 #if defined(__AVX512F__)
-    if (cpu::CPUFeatureDetector::instance().hasAVX512F())
+    if (cpu::simd::CPUFeatureDetector::hasAVX512F())
     {
         Size i = 0;
         for (; i + 8 <= n; i += 8)
@@ -53,7 +53,7 @@ void simdBackwardMul(double *grad_a, const double *grad_out, const double *b, Si
 void simdBackwardRelu(double *grad_a, const double *grad_out, const double *input, Size n)
 {
 #if defined(__AVX512F__)
-    if (cpu::CPUFeatureDetector::instance().hasAVX512F())
+    if (cpu::simd::CPUFeatureDetector::hasAVX512F())
     {
         __m512d vzero = _mm512_setzero_pd();
         Size i = 0;
