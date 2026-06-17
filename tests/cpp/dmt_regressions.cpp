@@ -118,7 +118,7 @@ bool check_traversal_basic()
     std::vector<std::vector<int>> boundaries = {{1}, {0}, {3}, {2}};
 
     std::vector<int> visited;
-    traversal.traverse(pairs, boundaries, visited);
+    traversal.traversePaths(pairs, boundaries, 1, [&visited](int idx) { visited.push_back(idx); });
 
     if (visited.size() != 4)
     {
@@ -127,10 +127,6 @@ bool check_traversal_basic()
     }
 
     return true;
-}
-
-
-return true;
 }
 
 } // namespace

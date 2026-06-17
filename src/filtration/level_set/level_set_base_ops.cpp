@@ -44,6 +44,10 @@ void LevelSet::setNumLevels(Size num_levels)
     }
     num_levels_ = num_levels;
 }
+Size LevelSet::getNumLevels() const
+{
+    return num_levels_;
+}
 void LevelSet::setAdaptiveLevels(bool adaptive)
 {
     adaptive_levels_ = adaptive;

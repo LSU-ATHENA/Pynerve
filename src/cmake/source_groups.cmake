@@ -32,6 +32,7 @@ set(NERVE_CORE_SOURCES
     algebra/complex/complex_ops.cpp
     algebra/complex/simplex_set_ops.cpp
     algebra/geometry/distance_simd_avx_ops.cpp
+    algebra/geometry/distance_simd_baseline.cpp
     algebra/geometry/distance_simd_ops.cpp
     algebra/geometry/distance_sse_ops.cpp
     algebra/geometry/geometry_analytic_ops.cpp
@@ -136,6 +137,7 @@ set(NERVE_CORE_SOURCES
     persistence/core/per_dimension_h1.cpp
     persistence/core/per_dimension_h2.cpp
     persistence/core/per_dimension_exact.cpp
+    persistence/core/persistence_gradient_basic.cpp
     persistence/core/roaring_bitmap.cpp
     persistence/core/roaring_bitmap_column.cpp
     persistence/core/roaring_bitmap_container.cpp
@@ -168,6 +170,11 @@ set(NERVE_CORE_SOURCES
     persistence/reduction/reduction_control_ops.cpp
     persistence/reduction/reduction_edge_collapse_ops.cpp
     persistence/reduction/reduction_lock_free_structures.cpp
+    persistence/reduction/reduction_lock_free_structures_benchmark.cpp
+    persistence/reduction/reduction_lock_free_structures_coordinator.cpp
+    persistence/reduction/reduction_lock_free_structures_pivot.cpp
+    persistence/reduction/reduction_lock_free_structures_pivot_announce.cpp
+    persistence/reduction/reduction_lock_free_structures_work_queue.cpp
     persistence/reduction/reduction_lockfree_ops.cpp
     persistence/reduction/reduction_ops.cpp
     persistence/reduction/reduction_union_find_ops.cpp
@@ -185,6 +192,8 @@ set(NERVE_CORE_SOURCES
     persistence/utils/cpp20_parallel_ph.cpp
     persistence/utils/diagram_statistics.cpp
     persistence/utils/exact_engine.cpp
+    persistence/utils/exact_engine_cohomology.cpp
+    persistence/utils/exact_engine_cohomology_graph.cpp
     persistence/utils/exact_engine_fast.cpp
     persistence/utils/filtration_simplifier.cpp
     persistence/utils/incremental_updates.cpp
@@ -217,6 +226,7 @@ set(NERVE_CORE_SOURCES
     filtration/vr/vr_api_ops.cpp
     filtration/vr/vr_builder_ops.cpp
     filtration/vr/vr_construction_ops.cpp
+    filtration/vr/vr_construction_simplices.cpp
     filtration/vr/vr_distance_ops.cpp
     filtration/vr/vr_parallel_construction_ops.cpp
     filtration/vr/vr_sparse_ops.cpp
@@ -506,7 +516,6 @@ set(NERVE_EIGEN3_SOURCES
 
 # Non-Eigen basic sources
 set(NERVE_NON_EIGEN_SOURCES
-    persistence/core/persistence_gradient_basic.cpp
     distributed/mpi_communicator_stub.cpp
 )
 
@@ -521,6 +530,7 @@ set(NERVE_NUMA_SOURCES
 # AVX-512-dependent sources
 set(NERVE_AVX512_SOURCES
     algebra/geometry/distance_simd_avx_ops.cpp
+    algebra/geometry/distance_simd_baseline.cpp
     algebra/geometry/distance_simd_ops.cpp
     compression/simd/compression_simd_ops.cpp
     encoders/simd_encoder_ops.cpp

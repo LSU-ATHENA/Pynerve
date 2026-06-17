@@ -358,10 +358,10 @@ public:
     static std::unique_ptr<FeatureEncoder> createDefaultHybridEncoder();
     static std::unique_ptr<FeatureEncoder> loadEncoderFromConfig(const std::string &config_file);
     static void saveEncoderConfig(const FeatureEncoder &encoder, const std::string &config_file);
-
-private:
     static std::map<std::string, double> loadDefaultParams(const std::string &encoder_type);
     static void validateEncoderConfig(const std::map<std::string, double> &params);
+
+private:
 };
 class EncoderUtils
 {
@@ -394,10 +394,10 @@ public:
     static std::map<std::string, double>
     benchmarkEncoders(const std::vector<std::unique_ptr<FeatureEncoder>> &encoders,
                       const std::vector<std::vector<std::vector<double>>> &test_data);
-
-private:
     static std::vector<std::vector<double>> applyNoise(const std::vector<std::vector<double>> &data,
                                                        double noise_level);
+
+private:
     static double computeAccuracy(const std::vector<std::vector<double>> &predictions,
                                   const std::vector<std::vector<double>> &labels);
 };

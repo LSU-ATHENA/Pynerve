@@ -105,7 +105,7 @@ bool check_memory_pool_allocate_deallocate()
         return false;
     }
     std::memset(ptr, 0x42, 64);
-    pool.deallocate(ptr);
+    pool.deallocate(ptr, 64);
 
     if (!pool.isDeterministic())
     {
@@ -133,7 +133,7 @@ bool check_memory_pool_deterministic_cycle()
         return false;
     }
     std::memset(ptr, 0xFF, 128);
-    pool.deallocate(ptr);
+    pool.deallocate(ptr, 128);
 
     auto metadata = pool.getDeterminismMetadata();
     return metadata.was_deterministic;
@@ -270,7 +270,7 @@ bool check_rng_random_permutation()
 
 bool check_highdim_error_event_basic()
 {
-    nerve::core::HighDimErrorEvent event(nerve::ErrorCode::E13_PH_HIGHDIM_PRECISION,
+    nerve::core::HighDimErrorEvent event(nerve::core::ErrorCode::E13_PH_HIGHDIM_PRECISION,
                                          "high dimension test");
     event.setDimension(5);
     event.setComplexSize(1000);
@@ -310,7 +310,7 @@ bool check_highdim_error_event_validation()
 
 bool check_highdim_error_serialize_deserialize()
 {
-    nerve::core::HighDimErrorEvent event(nerve::ErrorCode::E13_PH_HIGHDIM_PRECISION, "test");
+    nerve::core::HighDimErrorEvent event(nerve::core::ErrorCode::E13_PH_HIGHDIM_PRECISION, "test");
     event.setDimension(8);
     event.setComplexSize(5000);
     event.setMemoryUsage(128);

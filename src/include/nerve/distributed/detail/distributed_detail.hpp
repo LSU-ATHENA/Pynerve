@@ -11,7 +11,10 @@ class WorkStealingScheduler
 {
 public:
     WorkStealingScheduler(size_t num_workers);
+    WorkStealingScheduler(int rank, int world_size);
     void submit(std::function<void()> task);
+    void submit_work(std::function<void()> task);
+    void run();
     void waitAll();
     size_t numWorkers() const;
     size_t pendingTasks() const;
@@ -29,8 +32,18 @@ class ShardedBoundaryMatrix
 {
 public:
     ShardedBoundaryMatrix(size_t total_columns, size_t num_shards);
+    void distribute_columns(const std::vector<std::vector<int>> &columns);
+    std::vector<int> get_boundary(size_t column) const;
     size_t numShards() const;
     size_t columnsPerShard() const;
+};
+
+class DistributedPersistence
+{
+public:
+    DistributedPersistence();
+    std::vector<std::tuple<float, float, int>>
+    compute(const std::vector<std::vector<float>> &point_clouds);
 };
 
 namespace mpi_utils

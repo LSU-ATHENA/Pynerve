@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <map>
 #include <ranges>
 #include <set>
 #include <utility>
@@ -96,4 +97,40 @@ Diagram::computeBettiNumbers(const core::DeterminismContract &contract) const
     }
     return errors::ErrorResult<Vector<int>>::success(Vector<int>(betti));
 }
+
+std::vector<Size> Diagram::computeBetti() const
+{
+    std::map<int, Size> betti_map;
+    for (const auto &pair : pairs_)
+    {
+        if (pair.death < 0 || std::isinf(pair.death))
+        {
+            betti_map[pair.dimension]++;
+        }
+    }
+    std::vector<Size> betti;
+    for (const auto &[dim, count] : betti_map)
+    {
+        if (betti.size() <= static_cast<size_t>(dim))
+        {
+            betti.resize(dim + 1, 0);
+        }
+        betti[dim] = count;
+    }
+    return betti;
+}
+
+std::vector<Pair> Diagram::getPairsByDimension(Dimension dim) const
+{
+    std::vector<Pair> result;
+    for (const auto &pair : pairs_)
+    {
+        if (pair.dimension == dim)
+        {
+            result.push_back(pair);
+        }
+    }
+    return result;
+}
+
 } // namespace nerve::persistence

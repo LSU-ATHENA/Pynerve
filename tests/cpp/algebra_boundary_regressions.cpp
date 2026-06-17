@@ -139,9 +139,12 @@ bool check_boundary_of_boundary_zero()
             std::vector<double> result(b_km1.rows(), 0.0);
             for (Index r = 0; r < static_cast<Index>(b_km1.rows()); ++r)
             {
-                result[r] =
-                    std::inner_product(chain_vec.begin(), chain_vec.end(),
-                                       b_km1.simplicesInRow(static_cast<Size>(r)).begin(), 0.0);
+                double sum = 0.0;
+                for (Index col = 0; col < static_cast<Index>(b_km1.cols()); ++col)
+                {
+                    sum += b_km1.getCoefficient(r, col) * chain_vec[col];
+                }
+                result[r] = sum;
             }
         }
     }

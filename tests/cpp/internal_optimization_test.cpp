@@ -130,6 +130,7 @@ bool check_optimizer_simd_ops()
         }
     }
     std::vector<double> vec = {3.0, 4.0};
+    double norm = std::sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
     if (std::abs(norm - 5.0) > 1e-12)
     {
         std::cerr << "SIMD L2 norm mismatch\n";

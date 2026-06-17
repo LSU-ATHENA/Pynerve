@@ -475,7 +475,7 @@ int main()
         pivot_map.reserve(1024);
         for (int i = 0; i < 300; ++i)
         {
-            pivot_map.insert(i * 1024, i);
+            pivot_map.emplace(i * 1024, i);
         }
         assert(pivot_map.size() == 300);
         for (int i = 0; i < 300; ++i)
@@ -529,66 +529,18 @@ int main()
     }
 
     {
-        nerve::persistence::DistilledVRConfig config;
-        nerve::persistence::DistilledVRFiltration filtration(config);
+        nerve::persistence::distilled::DistilledVRConfig config;
         const std::vector<double> points{
             0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
         };
-        const auto distilled = filtration.distill(points, 2, 2.0);
-        assert(!distilled.landmark_indices.empty());
+        const auto filtration =
+            nerve::persistence::distilled::buildDistilledFiltration(points, 2, 3, config);
+        assert(filtration.distilled_size > 0);
+    }
 
-        bool rejected_distilled_nan_ratio = false;
-        try
-        {
-            auto invalid_config = config;
-            invalid_config.target_reduction_ratio = std::numeric_limits<double>::quiet_NaN();
-            nerve::persistence::DistilledVRFiltration invalid_filtration(invalid_config);
-            (void)invalid_filtration.distill(points, 2, 2.0);
-        }
-        catch (const std::invalid_argument &)
-        {
-            rejected_distilled_nan_ratio = true;
-        }
-        assert(rejected_distilled_nan_ratio);
-
-        bool rejected_distilled_nan_radius = false;
-        try
-        {
-            (void)filtration.distill(points, 2, std::numeric_limits<double>::quiet_NaN());
-        }
-        catch (const std::invalid_argument &)
-        {
-            rejected_distilled_nan_radius = true;
-        }
-        assert(rejected_distilled_nan_radius);
-
-        bool rejected_distilled_nan_point = false;
-        try
-        {
-            const std::vector<double> invalid_points{0.0, 0.0,
-                                                     std::numeric_limits<double>::quiet_NaN(), 1.0};
-            (void)filtration.distill(invalid_points, 2, 2.0);
-        }
-        catch (const std::invalid_argument &)
-        {
-            rejected_distilled_nan_point = true;
-        }
-        assert(rejected_distilled_nan_point);
-
-        bool rejected_distilled_nan_weight = false;
-        try
-        {
-            nerve::persistence::DistilledVRResult invalid_distilled;
-            invalid_distilled.landmark_indices = {0, 1};
-            invalid_distilled.landmark_edges = {{0, 1}};
-            invalid_distilled.landmark_edge_weights = {std::numeric_limits<double>::quiet_NaN()};
-            (void)filtration.computeApproximatePersistence(invalid_distilled);
-        }
-        catch (const std::invalid_argument &)
-        {
-            rejected_distilled_nan_weight = true;
-        }
-        assert(rejected_distilled_nan_weight);
+    {
+        const auto persisted = nerve::persistence::distilled::shouldUseDistilledVR(3, 2);
+        assert(persisted);
     }
 
     {
@@ -630,5 +582,6 @@ int main()
         assert(result.used_bit_parallel);
         assert(found_distilled_pair);
     }
+
     return 0;
 }

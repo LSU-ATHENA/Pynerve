@@ -1,10 +1,14 @@
 #pragma once
+
+#include "nerve/encoders/encoders.hpp"
+
 #include <memory>
 #include <string>
 #include <vector>
 
 namespace nerve::encoders
 {
+
 enum class EncoderType
 {
     CNN,
@@ -24,13 +28,6 @@ public:
     size_t input_dim = 0;
     size_t output_dim = 0;
     bool validate() const;
-};
-
-class EncoderFactory
-{
-public:
-    static std::unique_ptr<EncoderConfig> createConfig(EncoderType type);
-    static bool isValidConfig(const EncoderConfig &config);
 };
 
 namespace utils
@@ -60,4 +57,5 @@ public:
     PersistenceEncoderConfig();
     void setStrategy(const std::string &strategy);
 };
+
 } // namespace nerve::encoders

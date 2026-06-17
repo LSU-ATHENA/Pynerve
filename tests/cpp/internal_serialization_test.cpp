@@ -312,13 +312,13 @@ bool check_error_code_conversion()
 {
     auto ec = nerve::serialization::serializationErrorToErrorCode(
         nerve::serialization::errors::SerializationErrorCode::SUCCESS);
-    if (ec != nerve::ErrorCode::SUCCESS)
+    if (ec != nerve::serialization::ErrorCode::SUCCESS)
     {
         return false;
     }
     ec = nerve::serialization::serializationErrorToErrorCode(
         nerve::serialization::errors::SerializationErrorCode::INCOMPATIBLE_SCHEMA_VERSION);
-    return ec == nerve::ErrorCode::E31_SCHEMA_VERSION;
+    return ec == nerve::serialization::ErrorCode::E31_SCHEMA_VERSION;
 }
 
 bool check_negotiator_is_version_supported()

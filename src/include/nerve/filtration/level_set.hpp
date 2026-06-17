@@ -23,6 +23,7 @@ public:
     void setGridShape(const std::vector<Size> &shape);
     void setFiltrationType(const std::string &type);
     void setNumLevels(Size num_levels);
+    Size getNumLevels() const;
     void setAdaptiveLevels(bool adaptive);
     errors::ErrorResult<std::vector<std::pair<algebra::Simplex, double>>>
     buildFiltration(const core::BufferView<const double> &scalar_field,
@@ -57,6 +58,11 @@ public:
     double getComputationTime() const;
     std::vector<Index> getNeighbors(Index point_index) const;
 
+    Index gridIndexToLinear(const std::vector<Index> &grid_coords) const;
+    std::vector<Index> linearIndexToGrid(Index linear_index) const;
+    void buildGridConnectivity();
+    std::vector<Index> getGridNeighbors(Index point_index) const;
+
 private:
     std::vector<Size> grid_shape_;
     std::string filtration_type_ = "sublevel";
@@ -71,12 +77,8 @@ private:
 #ifdef USE_TORCH
     void validateTensor(const core::Tensor &scalar_field) const;
 #endif
-    void buildGridConnectivity();
     void buildMeshConnectivity(const std::vector<std::vector<Index>> &connectivity);
-    std::vector<Index> getGridNeighbors(Index point_index) const;
     std::vector<std::vector<Index>> getGridSimplices() const;
-    Index gridIndexToLinear(const std::vector<Index> &grid_coords) const;
-    std::vector<Index> linearIndexToGrid(Index linear_index) const;
 
 public:
     void buildVertexSimplices(const std::vector<double> &scalar_field);

@@ -81,13 +81,14 @@ bool check_spectral_simd_basic_ops()
 
 #if HAS_EIGEN && __has_include(<Eigen/Sparse>) && __has_include(<Eigen/Dense>)
 using nerve::Size;
+using nerve::algebra::SimplicialComplex;
 
 bool check_dirac_operator_construction()
 {
-    algebra::SimplicialComplex complex;
-    complex.addSimplex({0}, 0.0);
-    complex.addSimplex({1}, 0.0);
-    complex.addSimplex({0, 1}, 1.0);
+    SimplicialComplex complex;
+    complex.addSimplexWithFiltration({0}, 0.0);
+    complex.addSimplexWithFiltration({1}, 0.0);
+    complex.addSimplexWithFiltration({0, 1}, 1.0);
     nerve::spectral::DiracOperator dirac(complex);
     auto matrix = dirac.getDirac();
     if (matrix.empty())
@@ -114,7 +115,8 @@ bool check_persistent_laplacian_support()
     std::vector<double> filtration = {0.0, 0.5, 1.0};
     nerve::spectral::SpectralConfig spectral_config;
     nerve::spectral::PersistentLaplacianSolver solver(spectral_config);
-    auto laplacian = PersistentLaplacianSolver::buildPersistentLaplacian(boundary, filtration);
+    auto laplacian =
+        nerve::spectral::PersistentLaplacianSolver::buildPersistentLaplacian(boundary, filtration);
     if (laplacian.rows() == 0)
     {
         std::cerr << "persistent laplacian matrix has zero rows\n";

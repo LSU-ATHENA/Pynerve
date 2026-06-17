@@ -57,7 +57,7 @@ bool check_ph6_construction()
 
 bool check_overwrite_diagram_from_exact()
 {
-    nerve::persistence::utils::ExactPersistenceResult exact;
+    nerve::persistence::ExactPersistenceResult exact;
     exact.pairs = {{0.0, 1.0, 0}, {0.5, std::numeric_limits<double>::infinity(), 1}};
     nerve::Diagram diagram;
     nerve::persistence::overwriteDiagramFromExact(exact, &diagram);

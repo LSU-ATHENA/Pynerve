@@ -1,4 +1,9 @@
+#include "nerve/config.hpp"
+#if HAS_EIGEN && __has_include(<Eigen/Core>)
+#include "nerve/persistence/core/ph_gradient.hpp"
+#else
 #include "nerve/persistence/core/ph_gradient_basic.hpp"
+#endif
 
 #include <cassert>
 #include <limits>

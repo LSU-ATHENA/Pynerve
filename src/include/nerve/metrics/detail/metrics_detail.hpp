@@ -1,5 +1,11 @@
 #pragma once
+
 #include "nerve/algorithms/distance.hpp"
+#include "nerve/metrics/bottleneck/bottleneck.hpp"
+#include "nerve/metrics/distances.hpp"
+#include "nerve/metrics/lazy_distance.hpp"
+#include "nerve/metrics/sinkhorn/sinkhorn.hpp"
+#include "nerve/persistence/core/core_types.hpp"
 
 #include <utility>
 #include <vector>
@@ -41,16 +47,16 @@ public:
 };
 
 // Sinkhorn Wasserstein
+struct SinkhornConfig
+{
+    double epsilon = 0.1;
+    size_t max_iterations = 100;
+    double convergence_threshold = 1e-6;
+};
 class SinkhornWasserstein
 {
 public:
-    struct Config
-    {
-        double epsilon = 0.1;
-        size_t max_iterations = 100;
-        double convergence_threshold = 1e-6;
-    };
-    explicit SinkhornWasserstein(const Config &config = Config{});
+    explicit SinkhornWasserstein(const SinkhornConfig &config = {});
     double compute(const std::vector<double> &a, const std::vector<double> &b,
                    const std::vector<std::vector<double>> &cost);
 };

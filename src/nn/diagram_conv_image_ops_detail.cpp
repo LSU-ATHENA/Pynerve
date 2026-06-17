@@ -123,4 +123,13 @@ template std::vector<double> PersistenceImageLayer<double>::gaussian_kernel_2d(d
 template float PersistenceImageLayer<float>::compute_weight(float) const;
 template double PersistenceImageLayer<double>::compute_weight(double) const;
 
+namespace
+{
+void __force_link_diagram_conv_image_ops()
+{
+    volatile auto w = &PersistenceImageLayer<double>::compute_weight;
+    (void)w;
+}
+} // namespace
+
 } // namespace nerve::nn

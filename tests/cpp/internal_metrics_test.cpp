@@ -12,7 +12,7 @@
 namespace
 {
 
-using Size;
+using nerve::Size;
 
 constexpr double TOL = 1e-9;
 
@@ -41,10 +41,10 @@ bool check_bottleneck_empty_diagrams()
 
 bool check_bottleneck_validate_diagram()
 {
-    std::vector<std::pair<float, float>> valid = {{0.0f, 1.0f}, {2.0f, 3.0f}};
+    std::vector<std::pair<double, double>> valid = {{0.0, 1.0}, {2.0, 3.0}};
     try
     {
-        nerve::metrics::bottleneck::validateDiagram(valid, "test");
+        nerve::metrics::validateDiagram(valid);
         return true;
     }
     catch (...)
@@ -56,15 +56,15 @@ bool check_bottleneck_validate_diagram()
 bool check_bottleneck_diagonal_distance()
 {
     std::pair<float, float> point = {1.0f, 5.0f};
-    double dd = nerve::metrics::bottleneck::diagonalDistance(point);
+    double dd = nerve::metrics::diagonalDistance(point);
     return std::abs(dd - 2.0) < TOL;
 }
 
 bool check_frechet_self_distance_zero()
 {
     nerve::persistence::Diagram d;
-    d.addPair(0.0, 1.0, 0);
-    d.addPair(2.0, 5.0, 0);
+    d.addPair({0.0, 1.0, 0});
+    d.addPair({2.0, 5.0, 0});
     double dist = nerve::metrics::frechetDistance(d, d);
     return std::abs(dist) < TOL;
 }
@@ -72,11 +72,11 @@ bool check_frechet_self_distance_zero()
 bool check_frechet_identity_on_diagrams()
 {
     nerve::persistence::Diagram d1;
-    d1.addPair(0.0, 1.0, 0);
-    d1.addPair(1.0, 3.0, 0);
+    d1.addPair({0.0, 1.0, 0});
+    d1.addPair({1.0, 3.0, 0});
     nerve::persistence::Diagram d2;
-    d2.addPair(0.0, 1.0, 0);
-    d2.addPair(1.0, 3.0, 0);
+    d2.addPair({0.0, 1.0, 0});
+    d2.addPair({1.0, 3.0, 0});
     double dist = nerve::metrics::frechetDistance(d1, d2);
     return std::abs(dist) < TOL;
 }
@@ -163,7 +163,6 @@ bool check_sinkhorn_converges_1d()
     nerve::metrics::sinkhorn::SinkhornConfig config;
     config.epsilon = 0.1;
     config.max_iterations = 500;
-    config.tolerance = 1e-8;
     double dist = nerve::metrics::sinkhorn::sinkhornDiagramDistance(d1, d2, config);
     return std::isfinite(dist) && dist >= 0.0;
 }
@@ -174,7 +173,6 @@ bool check_sinkhorn_self_distance_low()
     nerve::metrics::sinkhorn::SinkhornConfig config;
     config.epsilon = 0.05;
     config.max_iterations = 1000;
-    config.tolerance = 1e-10;
     double dist = nerve::metrics::sinkhorn::sinkhornDiagramDistance(d, d, config);
     return std::isfinite(dist) && dist < 0.5;
 }
@@ -182,7 +180,8 @@ bool check_sinkhorn_self_distance_low()
 bool check_sinkhorn_empty_diagrams()
 {
     std::vector<std::pair<float, float>> empty;
-    double dist = nerve::metrics::sinkhorn::sinkhornDiagramDistance(empty, empty);
+    nerve::metrics::sinkhorn::SinkhornConfig config;
+    double dist = nerve::metrics::sinkhorn::sinkhornDiagramDistance(empty, empty, config);
     return std::abs(dist) < TOL;
 }
 
