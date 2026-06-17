@@ -43,7 +43,11 @@ endif()
 #include <span>
 
 #include "nerve/algorithms/distance.hpp"
+#ifdef __has_include
+#if __has_include("nerve/gpu/cuda_tile_api.hpp")
 #include "nerve/gpu/cuda_tile_api.hpp"
+#endif
+#endif
 #include "nerve/gpu/gpu_capability_core.hpp"
 
 int main() {
@@ -70,11 +74,15 @@ int main() {
         return 3;
     }
 
+#ifdef __has_include
+#if __has_include("nerve/gpu/cuda_tile_api.hpp")
     const bool tile_available = nerve::gpu::tile::tileApiAvailable();
     const auto capabilities = nerve::gpu::advanced::AdvancedCapabilities::detect();
     if (tile_available && !capabilities.cuda_available) {
         return 4;
     }
+#endif
+#endif
 
     return 0;
 }

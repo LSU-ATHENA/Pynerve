@@ -20,6 +20,7 @@ inline CudaResult<void> checkCudaKernel(const char *kernel_name)
 
 } // namespace nerve::gpu
 
+#ifndef CUDA_CALL
 #define CUDA_CALL(expr)                                                                            \
     do                                                                                             \
     {                                                                                              \
@@ -29,7 +30,9 @@ inline CudaResult<void> checkCudaKernel(const char *kernel_name)
             return _cuda_result;                                                                   \
         }                                                                                          \
     } while (0)
+#endif
 
+#ifndef CUDA_KERNEL_CHECK
 #define CUDA_KERNEL_CHECK(name)                                                                    \
     do                                                                                             \
     {                                                                                              \
@@ -39,7 +42,9 @@ inline CudaResult<void> checkCudaKernel(const char *kernel_name)
             return _cuda_result;                                                                   \
         }                                                                                          \
     } while (0)
+#endif
 
+#ifndef GPU_CHECK
 #define GPU_CHECK(expr)                                                                            \
     do                                                                                             \
     {                                                                                              \
@@ -49,3 +54,4 @@ inline CudaResult<void> checkCudaKernel(const char *kernel_name)
             throw std::runtime_error(std::string(#expr) + ": " + cudaGetErrorString(_gpu_status)); \
         }                                                                                          \
     } while (0)
+#endif
