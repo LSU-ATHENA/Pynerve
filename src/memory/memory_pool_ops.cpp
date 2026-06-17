@@ -6,8 +6,10 @@
 #include <new>
 
 #ifdef __linux__
-#include <numa.h>
 #include <sys/mman.h>
+#if defined(NERVE_HAS_NUMA)
+#include <numa.h>
+#endif
 #endif
 
 #include "memory/safe_memory_pool.hpp"
