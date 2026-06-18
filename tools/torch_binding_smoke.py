@@ -336,17 +336,17 @@ def _check_torch_bindings() -> None:
         ),
         "positive infinity",
     )
-    image = torch_ext.persistence_image(image_diagram, 4, 0.1)
+    image = torch_ext.ml_persistence_image(image_diagram, 4, 0.1)
     if image.shape != (4, 4):
         raise RuntimeError(f"unexpected image persistence output: {image.shape}")
     _expect_validation(
         "image persistence invalid resolution",
-        lambda: torch_ext.persistence_image(image_diagram, 0, 0.1),
-        "resolution",
+        lambda: torch_ext.ml_persistence_image(image_diagram, 0, 0.1),
+        "image persistence zero resolution",
     )
     _expect_validation(
-        "image persistence invalid sigma",
-        lambda: torch_ext.persistence_image(image_diagram, 4, float("nan")),
+        "image persistence NaN sigma",
+        lambda: torch_ext.ml_persistence_image(image_diagram, 4, float("nan")),
         "sigma",
     )
     _expect_validation(
