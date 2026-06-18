@@ -394,7 +394,7 @@ def _check_torch_bindings() -> None:
     )
     _expect_validation(
         "betti curve invalid sample count",
-        lambda: torch_ext.betti_curve(image_diagram, 0, 0),
+        lambda: torch_ext.ml_betti_curve(image_diagram, 0, 0),
         "num_samples",
     )
     landscape = torch_ext.ml_persistence_landscape(image_diagram, 2, 8, 0.0, 0.0)
@@ -953,7 +953,7 @@ def _check_torch_bindings() -> None:
             "batched matrix persistence must preserve batch and max_dim pair counts: "
             f"{None if matrix_diagram.num_pairs is None else tuple(matrix_diagram.num_pairs.shape)}"
         )
-    native_matrix_result = torch_ext.persistence_from_matrix(torch.cdist(points, points)[0], 1)
+    native_matrix_result = torch_ext.ml_persistence_from_matrix(torch.cdist(points, points)[0], 1)
     if native_matrix_result[2].shape != (2,):
         raise RuntimeError(
             "native matrix persistence must return max_dim+1 pair counts: "
