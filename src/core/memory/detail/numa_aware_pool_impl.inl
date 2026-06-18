@@ -85,10 +85,6 @@ NumaAwareMemoryPool::NumaAwareMemoryPool(const DeterminismContract& contract,
         }
     }
 }
-NumaAwareMemoryPool::~NumaAwareMemoryPool() {
-    std::lock_guard<std::mutex> lock(pools_mutex_);
-    node_pools_.clear();
-}
 NumaAwareMemoryPool::NumaAwareMemoryPool(NumaAwareMemoryPool&& other) noexcept {
     std::lock_guard<std::mutex> lock(other.pools_mutex_);
     config_ = other.config_;
