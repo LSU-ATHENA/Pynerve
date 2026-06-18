@@ -1,4 +1,5 @@
 
+#include "nerve/config.hpp"
 #include "nerve/persistence/core/ph_gradient.hpp"
 
 #include <algorithm>
@@ -8,6 +9,8 @@
 #include <limits>
 #include <random>
 #include <vector>
+
+#if NERVE_HAS_EIGEN
 
 namespace
 {
@@ -286,3 +289,12 @@ int main()
     }
     return 0;
 }
+
+#else
+
+int main()
+{
+    return 0;
+}
+
+#endif // NERVE_HAS_EIGEN3
