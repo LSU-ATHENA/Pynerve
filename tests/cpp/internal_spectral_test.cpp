@@ -14,6 +14,8 @@
 namespace
 {
 
+#if NERVE_HAS_EIGEN
+
 using nerve::spectral::SpectralAnomalyDetector;
 using nerve::spectral::SpectralFeatureExtractor;
 using nerve::spectral::SpectralStackManager;
@@ -54,6 +56,8 @@ bool check_feature_extractor_config()
     SpectralFeatureExtractor extractor(feat_config);
     return true;
 }
+
+#endif // NERVE_HAS_EIGEN
 
 bool check_spectral_simd_basic_ops()
 {
@@ -135,6 +139,7 @@ bool check_persistent_laplacian_support()
 
 int main()
 {
+#if NERVE_HAS_EIGEN
     if (!check_anomaly_detector_initialization())
     {
         std::cerr << "FAIL: anomaly detector initialization\n";
@@ -145,6 +150,7 @@ int main()
         std::cerr << "FAIL: feature extractor config\n";
         return 1;
     }
+#endif
     if (!check_spectral_simd_basic_ops())
     {
         std::cerr << "FAIL: spectral simd basic ops\n";
