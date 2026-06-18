@@ -37,8 +37,12 @@ using bitparallel::BitColumn;
 struct ParallelConfig
 {
     bool use_parallel = true;
+#if __has_include(<execution>) && defined(__cpp_lib_parallel_algorithm)
     std::execution::parallel_unsequenced_policy
         execution_policy; // Retained for source compatibility.
+#else
+    std::execution::sequenced_policy execution_policy; // Fallback for platforms without full PSTL.
+#endif
     size_t chunk_size = 64;
     int num_threads = 0; // 0 = auto
 };

@@ -68,6 +68,7 @@ jobs:
   simd-modes:
     runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
         simd: [auto, scalar, avx2, avx512]
     steps:
@@ -79,25 +80,25 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1.2
       - run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis ninja
-      - name: Configure (avx512 degrades gracefully when hardware absent)
-        run: >
+      - name: Configure
+        run: |
           if [ "${{ matrix.simd }}" = "avx512" ]; then
-            cmake -S . -B build -G Ninja
-              -DCMAKE_BUILD_TYPE=Release
-              -DBUILD_TESTS=ON
-              -DBUILD_PYTHON=OFF
-              -DBUILD_CUDA=OFF
-              -DNERVE_SIMD=${{ matrix.simd }}
-              -DNERVE_ENABLE_AVX512_COMPONENTS=ON
-              -DNERVE_SKIP_AVX512_RUNTIME_CHECK=ON;
+            cmake -S . -B build -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DBUILD_TESTS=ON \
+              -DBUILD_PYTHON=OFF \
+              -DBUILD_CUDA=OFF \
+              -DNERVE_SIMD=${{ matrix.simd }} \
+              -DNERVE_ENABLE_AVX512_COMPONENTS=ON \
+              -DNERVE_SKIP_AVX512_RUNTIME_CHECK=ON
           else
-            cmake -S . -B build -G Ninja
-              -DCMAKE_BUILD_TYPE=Release
-              -DBUILD_TESTS=ON
-              -DBUILD_PYTHON=OFF
-              -DBUILD_CUDA=OFF
-              -DNERVE_SIMD=${{ matrix.simd }}
-              -DNERVE_ENABLE_AVX512_COMPONENTS=ON;
+            cmake -S . -B build -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DBUILD_TESTS=ON \
+              -DBUILD_PYTHON=OFF \
+              -DBUILD_CUDA=OFF \
+              -DNERVE_SIMD=${{ matrix.simd }} \
+              -DNERVE_ENABLE_AVX512_COMPONENTS=ON
           fi
       - run: cmake --build build --parallel
       - run: ctest --test-dir build -L "cpu|generated" --output-on-failure --parallel 2
@@ -189,6 +190,8 @@ jobs:
       - run: cp -r python/pynerve "$RUNNER_TEMP/pynerve-install/pynerve"
       - run: python tools/cpp_install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
       - run: python tools/install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
+      - if: matrix.python == '3.11'
+        run: cp README.md python/README.md
       - if: matrix.python == '3.11'
         run: python -m build --sdist python --outdir "$RUNNER_TEMP/pynerve-dist"
       - if: matrix.python == '3.11'

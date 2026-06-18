@@ -6,7 +6,7 @@ build-backend = "scikit_build_core.build"
 name = "pynerve"
 version = "0.9.6"
 description = "Fast TDA library"
-readme = "../README.md"
+readme = "README.md"
 authors = [
     {name = "Nerve contributors"}
 ]
@@ -74,8 +74,8 @@ wheel.packages = ["pynerve"]
 sdist.include = [
     "src/**",
     "tools/**",
-    "../README.md",
-    "../LICENSE",
+    "README.md",
+    "LICENSE",
 ]
 
 

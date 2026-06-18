@@ -247,8 +247,8 @@ void MpiDistributedReducer::gatherResults()
         return;
     }
 
-    const int local_pair_count = static_cast<int>(pairs_.size());
-    const int local_essential_count = static_cast<int>(essentials_.size());
+    int local_pair_count = static_cast<int>(pairs_.size());
+    int local_essential_count = static_cast<int>(essentials_.size());
 
     checkMpiSuccess(MPI_Bcast(&local_pair_count, 1, MPI_INT, 0, MPI_COMM_WORLD),
                     "MPI_Bcast pair count failed");

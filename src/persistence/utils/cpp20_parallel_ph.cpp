@@ -352,7 +352,11 @@ ParallelConfig getOptimalParallelConfig(size_t num_columns, int num_rows)
     const size_t rows = num_rows > 0 ? static_cast<size_t>(num_rows) : 0;
 
     config.use_parallel = (num_columns > 1000 && rows > 0);
+#if __has_include(<execution>) && defined(__cpp_lib_parallel_algorithm)
     config.execution_policy = std::execution::par_unseq;
+#else
+    config.execution_policy = std::execution::seq;
+#endif
 
     const size_t row_words = rows == 0 ? 1 : (rows + 63) / 64;
     config.chunk_size =
