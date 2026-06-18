@@ -74,6 +74,8 @@ wheel.packages = ["pynerve"]
 sdist.include = [
     "src/**",
     "tools/**",
+    "../README.md",
+    "../LICENSE",
 ]
 
 

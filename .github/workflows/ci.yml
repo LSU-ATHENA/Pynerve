@@ -79,7 +79,26 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1.2
       - run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis ninja
-      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=OFF -DBUILD_CUDA=OFF -DNERVE_SIMD=${{ matrix.simd }} -DNERVE_ENABLE_AVX512_COMPONENTS=ON
+      - name: Configure (avx512 degrades gracefully when hardware absent)
+        run: >
+          if [ "${{ matrix.simd }}" = "avx512" ]; then
+            cmake -S . -B build -G Ninja
+              -DCMAKE_BUILD_TYPE=Release
+              -DBUILD_TESTS=ON
+              -DBUILD_PYTHON=OFF
+              -DBUILD_CUDA=OFF
+              -DNERVE_SIMD=${{ matrix.simd }}
+              -DNERVE_ENABLE_AVX512_COMPONENTS=ON
+              -DNERVE_SKIP_AVX512_RUNTIME_CHECK=ON;
+          else
+            cmake -S . -B build -G Ninja
+              -DCMAKE_BUILD_TYPE=Release
+              -DBUILD_TESTS=ON
+              -DBUILD_PYTHON=OFF
+              -DBUILD_CUDA=OFF
+              -DNERVE_SIMD=${{ matrix.simd }}
+              -DNERVE_ENABLE_AVX512_COMPONENTS=ON;
+          fi
       - run: cmake --build build --parallel
       - run: ctest --test-dir build -L "cpu|generated" --output-on-failure --parallel 2
 

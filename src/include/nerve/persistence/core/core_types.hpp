@@ -6,7 +6,7 @@
 
 namespace nerve::core
 {
-class DeterminismContract;
+struct DeterminismContract;
 }
 
 namespace nerve::persistence

@@ -19,8 +19,8 @@ def _prepend_import_paths(build_dir: Path) -> None:
 
 
 def _check_torch_bindings() -> None:
+    import nerve_torch_internal as torch_ext  # type: ignore[import-not-found]
     import pynerve.torch as tda_torch  # type: ignore[import-not-found]
-    import pynerve_torch_internal as torch_ext  # type: ignore[import-not-found]
     from pynerve.torch._backend import get_backend_info  # type: ignore[import-not-found]
     from pynerve.torch._persistence_python import (
         compute_vr_python,  # type: ignore[import-not-found]
