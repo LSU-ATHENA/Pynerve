@@ -48,7 +48,7 @@ void simdReLU(double *data, Size n)
 
 void simdSigmoid(double *data, Size n)
 {
-#if defined(__AVX512F__)
+#if defined(__AVX512F__) && defined(__AVX512ER__)
     if (cpu::simd::CPUFeatureDetector::hasAVX512F())
     {
         __m512d vone = _mm512_set1_pd(1.0);
@@ -72,7 +72,7 @@ void simdSigmoid(double *data, Size n)
 
 void simdTanh(double *data, Size n)
 {
-#if defined(__AVX512F__)
+#if defined(__AVX512F__) && defined(__AVX512ER__)
     if (cpu::simd::CPUFeatureDetector::hasAVX512F())
     {
         __m512d vtwo = _mm512_set1_pd(2.0);
@@ -127,7 +127,7 @@ void simdSoftmax(double *data, Size n)
         if (data[i] > max_val)
             max_val = data[i];
     double sum = 0.0;
-#if defined(__AVX512F__)
+#if defined(__AVX512F__) && defined(__AVX512ER__)
     if (cpu::simd::CPUFeatureDetector::hasAVX512F() && n >= 8)
     {
         __m512d vmax = _mm512_set1_pd(max_val);

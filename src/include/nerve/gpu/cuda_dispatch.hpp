@@ -2,6 +2,8 @@
 
 #include "nerve/types.hpp"
 
+#if defined(__CUDACC__) || defined(NERVE_HAS_CUDA)
+
 #include <cuda_runtime.h>
 
 #include <map>
@@ -201,3 +203,5 @@ public:
 };
 
 } // namespace nerve::persistence::accelerated
+
+#endif // defined(__CUDACC__) || defined(NERVE_HAS_CUDA)
