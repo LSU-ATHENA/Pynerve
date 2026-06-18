@@ -160,11 +160,7 @@ def _sweep_installed_headers(prefix: Path) -> None:
     headers = sorted(
         path
         for path in include_root.rglob("*")
-        if path.suffix in {".h", ".hpp"}
-        and "nerve/torch/" not in path.as_posix()
-        and "/cuda/" not in path.as_posix()
-        and not path.name.startswith("cuda_")
-        and "gpu/" not in path.as_posix()
+        if path.suffix in {".h", ".hpp"} and "nerve/torch/" not in path.as_posix()
     )
     if not headers:
         raise FileNotFoundError(f"missing installed public C++ headers under {include_root}")
