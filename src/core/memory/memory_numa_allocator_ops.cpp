@@ -7,12 +7,6 @@
 namespace nerve::core
 {
 
-[[nodiscard]] NumaPoolManager &NumaPoolManager::instance()
-{
-    static NumaPoolManager manager;
-    return manager;
-}
-
 [[nodiscard]] NumaAwareMemoryPool &NumaPoolManager::getGlobalPool()
 {
     std::lock_guard<std::mutex> lock(manager_mutex_);

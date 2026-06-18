@@ -90,7 +90,7 @@ public:
     explicit NumaAwareMemoryPool(const NumaPoolConfig &config = NumaPoolConfig{});
     explicit NumaAwareMemoryPool(const DeterminismContract &contract,
                                  const NumaPoolConfig &config = NumaPoolConfig{});
-    ~NumaAwareMemoryPool() = default;
+    ~NumaAwareMemoryPool();
     NumaAwareMemoryPool(const NumaAwareMemoryPool &) = delete;
     NumaAwareMemoryPool &operator=(const NumaAwareMemoryPool &) = delete;
     NumaAwareMemoryPool(NumaAwareMemoryPool &&other) noexcept;
