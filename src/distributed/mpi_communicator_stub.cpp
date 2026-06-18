@@ -10,6 +10,23 @@
 namespace nerve::distributed
 {
 
+int checkedCount(int count, const char *context)
+{
+    if (count < 0)
+    {
+        throw std::length_error(context);
+    }
+    return count;
+}
+
+void validateRootRank(int root, int world_size)
+{
+    if (root < 0 || root >= world_size)
+    {
+        throw std::invalid_argument("MPI broadcast root is out of range");
+    }
+}
+
 #if !HAS_MPI
 
 MPICommunicator::MPICommunicator()
