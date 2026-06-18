@@ -389,7 +389,7 @@ def _check_torch_bindings() -> None:
     )
     _expect_validation(
         "persistence landscape invalid depth",
-        lambda: torch_ext.persistence_landscape(image_diagram, 0, 8),
+        lambda: torch_ext.ml_persistence_landscape(image_diagram, 0, 8),
         "k",
     )
     _expect_validation(
