@@ -1,15 +1,13 @@
+#include <sys/mman.h>
+
 #include <algorithm>
 #include <atomic>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
 #include <new>
-
-#ifdef __linux__
-#include <sys/mman.h>
 #if defined(NERVE_HAS_NUMA)
 #include <numa.h>
-#endif
 #endif
 
 #include "memory/safe_memory_pool.hpp"

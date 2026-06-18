@@ -16,10 +16,31 @@
 #include <functional>
 #include <mutex>
 #include <queue>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+
+namespace nerve::distributed
+{
+
+inline int checkedCount(int count, const char *context)
+{
+    if (count < 0)
+    {
+        throw std::length_error(context);
+    }
+    return count;
+}
+
+inline void validateRootRank(int root, int world_size)
+{
+    if (root < 0 || root >= world_size)
+    {
+        throw std::invalid_argument("MPI broadcast root is out of range");
+    }
+}
 
 #if HAS_MPI && __has_include(<mpi.h>)
 #include <mpi.h>
@@ -251,11 +272,7 @@ struct DistributedBenchmark
 
 DistributedBenchmark benchmark_distributed(int num_nodes, int data_size_per_node);
 
-} // namespace nerve::distributed
 #else
-
-namespace nerve::distributed
-{
 
 using MPI_Op = int;
 
