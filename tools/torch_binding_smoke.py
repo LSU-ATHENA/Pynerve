@@ -278,7 +278,15 @@ def _check_torch_bindings() -> None:
         "statistic",
     )
     native_constant_image = torch_ext.ml_persistence_image(
-        image_diagram, 10, 6, 0.2, 0.0, 0.0, 0.0, 0.0, "constant"
+        image_diagram,
+        resolution_birth=10,
+        resolution_death=6,
+        sigma=0.2,
+        birth_min=0.0,
+        birth_max=0.0,
+        death_min=0.0,
+        death_max=0.0,
+        weight_fn="constant",
     )
     if native_constant_image.shape != (6, 10):
         raise RuntimeError(
@@ -288,21 +296,45 @@ def _check_torch_bindings() -> None:
     _expect_validation(
         "native persistence image invalid resolution",
         lambda: torch_ext.ml_persistence_image(
-            image_diagram, 0, 6, 0.2, 0.0, 0.0, 0.0, 0.0, "constant"
+            image_diagram,
+            resolution_birth=0,
+            resolution_death=6,
+            sigma=0.2,
+            birth_min=0.0,
+            birth_max=0.0,
+            death_min=0.0,
+            death_max=0.0,
+            weight_fn="constant",
         ),
         "resolution",
     )
     _expect_validation(
         "native persistence image invalid sigma",
         lambda: torch_ext.ml_persistence_image(
-            image_diagram, 10, 6, 0.0, 0.0, 0.0, 0.0, 0.0, "constant"
+            image_diagram,
+            resolution_birth=10,
+            resolution_death=6,
+            sigma=0.0,
+            birth_min=0.0,
+            birth_max=0.0,
+            death_min=0.0,
+            death_max=0.0,
+            weight_fn="constant",
         ),
         "sigma",
     )
     _expect_validation(
         "native persistence image invalid weight",
         lambda: torch_ext.ml_persistence_image(
-            image_diagram, 10, 6, 0.2, 0.0, 0.0, 0.0, 0.0, "invalid"
+            image_diagram,
+            resolution_birth=10,
+            resolution_death=6,
+            sigma=0.2,
+            birth_min=0.0,
+            birth_max=0.0,
+            death_min=0.0,
+            death_max=0.0,
+            weight_fn="invalid",
         ),
         "weight function",
     )
@@ -310,14 +342,14 @@ def _check_torch_bindings() -> None:
         "native persistence image invalid diagram",
         lambda: torch_ext.ml_persistence_image(
             torch.tensor([[1.0, 0.0]], dtype=torch.float32),
-            10,
-            6,
-            0.2,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            "constant",
+            resolution_birth=10,
+            resolution_death=6,
+            sigma=0.2,
+            birth_min=0.0,
+            birth_max=0.0,
+            death_min=0.0,
+            death_max=0.0,
+            weight_fn="constant",
         ),
         "deaths",
     )
@@ -325,14 +357,14 @@ def _check_torch_bindings() -> None:
         "native persistence image negative-infinite death",
         lambda: torch_ext.ml_persistence_image(
             torch.tensor([[0.0, float("-inf")]], dtype=torch.float32),
-            10,
-            6,
-            0.2,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            "constant",
+            resolution_birth=10,
+            resolution_death=6,
+            sigma=0.2,
+            birth_min=0.0,
+            birth_max=0.0,
+            death_min=0.0,
+            death_max=0.0,
+            weight_fn="constant",
         ),
         "positive infinity",
     )
@@ -346,7 +378,7 @@ def _check_torch_bindings() -> None:
         lambda: torch_ext.ml_persistence_image(
             image_diagram, resolution_birth=0, resolution_death=0, sigma=0.1
         ),
-        "image persistence zero resolution",
+        "resolution",
     )
     _expect_validation(
         "image persistence NaN sigma",
