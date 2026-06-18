@@ -468,6 +468,42 @@ void MPICommunicator::waitall(std::vector<MPIRequest> &reqs)
     }
 }
 
+template <typename T>
+MPIRequest MPICommunicator::iallgather(const T *sendbuf, int sendcount, T *recvbuf, int recvcount)
+{
+    if (sendcount > 0 && sendbuf == nullptr)
+        throw std::invalid_argument("MPI iallgather sendbuf is null with positive sendcount");
+    MPIRequest req;
+    checkMpiSuccess(MPI_Iallgather(sendbuf, sendcount, mpiDatatype<T>(), recvbuf, recvcount,
+                                   mpiDatatype<T>(), MPI_COMM_WORLD, &req.request),
+                    "MPI_Iallgather failed");
+    req.active = true;
+    return req;
+}
+
+template <typename T>
+MPIRequest MPICommunicator::ibroadcast(T *buffer, int count, int root)
+{
+    validateRootRank(root, world_size_);
+    MPIRequest req;
+    checkMpiSuccess(MPI_Ibcast(buffer, count, mpiDatatype<T>(), root, MPI_COMM_WORLD, &req.request),
+                    "MPI_Ibcast failed");
+    req.active = true;
+    return req;
+}
+
+template <typename T>
+MPIRequest MPICommunicator::ireduce(const T *sendbuf, T *recvbuf, int count, MPI_Op op, int root)
+{
+    validateRootRank(root, world_size_);
+    MPIRequest req;
+    checkMpiSuccess(MPI_Ireduce(sendbuf, recvbuf, count, mpiDatatype<T>(), op, root, MPI_COMM_WORLD,
+                                &req.request),
+                    "MPI_Ireduce failed");
+    req.active = true;
+    return req;
+}
+
 // Explicit template instantiations
 template void MPICommunicator::broadcast<int>(int *data, int count, int root);
 template void MPICommunicator::broadcast<unsigned>(unsigned *data, int count, int root);
@@ -535,6 +571,12 @@ template nerve::errors::ErrorResult<MPIRequest>
 MPICommunicator::try_irecv<float>(float *data, int count, int source, int tag);
 template nerve::errors::ErrorResult<MPIRequest>
 MPICommunicator::try_irecv<double>(double *data, int count, int source, int tag);
+
+template MPIRequest MPICommunicator::iallgather<int>(const int *sendbuf, int sendcount,
+                                                     int *recvbuf, int recvcount);
+template MPIRequest MPICommunicator::ibroadcast<int>(int *buffer, int count, int root);
+template MPIRequest MPICommunicator::ireduce<int>(const int *sendbuf, int *recvbuf, int count,
+                                                  MPI_Op op, int root);
 
 #endif // HAS_MPI
 
