@@ -343,8 +343,8 @@ int main()
         nerve::spectral::Eigenpair eigenpair;
         eigenpair.eigenvalue = 0.5;
         eigenpair.eigenvector.resize(2);
-        eigenpair.eigenvector(0) = 1.0;
-        eigenpair.eigenvector(1) = 0.0;
+        eigenpair.eigenvector[0] = 1.0;
+        eigenpair.eigenvector[1] = 0.0;
         eigenpair.error_estimate = 0.0;
         eigenpair.spectral_gap = 0.25;
         eigenpair.participation_ratio = 1.0;
