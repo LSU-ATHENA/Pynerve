@@ -293,8 +293,10 @@ class TestTensorOutput:
     @pytest.mark.torch
     @pytest.mark.parametrize("name", sorted(LOADERS))
     def test_tensor_is_on_cpu(self, name):
+        torch = pytest.importorskip("torch")
         fn, ndim, kwargs = _get_loader_info(name)
         data = fn(n_samples=30, seed=42, as_tensor=True, **kwargs)
+        assert isinstance(data, torch.Tensor), f"expected torch.Tensor, got {type(data)}"
         assert data.device.type == "cpu"
 
     @pytest.mark.cpu

@@ -31,10 +31,12 @@ def _get_torch() -> Any:
 
 
 def _validate_tensor(tensor: Any, name: str = "tensor") -> Any:
-    torch = _get_torch()
-    if not isinstance(tensor, torch.Tensor):
-        raise TypeError(f"{name} must be a torch.Tensor")
-    return tensor
+    if _has_torch:
+        if isinstance(tensor, _torch_module.Tensor):
+            return tensor
+    elif str(type(tensor)).endswith(".Tensor'>"):
+        raise ImportError("PyTorch is required for this tensor operation but is not installed")
+    raise TypeError(f"{name} must be a torch.Tensor")
 
 
 def _validate_name(name: str, label: str = "name") -> str:
