@@ -16,4 +16,4 @@ Please include:
 
 We will respond as quickly as possible to validate and address the report.
 
-Security contact: pynerve.security@proton.me (or update pending)
+Security contact: pynerve.security@proton.me
