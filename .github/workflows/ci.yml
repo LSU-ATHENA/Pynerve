@@ -61,7 +61,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: python -m pip install -U pip pytest hypothesis pytest-cov pytest-asyncio numpy scipy psutil scikit-learn
+      - run: python -m pip install -U pip pytest hypothesis pytest-cov pytest-asyncio numpy scipy psutil scikit-learn numba
       - run: python -m pip install -U torch --index-url https://download.pytorch.org/whl/cpu
       - run: python tools/test_matrix.py --label cpu --output build/test-matrix-cpu.json
       - run: python -m pytest tests/python/ --cov=python/pynerve --cov-branch --cov-report=term-missing --cov-fail-under=80
