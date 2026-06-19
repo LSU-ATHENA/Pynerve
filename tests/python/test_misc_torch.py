@@ -51,7 +51,7 @@ def _subtract_is_positive(diagram: torch.Tensor) -> bool:
     return bool((diagram[:, 1] > diagram[:, 0]).all().item())
 
 
-# ── mapper/__init__.py ────────────────────────────────────────────────
+# mapper/__init__.py
 
 
 class TestMapperInit:
@@ -88,7 +88,7 @@ class TestMapperInit:
                 __import__("pynerve.mapper")
 
 
-# ── torch/_sklearn_compat.py ──────────────────────────────────────────
+# torch/_sklearn_compat.py
 
 
 class TestSklearnCompat:
@@ -156,7 +156,7 @@ class TestSklearnCompat:
         assert isinstance(SKLEARN_AVAILABLE, bool)
 
 
-# ── training/_adaptive.py ─────────────────────────────────────────────
+# training/_adaptive.py
 
 
 class TestTopologyAdaptiveBatchSize:
@@ -252,7 +252,7 @@ class TestTopologyAdaptiveBatchSize:
         assert result == 128
 
 
-# ── training/_betti.py ────────────────────────────────────────────────
+# training/_betti.py
 
 
 class TestBettiBalancedSampler:
@@ -334,7 +334,7 @@ class TestBettiBalancedSampler:
         assert list(sampler) == []
 
 
-# ── training/_curriculum_trainer.py ───────────────────────────────────
+# training/_curriculum_trainer.py
 
 
 class TestTopologicalCurriculumTrainer:
@@ -521,7 +521,7 @@ class TestTopologicalCurriculumTrainer:
         assert score == 0.0
 
 
-# ── training/_importance.py ───────────────────────────────────────────
+# training/_importance.py
 
 
 class TestTopologyImportanceSampler:
@@ -627,7 +627,7 @@ class TestTopologyImportanceSampler:
         assert sampler._compute_novelty(0) == pytest.approx(1.0)
 
 
-# ── regularization/__init__.py ────────────────────────────────────────
+# regularization/__init__.py
 
 
 class TestRegularizationInit:
@@ -662,7 +662,7 @@ class TestRegularizationInit:
                 __import__("pynerve.regularization")
 
 
-# ── _image_utils.py ───────────────────────────────────────────────────
+# _image_utils.py
 
 
 class FakeDiagram:

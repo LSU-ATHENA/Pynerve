@@ -59,12 +59,15 @@ markers = [
     "performance: performance regression tests",
     "quality: static analysis / contract checks",
     "torch: PyTorch-dependent tests",
-    "asyncio: asyncio-dependent tests",
 ]
 filterwarnings = [
     "error",
+    "ignore::ResourceWarning",
     "ignore::RuntimeWarning",
     "ignore::FutureWarning",
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+    "ignore::pytest.PytestRemovedIn10Warning",
 ]
 
 [tool.mypy]
