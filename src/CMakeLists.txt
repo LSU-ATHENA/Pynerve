@@ -240,7 +240,6 @@ if(NOT NERVE_HAS_CUDA)
 endif()
 if(NOT NERVE_HAS_MPI)
     list(REMOVE_ITEM NERVE_ALL_SOURCES
-        distributed/mpi_communicator.cpp
         persistence/distributed/mpi_distributed_ph.cpp
     )
 endif()
@@ -307,6 +306,11 @@ if(NERVE_HAS_MPI)
     list(APPEND NERVE_ALL_SOURCES ${NERVE_MPI_SOURCES})
     list(LENGTH NERVE_MPI_SOURCES NERVE_MPI_SOURCE_COUNT)
     message(STATUS "Added ${NERVE_MPI_SOURCE_COUNT} MPI source files")
+endif()
+list(FIND NERVE_ALL_SOURCES distributed/mpi_communicator_mpi.cpp MPI_COMM_IDX)
+if(MPI_COMM_IDX EQUAL -1)
+    list(APPEND NERVE_ALL_SOURCES distributed/mpi_communicator_mpi.cpp)
+    message(STATUS "MPI communicator source added (always compiled)")
 endif()
 
 if(NERVE_HAS_EIGEN3)

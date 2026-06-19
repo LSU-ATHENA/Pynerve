@@ -46,8 +46,6 @@ int &communicatorLifecycleRefCount()
     return ref_count;
 }
 
-// Returns ErrorResult<void> on MPI failure; also throws if the caller
-// wants exception-based error handling.
 nerve::errors::ErrorResult<void> checkMpiResult(int status, const char *context)
 {
     if (status == MPI_SUCCESS)
@@ -153,7 +151,6 @@ MPICommunicator::MPICommunicator(MPICommunicator &&other) noexcept
     : world_rank_(other.world_rank_)
     , world_size_(other.world_size_)
 {
-    // Mark source as empty  --  its destructor must not touch the refcount
     other.world_rank_ = -1;
     other.world_size_ = -1;
 }
@@ -162,7 +159,6 @@ MPICommunicator &MPICommunicator::operator=(MPICommunicator &&other) noexcept
 {
     if (this != &other)
     {
-        // Release our own lifecycle contribution
         if (world_rank_ >= 0)
         {
             std::lock_guard<std::mutex> lock(communicatorLifecycleMutex());
@@ -171,7 +167,6 @@ MPICommunicator &MPICommunicator::operator=(MPICommunicator &&other) noexcept
                 communicatorLifecycleRefCount() -= 1;
             }
         }
-        // Take ownership of other's resources
         world_rank_ = other.world_rank_;
         world_size_ = other.world_size_;
         other.world_rank_ = -1;
@@ -182,7 +177,6 @@ MPICommunicator &MPICommunicator::operator=(MPICommunicator &&other) noexcept
 
 MPICommunicator::~MPICommunicator()
 {
-    // Moved-from objects have rank == -1; they don't own a lifecycle contribution
     if (world_rank_ < 0)
     {
         return;
@@ -505,78 +499,204 @@ MPIRequest MPICommunicator::ireduce(const T *sendbuf, T *recvbuf, int count, MPI
 }
 
 // Explicit template instantiations
-template void MPICommunicator::broadcast<int>(int *data, int count, int root);
-template void MPICommunicator::broadcast<unsigned>(unsigned *data, int count, int root);
-template void MPICommunicator::broadcast<long>(long *data, int count, int root);
-template void MPICommunicator::broadcast<long long>(long long *data, int count, int root);
-template void MPICommunicator::broadcast<float>(float *data, int count, int root);
-template void MPICommunicator::broadcast<double>(double *data, int count, int root);
-template void MPICommunicator::broadcast<char>(char *data, int count, int root);
-template void MPICommunicator::broadcast<std::uint64_t>(std::uint64_t *data, int count, int root);
+template void MPICommunicator::broadcast<int>(int *, int, int);
+template void MPICommunicator::broadcast<unsigned>(unsigned *, int, int);
+template void MPICommunicator::broadcast<long>(long *, int, int);
+template void MPICommunicator::broadcast<long long>(long long *, int, int);
+template void MPICommunicator::broadcast<float>(float *, int, int);
+template void MPICommunicator::broadcast<double>(double *, int, int);
+template void MPICommunicator::broadcast<char>(char *, int, int);
+template void MPICommunicator::broadcast<std::uint64_t>(std::uint64_t *, int, int);
 
-template nerve::errors::ErrorResult<void> MPICommunicator::try_broadcast<int>(int *data, int count,
-                                                                              int root);
+template nerve::errors::ErrorResult<void> MPICommunicator::try_broadcast<int>(int *, int, int);
+template nerve::errors::ErrorResult<void> MPICommunicator::try_broadcast<float>(float *, int, int);
+template nerve::errors::ErrorResult<void> MPICommunicator::try_broadcast<double>(double *, int,
+                                                                                 int);
+
+template void MPICommunicator::allgather<int>(const int *, int, int *, int);
+template void MPICommunicator::allgather<unsigned>(const unsigned *, int, unsigned *, int);
+template void MPICommunicator::allgather<long>(const long *, int, long *, int);
+template void MPICommunicator::allgather<long long>(const long long *, int, long long *, int);
+template void MPICommunicator::allgather<float>(const float *, int, float *, int);
+template void MPICommunicator::allgather<double>(const double *, int, double *, int);
+template void MPICommunicator::allgather<char>(const char *, int, char *, int);
+
+template nerve::errors::ErrorResult<void> MPICommunicator::try_allgather<int>(const int *, int,
+                                                                              int *, int);
+template nerve::errors::ErrorResult<void> MPICommunicator::try_allgather<float>(const float *, int,
+                                                                                float *, int);
 template nerve::errors::ErrorResult<void>
-MPICommunicator::try_broadcast<float>(float *data, int count, int root);
-template nerve::errors::ErrorResult<void>
-MPICommunicator::try_broadcast<double>(double *data, int count, int root);
+MPICommunicator::try_allgather<double>(const double *, int, double *, int);
 
-template void MPICommunicator::allgather<int>(const int *send_data, int send_count, int *recv_data,
-                                              int recv_count);
-template void MPICommunicator::allgather<unsigned>(const unsigned *send_data, int send_count,
-                                                   unsigned *recv_data, int recv_count);
-template void MPICommunicator::allgather<long>(const long *send_data, int send_count,
-                                               long *recv_data, int recv_count);
-template void MPICommunicator::allgather<long long>(const long long *send_data, int send_count,
-                                                    long long *recv_data, int recv_count);
-template void MPICommunicator::allgather<float>(const float *send_data, int send_count,
-                                                float *recv_data, int recv_count);
-template void MPICommunicator::allgather<double>(const double *send_data, int send_count,
-                                                 double *recv_data, int recv_count);
-template void MPICommunicator::allgather<char>(const char *send_data, int send_count,
-                                               char *recv_data, int recv_count);
+template MPIRequest MPICommunicator::isend<int>(const int *, int, int, int);
+template MPIRequest MPICommunicator::isend<float>(const float *, int, int, int);
+template MPIRequest MPICommunicator::isend<double>(const double *, int, int, int);
+template MPIRequest MPICommunicator::isend<char>(const char *, int, int, int);
 
-template nerve::errors::ErrorResult<void> MPICommunicator::try_allgather<int>(const int *send_data,
-                                                                              int send_count,
-                                                                              int *recv_data,
-                                                                              int recv_count);
-template nerve::errors::ErrorResult<void>
-MPICommunicator::try_allgather<float>(const float *send_data, int send_count, float *recv_data,
-                                      int recv_count);
-template nerve::errors::ErrorResult<void>
-MPICommunicator::try_allgather<double>(const double *send_data, int send_count, double *recv_data,
-                                       int recv_count);
+template MPIRequest MPICommunicator::irecv<int>(int *, int, int, int);
+template MPIRequest MPICommunicator::irecv<float>(float *, int, int, int);
+template MPIRequest MPICommunicator::irecv<double>(double *, int, int, int);
+template MPIRequest MPICommunicator::irecv<char>(char *, int, int, int);
 
-template MPIRequest MPICommunicator::isend<int>(const int *data, int count, int dest, int tag);
-template MPIRequest MPICommunicator::isend<float>(const float *data, int count, int dest, int tag);
-template MPIRequest MPICommunicator::isend<double>(const double *data, int count, int dest,
-                                                   int tag);
-template MPIRequest MPICommunicator::isend<char>(const char *data, int count, int dest, int tag);
+template nerve::errors::ErrorResult<MPIRequest> MPICommunicator::try_isend<int>(const int *, int,
+                                                                                int, int);
+template nerve::errors::ErrorResult<MPIRequest> MPICommunicator::try_isend<float>(const float *,
+                                                                                  int, int, int);
+template nerve::errors::ErrorResult<MPIRequest> MPICommunicator::try_isend<double>(const double *,
+                                                                                   int, int, int);
 
-template MPIRequest MPICommunicator::irecv<int>(int *data, int count, int source, int tag);
-template MPIRequest MPICommunicator::irecv<float>(float *data, int count, int source, int tag);
-template MPIRequest MPICommunicator::irecv<double>(double *data, int count, int source, int tag);
-template MPIRequest MPICommunicator::irecv<char>(char *data, int count, int source, int tag);
+template nerve::errors::ErrorResult<MPIRequest> MPICommunicator::try_irecv<int>(int *, int, int,
+                                                                                int);
+template nerve::errors::ErrorResult<MPIRequest> MPICommunicator::try_irecv<float>(float *, int, int,
+                                                                                  int);
+template nerve::errors::ErrorResult<MPIRequest> MPICommunicator::try_irecv<double>(double *, int,
+                                                                                   int, int);
 
-template nerve::errors::ErrorResult<MPIRequest>
-MPICommunicator::try_isend<int>(const int *data, int count, int dest, int tag);
-template nerve::errors::ErrorResult<MPIRequest>
-MPICommunicator::try_isend<float>(const float *data, int count, int dest, int tag);
-template nerve::errors::ErrorResult<MPIRequest>
-MPICommunicator::try_isend<double>(const double *data, int count, int dest, int tag);
+template MPIRequest MPICommunicator::iallgather<int>(const int *, int, int *, int);
+template MPIRequest MPICommunicator::ibroadcast<int>(int *, int, int);
+template MPIRequest MPICommunicator::ireduce<int>(const int *, int *, int, MPI_Op, int);
 
-template nerve::errors::ErrorResult<MPIRequest>
-MPICommunicator::try_irecv<int>(int *data, int count, int source, int tag);
-template nerve::errors::ErrorResult<MPIRequest>
-MPICommunicator::try_irecv<float>(float *data, int count, int source, int tag);
-template nerve::errors::ErrorResult<MPIRequest>
-MPICommunicator::try_irecv<double>(double *data, int count, int source, int tag);
+#else // !HAS_MPI
 
-template MPIRequest MPICommunicator::iallgather<int>(const int *sendbuf, int sendcount,
-                                                     int *recvbuf, int recvcount);
-template MPIRequest MPICommunicator::ibroadcast<int>(int *buffer, int count, int root);
-template MPIRequest MPICommunicator::ireduce<int>(const int *sendbuf, int *recvbuf, int count,
-                                                  MPI_Op op, int root);
+MPICommunicator::MPICommunicator()
+    : world_rank_(-1)
+    , world_size_(-1)
+{}
+
+MPICommunicator::MPICommunicator(MPICommunicator &&other) noexcept
+    : world_rank_(other.world_rank_)
+    , world_size_(other.world_size_)
+{
+    other.world_rank_ = -1;
+    other.world_size_ = -1;
+}
+
+MPICommunicator &MPICommunicator::operator=(MPICommunicator &&other) noexcept
+{
+    if (this != &other)
+    {
+        world_rank_ = other.world_rank_;
+        world_size_ = other.world_size_;
+        other.world_rank_ = -1;
+        other.world_size_ = -1;
+    }
+    return *this;
+}
+
+MPICommunicator::~MPICommunicator() = default;
+
+int MPICommunicator::rank() const
+{
+    throw std::logic_error("MPICommunicator::rank() requires MPI support");
+}
+
+int MPICommunicator::size() const
+{
+    throw std::logic_error("MPICommunicator::size() requires MPI support");
+}
+
+bool MPICommunicator::is_root() const
+{
+    throw std::logic_error("MPICommunicator::is_root() requires MPI support");
+}
+
+template <typename T>
+void MPICommunicator::broadcast(T *, int, int)
+{
+    throw std::logic_error("MPICommunicator::broadcast() requires MPI support");
+}
+
+template <typename T>
+nerve::errors::ErrorResult<void> MPICommunicator::try_broadcast(T *, int, int)
+{
+    return nerve::errors::ErrorResult<void>::error(nerve::errors::ErrorCode::E41_RESOURCE_LIMIT,
+                                                   "MPI broadcast requires MPI support");
+}
+
+template <typename T>
+void MPICommunicator::allgather(const T *, int, T *, int)
+{
+    throw std::logic_error("MPICommunicator::allgather() requires MPI support");
+}
+
+template <typename T>
+nerve::errors::ErrorResult<void> MPICommunicator::try_allgather(const T *, int, T *, int)
+{
+    return nerve::errors::ErrorResult<void>::error(nerve::errors::ErrorCode::E41_RESOURCE_LIMIT,
+                                                   "MPI allgather requires MPI support");
+}
+
+void MPICommunicator::barrier()
+{
+    throw std::logic_error("MPICommunicator::barrier() requires MPI support");
+}
+
+nerve::errors::ErrorResult<void> MPICommunicator::try_barrier()
+{
+    return nerve::errors::ErrorResult<void>::error(nerve::errors::ErrorCode::E41_RESOURCE_LIMIT,
+                                                   "MPI barrier requires MPI support");
+}
+
+template <typename T>
+MPIRequest MPICommunicator::isend(const T *, int, int, int)
+{
+    throw std::logic_error("MPICommunicator::isend() requires MPI support");
+}
+
+template <typename T>
+MPIRequest MPICommunicator::irecv(T *, int, int, int)
+{
+    throw std::logic_error("MPICommunicator::irecv() requires MPI support");
+}
+
+template <typename T>
+nerve::errors::ErrorResult<MPIRequest> MPICommunicator::try_isend(const T *, int, int, int)
+{
+    return nerve::errors::ErrorResult<MPIRequest>::error(
+        nerve::errors::ErrorCode::E41_RESOURCE_LIMIT, "MPI isend requires MPI support");
+}
+
+template <typename T>
+nerve::errors::ErrorResult<MPIRequest> MPICommunicator::try_irecv(T *, int, int, int)
+{
+    return nerve::errors::ErrorResult<MPIRequest>::error(
+        nerve::errors::ErrorCode::E41_RESOURCE_LIMIT, "MPI irecv requires MPI support");
+}
+
+void MPICommunicator::wait(MPIRequest &) {}
+void MPICommunicator::waitall(std::vector<MPIRequest> &) {}
+
+template <typename T>
+MPIRequest MPICommunicator::iallgather(const T *, int, T *, int)
+{
+    throw std::logic_error("MPICommunicator::iallgather() requires MPI support");
+}
+
+template <typename T>
+MPIRequest MPICommunicator::ibroadcast(T *, int, int)
+{
+    throw std::logic_error("MPICommunicator::ibroadcast() requires MPI support");
+}
+
+template <typename T>
+MPIRequest MPICommunicator::ireduce(const T *, T *, int, MPI_Op, int)
+{
+    throw std::logic_error("MPICommunicator::ireduce() requires MPI support");
+}
+
+// Explicit template instantiations (needed so code that references these types links)
+template void MPICommunicator::broadcast<int>(int *, int, int);
+template void MPICommunicator::broadcast<float>(float *, int, int);
+template void MPICommunicator::broadcast<double>(double *, int, int);
+template void MPICommunicator::allgather<int>(const int *, int, int *, int);
+template void MPICommunicator::allgather<float>(const float *, int, float *, int);
+template void MPICommunicator::allgather<double>(const double *, int, double *, int);
+template MPIRequest MPICommunicator::isend<int>(const int *, int, int, int);
+template MPIRequest MPICommunicator::isend<float>(const float *, int, int, int);
+template MPIRequest MPICommunicator::irecv<int>(int *, int, int, int);
+template MPIRequest MPICommunicator::irecv<float>(float *, int, int, int);
+template MPIRequest MPICommunicator::iallgather<int>(const int *, int, int *, int);
+template MPIRequest MPICommunicator::ibroadcast<int>(int *, int, int);
 
 #endif // HAS_MPI
 

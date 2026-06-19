@@ -530,7 +530,6 @@ set(NERVE_EIGEN3_SOURCES
 # Non-Eigen basic sources
 set(NERVE_NON_EIGEN_SOURCES
     persistence/core/persistence_gradient_basic.cpp
-    distributed/mpi_communicator_stub.cpp
 )
 
 # NUMA-dependent sources
