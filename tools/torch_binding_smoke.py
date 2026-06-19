@@ -778,7 +778,7 @@ def _check_torch_bindings() -> None:
             )
     wasserstein = tda_torch.diagram_wasserstein(diagram, diagram)
     bottleneck = tda_torch.diagram_bottleneck(diagram, diagram)
-    if wasserstein.ndim != 0 or bottleneck.ndim != 0:
+    if wasserstein.numel() != 1 or bottleneck.numel() != 1:
         raise RuntimeError("diagram distances must return scalar tensors")
     if not torch.isfinite(wasserstein) or not torch.isfinite(bottleneck):
         raise RuntimeError("diagram distances must be finite for identical diagrams")
