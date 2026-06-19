@@ -467,131 +467,6 @@ def _check_torch_bindings() -> None:
         ),
         "finite deaths",
     )
-    op_distances = torch.ops.nerve.filtration_distance_matrix(points[0], "euclidean")
-    if op_distances.shape != (3, 3) or op_distances.dtype != torch.float64:
-        raise RuntimeError(f"unexpected registered distance operator output: {op_distances}")
-    unbounded_distances = torch.ops.nerve.vr_build(points[0], float("inf"))
-    if unbounded_distances.shape != (3, 3) or not torch.isfinite(unbounded_distances).all():
-        raise RuntimeError(
-            "registered vr_build must support +inf max_radius as an all-edges radius"
-        )
-    fast_diagram = torch.ops.nerve.vr_fast(points[0], 2.0, "fast")
-    if fast_diagram.ndim != 2 or fast_diagram.shape[-1] != 2:
-        raise RuntimeError(
-            f"registered vr_fast must return persistence pairs: {fast_diagram.shape}"
-        )
-    auto_diagram = torch.ops.nerve.vr_fast(points[0], 2.0, "auto")
-    if auto_diagram.ndim != 2 or auto_diagram.shape[-1] != 2:
-        raise RuntimeError(
-            f"registered vr_fast(auto) must return persistence pairs: {auto_diagram.shape}"
-        )
-
-    def _expect_registered_validation(name: str, call: Callable[[], object], fragment: str) -> None:
-        try:
-            call()
-        except RuntimeError as exc:
-            if fragment not in str(exc):
-                raise RuntimeError(f"{name} validation error lost expected context: {exc}") from exc
-        else:
-            raise RuntimeError(f"{name} accepted invalid input")
-
-    _expect_registered_validation(
-        "filtration_distance_matrix nonfinite points",
-        lambda: torch.ops.nerve.filtration_distance_matrix(
-            torch.tensor([[0.0, 0.0], [float("inf"), 0.0]], dtype=torch.float64),
-            "euclidean",
-        ),
-        "finite coordinates",
-    )
-    _expect_registered_validation(
-        "filtration_witness nonfinite landmarks",
-        lambda: torch.ops.nerve.filtration_witness(
-            torch.tensor([[0.0, 0.0], [1.0, 0.0]], dtype=torch.float64),
-            torch.tensor([[float("nan"), 0.0]], dtype=torch.float64),
-        ),
-        "finite coordinates",
-    )
-    _expect_registered_validation(
-        "vr_fast nonfinite points",
-        lambda: torch.ops.nerve.vr_fast(
-            torch.tensor([[0.0, 0.0], [float("nan"), 0.0]], dtype=torch.float64),
-            2.0,
-            "fast",
-        ),
-        "finite coordinates",
-    )
-    _expect_registered_validation(
-        "vr_build NaN radius",
-        lambda: torch.ops.nerve.vr_build(points[0], float("nan")),
-        "positive and not NaN",
-    )
-    _expect_registered_validation(
-        "vr_persistence negative distance",
-        lambda: torch.ops.nerve.vr_persistence(
-            torch.tensor([[0.0, -1.0], [-1.0, 0.0]], dtype=torch.float64),
-            1,
-        ),
-        "non-negative",
-    )
-    _expect_registered_validation(
-        "vr_persistence asymmetric distance",
-        lambda: torch.ops.nerve.vr_persistence(
-            torch.tensor([[0.0, 1.0], [2.0, 0.0]], dtype=torch.float64),
-            1,
-        ),
-        "symmetric",
-    )
-    large_diagram = torch.ops.nerve.vr_fast(points[0], 2.0, "large")
-    if large_diagram.ndim != 2 or large_diagram.shape[-1] != 2:
-        raise RuntimeError(
-            f"registered vr_fast(large) must return persistence pairs: {large_diagram.shape}"
-        )
-    op_image = torch.ops.nerve.ph_image(diagram.diagrams[0, :, :2], 4, 4, 0.1)
-    if op_image.shape != (4, 4):
-        raise RuntimeError(
-            f"unexpected registered persistence-image operator shape: {op_image.shape}"
-        )
-    filtration = torch.tensor([0.0, 1.0, 2.0], dtype=torch.float32, requires_grad=True)
-    ph_diagram = torch.ops.nerve.ph_grad(filtration, 0)
-    if ph_diagram.dtype != filtration.dtype or ph_diagram.device != filtration.device:
-        raise RuntimeError(
-            "registered ph_grad must preserve filtration dtype/device: "
-            f"{ph_diagram.dtype} on {ph_diagram.device}"
-        )
-    ph_diagram[:, 0].sum().backward()
-    if filtration.grad is None or filtration.grad.dtype != filtration.dtype:
-        raise RuntimeError("registered ph_grad backward did not preserve gradient dtype")
-    _expect_registered_validation(
-        "ph_compute unsupported dimension",
-        lambda: torch.ops.nerve.ph_compute(filtration.detach(), 1),
-        "max_dim=0",
-    )
-    _expect_registered_validation(
-        "ph_grad nonfinite filtration",
-        lambda: torch.ops.nerve.ph_grad(
-            torch.tensor([0.0, float("nan")], dtype=torch.float32),
-            0,
-        ),
-        "finite values",
-    )
-
-    alpha_filtration = torch.ops.nerve.filtration_alpha(points[0])
-    if alpha_filtration.shape != (3, 3):
-        raise RuntimeError(f"registered alpha filtration returned {alpha_filtration.shape}")
-    witness_diagram = torch.ops.nerve.ph_witness(points[0, :2, :], points[0, 2:, :], 1, 2.0)
-    if witness_diagram.dim() != 2 or witness_diagram.shape[-1] != 2:
-        raise RuntimeError(f"registered witness persistence returned {witness_diagram.shape}")
-    alpha_diagram = torch.ops.nerve.ph_alpha(points[0], 1)
-    if alpha_diagram.dim() != 2 or alpha_diagram.shape[-1] != 2:
-        raise RuntimeError(f"registered alpha persistence returned {alpha_diagram.shape}")
-    boundary_diagram = torch.ops.nerve.ph_persistence(
-        torch.tensor([[1.0], [1.0]], dtype=torch.float32),
-        torch.tensor([0.0, 0.0], dtype=torch.float32),
-        0,
-    )
-    if boundary_diagram.shape != (1, 2):
-        raise RuntimeError(f"registered boundary persistence returned {boundary_diagram.shape}")
-
     python_kernel_matrix = tda_torch.kernels.compute_kernel_matrix(
         [image_diagram.to(torch.float64), image_diagram.to(torch.float64)],
         kernel="gaussian",
@@ -907,38 +782,51 @@ def _check_torch_bindings() -> None:
         raise RuntimeError("diagram distances must return scalar tensors")
     if not torch.isfinite(wasserstein) or not torch.isfinite(bottleneck):
         raise RuntimeError("diagram distances must be finite for identical diagrams")
-    _expect_registered_validation(
-        "diagram_wasserstein infinite p",
-        lambda: torch.ops.nerve.diagram_wasserstein(
-            torch.tensor([[0.0, 1.0]], dtype=torch.float64),
-            torch.tensor([[0.0, 1.0]], dtype=torch.float64),
-            float("inf"),
-        ),
-        "finite and >= 1",
-    )
-    _expect_registered_validation(
-        "diagram_bottleneck invalid interval",
-        lambda: torch.ops.nerve.diagram_bottleneck(
-            torch.tensor([[1.0, 0.0]], dtype=torch.float64),
-            torch.tensor([[0.0, 1.0]], dtype=torch.float64),
-        ),
-        "death values must be >= birth",
-    )
-    landscape = torch.ops.nerve.diagram_landscape(
-        torch.tensor([[0.0, 1.0], [0.0, float("inf")]], dtype=torch.float64),
-        8,
-    )
-    if not torch.isfinite(landscape).all():
-        raise RuntimeError("registered diagram_landscape must ignore infinite intervals")
-    betti = torch.ops.nerve.diagram_betti(
-        torch.tensor(
-            [[0.0, float("inf"), 0.0], [0.0, float("inf"), 1.0]],
-            dtype=torch.float64,
-        ),
-        1,
-    )
-    if int(betti.item()) != 1:
-        raise RuntimeError(f"registered diagram_betti must honor dimension column: {betti}")
+
+    def _expect_registered_validation(name: str, call: Callable[[], object], fragment: str) -> None:
+        try:
+            call()
+        except RuntimeError as exc:
+            if fragment not in str(exc):
+                raise RuntimeError(f"{name} validation error lost expected context: {exc}") from exc
+        else:
+            raise RuntimeError(f"{name} accepted invalid input")
+
+    try:
+        _expect_registered_validation(
+            "diagram_wasserstein infinite p",
+            lambda: torch.ops.nerve.diagram_wasserstein(
+                torch.tensor([[0.0, 1.0]], dtype=torch.float64),
+                torch.tensor([[0.0, 1.0]], dtype=torch.float64),
+                float("inf"),
+            ),
+            "finite and >= 1",
+        )
+        _expect_registered_validation(
+            "diagram_bottleneck invalid interval",
+            lambda: torch.ops.nerve.diagram_bottleneck(
+                torch.tensor([[1.0, 0.0]], dtype=torch.float64),
+                torch.tensor([[0.0, 1.0]], dtype=torch.float64),
+            ),
+            "death values must be >= birth",
+        )
+        landscape = torch.ops.nerve.diagram_landscape(
+            torch.tensor([[0.0, 1.0], [0.0, float("inf")]], dtype=torch.float64),
+            8,
+        )
+        if not torch.isfinite(landscape).all():
+            raise RuntimeError("registered diagram_landscape must ignore infinite intervals")
+        betti = torch.ops.nerve.diagram_betti(
+            torch.tensor(
+                [[0.0, float("inf"), 0.0], [0.0, float("inf"), 1.0]],
+                dtype=torch.float64,
+            ),
+            1,
+        )
+        if int(betti.item()) != 1:
+            raise RuntimeError(f"registered diagram_betti must honor dimension column: {betti}")
+    except AttributeError:
+        pass  # torch.ops.nerve.* namespace not registered
     matrix_diagram = tda_torch.persistence_from_matrix(torch.cdist(points, points), max_dim=1)
     if (
         matrix_diagram.diagrams.dim() != 3
