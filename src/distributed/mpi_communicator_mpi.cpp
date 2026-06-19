@@ -663,9 +663,6 @@ nerve::errors::ErrorResult<MPIRequest> MPICommunicator::try_irecv(T *, int, int,
         nerve::errors::ErrorCode::E41_RESOURCE_LIMIT, "MPI irecv requires MPI support");
 }
 
-void MPICommunicator::wait(MPIRequest &) {}
-void MPICommunicator::waitall(std::vector<MPIRequest> &) {}
-
 template <typename T>
 MPIRequest MPICommunicator::iallgather(const T *, int, T *, int)
 {
