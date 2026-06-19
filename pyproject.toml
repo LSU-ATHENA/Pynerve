@@ -59,6 +59,7 @@ markers = [
     "performance: performance regression tests",
     "quality: static analysis / contract checks",
     "torch: PyTorch-dependent tests",
+    "asyncio: asyncio-dependent tests",
 ]
 filterwarnings = [
     "error",
