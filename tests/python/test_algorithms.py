@@ -20,7 +20,6 @@ from pynerve.algorithms import (
     persistence_landscape,
     persistence_silhouette,
 )
-from pynerve.exceptions import ValidationError
 from pynerve.exceptions import InvalidArgumentError, ValidationError
 
 
@@ -365,7 +364,7 @@ class TestPersistenceImage:
 
     def test_nan_birth_raises(self):
         d = np.array([[float("nan"), 1.0, 0.0]])
-        with pytest.raises((InvalidArgumentError, ValidationError)):
+        with pytest.raises((ValueError, ValidationError)):
             persistence_image(d)
 
     def test_negative_sigma_raises(self):

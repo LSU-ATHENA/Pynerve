@@ -767,14 +767,16 @@ def check_ci_contract() -> list[Finding]:
             findings.append(
                 Finding("ci-contract", ".github/workflows/ci.yml", f"missing {description}")
             )
-    if re.search(r"pip install .*[^=]torch(?:\s|$)", ci_text):
-        findings.append(
-            Finding(
-                "ci-contract",
-                ".github/workflows/ci.yml",
-                "CI must not install unconstrained torch from the default PyPI index",
+    for line in ci_text.splitlines():
+        if re.search(r"pip install.*\btorch\b(?!\S*==)", line) and "--index-url" not in line:
+            findings.append(
+                Finding(
+                    "ci-contract",
+                    ".github/workflows/ci.yml",
+                    "CI must not install unconstrained torch from the default PyPI index",
+                )
             )
-        )
+            break
     required_backend_fragments = {
         "ompi_info": "Open MPI capability probe",
         "mpi_built_with_cuda_support": "CUDA-aware Open MPI support marker",

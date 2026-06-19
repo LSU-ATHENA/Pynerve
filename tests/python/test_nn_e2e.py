@@ -4,6 +4,11 @@ from __future__ import annotations
 
 import pytest
 
+try:
+    import pynerve_internal  # noqa: F401
+except ImportError:
+    pytest.skip("pynerve_internal C++ extension not available", allow_module_level=True)
+
 torch = pytest.importorskip("torch")
 
 from torch import Tensor  # noqa: E402

@@ -14,11 +14,11 @@ from .exceptions import InvalidArgumentError
 def _to_diagram_array(diagram: PersistenceDiagramLike) -> np.ndarray:
     if isinstance(diagram, np.ndarray):
         arr: np.ndarray = diagram
-    elif isinstance(diagram, PersistenceDiagramLike) and hasattr(diagram, "pairs_array"):
+    elif hasattr(diagram, "pairs_array"):
         arr = diagram.pairs_array
         if not isinstance(arr, np.ndarray):
             arr = np.asarray(arr, dtype=np.float64)
-    elif isinstance(diagram, PersistenceDiagramLike) and hasattr(diagram, "pairs"):
+    elif hasattr(diagram, "pairs"):
         pairs: Any = diagram.pairs
         try:
             import torch  # noqa: PLC0415
@@ -81,6 +81,8 @@ def persistence_image(
     sigma_value = float(sigma)
     if not np.isfinite(sigma_value) or sigma_value <= 0.0:
         raise InvalidArgumentError("sigma must be finite and positive", parameter="sigma")
+    if weight not in {"persistence", "uniform"}:
+        raise InvalidArgumentError("weight must be 'persistence' or 'uniform'", parameter="weight")
     height, width = _normalize_image_resolution(resolution)
     array = _to_diagram_array(diagram)
     if array.size == 0:
@@ -102,8 +104,6 @@ def persistence_image(
     birth_grid, persistence_grid = np.meshgrid(birth_axis, persistence_axis)
 
     sigma_sq = sigma_value * sigma_value
-    if weight not in {"persistence", "uniform"}:
-        raise InvalidArgumentError("weight must be 'persistence' or 'uniform'", parameter="weight")
 
     weights = persistence if weight == "persistence" else np.ones(len(births))
     diff_b = birth_grid[None, :, :] - births[:, None, None]

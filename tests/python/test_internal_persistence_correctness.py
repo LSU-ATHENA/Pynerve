@@ -116,6 +116,7 @@ class TestBackendContext:
     """BackendContext forces Python fallback for testing."""
 
     def test_python_context_blocks_torch_backend(self) -> None:
+        pytest.importorskip("pynerve_internal")
         from pynerve.torch._backend import BackendContext, backend
 
         backend._initialize()
