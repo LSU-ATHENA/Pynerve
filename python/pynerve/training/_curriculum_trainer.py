@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from torch.utils.data import DataLoader, Dataset
@@ -11,11 +11,9 @@ import torch
 from torch import nn
 
 from .._validation import validate_finite_scalar as _finite_scalar
-from .curriculum import (
-    CurriculumConfig,
-    TopologicalComplexityCalculator,
-    TopologicalCurriculumSampler,
-)
+
+if TYPE_CHECKING:
+    from .curriculum import CurriculumConfig
 
 
 class TopologicalCurriculumTrainer:
@@ -77,6 +75,8 @@ class TopologicalCurriculumTrainer:
             raise ValueError("batch_size must be positive")
         if num_workers < 0:
             raise ValueError("num_workers must be non-negative")
+
+        from .curriculum import TopologicalCurriculumSampler  # noqa: PLC0415
 
         sampler = TopologicalCurriculumSampler(
             dataset, diagrams, self.config, self.current_stage, seed=self.seed
@@ -203,6 +203,8 @@ class TopologicalCurriculumTrainer:
         del dataset
 
         self.model.eval()
+        from .curriculum import TopologicalComplexityCalculator  # noqa: PLC0415
+
         calculator = TopologicalComplexityCalculator(self.config.persistence_threshold)
         complexities = calculator.compute_batch_complexity(diagrams, self.config.complexity_measure)
         if not complexities:

@@ -5,7 +5,6 @@ from __future__ import annotations
 import torch
 
 from .._validation import validate_finite_scalar as _finite_scalar
-from .curriculum import _validate_curriculum_diagram
 
 
 class BettiCurriculum:
@@ -50,6 +49,8 @@ class BettiCurriculum:
         :param epoch: The training epoch number.
         :returns: A filtered diagram containing only active dimensions.
         """
+        from .curriculum import _validate_curriculum_diagram  # noqa: PLC0415
+
         _validate_curriculum_diagram(diagram)
         if diagram.shape[0] == 0:
             return diagram
