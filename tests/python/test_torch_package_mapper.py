@@ -11,6 +11,8 @@ from __future__ import annotations
 import pytest
 
 torch = pytest.importorskip("torch")
+networkx = pytest.importorskip("networkx")
+matplotlib = pytest.importorskip("matplotlib")
 from pynerve.exceptions import ValidationError  # noqa: E402
 
 
