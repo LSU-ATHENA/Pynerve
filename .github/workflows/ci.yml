@@ -66,10 +66,9 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DPython_EXECUTABLE=$(which python) -DPython3_EXECUTABLE=$(which python)
       - run: cmake --build build --target pynerve_internal algorithms_bindings --parallel
-      - run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
-      - run: cp -r python/pynerve "$RUNNER_TEMP/pynerve-install/pynerve"
+      - run: cp build/python/pynerve_internal*.so python/pynerve/ 2>/dev/null; cp build/python/algorithms_bindings*.so python/pynerve/ 2>/dev/null
       - run: python tools/test_matrix.py --label cpu --output build/test-matrix-cpu.json
-      - run: PYTHONPATH="$RUNNER_TEMP/pynerve-install:python" python -m pytest tests/python/ --cov=python/pynerve --cov-branch --cov-report=term-missing
+      - run: python -m pytest tests/python/ --cov=python/pynerve --cov-branch --cov-report=term-missing
         continue-on-error: true
       - run: python -m coverage report --fail-under=80
 
