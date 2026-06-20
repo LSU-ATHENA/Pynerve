@@ -61,7 +61,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: python -m pip install -U pip pytest hypothesis pytest-cov pytest-asyncio numpy scipy psutil scikit-learn numba diskcache networkx matplotlib
+      - run: python -m pip install -U pip pytest hypothesis pytest-cov pytest-asyncio numpy scipy psutil scikit-learn numba diskcache networkx matplotlib pybind11 scikit-build-core
       - run: python -m pip install -U torch --index-url https://download.pytorch.org/whl/cpu
       - run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DENABLE_PYTORCH=ON -DBUILD_CUDA=OFF -DPython_EXECUTABLE=$(which python) -DPython3_EXECUTABLE=$(which python)
