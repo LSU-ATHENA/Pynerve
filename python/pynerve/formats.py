@@ -82,9 +82,9 @@ def save_diagrams(diagram: DiagramLike, filepath: str | Path, **kwargs: Any) -> 
             )
         ncols = diagram.shape[1]
         if ncols == 2:
-            diagram = [(float(b), float(d), 0) for b, d in diagram[:, :2]]
+            diagram = [(float(b), float(d), 0) for b, d in diagram[:, :2]]  # pyright: ignore[reportCallIssue]
         elif ncols >= 3:
-            diagram = [(float(b), float(d), int(dim)) for b, d, dim in diagram[:, :3]]
+            diagram = [(float(b), float(d), int(dim)) for b, d, dim in diagram[:, :3]]  # pyright: ignore[reportCallIssue]
         else:
             raise ShapeError(
                 f"diagram must have at least 2 columns, got shape {diagram.shape}",

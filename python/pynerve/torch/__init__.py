@@ -40,10 +40,15 @@ def diagram_wasserstein(
     a 1D tensor of B distances.
     """
     if isinstance(d1, Tensor) and d1.dim() == 3 and isinstance(d2, Tensor) and d2.dim() == 3:
-        if d1.shape[0] != d2.shape[0]:
+        _d1_batch: Tensor = d1
+        _d2_batch: Tensor = d2
+        if _d1_batch.shape[0] != _d2_batch.shape[0]:
             raise ValueError("batch dimensions must match")
         return torch.stack(
-            [diagram_wasserstein(d1[i], d2[i], p, q) for i in range(d1.shape[0])]
+            [
+                diagram_wasserstein(_d1_batch[i], _d2_batch[i], p, q)
+                for i in range(_d1_batch.shape[0])
+            ]
         ).squeeze(-1)
     from ._distance_core import diagram_wasserstein as _wasserstein_impl  # noqa: PLC0415
 
@@ -60,11 +65,13 @@ def diagram_bottleneck(
     a 1D tensor of B distances.
     """
     if isinstance(d1, Tensor) and d1.dim() == 3 and isinstance(d2, Tensor) and d2.dim() == 3:
-        if d1.shape[0] != d2.shape[0]:
+        _d1_batch: Tensor = d1
+        _d2_batch: Tensor = d2
+        if _d1_batch.shape[0] != _d2_batch.shape[0]:
             raise ValueError("batch dimensions must match")
-        return torch.stack([diagram_bottleneck(d1[i], d2[i]) for i in range(d1.shape[0])]).squeeze(
-            -1
-        )
+        return torch.stack(
+            [diagram_bottleneck(_d1_batch[i], _d2_batch[i]) for i in range(_d1_batch.shape[0])]
+        ).squeeze(-1)
     from ._distance_core import diagram_bottleneck as _bottleneck_impl  # noqa: PLC0415
 
     return _bottleneck_impl(d1, d2)  # type: ignore[arg-type]

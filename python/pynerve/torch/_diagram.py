@@ -61,6 +61,7 @@ class PersistenceDiagram:
             )
         elif mask.dim() == 1:
             mask = mask.unsqueeze(0)
+        assert mask is not None
         if mask.shape[:2] != diagrams.shape[:2]:
             raise ShapeError(
                 f"Mask shape {tuple(mask.shape)} does not match diagram shape {tuple(diagrams.shape[:2])}",

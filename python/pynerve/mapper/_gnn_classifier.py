@@ -114,6 +114,7 @@ class MapperGNNClassifier(nn.Module):
         if batch_vector is not None:
             batch_vector = batch_vector.to(device=x.device)
             graph_embeddings = []
+            assert batch_vector is not None
             for batch_id in batch_vector.unique(sorted=True):
                 mask = batch_vector == batch_id
                 local_edges = self._induced_edges(edges, mask)

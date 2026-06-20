@@ -54,6 +54,7 @@ def heat_kernel_signature(
     sigma = _validate_positive_finite(sigma, "sigma")
     diagram = _validate_diagram(diagram)
     t_values = _validate_t_values(t_values, diagram)
+    assert t_values is not None
     births, deaths = _finite_birth_death(diagram)
     if births.numel() == 0:
         return torch.zeros(

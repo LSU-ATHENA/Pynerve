@@ -239,6 +239,7 @@ class PRNGKey:
             raise InvalidArgumentError("replace must be a boolean", parameter="replace")
         if p is not None:
             p = np.asarray(p, dtype=np.float64)
+            assert p is not None
             if p.ndim != 1 or p.shape[0] != population_size:
                 raise InvalidArgumentError("p must have shape (len(a),)", parameter="p")
             if not np.isfinite(p).all():

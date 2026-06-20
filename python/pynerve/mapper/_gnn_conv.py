@@ -101,6 +101,7 @@ class MapperNodeEncoder(nn.Module):
 
         if self.use_lens_positional and lens_values is not None:
             lens_values = _validate_floating_tensor(lens_values, "lens_values")
+            assert lens_values is not None
             if lens_values.shape != (node_features.shape[0], 2):
                 raise ValueError("lens_values must have shape (n_nodes, 2)")
             pos_enc = self.lens_encoder(lens_values.to(device=x.device, dtype=x.dtype))
@@ -180,6 +181,7 @@ class MapperGraphConv(nn.Module):
 
             if edge_weights is not None:
                 edge_weights = _validate_floating_tensor(edge_weights, "edge_weights")
+                assert edge_weights is not None
                 if edge_weights.dim() != 1 or edge_weights.shape[0] != edges.shape[1]:
                     raise ValueError("edge_weights must have shape (n_edges,)")
                 edge_weights = edge_weights.to(
