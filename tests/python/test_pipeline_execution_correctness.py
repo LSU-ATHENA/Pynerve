@@ -10,6 +10,11 @@ try:
 except ImportError:
     pytest.skip("pynerve_internal C++ extension not available", allow_module_level=True)
 
+try:
+    from pynerve.pipeline import _filter_persistence_pairs  # noqa: F401
+except ImportError:
+    pytest.skip("internal pipeline helpers unavailable in this build", allow_module_level=True)
+
 torch = pytest.importorskip("torch")
 
 

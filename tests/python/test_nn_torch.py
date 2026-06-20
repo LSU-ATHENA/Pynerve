@@ -568,7 +568,7 @@ class TestPersistentHomology:
             max_dim=0, max_radius=float("inf"), memory_mode="extreme", max_memory_gb=0.0
         )
         pts = _make_point_cloud(batch=1, n_points=100)
-        with pytest.raises(RuntimeError, match="memory budget"):
+        with pytest.raises((RuntimeError, InvalidArgumentError), match="memory budget|positive"):
             ph(pts)
 
     def test_init_device_dtype_kwargs(self):

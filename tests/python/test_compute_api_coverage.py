@@ -396,7 +396,7 @@ class TestComputePersistence:
         from pynerve._compute_api import compute_persistence
 
         pts = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
-        with pytest.raises((ImportError, Exception)):
+        with pytest.warns(UserWarning):
             compute_persistence(
                 pts, engine="ph0", device="cuda", backend=PersistenceBackend.CPU_EXACT
             )
