@@ -564,12 +564,12 @@ class TestPersistentHomology:
     def test_extreme_memory_over_budget_raises(self):
         from pynerve.nn.persistent_homology import PersistentHomology
 
-        ph = PersistentHomology(
-            max_dim=0, max_radius=float("inf"), memory_mode="extreme", max_memory_gb=0.0
-        )
-        pts = _make_point_cloud(batch=1, n_points=100)
-        with pytest.raises((RuntimeError, InvalidArgumentError), match="memory budget|positive"):
-            ph(pts)
+        with pytest.raises(
+            (RuntimeError, InvalidArgumentError), match="memory budget|positive|max_memory"
+        ):
+            PersistentHomology(
+                max_dim=0, max_radius=float("inf"), memory_mode="extreme", max_memory_gb=0.0
+            )
 
     def test_init_device_dtype_kwargs(self):
         from pynerve.nn.persistent_homology import PersistentHomology
