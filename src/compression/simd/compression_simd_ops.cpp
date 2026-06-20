@@ -36,9 +36,9 @@ void simdQuantize(const double *input, std::size_t n, int bits, std::uint8_t *ou
         __m512d clipped = _mm512_max_pd(_mm512_min_pd(vals, _mm512_set1_pd(1.0)), zero);
         __m512d scaled = _mm512_mul_pd(clipped, scale_vec);
         __m512d rounded = _mm512_roundscale_pd(scaled, _MM_FROUND_TO_NEAREST_INT);
-        __m512i int_vals = _mm512_cvtpd_epi32(rounded);
+        __m256i int_vals = _mm512_cvtpd_epi32(rounded);
         alignas(64) int raw_ints[16];
-        _mm512_store_si512(raw_ints, int_vals);
+        _mm256_store_si256(reinterpret_cast<__m256i *>(raw_ints), int_vals);
         for (std::size_t j = 0; j < vec_width; ++j)
         {
             output[offset + j] = static_cast<std::uint8_t>(raw_ints[j]);
@@ -77,12 +77,10 @@ void simdDequantize(const std::uint8_t *encoded, std::size_t n, int bits, double
     for (std::size_t i = 0; i < vec_count; ++i)
     {
         const std::size_t offset = i * vec_width;
-        __m256i vals_8bit = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(encoded + offset));
-        __m256i vals_32bit = _mm256_cvtepu8_epi32(_mm_set1_epi64x(0));
-        _mm256_storeu_si256(reinterpret_cast<__m256i *>(vals_32bit), vals_8bit);
-        __m512i int_vals = _mm512_cvtepi32_epi64(
-            _mm256_cvtepu8_epi32(_mm256_castsi128_si256(_mm256_castsi256_si128(vals_8bit))));
-        __m512d vals = _mm512_cvtepi64_pd(int_vals);
+        __m128i vals_8bit = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(encoded + offset));
+        __m256i vals_32bit = _mm256_cvtepu8_epi32(vals_8bit);
+        __m512i vals_64bit = _mm512_cvtepi32_epi64(vals_32bit);
+        __m512d vals = _mm512_cvtepi64_pd(vals_64bit);
         __m512d dequant = _mm512_mul_pd(vals, inv_scale_vec);
         _mm512_storeu_pd(output + offset, dequant);
     }
