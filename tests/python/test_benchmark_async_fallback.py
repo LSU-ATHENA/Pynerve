@@ -1,15 +1,12 @@
 from __future__ import annotations
 
+import contextlib
 import dataclasses
-import math
 import os
 import tempfile
-import time
-from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
-
 from pynerve._constants import EPS_1e_9
 from pynerve._fallback_classes import (
     EventType,
@@ -20,13 +17,6 @@ from pynerve._fallback_classes import (
     PH5PH6Config,
     PH5PH6Engine,
     PH5PH6Metrics,
-)
-from pynerve._validation import (
-    validate_nonempty_string,
-    validate_nonnegative_finite,
-    validate_nonnegative_int,
-    validate_positive_finite,
-    validate_positive_int,
 )
 from pynerve.benchmark._common import (
     _BENCHMARK_RECOVERABLE_ERRORS,
@@ -600,10 +590,8 @@ class TestAsyncFacadeValidation:
             with pytest.raises((ImportError, ModuleNotFoundError)):
                 _require_async_deps()
         else:
-            try:
+            with contextlib.suppress(ImportError):
                 _require_async_deps()
-            except ImportError:
-                pass
 
     def test_stream_persistence_non_bool_gpu_raises(self):
         from pynerve._async_facade import stream_persistence
@@ -651,8 +639,9 @@ class TestAsyncCompute:
             AsyncPersistenceComputer(buffer_size=0)
 
     def test_async_computer_compute_batch_rejects_non_async_iterator(self):
-        from pynerve._async_compute import AsyncPersistenceComputer
         import asyncio
+
+        from pynerve._async_compute import AsyncPersistenceComputer
 
         async def _run():
             apc = AsyncPersistenceComputer(max_workers=1)
@@ -666,8 +655,9 @@ class TestAsyncCompute:
         asyncio.run(_run())
 
     def test_async_computer_compute_batch_rejects_closed(self):
-        from pynerve._async_compute import AsyncPersistenceComputer
         import asyncio
+
+        from pynerve._async_compute import AsyncPersistenceComputer
 
         async def _run():
             apc = AsyncPersistenceComputer(max_workers=1)
@@ -684,8 +674,9 @@ class TestAsyncCompute:
         asyncio.run(_run())
 
     def test_async_computer_close_idempotent(self):
-        from pynerve._async_compute import AsyncPersistenceComputer
         import asyncio
+
+        from pynerve._async_compute import AsyncPersistenceComputer
 
         async def _run():
             apc = AsyncPersistenceComputer(max_workers=1)
@@ -695,8 +686,9 @@ class TestAsyncCompute:
         asyncio.run(_run())
 
     def test_async_computer_context_manager(self):
-        from pynerve._async_compute import AsyncPersistenceComputer
         import asyncio
+
+        from pynerve._async_compute import AsyncPersistenceComputer
 
         async def _run():
             async with AsyncPersistenceComputer(max_workers=1) as apc:
@@ -706,9 +698,10 @@ class TestAsyncCompute:
         asyncio.run(_run())
 
     def test_async_computer_compute_batch_with_process_results(self):
+        import asyncio
+
         import pynerve
         from pynerve._async_compute import AsyncPersistenceComputer
-        import asyncio
 
         if pynerve._core_import_error is not None:
             pytest.skip("C++ extension not available")

@@ -147,9 +147,6 @@ errors::ErrorResult<PersistenceResult> compute(const core::BufferView<const doub
     fast_config.auto_detect_accelerated_runtime = use_acceleration;
     fast_config.use_adaptive_acceleration = use_acceleration;
     fast_config.auto_detect_adaptive_acceleration = use_acceleration;
-    (resolved_backend == PersistenceBackend::CUDA_HYBRID);
-    (resolved_backend == PersistenceBackend::CUDA_HYBRID);
-
     std::vector<Pair> pairs;
     try
     {

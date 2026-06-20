@@ -3,8 +3,6 @@ from __future__ import annotations
 import pytest
 
 torch = pytest.importorskip("torch")
-from torch import nn
-
 from pynerve._torch_diagrams import (
     birth_death,
     encode_diagram_embedding,
@@ -13,6 +11,8 @@ from pynerve._torch_diagrams import (
     persistence,
     validate_diagram,
 )
+
+from torch import nn
 
 
 class _EncModule(nn.Module):

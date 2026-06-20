@@ -15,7 +15,7 @@ from pynerve.cache import (
 from pynerve.exceptions import ValidationError
 
 try:
-    import diskcache
+    import diskcache  # noqa: F401
 
     HAS_DISKCACHE = True
 except ImportError:
@@ -478,7 +478,7 @@ class TestSmartCache:
 
     def test_init_without_diskcache(self, monkeypatch):
         import pynerve.cache._engine as _eng
-        import pynerve.cache._smart as _smart
+        from pynerve.cache import _smart
 
         monkeypatch.setattr(_eng, "HAS_DISKCACHE", False)
         monkeypatch.setattr(_smart, "HAS_DISKCACHE", False)
@@ -487,7 +487,7 @@ class TestSmartCache:
 
     def test_repr_without_disk(self, monkeypatch):
         import pynerve.cache._engine as _eng
-        import pynerve.cache._smart as _smart
+        from pynerve.cache import _smart
 
         monkeypatch.setattr(_eng, "HAS_DISKCACHE", False)
         monkeypatch.setattr(_smart, "HAS_DISKCACHE", False)
@@ -530,7 +530,7 @@ class TestSmartCache:
 
     def test_set_large_result_no_disk_no_error(self, monkeypatch):
         import pynerve.cache._engine as _eng
-        import pynerve.cache._smart as _smart
+        from pynerve.cache import _smart
 
         monkeypatch.setattr(_eng, "HAS_DISKCACHE", False)
         monkeypatch.setattr(_smart, "HAS_DISKCACHE", False)

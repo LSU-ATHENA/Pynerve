@@ -1,6 +1,4 @@
 // Internal helpers for incremental persistence recomputation.
-// Kept in a private header to split implementation while preserving a small
-// public translation unit footprint.
 
 #pragma once
 

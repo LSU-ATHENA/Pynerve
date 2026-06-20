@@ -303,6 +303,7 @@ private:
 };
 
 // Convenience macros for error handling
+#ifndef TRY_RESULT
 #define TRY_RESULT(expr)                                                                           \
     do                                                                                             \
     {                                                                                              \
@@ -313,7 +314,9 @@ private:
                                           std::string(_result.detail()), _result.where());         \
         }                                                                                          \
     } while (0)
+#endif
 
+#ifndef TRY_ASSIGN
 #define TRY_ASSIGN(var, expr)                                                                      \
     do                                                                                             \
     {                                                                                              \
@@ -325,6 +328,7 @@ private:
         }                                                                                          \
         var = _result.value();                                                                     \
     } while (0)
+#endif
 
 } // namespace nerve::error
 

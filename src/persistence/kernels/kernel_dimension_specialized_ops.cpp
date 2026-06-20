@@ -345,9 +345,6 @@ DimensionSpecializedResult computeDimensionSpecialized(
 
     return result;
 }
-
-// Policy/tuning helpers are split out to keep this translation unit under
-// repository line-cap constraints.
 #include "detail/kernel_dimension_specialized_tuning.inl"
 
 } // namespace nerve::persistence::specialized

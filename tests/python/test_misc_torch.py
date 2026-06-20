@@ -58,16 +58,7 @@ class TestMapperInit:
     def test_imports_with_torch(self) -> None:
         from pynerve.mapper import (
             AdaptiveCover,
-            DifferentiableMapper,
-            HierarchicalMapperPooling,
             LensFunction,
-            MapperAutoencoder,
-            MapperGNNClassifier,
-            MapperGraphConv,
-            MapperGraphEncoder,
-            MapperNodeEncoder,
-            SoftClusterAssignment,
-            TopologyAwareReadout,
         )
 
         assert AdaptiveCover is not None
@@ -83,9 +74,11 @@ class TestMapperInit:
         for mod_key in list(sys.modules):
             if mod_key.startswith("pynerve.mapper"):
                 del sys.modules[mod_key]
-        with mock.patch.object(builtins, "__import__", side_effect=_block_torch_import):
-            with pytest.raises(ImportError, match="torch"):
-                __import__("pynerve.mapper")
+        with (
+            mock.patch.object(builtins, "__import__", side_effect=_block_torch_import),
+            pytest.raises(ImportError, match="torch"),
+        ):
+            __import__("pynerve.mapper")
 
 
 # torch/_sklearn_compat.py
@@ -324,8 +317,8 @@ class TestBettiBalancedSampler:
 
 class TestTopologicalCurriculumTrainer:
     def test_init_valid(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig()
         model = _SimpleModel()
@@ -334,8 +327,8 @@ class TestTopologicalCurriculumTrainer:
         assert trainer.epoch == 0
 
     def test_init_rejects_invalid_criterion(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         with pytest.raises(ValueError):
             TopologicalCurriculumTrainer(
@@ -343,24 +336,24 @@ class TestTopologicalCurriculumTrainer:
             )
 
     def test_create_dataloader_rejects_nonpositive_batch(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         trainer = TopologicalCurriculumTrainer(_SimpleModel(), CurriculumConfig())
         with pytest.raises(ValueError):
             trainer.create_dataloader(_DummyDataset(), [_make_diagram(5)] * 16, batch_size=0)
 
     def test_create_dataloader_rejects_negative_workers(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         trainer = TopologicalCurriculumTrainer(_SimpleModel(), CurriculumConfig())
         with pytest.raises(ValueError):
             trainer.create_dataloader(_DummyDataset(), [_make_diagram(5)] * 16, num_workers=-1)
 
     def test_create_dataloader_returns_loader(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig(num_stages=3)
         trainer = TopologicalCurriculumTrainer(_SimpleModel(), cfg)
@@ -373,8 +366,8 @@ class TestTopologicalCurriculumTrainer:
         assert isinstance(loader, torch.utils.data.DataLoader)
 
     def test_should_advance_stage_at_last(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig(num_stages=3)
         trainer = TopologicalCurriculumTrainer(
@@ -384,8 +377,8 @@ class TestTopologicalCurriculumTrainer:
         assert not trainer.should_advance_stage()
 
     def test_should_advance_epoch_criterion(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig(num_stages=5, warmup_epochs=2)
         trainer = TopologicalCurriculumTrainer(
@@ -396,8 +389,8 @@ class TestTopologicalCurriculumTrainer:
         assert trainer.should_advance_stage()
 
     def test_should_advance_performance_no_scores(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig(num_stages=5)
         trainer = TopologicalCurriculumTrainer(
@@ -407,8 +400,8 @@ class TestTopologicalCurriculumTrainer:
         assert trainer.validation_scores == [0.5]
 
     def test_should_advance_performance_stable(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig(num_stages=5)
         trainer = TopologicalCurriculumTrainer(
@@ -418,8 +411,8 @@ class TestTopologicalCurriculumTrainer:
         assert trainer.should_advance_stage()
 
     def test_should_advance_performance_not_stable(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig(num_stages=5)
         trainer = TopologicalCurriculumTrainer(
@@ -429,8 +422,8 @@ class TestTopologicalCurriculumTrainer:
         assert not trainer.should_advance_stage()
 
     def test_advance_stage(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig(num_stages=3)
         trainer = TopologicalCurriculumTrainer(_SimpleModel(), cfg)
@@ -442,8 +435,8 @@ class TestTopologicalCurriculumTrainer:
         assert trainer.current_stage == 2
 
     def test_train_epoch(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig(num_stages=3)
         model = _SimpleModel()
@@ -461,8 +454,8 @@ class TestTopologicalCurriculumTrainer:
         assert avg_loss >= 0.0
 
     def test_fit_returns_history(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig(num_stages=3, warmup_epochs=1)
         model = _SimpleModel()
@@ -478,8 +471,8 @@ class TestTopologicalCurriculumTrainer:
             assert "stage" in record
 
     def test_fit_rejects_negative_epochs(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         with pytest.raises(ValueError):
             TopologicalCurriculumTrainer(_SimpleModel(), CurriculumConfig()).fit(
@@ -487,8 +480,8 @@ class TestTopologicalCurriculumTrainer:
             )
 
     def test_evaluate_returns_float(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig()
         trainer = TopologicalCurriculumTrainer(_SimpleModel(), cfg)
@@ -497,8 +490,8 @@ class TestTopologicalCurriculumTrainer:
         assert isinstance(score, float)
 
     def test_evaluate_empty_diagrams(self) -> None:
-        from pynerve.training.curriculum import CurriculumConfig
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
+        from pynerve.training.curriculum import CurriculumConfig
 
         cfg = CurriculumConfig()
         trainer = TopologicalCurriculumTrainer(_SimpleModel(), cfg)
@@ -619,13 +612,6 @@ class TestRegularizationInit:
     def test_imports_with_torch(self) -> None:
         from pynerve.regularization import (
             AdaptivePersistentDropout,
-            BettiConstraintLayer,
-            CurricularPersistentDropout,
-            HomotopyRegularizer,
-            MorseRegularizer,
-            PersistentBatchNorm,
-            PersistentDropout,
-            TopologicalSmoothness,
             TopologyPreservingDropout,
         )
 
@@ -642,9 +628,11 @@ class TestRegularizationInit:
         for mod_key in list(sys.modules):
             if mod_key.startswith("pynerve.regularization"):
                 del sys.modules[mod_key]
-        with mock.patch.object(builtins, "__import__", side_effect=_block_torch_import):
-            with pytest.raises(ImportError, match="torch"):
-                __import__("pynerve.regularization")
+        with (
+            mock.patch.object(builtins, "__import__", side_effect=_block_torch_import),
+            pytest.raises(ImportError, match="torch"),
+        ):
+            __import__("pynerve.regularization")
 
 
 # _image_utils.py
@@ -713,7 +701,6 @@ class TestNormalizeImageResolution:
 
     def test_rejects_wrong_length_tuple(self) -> None:
         from pynerve._image_utils import _normalize_image_resolution
-
         from pynerve.exceptions import InvalidArgumentError
 
         with pytest.raises(InvalidArgumentError):
@@ -721,7 +708,6 @@ class TestNormalizeImageResolution:
 
     def test_rejects_nonpositive(self) -> None:
         from pynerve._image_utils import _normalize_image_resolution
-
         from pynerve.exceptions import InvalidArgumentError
 
         with pytest.raises(InvalidArgumentError):
@@ -729,7 +715,6 @@ class TestNormalizeImageResolution:
 
     def test_rejects_nonpositive_tuple(self) -> None:
         from pynerve._image_utils import _normalize_image_resolution
-
         from pynerve.exceptions import InvalidArgumentError
 
         with pytest.raises(InvalidArgumentError):
@@ -760,7 +745,6 @@ class TestFiniteRange:
 
     def test_rejects_nan(self) -> None:
         from pynerve._image_utils import _finite_range
-
         from pynerve.exceptions import InvalidArgumentError
 
         with pytest.raises(InvalidArgumentError):
@@ -807,7 +791,6 @@ class TestPersistenceImage:
 
     def test_invalid_weight_raises(self) -> None:
         from pynerve._image_utils import persistence_image
-
         from pynerve.exceptions import InvalidArgumentError
 
         with pytest.raises(InvalidArgumentError):
@@ -815,7 +798,6 @@ class TestPersistenceImage:
 
     def test_invalid_sigma_raises(self) -> None:
         from pynerve._image_utils import persistence_image
-
         from pynerve.exceptions import InvalidArgumentError
 
         with pytest.raises(InvalidArgumentError):
@@ -823,7 +805,6 @@ class TestPersistenceImage:
 
     def test_nan_sigma_raises(self) -> None:
         from pynerve._image_utils import persistence_image
-
         from pynerve.exceptions import InvalidArgumentError
 
         with pytest.raises(InvalidArgumentError):

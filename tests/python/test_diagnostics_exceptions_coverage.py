@@ -302,10 +302,12 @@ class TestProfileMemory:
             profile_memory(42)
 
     def test_import_error_when_psutil_missing(self):
-        with patch.dict("sys.modules", {"psutil": None}):
-            with patch("importlib.import_module", side_effect=ImportError("no psutil")):
-                with pytest.raises(ImportError, match="psutil is required"):
-                    profile_memory(lambda: None)
+        with (
+            patch.dict("sys.modules", {"psutil": None}),
+            patch("importlib.import_module", side_effect=ImportError("no psutil")),
+            pytest.raises(ImportError, match="psutil is required"),
+        ):
+            profile_memory(lambda: None)
 
     def test_kwargs_forwarded(self):
         pytest.importorskip("psutil")
@@ -399,13 +401,15 @@ class TestCheckGPUAvailability:
         assert "cuda_version" in result
 
     def test_defaults_when_no_cupy(self):
-        with patch.dict("sys.modules", {"cupy": None}):
-            with patch("importlib.import_module", side_effect=ImportError("no cupy")):
-                result = check_gpu_availability()
-                assert result["cuda_available"] is False
-                assert result["cuda_version"] is None
-                assert result["device_count"] == 0
-                assert result["devices"] == []
+        with (
+            patch.dict("sys.modules", {"cupy": None}),
+            patch("importlib.import_module", side_effect=ImportError("no cupy")),
+        ):
+            result = check_gpu_availability()
+            assert result["cuda_available"] is False
+            assert result["cuda_version"] is None
+            assert result["device_count"] == 0
+            assert result["devices"] == []
 
     def test_device_count_is_int(self):
         result = check_gpu_availability()

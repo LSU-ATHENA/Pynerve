@@ -20,10 +20,10 @@ struct ErrorInfo
     std::string category;
     std::string description;
 };
-ErrorInfo getErrorInfo(nerve::errors::ErrorCode code);
+const ErrorInfo &getErrorInfo(nerve::errors::ErrorCode code);
 bool isValidErrorCode(nerve::errors::ErrorCode code);
 std::vector<std::string> getAllCategories();
-std::vector<ErrorInfo> getErrorsByCategory(const std::string &category);
+std::vector<nerve::errors::ErrorCode> getErrorsByCategory(const std::string &category);
 } // namespace nerve::persistence::accelerated::error_registry
 
 namespace nerve::persistence::accelerated::exception_safety

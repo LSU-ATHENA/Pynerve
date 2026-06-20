@@ -55,10 +55,12 @@ class TestGetTorch:
         assert result is torch
 
     def test_raises_when_torch_not_installed(self):
-        with patch("pynerve._utils._has_torch", False):
-            with patch("pynerve._utils._torch_module", None):
-                with pytest.raises(ImportError, match="PyTorch is required"):
-                    _get_torch()
+        with (
+            patch("pynerve._utils._has_torch", False),
+            patch("pynerve._utils._torch_module", None),
+            pytest.raises(ImportError, match="PyTorch is required"),
+        ):
+            _get_torch()
 
 
 class TestValidateTensor:
@@ -95,16 +97,20 @@ class TestValidateTensor:
     def test_rejects_tensor_like_str_when_torch_not_installed(self):
         Tensor = type("Tensor", (), {})
         obj = Tensor()
-        with patch("pynerve._utils._has_torch", False):
-            with patch("pynerve._utils._torch_module", None):
-                with pytest.raises(ImportError, match="PyTorch is required"):
-                    _validate_tensor(obj)
+        with (
+            patch("pynerve._utils._has_torch", False),
+            patch("pynerve._utils._torch_module", None),
+            pytest.raises(ImportError, match="PyTorch is required"),
+        ):
+            _validate_tensor(obj)
 
     def test_rejects_non_tensor_like_when_torch_not_installed(self):
-        with patch("pynerve._utils._has_torch", False):
-            with patch("pynerve._utils._torch_module", None):
-                with pytest.raises(TypeError, match="torch.Tensor"):
-                    _validate_tensor(42, "val")
+        with (
+            patch("pynerve._utils._has_torch", False),
+            patch("pynerve._utils._torch_module", None),
+            pytest.raises(TypeError, match="torch.Tensor"),
+        ):
+            _validate_tensor(42, "val")
 
 
 class TestGetDtype:
@@ -455,24 +461,24 @@ class TestValidateDevicesMatch:
 class TestSuppressWarnings:
     def test_suppresses_deprecation_warning(self):
         with suppress_warnings(DeprecationWarning):
-            warnings.warn("old", DeprecationWarning)
+            warnings.warn("old", DeprecationWarning, stacklevel=2)
 
     def test_suppresses_user_warning(self):
         with suppress_warnings(UserWarning):
-            warnings.warn("user", UserWarning)
+            warnings.warn("user", UserWarning, stacklevel=2)
 
     def test_suppresses_all_warnings_by_default(self):
         with suppress_warnings():
-            warnings.warn("dep", DeprecationWarning)
-            warnings.warn("user", UserWarning)
+            warnings.warn("dep", DeprecationWarning, stacklevel=2)
+            warnings.warn("user", UserWarning, stacklevel=2)
 
     def test_does_not_suppress_other_categories(self):
         with pytest.warns(RuntimeWarning), suppress_warnings(UserWarning):
-            warnings.warn("runtime", RuntimeWarning)
+            warnings.warn("runtime", RuntimeWarning, stacklevel=2)
 
     def test_does_not_suppress_when_no_match(self):
         with pytest.warns(DeprecationWarning), suppress_warnings(UserWarning):
-            warnings.warn("deprecated", DeprecationWarning)
+            warnings.warn("deprecated", DeprecationWarning, stacklevel=2)
 
     def test_rejects_non_warning_type(self):
         with pytest.raises((TypeError, Exception)), suppress_warnings(int):
@@ -495,8 +501,8 @@ class TestSuppressWarnings:
     def test_nested_suppressions(self):
         with suppress_warnings(UserWarning):
             with suppress_warnings(DeprecationWarning):
-                warnings.warn("dep", DeprecationWarning)
-            warnings.warn("user", UserWarning)
+                warnings.warn("dep", DeprecationWarning, stacklevel=2)
+            warnings.warn("user", UserWarning, stacklevel=2)
 
 
 class TestIsTensor:
@@ -522,15 +528,13 @@ class TestIsTensor:
         assert is_tensor(None) is False
 
     def test_returns_false_when_torch_not_installed(self):
-        with patch("pynerve._utils._has_torch", False):
-            with patch("pynerve._utils._torch_module", None):
-                assert is_tensor(torch.tensor([1.0])) is False
+        with patch("pynerve._utils._has_torch", False), patch("pynerve._utils._torch_module", None):
+            assert is_tensor(torch.tensor([1.0])) is False
 
     def test_returns_false_for_tensor_subclass_when_no_torch(self):
         obj = type("FakeTensor", (), {})()
-        with patch("pynerve._utils._has_torch", False):
-            with patch("pynerve._utils._torch_module", None):
-                assert is_tensor(obj) is False
+        with patch("pynerve._utils._has_torch", False), patch("pynerve._utils._torch_module", None):
+            assert is_tensor(obj) is False
 
 
 class TestIsNumpyArray:

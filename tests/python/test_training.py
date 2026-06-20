@@ -366,7 +366,7 @@ class TestTopologicalCurriculumTrainer:
 
     def test_evaluate(self):
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
-        from pynerve.training.curriculum import CurriculumConfig, ComplexityMeasure
+        from pynerve.training.curriculum import ComplexityMeasure, CurriculumConfig
 
         model = torch.nn.Linear(3, 1)
         cfg = CurriculumConfig(complexity_measure=ComplexityMeasure.NUM_FEATURES)
@@ -617,7 +617,7 @@ class TestDiagramVisualizationCallback:
         cb.on_batch_end(d, batch_idx=0)
         cb.on_batch_end(d, batch_idx=2)
         assert len(writer.images) >= 1
-        for tag, img, step in writer.images:
+        for tag, img, _step in writer.images:
             assert tag == "diagram"
             assert isinstance(img, torch.Tensor)
             assert img.dim() == 3

@@ -97,8 +97,6 @@ bool Arena::contains(void *ptr) const
 void Arena::reset()
 {
     offset_ = 0;
-    // Optional: memset to zero for debugging
-    // std::memset(buffer_, 0, capacity_);
 }
 
 // ColumnMemoryPool implementation

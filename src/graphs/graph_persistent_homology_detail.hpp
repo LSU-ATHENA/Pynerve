@@ -3,6 +3,7 @@
 #include "nerve/graphs/graph.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <limits>
 #include <map>
@@ -43,6 +44,8 @@ struct ComponentForest
     {
         Size root_left = find(left);
         Size root_right = find(right);
+        assert(root_left < birth.size());
+        assert(root_right < birth.size());
         if (root_left == root_right)
         {
             return;

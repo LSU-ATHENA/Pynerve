@@ -77,8 +77,10 @@ std::vector<DelaunayTriangle> computeDelaunay2D(const std::vector<Point2D> &poin
     if (points.size() < 3)
         return triangles;
     // Compute bounding box
-    double min_x = points[0].x, max_x = points[0].x;
-    double min_y = points[0].y, max_y = points[0].y;
+    double min_x = points[0].x;
+    double max_x = points[0].x;
+    double min_y = points[0].y;
+    double max_y = points[0].y;
     for (const auto &p : points)
     {
         min_x = std::min(min_x, p.x);

@@ -898,8 +898,8 @@ class TestJitCache:
         assert repr(cache) == "JITCache(entries=0)"
 
     def test_cached_jit_decorator(self) -> None:
-        from pynerve.jit._cache import cached_jit
         from pynerve._numba_compat import prange
+        from pynerve.jit._cache import cached_jit
 
         @cached_jit
         def array_add(arr: np.ndarray) -> float:
@@ -930,8 +930,8 @@ class TestJitDevice:
         assert _resolve_device("cpu") is False
 
     def test_resolve_device_cuda_returns_true(self) -> None:
-        from pynerve.jit._setup import HAS_CUDA
         from pynerve.jit._device import _resolve_device
+        from pynerve.jit._setup import HAS_CUDA
 
         if HAS_CUDA:
             assert _resolve_device("cuda") is True
@@ -940,8 +940,8 @@ class TestJitDevice:
                 _resolve_device("cuda")
 
     def test_resolve_device_invalid_raises(self) -> None:
-        from pynerve.jit._device import _resolve_device
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._device import _resolve_device
 
         with pytest.raises(InvalidArgumentError, match="unsupported device"):
             _resolve_device("gpu")
@@ -957,36 +957,36 @@ class TestJitValidate:
         np.testing.assert_array_equal(out, pts.astype(np.float32))
 
     def test_validate_points_empty_rows_raises(self) -> None:
-        from pynerve.jit._validate import _validate_points
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_points
 
         with pytest.raises(InvalidArgumentError, match="points must be non-empty"):
             _validate_points(np.empty((0, 3)))
 
     def test_validate_points_empty_cols_raises(self) -> None:
-        from pynerve.jit._validate import _validate_points
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_points
 
         with pytest.raises(InvalidArgumentError, match="points must be non-empty"):
             _validate_points(np.empty((3, 0)))
 
     def test_validate_points_1d_raises(self) -> None:
-        from pynerve.jit._validate import _validate_points
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_points
 
         with pytest.raises(InvalidArgumentError, match="points must be a 2D array"):
             _validate_points(np.array([1.0, 2.0, 3.0]))
 
     def test_validate_points_3d_raises(self) -> None:
-        from pynerve.jit._validate import _validate_points
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_points
 
         with pytest.raises(InvalidArgumentError, match="points must be a 2D array"):
             _validate_points(np.zeros((2, 2, 2)))
 
     def test_validate_points_nonfinite_raises(self) -> None:
-        from pynerve.jit._validate import _validate_points
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_points
 
         with pytest.raises(InvalidArgumentError, match="finite coordinates"):
             _validate_points(np.array([[np.inf, 0.0]]))
@@ -1010,22 +1010,22 @@ class TestJitValidate:
         assert out.shape[1] == 3
 
     def test_validate_pairs_too_few_cols_raises(self) -> None:
-        from pynerve.jit._validate import _validate_pairs
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_pairs
 
         with pytest.raises(InvalidArgumentError, match="pairs must have shape"):
             _validate_pairs(np.array([[0.0]]))
 
     def test_validate_pairs_too_few_cols_with_dim_raises(self) -> None:
-        from pynerve.jit._validate import _validate_pairs
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_pairs
 
         with pytest.raises(InvalidArgumentError, match="pairs must have shape"):
             _validate_pairs(np.array([[0.0, 1.0]]), require_dim=True)
 
     def test_validate_pairs_1d_raises(self) -> None:
-        from pynerve.jit._validate import _validate_pairs
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_pairs
 
         with pytest.raises(InvalidArgumentError, match="pairs must have shape"):
             _validate_pairs(np.array([0.0, 1.0]))
@@ -1046,22 +1046,22 @@ class TestJitValidate:
         assert out.shape[0] == 0
 
     def test_validate_pairs_nonfinite_birth_raises(self) -> None:
-        from pynerve.jit._validate import _validate_pairs
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_pairs
 
         with pytest.raises(InvalidArgumentError, match="births must be finite"):
             _validate_pairs(np.array([[np.inf, 1.0]]))
 
     def test_validate_pairs_nan_death_raises(self) -> None:
-        from pynerve.jit._validate import _validate_pairs
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_pairs
 
         with pytest.raises(InvalidArgumentError, match="deaths must be finite"):
             _validate_pairs(np.array([[0.0, np.nan]]))
 
     def test_validate_pairs_neginf_death_raises(self) -> None:
-        from pynerve.jit._validate import _validate_pairs
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_pairs
 
         with pytest.raises(InvalidArgumentError, match="deaths must be finite"):
             _validate_pairs(np.array([[0.0, -np.inf]]))
@@ -1074,15 +1074,15 @@ class TestJitValidate:
         assert out.shape == (1, 2)
 
     def test_validate_pairs_death_less_than_birth_raises(self) -> None:
-        from pynerve.jit._validate import _validate_pairs
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_pairs
 
         with pytest.raises(InvalidArgumentError, match="greater than or equal"):
             _validate_pairs(np.array([[5.0, 1.0]]))
 
     def test_validate_pairs_invalid_dim_raises(self) -> None:
-        from pynerve.jit._validate import _validate_pairs
         from pynerve.exceptions import InvalidArgumentError
+        from pynerve.jit._validate import _validate_pairs
 
         with pytest.raises(InvalidArgumentError, match="dimensions must be finite"):
             _validate_pairs(np.array([[0.0, 1.0, 1.5]]), require_dim=True)

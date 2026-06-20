@@ -8,10 +8,10 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from torch import Tensor, nn
-
 from pynerve._compute_core import PersistenceResult as CorePersistenceResult
 from pynerve.exceptions import InvalidArgumentError, ValidationError
+
+from torch import Tensor, nn
 
 # -------------------------------------------------------------------- helpers
 
@@ -1083,6 +1083,7 @@ class TestAbstractPersistenceComputer:
 
 class TestPersistenceCoreReExports:
     def test_core_exports(self):
+        import pynerve.torch._persistence_core_impl as impl
         from pynerve.torch._persistence_core import (
             CoreCBackend,
             PersistenceComputer,
@@ -1093,8 +1094,6 @@ class TestPersistenceCoreReExports:
             get_best_backend,
             get_persistence_backend,
         )
-
-        import pynerve.torch._persistence_core_impl as impl
 
         assert CoreCBackend is impl.CoreCBackend
         assert PersistenceComputer is impl.PersistenceComputer

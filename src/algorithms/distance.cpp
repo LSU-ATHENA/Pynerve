@@ -510,7 +510,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute_manhattan(std::span<const T> p
     return distances;
 }
 
-#include "detail/distance_c_api_instantiations.inl"
 #include "detail/distance_matrix_knn_sparse.inl"
+#include "detail/distance_c_api_instantiations.inl"
 
 } // namespace nerve::algorithms

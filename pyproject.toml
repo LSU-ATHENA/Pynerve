@@ -22,7 +22,7 @@ select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "ARG", "PTH", "PLC", "PLE",
 ignore = ["E501", "PLR0913", "PLR2004", "PLW2901", "UP040", "UP043"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "PLC0415", "PLR2004", "SIM108", "N806", "ARG001", "ARG005", "E741", "B017", "E402"]
+"tests/*" = ["S101", "PLC0415", "PLR2004", "SIM108", "N806", "ARG001", "ARG005", "E741", "B017", "E402", "N803", "ARG002"]
 "tools/*" = ["PLC0415", "PLR0911", "PLR0912", "PLR0915", "PLW0603", "SIM108", "SIM102", "F405", "F821", "F811"]
 "python/pynerve/exceptions.py" = ["N812"]
 "python/pynerve/_error_translation.py" = ["F401"]

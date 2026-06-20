@@ -640,9 +640,6 @@ void GPUAdaptiveSelector::trainStep(const std::vector<float> &features, int corr
 {
     impl_->trainStep(features, correct_algorithm, learning_rate);
 }
-
-// Benchmark support is split out to keep this translation unit within
-// repository file-size caps without changing public behavior.
 #include "detail/adaptive_selector_benchmark.inl"
 
 } // namespace gpu

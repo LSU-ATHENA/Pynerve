@@ -1,6 +1,3 @@
-// C++20 Diagram Convolution Image/2D Operations
-// Split from diagram_conv.cpp to keep translation units within production size limits.
-
 #include "nerve/math/constants.hpp"
 #include "nerve/nn/diagram_conv.hpp"
 
