@@ -3,6 +3,7 @@ from __future__ import annotations
 import builtins
 import sys
 from collections.abc import Callable, Generator
+from contextlib import contextmanager
 from unittest import mock
 
 import numpy as np
@@ -16,6 +17,22 @@ def _block_torch_import(name: str, *args: object, **kwargs: object) -> object:
     if name == "torch":
         raise ModuleNotFoundError("No module named 'torch'")
     return _original_import(name, *args, **kwargs)  # type: ignore[call-overload]
+
+
+@contextmanager
+def _hide_sklearn() -> Generator[None, None, None]:
+    saved = {m: sys.modules.pop(m) for m in list(sys.modules) if m.startswith("sklearn")}
+    from pynerve.torch import _sklearn_compat
+
+    _sklearn_compat.SKLEARN_AVAILABLE = False
+    _sklearn_compat.SKLEARN_IMPORT_ERROR = "sklearn intentionally hidden for testing"
+    try:
+        yield
+    finally:
+        for name, mod in saved.items():
+            sys.modules[name] = mod
+        _sklearn_compat.SKLEARN_AVAILABLE = True
+        _sklearn_compat.SKLEARN_IMPORT_ERROR = None
 
 
 def _make_diagram(n_pairs: int = 3, seed: int = 42) -> torch.Tensor:
@@ -93,36 +110,31 @@ class TestMapperInit:
 
 class TestSklearnCompat:
     def test_base_estimator_get_params(self) -> None:
-        from pynerve.torch._sklearn_compat import SKLEARN_AVAILABLE
+        with _hide_sklearn():
+            from pynerve.torch._sklearn_compat import SKLEARN_AVAILABLE
 
-        if SKLEARN_AVAILABLE:
-            pytest.skip("sklearn is installed; fallback classes not used")
+            assert not SKLEARN_AVAILABLE
+            from pynerve.torch._sklearn_compat import BaseEstimator
 
-        from pynerve.torch._sklearn_compat import BaseEstimator
-
-        est = BaseEstimator()
-        assert est.get_params() == {}
-        assert est.get_params(deep=False) == {}
+            est = BaseEstimator()
+            assert est.get_params() == {}
+            assert est.get_params(deep=False) == {}
 
     def test_base_estimator_set_params(self) -> None:
-        from pynerve.torch._sklearn_compat import SKLEARN_AVAILABLE
+        with _hide_sklearn():
+            from pynerve.torch._sklearn_compat import BaseEstimator
 
-        if SKLEARN_AVAILABLE:
-            pytest.skip("sklearn is installed; fallback classes not used")
-
-        from pynerve.torch._sklearn_compat import BaseEstimator
-
-        est = BaseEstimator()
-        result = est.set_params(a=1, b=2)
-        assert est.a == 1
-        assert est.b == 2
-        assert result is est
+            est = BaseEstimator()
+            result = est.set_params(a=1, b=2)
+            assert est.a == 1
+            assert est.b == 2
+            assert result is est
 
     def test_transformer_mixin_fit_transform(self) -> None:
-        from pynerve.torch._sklearn_compat import SKLEARN_AVAILABLE
+        with _hide_sklearn():
+            from pynerve.torch._sklearn_compat import SKLEARN_AVAILABLE
 
-        if SKLEARN_AVAILABLE:
-            pytest.skip("sklearn is installed; fallback classes not used")
+            assert not SKLEARN_AVAILABLE
 
         from pynerve.torch._sklearn_compat import TransformerMixin
 

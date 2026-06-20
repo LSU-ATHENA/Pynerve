@@ -30,7 +30,7 @@ def _jit_pairwise_distances_impl(points: np.ndarray) -> np.ndarray:
 def _jit_filter_pairs_impl(pairs: np.ndarray, threshold: float) -> np.ndarray:
     """Return a mask for pairs whose persistence exceeds threshold."""
     n = pairs.shape[0]
-    mask = np.zeros(n, dtype=bool)
+    mask = np.zeros(n, dtype=np.bool_)
 
     for i in prange(n):
         persistence = pairs[i, 1] - pairs[i, 0]
