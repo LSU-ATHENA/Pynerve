@@ -1133,27 +1133,24 @@ class TestPhLayerExtended:
 
 class TestSklearnCompatExtended:
     def test_base_estimator_fallback_get_params_deep_ignored(self):
-        from pynerve.torch._sklearn_compat import BaseEstimator
+        from pynerve.torch._sklearn_compat import _FallbackBaseEstimator
 
-        est = BaseEstimator()
+        est = _FallbackBaseEstimator()
         assert est.get_params(deep=True) == {}
         assert est.get_params(deep=False) == {}
 
     def test_base_estimator_fallback_set_params_returns_self(self):
-        from pynerve.torch._sklearn_compat import BaseEstimator
+        from pynerve.torch._sklearn_compat import _FallbackBaseEstimator
 
-        est = BaseEstimator()
+        est = _FallbackBaseEstimator()
         result = est.set_params(x=10)
         assert result is est
         assert est.x == 10
 
     def test_transformer_mixin_fallback_no_y(self):
-        from unittest.mock import patch
+        from pynerve.torch._sklearn_compat import _FallbackTransformerMixin
 
-        with patch("pynerve.torch._sklearn_compat.SKLEARN_AVAILABLE", False):
-            from pynerve.torch._sklearn_compat import TransformerMixin
-
-        class _T(TransformerMixin):
+        class _T(_FallbackTransformerMixin):
             def fit(self, X, y=None, **kwargs):
                 self.X_shape_ = len(X)
                 return self
