@@ -324,6 +324,7 @@ std::vector<ParameterCombination> ParameterSweepEngine::generateGridCombinations
         return result;
     }
     std::vector<std::vector<double>> param_values;
+    param_values.reserve(config_.parameters.size());
     for (const auto &param : config_.parameters)
     {
         param_values.push_back(param.generateValues());

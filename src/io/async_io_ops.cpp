@@ -91,12 +91,10 @@ std::unique_ptr<IoEngine> IoEngine::create(IoBackend backend)
         backend = detectBestBackend();
     switch (backend)
     {
-        case IoBackend::Mmap:
-            return std::make_unique<MmapIoEngine>();
 #ifdef __APPLE__
         case IoBackend::DispatchIO:
-            return std::make_unique<MmapIoEngine>();
 #endif
+        case IoBackend::Mmap:
         default:
             return std::make_unique<MmapIoEngine>();
     }

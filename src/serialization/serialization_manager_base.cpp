@@ -201,7 +201,8 @@ ErrorResult<bool> SerializationManager::saveToFile(const std::string &path,
                     errors::SerializationErrorCode::INVALID_SERIALIZATION_DATA),
                 "Cannot write file: " + path);
         }
-        ofs.write(reinterpret_cast<const char *>(serialized.data()), serialized.size());
+        ofs.write(reinterpret_cast<const char *>(serialized.data()),
+                  static_cast<std::streamsize>(serialized.size()));
         return ErrorResult<bool>::success(true);
     }
     std::memcpy(file.mutableBytes(), serialized.data(), serialized.size());

@@ -165,7 +165,8 @@ NpyArray loadNpyFromMemory(const std::vector<uint8_t> &buffer)
     }
     NpyArray arr;
     arr.header = std::move(header);
-    arr.data.assign(buffer.begin() + data_offset, buffer.begin() + data_offset + data_size);
+    arr.data.assign(buffer.begin() + static_cast<std::ptrdiff_t>(data_offset),
+                    buffer.begin() + static_cast<std::ptrdiff_t>(data_offset + data_size));
     return arr;
 }
 
@@ -185,7 +186,8 @@ void saveNpy(const std::string &path, const NpyArray &array)
     std::ofstream file(path, std::ios::binary);
     if (!file)
         throw std::runtime_error("Cannot open file for writing: " + path);
-    file.write(reinterpret_cast<const char *>(buf.data()), buf.size());
+    file.write(reinterpret_cast<const char *>(buf.data()),
+               static_cast<std::streamsize>(buf.size()));
 }
 
 NpyArray loadNpy(const std::string &path)
@@ -196,7 +198,7 @@ NpyArray loadNpy(const std::string &path)
     auto size = static_cast<Size>(file.tellg());
     file.seekg(0, std::ios::beg);
     std::vector<uint8_t> buffer(size);
-    file.read(reinterpret_cast<char *>(buffer.data()), size);
+    file.read(reinterpret_cast<char *>(buffer.data()), static_cast<std::streamsize>(size));
     return loadNpyFromMemory(buffer);
 }
 

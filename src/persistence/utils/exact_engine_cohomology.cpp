@@ -86,7 +86,7 @@ ExactPersistenceResult computeExactCohomologyZ2(const algebra::SimplicialComplex
 
         while (!column.empty())
         {
-            Index pivot = column.front();
+            Index pivot = static_cast<Index>(column.front());
             if (pivot >= static_cast<Index>(low_row_to_col.size()))
             {
                 low_row_to_col.resize(pivot + 1, -1);

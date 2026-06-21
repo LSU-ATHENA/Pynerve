@@ -18,7 +18,7 @@ constexpr uint32_t RUN_INITIAL_CAPACITY = 4;
 
 nerve::memory::RawArrayPool &roaringPool()
 {
-    static nerve::memory::RawArrayPool pool(16 * 1024 * 1024);
+    static nerve::memory::RawArrayPool pool(static_cast<size_t>(16) * 1024 * 1024);
     return pool;
 }
 
@@ -64,7 +64,7 @@ Container::~Container()
     }
     else if (type == RUN_CONTAINER && run.runs)
     {
-        roaringPool().deallocate(run.runs, run.count * 2 * sizeof(uint16_t));
+        roaringPool().deallocate(run.runs, static_cast<size_t>(run.count) * 2 * sizeof(uint16_t));
     }
 }
 

@@ -290,7 +290,7 @@ class MPICommunicator
 {
 public:
     MPICommunicator();
-    ~MPICommunicator();
+    ~MPICommunicator() = default;
 
     // Move semantics
     MPICommunicator(MPICommunicator &&other) noexcept;

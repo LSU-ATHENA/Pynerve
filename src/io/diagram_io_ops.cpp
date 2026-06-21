@@ -132,7 +132,7 @@ bool saveDiagramToFile(const persistence::Diagram &diagram, const std::string &p
     if (!file)
         return false;
     auto serialized = serializeDiagram(diagram, config.format);
-    file.write(serialized.data(), serialized.size());
+    file.write(serialized.data(), static_cast<std::streamsize>(serialized.size()));
     return file.good();
 }
 

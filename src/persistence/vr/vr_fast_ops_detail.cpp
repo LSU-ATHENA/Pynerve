@@ -78,8 +78,8 @@ static std::vector<Pair> computeVrPersistenceImplicit(const core::BufferView<con
         double &c = edge_d[k];
         if (c >= 0)
             return c;
-        const double *pi = pts + i * p_dim;
-        const double *pj = pts + j * p_dim;
+        const double *pi = pts + static_cast<std::ptrdiff_t>(i) * p_dim;
+        const double *pj = pts + static_cast<std::ptrdiff_t>(j) * p_dim;
         double s = 0.0;
         for (int d = 0; d < p_dim; ++d)
         {

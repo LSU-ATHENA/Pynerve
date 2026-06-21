@@ -26,7 +26,7 @@ size_t checked_vector_size(std::initializer_list<size_t> factors, const std::str
     {
         if (factor != 0 && value > std::numeric_limits<size_t>::max() / factor)
         {
-            throw std::length_error(function_name + ": " + detail);
+            throw std::length_error(std::string(function_name).append(": ").append(detail));
         }
         value *= factor;
     }

@@ -40,7 +40,7 @@ void validateLandmarkInput(const std::vector<double> &points, size_t point_dim, 
     {
         throw std::invalid_argument("landmark point buffer size does not match point count");
     }
-    if (!std::all_of(points.begin(), points.begin() + required_values,
+    if (!std::all_of(points.begin(), points.begin() + static_cast<std::ptrdiff_t>(required_values),
                      [](double value) { return std::isfinite(value); }))
     {
         throw std::invalid_argument("landmark points must contain only finite coordinates");

@@ -344,6 +344,7 @@ std::vector<Pair> computeVrPersistenceExact(const core::BufferView<const double>
                             if (seen.insert(key).second)
                             {
                                 std::vector<Index> iv;
+                                iv.reserve(verts.size());
                                 for (int v : verts)
                                     iv.push_back(v);
                                 complex.addSimplexWithFiltration(algebra::Simplex(iv), dd);

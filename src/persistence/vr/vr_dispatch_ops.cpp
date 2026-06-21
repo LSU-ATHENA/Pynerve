@@ -176,12 +176,14 @@ std::vector<Pair> computeVrPersistenceDispatch(const core::BufferView<const doub
                 if (pair.dimension == 0 && pair.birth >= 0 &&
                     static_cast<size_t>(pair.birth) < alive_to_original.size())
                 {
-                    pair.birth = alive_to_original[pair.birth];
+                    pair.birth =
+                        static_cast<double>(alive_to_original[static_cast<size_t>(pair.birth)]);
                 }
                 if (pair.dimension == 0 && std::isfinite(pair.death) && pair.death >= 0 &&
                     static_cast<size_t>(pair.death) < alive_to_original.size())
                 {
-                    pair.death = alive_to_original[pair.death];
+                    pair.death =
+                        static_cast<double>(alive_to_original[static_cast<size_t>(pair.death)]);
                 }
             }
             return reduced_pairs;
