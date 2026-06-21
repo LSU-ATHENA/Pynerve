@@ -65,7 +65,7 @@ jobs:
       - run: python -m pip install -U gudhi ripser dionysus tensorboard 2>/dev/null || true
       - run: python -m pip install -U torch --index-url https://download.pytorch.org/whl/cpu
       - run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
-      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DENABLE_PYTORCH=ON -DCMAKE_PREFIX_PATH=$(python -c "import torch; print(torch.utils.cmake_prefix_path)") -DPython_EXECUTABLE=$(which python) -DPython3_EXECUTABLE=$(which python)
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DENABLE_CUDA=OFF -DENABLE_PYTORCH=ON -DCMAKE_PREFIX_PATH=$(python -c "import torch; print(torch.utils.cmake_prefix_path)") -DPython_EXECUTABLE=$(which python) -DPython3_EXECUTABLE=$(which python)
       - run: cmake --build build --target pynerve_internal algorithms_bindings nerve_torch_internal --parallel
       - run: cp build/python/pynerve_internal*.so python/ 2>/dev/null; cp build/python/algorithms_bindings*.so python/ 2>/dev/null; cp build/python/nerve_torch_internal*.so python/ 2>/dev/null
       - run: python tools/test_matrix.py --label cpu --output build/test-matrix-cpu.json
@@ -95,7 +95,7 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DBUILD_TESTS=ON \
               -DBUILD_PYTHON=OFF \
-              -DBUILD_CUDA=OFF \
+              -DENABLE_CUDA=OFF \
               -DNERVE_SIMD=${{ matrix.simd }} \
               -DNERVE_ENABLE_AVX512_COMPONENTS=ON
           else
@@ -103,7 +103,7 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DBUILD_TESTS=ON \
               -DBUILD_PYTHON=OFF \
-              -DBUILD_CUDA=OFF \
+              -DENABLE_CUDA=OFF \
               -DNERVE_SIMD=${{ matrix.simd }} \
               -DNERVE_ENABLE_AVX512_COMPONENTS=ON
           fi
@@ -121,7 +121,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1.2
       - run: sudo apt-get update && sudo apt-get install -y clang-tidy cppcheck ninja-build libeigen3-dev libomp-dev
       - run: python -m pip install pytest
-      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DBUILD_PYTHON=OFF -DBUILD_CUDA=OFF
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DBUILD_PYTHON=OFF -DENABLE_CUDA=OFF
       - name: Static analyze full native build
         run: python tools/static_analysis.py --language cpp --build-dir build --required --clang-tidy-scope all
 
@@ -168,7 +168,7 @@ jobs:
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy
-      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DNERVE_NATIVE_ARCH=ON
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DENABLE_CUDA=OFF -DNERVE_NATIVE_ARCH=ON
       - run: cmake --build build --parallel
       - run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
       - run: cp -r python/pynerve "$RUNNER_TEMP/pynerve-install/pynerve"
@@ -191,7 +191,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1.2
       - run: sudo apt-get update && sudo apt-get install -y libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy build
-      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DPython_EXECUTABLE=${{ env.pythonLocation }}/bin/python -DPython3_EXECUTABLE=${{ env.pythonLocation }}/bin/python
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DENABLE_CUDA=OFF -DPython_EXECUTABLE=${{ env.pythonLocation }}/bin/python -DPython3_EXECUTABLE=${{ env.pythonLocation }}/bin/python
       - run: cmake --build build --target pynerve_python_binding_smoke --parallel
       - run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
       - run: cp -r python/pynerve "$RUNNER_TEMP/pynerve-install/pynerve"
@@ -218,7 +218,7 @@ jobs:
       - name: Install latest PyTorch CPU
         run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: python tools/run_tests.py --python --label torch --label gradient --shard-index 0 --shard-count 4
-      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF -DENABLE_PYTORCH=ON -DCMAKE_PREFIX_PATH=$(python -c "import torch; print(torch.utils.cmake_prefix_path)") -DPython_EXECUTABLE=${{ env.pythonLocation }}/bin/python -DPython3_EXECUTABLE=${{ env.pythonLocation }}/bin/python
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DENABLE_CUDA=OFF -DENABLE_PYTORCH=ON -DCMAKE_PREFIX_PATH=$(python -c "import torch; print(torch.utils.cmake_prefix_path)") -DPython_EXECUTABLE=${{ env.pythonLocation }}/bin/python -DPython3_EXECUTABLE=${{ env.pythonLocation }}/bin/python
       - run: cmake --build build --target pynerve_torch_binding_smoke --parallel
       - name: Static analyze Torch-native build
         run: python tools/static_analysis.py --language cpp --build-dir build --required --clang-tidy-scope all
@@ -257,7 +257,7 @@ jobs:
           echo "CUDA version: $CUDA_VER"
           echo "CUDA_MAJOR=$(echo $CUDA_VER | cut -d. -f1)" >> $GITHUB_ENV
       - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy
-      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_CUDA=ON -DENABLE_CUDA=ON -DENABLE_MPI=ON -DBUILD_PYTHON=OFF
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DENABLE_CUDA=ON -DENABLE_MPI=ON -DBUILD_PYTHON=OFF
       - run: cmake --build build --parallel
       - run: python tools/backend_checks.py --backend mpi --build-dir build --required --require-cuda-aware-mpi
 
@@ -287,7 +287,7 @@ jobs:
       - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy
       - name: Install PyTorch matching system CUDA
         run: python -m pip install torch --index-url https://download.pytorch.org/whl/${{ env.CUDA_TAG }}
-      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_CUDA=ON -DENABLE_CUDA=ON -DENABLE_PYTORCH=ON -DBUILD_PYTHON=ON
+      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DENABLE_CUDA=ON -DENABLE_PYTORCH=ON -DBUILD_PYTHON=ON
       - run: cmake --build build --parallel
       - run: python tools/run_tests.py --build-dir build --label cuda --label generated --retries 2
       - run: python tools/static_analysis.py --language cuda --required

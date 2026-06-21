@@ -70,7 +70,7 @@ else()
 endif()
 
 # Build configuration
-option(BUILD_CUDA "Build CUDA components" OFF)
+option(ENABLE_CUDA "Enable CUDA-accelerated features (GPU memory, kernels)" OFF)
 option(BUILD_PYTHON "Build Python bindings" OFF)
 option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_BENCHMARKS "Build benchmarks" OFF)
@@ -84,7 +84,6 @@ option(ENABLE_ADVANCED_FEATURES "Enable all advanced features" OFF)
 option(ENABLE_GREEN_CONTEXTS "Enable CUDA Green Contexts (CUDA 13.1+)" OFF)
 
 # Optional External Dependencies
-option(ENABLE_CUDA "Enable CUDA-accelerated features (GPU memory, kernels)" ${BUILD_CUDA})
 option(ENABLE_PYTORCH "Enable PyTorch differentiable operations" ON)
 option(ENABLE_MPI "Enable distributed/MPI reduction features" OFF)
 option(ENABLE_EIGEN "Enable Eigen3-backed gradient and sheaf Laplacian components" ON)
@@ -93,7 +92,7 @@ option(ENABLE_ALL "Enable all optional dependencies (CUDA, PyTorch, MPI, Eigen, 
 
 # Auto-validate CUDA architectures against installed toolkit before enabling.
 find_program(NERVE_NVCC_PROGRAM nvcc)
-if(NERVE_NVCC_PROGRAM AND BUILD_CUDA)
+if(NERVE_NVCC_PROGRAM AND ENABLE_CUDA)
     execute_process(
         COMMAND ${NERVE_NVCC_PROGRAM} --list-gpu-arch
         OUTPUT_VARIABLE _NERVE_CUDA_SUPPORTED_ARCHS
@@ -137,18 +136,16 @@ if(NERVE_NVCC_PROGRAM AND BUILD_CUDA)
                 "Installed toolkit supports: ${_NERVE_CUDA_AVAILABLE}. "
                 "Set NERVE_GPU_BASE_ARCHS to a supported value or install a newer CUDA toolkit. "
                 "Disabling CUDA build.")
-            set(BUILD_CUDA OFF CACHE BOOL "Build CUDA components" FORCE)
             set(ENABLE_CUDA OFF CACHE BOOL "Enable CUDA-accelerated features" FORCE)
         endif()
     endif()
-elseif(NOT NERVE_NVCC_PROGRAM AND BUILD_CUDA)
+elseif(NOT NERVE_NVCC_PROGRAM AND ENABLE_CUDA)
     message(WARNING "nvcc not found — disabling CUDA build")
-    set(BUILD_CUDA OFF CACHE BOOL "Build CUDA components" FORCE)
     set(ENABLE_CUDA OFF CACHE BOOL "Enable CUDA-accelerated features" FORCE)
 endif()
 
 # Enable CUDA language only if still requested.
-if(BUILD_CUDA)
+if(ENABLE_CUDA)
     enable_language(CUDA)
     set(CMAKE_CUDA_STANDARD 20)
     set(CMAKE_CUDA_STANDARD_REQUIRED ON)
@@ -164,7 +161,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     endif()
     set(CMAKE_CUDA_FLAGS_RELEASE
         "${CMAKE_CUDA_FLAGS_RELEASE} --fmad=false --prec-div=true --prec-sqrt=true")
-    if(BUILD_CUDA)
+    if(ENABLE_CUDA)
         set(CMAKE_CUDA_FLAGS_RELEASE
             "${CMAKE_CUDA_FLAGS_RELEASE} --ftz=false")
         add_compile_definitions(NERVE_GPU_DETERMINISM=1)
@@ -178,12 +175,12 @@ find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
 
 # CUDA setup
-if(BUILD_CUDA)
+if(ENABLE_CUDA)
     enable_language(CUDA)
     find_package(CUDAToolkit QUIET)
     if(NOT CUDAToolkit_FOUND)
         message(WARNING "CUDA not found, disabling CUDA support")
-        set(BUILD_CUDA OFF CACHE BOOL "Build CUDA components" FORCE)
+        set(ENABLE_CUDA OFF CACHE BOOL "Enable CUDA-accelerated features" FORCE)
     else()
         if(CUDAToolkit_VERSION VERSION_LESS "${NERVE_CUDA_REQUIRED_VERSION_MAJOR}.${NERVE_CUDA_REQUIRED_VERSION_MINOR}")
             message(FATAL_ERROR "Nerve requires CUDA >= ${NERVE_CUDA_REQUIRED_VERSION_MAJOR}.${NERVE_CUDA_REQUIRED_VERSION_MINOR}; found ${CUDAToolkit_VERSION}")
@@ -199,24 +196,6 @@ if(ENABLE_ALL)
     set(ENABLE_MPI ON)
     set(ENABLE_EIGEN ON)
     set(ENABLE_NUMA ON)
-endif()
-
-# Ensure BUILD_CUDA matches ENABLE_CUDA
-if(ENABLE_CUDA AND NOT BUILD_CUDA)
-    message(STATUS "ENABLE_CUDA=ON requires BUILD_CUDA=ON, enabling CUDA")
-    set(BUILD_CUDA ON CACHE BOOL "Build CUDA components" FORCE)
-    if(NOT CMAKE_CUDA_COMPILER)
-        enable_language(CUDA)
-    endif()
-    if(NOT CUDAToolkit_FOUND)
-        find_package(CUDAToolkit QUIET)
-    endif()
-    if(NOT CUDAToolkit_FOUND)
-        message(WARNING "CUDA Toolkit not found, CUDA features will be disabled")
-        set(ENABLE_CUDA OFF)
-    elseif(CUDAToolkit_VERSION VERSION_LESS "${NERVE_CUDA_REQUIRED_VERSION_MAJOR}.${NERVE_CUDA_REQUIRED_VERSION_MINOR}")
-        message(FATAL_ERROR "Nerve requires CUDA >= ${NERVE_CUDA_REQUIRED_VERSION_MAJOR}.${NERVE_CUDA_REQUIRED_VERSION_MINOR}; found ${CUDAToolkit_VERSION}")
-    endif()
 endif()
 
 # Detect optional dependencies

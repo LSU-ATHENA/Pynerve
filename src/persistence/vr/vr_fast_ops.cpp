@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#ifdef BUILD_CUDA
+#ifdef NERVE_HAS_CUDA
 #include <cuda_runtime_api.h>
 #endif
 namespace nerve::persistence

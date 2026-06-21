@@ -7,7 +7,7 @@
 #include <sstream>
 #include <thread>
 
-#ifdef BUILD_CUDA
+#ifdef NERVE_HAS_CUDA
 #include <cuda_runtime_api.h>
 #endif
 
@@ -18,7 +18,7 @@ namespace
 {
 
 constexpr std::size_t SMALL_DATASET_THRESHOLD = 500;
-#ifdef BUILD_CUDA
+#ifdef NERVE_HAS_CUDA
 constexpr std::size_t BYTES_PER_MB = 1024ULL * 1024ULL;
 #endif
 constexpr double MIN_MEMORY_LIMIT_MB = 512.0;
@@ -30,7 +30,7 @@ constexpr int DEFAULT_MAX_DIMENSION = 2;
 
 bool is_cuda_available()
 {
-#ifdef BUILD_CUDA
+#ifdef NERVE_HAS_CUDA
     int device_count = 0;
     const cudaError_t status = cudaGetDeviceCount(&device_count);
     return status == cudaSuccess && device_count > 0;
@@ -50,7 +50,7 @@ errors::ErrorResult<std::string> getAdaptiveAccelerationCapabilities()
     out << "Adaptive Acceleration Capabilities:\n";
     out << "CUDA Available: " << (is_cuda_available() ? "Yes" : "No") << "\n";
     out << "CPU Cores: " << std::thread::hardware_concurrency() << "\n";
-#ifdef BUILD_CUDA
+#ifdef NERVE_HAS_CUDA
     if (is_cuda_available())
     {
         cudaDeviceProp props{};

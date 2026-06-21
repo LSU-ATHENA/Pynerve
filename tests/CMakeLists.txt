@@ -309,7 +309,7 @@ set_tests_properties(nerve_cpp_torch_regressions PROPERTIES LABELS "torch;cpu;re
 nerve_add_cpp_test(nerve_cpp_gpu_column_ops_regressions cpp/gpu_column_ops_regressions.cpp)
 set_tests_properties(nerve_cpp_gpu_column_ops_regressions PROPERTIES LABELS "persistence;gpu;cuda;regression")
 
-if(BUILD_CUDA AND CMAKE_CUDA_COMPILER)
+if(ENABLE_CUDA AND CMAKE_CUDA_COMPILER)
     add_executable(nerve_cuda_smoke cpp/cuda_smoke.cu)
     set_target_properties(nerve_cuda_smoke PROPERTIES
         CUDA_STANDARD 20

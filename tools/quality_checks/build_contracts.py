@@ -217,13 +217,12 @@ def check_build_install_contract() -> list[Finding]:
         ),
         "find_program(NERVE_CCACHE_PROGRAM ccache)": "ccache compiler launcher detection",
         "CMAKE_CUDA_COMPILER_LAUNCHER": "CUDA ccache launcher wiring",
-        'option(BUILD_CUDA "Build CUDA components" OFF)': "CUDA build disabled by default",
+        'option(ENABLE_CUDA "Enable CUDA-accelerated features (GPU memory, kernels)" OFF)': "CUDA disabled by default",
         'option(BUILD_PYTHON "Build Python bindings" OFF)': "Python bindings disabled by default",
         "option(NERVE_NATIVE_ARCH": "host-native CPU tuning opt-in",
         'set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -finline-functions")': (
             "portable release CPU flags by default"
         ),
-        'option(ENABLE_CUDA "Enable CUDA-accelerated features (GPU memory, kernels)" ${BUILD_CUDA})': "CUDA autodetection follows build option",
         'option(ENABLE_MPI "Enable distributed/MPI reduction features" OFF)': "MPI optional by default",
         "find_package(CUDAToolkit QUIET)": "non-required CUDA toolkit probe",
         'VERSION_LESS "${NERVE_CUDA_REQUIRED_VERSION_MAJOR}.${NERVE_CUDA_REQUIRED_VERSION_MINOR}"': "CUDA version minimum gate",
@@ -431,7 +430,7 @@ def check_build_install_contract() -> list[Finding]:
             "standalone Python package rejects contradictory build mode"
         ),
         "if(NOT TARGET nerve_core)": "standalone Python package build wires the C++ core",
-        'option(BUILD_CUDA "Build CUDA components" OFF)': "standalone Python package disables CUDA by default",
+        'option(ENABLE_CUDA "Enable CUDA-accelerated features (GPU memory, kernels)" OFF)': "standalone Python package disables CUDA by default",
         'option(ENABLE_PYTORCH "Enable PyTorch differentiable operations" ON)': (
             "standalone Python package preserves repository PyTorch default"
         ),
@@ -477,8 +476,7 @@ def check_build_install_contract() -> list[Finding]:
             "scikit-build-core, pybind11, and NumPy build backend requirements"
         ),
         'cmake.source-dir = "."': "wheel build uses the Python package CMake project",
-        '"-DBUILD_CUDA=OFF"': "Python wheels keep CUDA disabled unless explicitly overridden",
-        '"-DENABLE_CUDA=OFF"': "Python wheels disable CUDA autodetection by default",
+        '"-DENABLE_CUDA=OFF"': "Python wheels keep CUDA disabled unless explicitly overridden",
         'install.components = ["python"]': "wheel install is scoped to Python artifacts",
         'wheel.packages = ["pynerve"]': "scikit-build source package inclusion",
         "sdist.include = [": "scikit-build sdist source inventory is explicit",
@@ -741,7 +739,7 @@ def check_ci_contract() -> list[Finding]:
         "hendrikmuhs/ccache-action": "compiler cache integration in native CI",
         "python-bindings:": "dedicated Python binding build job",
         'python: ["3.10", "3.11", "3.12", "3.13"]': "Python binding version matrix",
-        "-DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DBUILD_CUDA=OFF": "CPU Python binding CMake build",
+        "-DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DENABLE_CUDA=OFF": "CPU Python binding CMake build",
         "pynerve_python_binding_smoke": "Python binding smoke build target",
         "tools/install_smoke.py --prefix": "installed Python package smoke in CI",
         "tools/cpp_install_smoke.py --prefix": "installed C++ package smoke in CI",

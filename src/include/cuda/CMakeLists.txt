@@ -17,7 +17,7 @@ target_include_directories(nerve_heterogeneous
 )
 
 # Common CUDA dependencies
-if(BUILD_CUDA AND CUDAToolkit_FOUND)
+if(ENABLE_CUDA AND CUDAToolkit_FOUND)
     target_link_libraries(nerve_cuda_error
         INTERFACE
             CUDA::cudart

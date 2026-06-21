@@ -12,7 +12,7 @@ using cudaStream_t = void*;
 using cudaError_t = int;
 #endif
 
-#if (defined(NERVE_HAS_CUDA_RUNTIME) || defined(NERVE_HAS_CUDA) || defined(BUILD_CUDA)) && \
+#if (defined(NERVE_HAS_CUDA_RUNTIME) || defined(NERVE_HAS_CUDA)) && \
     __has_include(<cublas_v2.h>) && __has_include(<cusparse.h>)
 #include <cublas_v2.h>
 #include <cusparse.h>
