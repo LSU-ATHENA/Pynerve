@@ -187,6 +187,7 @@ class MapperGraphConv(nn.Module):
                 edge_weights = edge_weights.to(
                     device=node_features.device, dtype=node_features.dtype
                 )
+                assert edge_weights is not None
                 neighbor_feats = neighbor_feats * self.edge_gate(edge_weights.unsqueeze(-1))
 
             neighbor_out = torch.zeros(

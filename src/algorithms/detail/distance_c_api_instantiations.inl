@@ -89,6 +89,8 @@ void nerve_knn_f64(const double* points, size_t n, size_t dim, size_t k,
 
 }  // extern "C"
 
+#include "distance_matrix_knn_sparse.inl"
+
 // Explicit instantiations
 template class EuclideanMetric<float>;
 template class EuclideanMetric<double>;
