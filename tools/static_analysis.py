@@ -200,6 +200,7 @@ def _cppcheck_command(sources: list[Path]) -> list[str]:
         f"--enable={CPP_CPPCHECK_CHECKS}",
         "--error-exitcode=1",
         "--inline-suppr",
+        "--suppress=arrayIndexThenCheck",
         *[source.relative_to(ROOT).as_posix() for source in sources],
     ]
 

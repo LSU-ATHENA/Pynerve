@@ -54,7 +54,6 @@ struct ComponentForest
 
         Size survivor = root_left;
         Size dying = root_right;
-        // cppcheck-suppress arrayIndexThenCheck
         if (birth[root_right] < birth[root_left] ||
             (birth[root_right] == birth[root_left] && root_right < root_left))
         {

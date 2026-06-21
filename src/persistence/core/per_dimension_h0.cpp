@@ -151,7 +151,6 @@ H0Result computeH0UnionFind(const std::vector<std::vector<int>> &simplices,
 
         if (root_u != root_v)
         {
-            // cppcheck-suppress arrayIndexThenCheck
             if (birth_time[root_u] > birth_time[root_v] ||
                 (birth_time[root_u] == birth_time[root_v] && root_u > root_v))
             {
