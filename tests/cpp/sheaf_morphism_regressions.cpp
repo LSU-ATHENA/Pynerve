@@ -105,7 +105,7 @@ bool check_async_morphism_queue()
     queue.start(2);
     std::promise<std::vector<float>> prom;
     auto fut = prom.get_future();
-    queue.submit(0, 1, {1.0f, 2.0f}, std::move(prom));
+    queue.submit(0, 0, {1.0f, 2.0f}, std::move(prom));
     queue.stop();
     auto result = fut.get();
     if (result.empty())

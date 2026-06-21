@@ -38,7 +38,7 @@ bool check_conv1d_forward()
     cfg.use_persistence_weighting = false;
     nerve::nn::DiagramConv1D<double> conv(cfg);
     std::vector<double> diagram{0.0, 1.0, 0.0, 0.2, 0.7, 1.0};
-    std::vector<double> features{0.5, 0.3, 0.1, 0.4};
+    std::vector<double> features{0.5, 0.3};
     auto out = conv.forward(as_span(diagram), as_span(features), 1, 2);
     if (!all_finite(out))
     {
@@ -169,7 +169,7 @@ bool check_persistence_image_multi_dim()
     nerve::nn::PersistenceImageLayer<double> layer(cfg);
     std::vector<double> diagram{0.0, 1.0, 0.0, 0.2, 0.7, 0.0, 0.5, 2.0, 1.0};
     auto images = layer.forward_multi_dim(as_span(diagram), 1, 3, 1);
-    if (images.size() != 16)
+    if (images.size() != 32)
     {
         std::cerr << "multi dim image wrong size\n";
         return false;

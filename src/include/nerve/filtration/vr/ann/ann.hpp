@@ -21,16 +21,20 @@ namespace nerve::filtration::vr::ann
 }
 
 [[nodiscard]] inline std::vector<std::pair<int, int>>
-buildVRWithANN(const std::vector<std::pair<float, float>> & /*points*/, float /*radius*/,
-               int /*max_dim*/, bool /*use_approximate*/)
+buildVRWithANN(const std::vector<std::pair<float, float>> & /*points*/, float radius, int max_dim,
+               bool /*use_approximate*/)
 {
+    if (!std::isfinite(radius) || radius < 0.0f || max_dim <= 0)
+        throw std::invalid_argument("buildVRWithANN received an invalid argument");
     return {};
 }
 
 [[nodiscard]] inline std::vector<std::pair<int, int>>
-buildVRWithANN(const std::vector<nerve::algebra::Point> & /*points*/, float /*radius*/,
-               int /*max_dim*/, bool /*use_approximate*/)
+buildVRWithANN(const std::vector<nerve::algebra::Point> & /*points*/, float radius, int max_dim,
+               bool /*use_approximate*/)
 {
+    if (!std::isfinite(radius) || radius < 0.0f || max_dim <= 0)
+        throw std::invalid_argument("buildVRWithANN received an invalid argument");
     return {};
 }
 

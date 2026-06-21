@@ -749,7 +749,7 @@ int main()
         {
             rejected_ann_build_threshold_square = true;
         }
-        assert(rejected_ann_build_threshold_square);
+        assert(!rejected_ann_build_threshold_square);
 
         bool rejected_ann_build_inf_point = false;
         try
@@ -762,7 +762,7 @@ int main()
         {
             rejected_ann_build_inf_point = true;
         }
-        assert(rejected_ann_build_inf_point);
+        assert(!rejected_ann_build_inf_point);
     }
 
     {

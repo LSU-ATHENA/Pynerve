@@ -195,7 +195,7 @@ bool check_build_without_connectivity()
     ls.setNumLevels(5);
     ls.setAdaptiveLevels(false);
     std::vector<double> field{0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
-    BufferView<const double> view(field.data(), view.size());
+    BufferView<const double> view(field.data(), field.size());
     DeterminismContract contract;
     auto result = ls.buildFiltration(view, contract);
     if (!result.isError())

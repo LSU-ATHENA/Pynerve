@@ -246,6 +246,7 @@ bool check_validate_pairs_death_less_than_birth()
 bool check_circuit_breaker_construction()
 {
     CircuitBreakerConfig cfg;
+    cfg.enable_automatic_recovery = false;
     CircuitBreaker cb(cfg);
     if (cb.getState() != CircuitBreaker::State::CLOSED)
         return false;
@@ -258,6 +259,7 @@ bool check_circuit_breaker_operations()
 {
     CircuitBreakerConfig cfg;
     cfg.max_consecutive_failures = 3;
+    cfg.enable_automatic_recovery = false;
     CircuitBreaker cb(cfg);
     if (!cb.shouldAllowOperation("op1"))
         return false;

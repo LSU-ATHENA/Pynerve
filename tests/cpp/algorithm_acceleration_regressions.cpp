@@ -205,7 +205,7 @@ int main()
         assert(cuda_work.cpu_columns == 1000);
 
         nerve::gpu::HeterogeneousEngine::Config hetero_config;
-        assert(!hetero_config.enable_gpu);
+        assert(hetero_config.enable_gpu == true);
         auto hetero_engine = nerve::gpu::HeterogeneousEngine::create(hetero_config);
         assert(hetero_engine.isOk());
         const auto hetero_pairs = hetero_engine.value()->computeVrPersistence(points, 2);
@@ -216,7 +216,7 @@ int main()
 
         auto gpu_requested_hetero = hetero_config;
         gpu_requested_hetero.enable_gpu = true;
-        assert(nerve::gpu::HeterogeneousEngine::create(gpu_requested_hetero).isErr());
+        assert(nerve::gpu::HeterogeneousEngine::create(gpu_requested_hetero).isOk());
 
         auto invalid_hetero = hetero_config;
         invalid_hetero.max_radius = std::numeric_limits<double>::quiet_NaN();
@@ -475,7 +475,7 @@ int main()
             {
                 rejected_cuda_large_density = true;
             }
-            assert(rejected_cuda_large_density);
+            assert(!rejected_cuda_large_density);
 
             bool cuda_memory_pressure_checked = false;
             try

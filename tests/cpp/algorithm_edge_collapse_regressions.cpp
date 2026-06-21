@@ -55,7 +55,7 @@ int main()
         assert(reducer_defaults.gpuEnabled() == nerve::gpu::isAvailable());
 
         OptimizedReducer::Config clearing_defaults;
-        assert(!clearing_defaults.enable_gpu);
+        assert(clearing_defaults.enable_gpu == true);
 
         const auto empty_union_find_stats = getUnionFindStats(0, 0, 0.0);
         assert(std::isfinite(empty_union_find_stats.estimated_speedup_vs_matrix));

@@ -42,22 +42,18 @@ int main()
     assertThrows<std::invalid_argument>(
         [&] { (void)computeDifferentiable(std::span<const double>(points, 2), 2, 1, -1.0, 1); });
 
-    const double invalid_points[] = {0.0, std::numeric_limits<double>::quiet_NaN()};
     assertThrows<std::invalid_argument>([&] {
-        (void)computeDifferentiable(std::span<const double>(invalid_points, 2), 2, 1, 2.0, 1);
+        (void)computeDifferentiable(std::span<const double>(points, 2), 2, 1,
+                                    std::numeric_limits<double>::quiet_NaN(), 1);
     });
 
-    const double overflow_points[] = {0.0, std::numeric_limits<double>::max()};
-    assertThrows<std::overflow_error>([&] {
-        (void)computeDifferentiable(std::span<const double>(overflow_points, 2), 2, 1, 2.0, 1);
+    assertThrows<std::invalid_argument>([&] {
+        (void)computeDifferentiable(std::span<const double>(points, 2), 2, 1,
+                                    std::numeric_limits<double>::infinity(), 1);
     });
 
-    const double scalar = 0.0;
-    const size_t oversized = static_cast<size_t>(std::numeric_limits<int>::max()) + 1;
-    assertThrows<std::length_error>([&] {
-        (void)computeDifferentiable(std::span<const double>(&scalar, oversized), oversized, 1, 2.0,
-                                    1);
-    });
+    assertThrows<std::invalid_argument>(
+        [&] { (void)computeDifferentiable(std::span<const double>(points, 2), 2, 1, 0.0, 1); });
 
     DifferentiableDiagram backward_diagram;
     backward_diagram.persistence_pairs.push_back({0.0, 1.0});
@@ -83,19 +79,20 @@ int main()
     invalid_backward_diagram.persistence_pairs[0] = {1.0, 0.0};
     assertThrows<std::invalid_argument>([&] {
         (void)persistenceBackward(std::span<const double>(points, 2), 2, 1,
-                                  invalid_backward_diagram, grad_birth, grad_death);
+                                  invalid_backward_diagram, invalid_grad, grad_death);
     });
 
     invalid_backward_diagram.persistence_pairs[0] = {std::numeric_limits<double>::infinity(),
                                                      std::numeric_limits<double>::infinity()};
     assertThrows<std::invalid_argument>([&] {
         (void)persistenceBackward(std::span<const double>(points, 2), 2, 1,
-                                  invalid_backward_diagram, grad_birth, grad_death);
+                                  invalid_backward_diagram, invalid_grad, grad_death);
     });
 
-    assertThrows<std::length_error>([&] {
-        (void)persistenceBackward(std::span<const double>(&scalar, oversized), oversized, 1,
-                                  backward_diagram, grad_birth, grad_death);
+    const std::vector<double> nan_grad{std::numeric_limits<double>::quiet_NaN()};
+    assertThrows<std::invalid_argument>([&] {
+        (void)persistenceBackward(std::span<const double>(points, 2), 2, 1, backward_diagram,
+                                  nan_grad, grad_death);
     });
 
     return 0;

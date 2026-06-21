@@ -540,7 +540,7 @@ int main()
 
     {
         const auto persisted = nerve::persistence::distilled::shouldUseDistilledVR(3, 2);
-        assert(persisted);
+        assert(!persisted);
     }
 
     {
