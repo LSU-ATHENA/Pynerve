@@ -489,10 +489,6 @@ computeVrPersistenceFastResult(const core::BufferView<const double> &points, Siz
         return errors::ErrorResult<std::vector<Pair>>::error(
             errors::ErrorCode::E54_PH4_INVALID_INPUT);
     }
-    if (!is_cuda_available())
-    {
-        return errors::ErrorResult<std::vector<Pair>>::error(errors::ErrorCode::E10_GPU_OOM);
-    }
     if ((config.use_accelerated_runtime || config.use_adaptive_acceleration) &&
         !isAdaptiveAccelerationAvailable())
     {

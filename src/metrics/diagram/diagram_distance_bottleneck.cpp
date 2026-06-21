@@ -109,6 +109,14 @@ bool hasPerfectMatching(const std::vector<DiagramPoint> &points1,
         }
     }
 
+    for (size_t j = 0; j < n2; ++j)
+    {
+        for (size_t i = 0; i < n1; ++i)
+        {
+            adjacency[n1 + j].push_back(n2 + i);
+        }
+    }
+
     std::vector<int> rightMatch(n, -1);
     size_t matched = 0;
     for (size_t left = 0; left < n; ++left)

@@ -94,8 +94,7 @@ SchemaVersion SchemaVersion::fromString(const std::string &version_str)
 }
 bool SchemaMetadata::isVersionCompatible(const SchemaVersion &check_version) const
 {
-    return check_version >= minCompatibleVersion && check_version <= maxCompatibleVersion &&
-           check_version.major == version.major;
+    return check_version >= minCompatibleVersion && check_version <= maxCompatibleVersion;
 }
 std::string SchemaMetadata::toString() const
 {

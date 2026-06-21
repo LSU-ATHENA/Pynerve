@@ -51,9 +51,9 @@ std::vector<Pair> canonical(std::vector<Pair> pairs)
 CellularComplex make_triangle_complex()
 {
     CellularComplex complex;
-    Index v0 = complex.addCell(Cell(0));
-    Index v1 = complex.addCell(Cell(0));
-    Index v2 = complex.addCell(Cell(0));
+    Index v0 = complex.addCell(Cell(0, {0}));
+    Index v1 = complex.addCell(Cell(0, {1}));
+    Index v2 = complex.addCell(Cell(0, {2}));
     Index e0 = complex.addCell(Cell(1, {v0, v1}));
     Index e1 = complex.addCell(Cell(1, {v0, v2}));
     Index e2 = complex.addCell(Cell(1, {v1, v2}));
@@ -64,10 +64,10 @@ CellularComplex make_triangle_complex()
 CellularComplex make_square_complex()
 {
     CellularComplex complex;
-    Index v0 = complex.addCell(Cell(0));
-    Index v1 = complex.addCell(Cell(0));
-    Index v2 = complex.addCell(Cell(0));
-    Index v3 = complex.addCell(Cell(0));
+    Index v0 = complex.addCell(Cell(0, {0}));
+    Index v1 = complex.addCell(Cell(0, {1}));
+    Index v2 = complex.addCell(Cell(0, {2}));
+    Index v3 = complex.addCell(Cell(0, {3}));
     Index e0 = complex.addCell(Cell(1, {v0, v1}));
     Index e1 = complex.addCell(Cell(1, {v1, v2}));
     Index e2 = complex.addCell(Cell(1, {v2, v3}));

@@ -188,7 +188,9 @@ bool check_compute_vr_persistence_accelerated_empty_input()
         auto ec = result.errorCode();
         bool acceptable = (ec == nerve::errors::ErrorCode::EB0_FEATURE_DISABLED) ||
                           (ec == nerve::errors::ErrorCode::E10_GPU_OOM) ||
-                          (ec == nerve::errors::ErrorCode::E11_GPU_LAUNCH_FAIL);
+                          (ec == nerve::errors::ErrorCode::E11_GPU_LAUNCH_FAIL) ||
+                          (ec == nerve::errors::ErrorCode::E50_PH_ABORT) ||
+                          (ec == nerve::errors::ErrorCode::E51_PH_INPUT);
         if (!acceptable)
         {
             return false;

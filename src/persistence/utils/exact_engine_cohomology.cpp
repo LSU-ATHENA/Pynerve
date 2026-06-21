@@ -66,7 +66,7 @@ ExactPersistenceResult computeExactCohomologyZ2(const algebra::SimplicialComplex
     }
     for (auto &cb : coboundary)
     {
-        std::sort(cb.begin(), cb.end(), std::greater<Index>());
+        std::sort(cb.begin(), cb.end());
     }
 
     std::vector<Index> low(simplices.size(), -1);
@@ -86,7 +86,7 @@ ExactPersistenceResult computeExactCohomologyZ2(const algebra::SimplicialComplex
 
         while (!column.empty())
         {
-            Index pivot = static_cast<Index>(column.front());
+            Index pivot = static_cast<Index>(column.back());
             if (pivot >= static_cast<Index>(low_row_to_col.size()))
             {
                 low_row_to_col.resize(pivot + 1, -1);
@@ -131,7 +131,7 @@ ExactPersistenceResult computeExactCohomologyZ2(const algebra::SimplicialComplex
     }
     for (size_t i = 0; i < simplices.size(); ++i)
     {
-        if (!is_death_column[i])
+        if (!is_death_column[i] && low[i] < 0)
         {
             pairs.push_back({simplices[i].second, std::numeric_limits<double>::infinity(),
                              static_cast<int>(simplices[i].first.dimension())});

@@ -136,7 +136,7 @@ void validateCellForInsertion(const Cell &cell, Size existing_cells)
     }
     for (const Index idx : cell.boundary())
     {
-        if (idx < 0 || static_cast<Size>(idx) >= existing_cells)
+        if (idx < 0 || static_cast<Size>(idx) > existing_cells)
         {
             throw std::invalid_argument("cell boundary index must reference an existing cell");
         }

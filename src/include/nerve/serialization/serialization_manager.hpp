@@ -46,6 +46,7 @@ struct SchemaMetadata
         : version(1, 0, 0)
         , minCompatibleVersion(1, 0, 0)
         , maxCompatibleVersion(1, 0, 0)
+        , schema_name("default")
         , createdAt(std::chrono::system_clock::now())
     {}
     bool isVersionCompatible(const SchemaVersion &check_version) const;

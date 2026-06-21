@@ -85,9 +85,9 @@ struct Simplex
 };
 struct Pair
 {
-    Field birth;
-    Field death;
-    Dimension dimension;
+    Field birth = 0.0;
+    Field death = 0.0;
+    Dimension dimension = 0;
     Index birth_index = -1;
     Index death_index = -1;
     [[nodiscard]] constexpr Field lifetime() const noexcept { return death - birth; }

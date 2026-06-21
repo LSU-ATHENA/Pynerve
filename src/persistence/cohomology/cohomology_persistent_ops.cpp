@@ -387,6 +387,8 @@ PersistentCohomologyComputer::PersistentCohomologyComputer(const algebra::Cellul
 std::vector<Pair> PersistentCohomologyComputer::computePersistentCohomology(
     const std::vector<std::pair<algebra::Cell, double>> &filtration) const
 {
+    barcode_cache_.clear();
+    barcode_valid_ = false;
     if (filtration.empty())
     {
         return {};
@@ -400,8 +402,15 @@ std::vector<Pair> PersistentCohomologyComputer::computePersistentCohomology(
     for (int d = 0; d <= max_dim; ++d)
     {
         auto dim_pairs = computeForDimension(filtration, d);
+        for (const auto &p : dim_pairs)
+        {
+            barcode_cache_.emplace_back(p.dimension, p.birth,
+                                        p.isInfinite() ? std::numeric_limits<double>::infinity()
+                                                       : p.death);
+        }
         all_pairs.insert(all_pairs.end(), dim_pairs.begin(), dim_pairs.end());
     }
+    barcode_valid_ = true;
     return all_pairs;
 }
 
@@ -539,8 +548,11 @@ std::vector<Pair> PersistentCohomologyComputer::computeForDimension(
 
 std::vector<std::tuple<int, double, double>> PersistentCohomologyComputer::getBarcode() const
 {
-    std::vector<std::tuple<int, double, double>> barcode;
-    return barcode;
+    if (!barcode_valid_)
+    {
+        return {};
+    }
+    return barcode_cache_;
 }
 
 Cohomology::Cohomology(const algebra::CellularComplex &complex)

@@ -78,6 +78,8 @@ public:
 
 private:
     algebra::CellularComplex complex_;
+    mutable std::vector<std::tuple<int, double, double>> barcode_cache_;
+    mutable bool barcode_valid_ = false;
 };
 
 } // namespace nerve::persistence

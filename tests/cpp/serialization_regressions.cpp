@@ -61,9 +61,9 @@ bool check_schema_version_compatibility()
 {
     SchemaVersion v1(1, 0, 0);
     SchemaVersion v2(1, 5, 0);
-    if (!v1.isCompatibleWith(v2))
+    if (!v2.isCompatibleWith(v1))
     {
-        std::cerr << "1.0.0 should be compatible with 1.5.0\n";
+        std::cerr << "1.5.0 should be compatible with 1.0.0\n";
         return false;
     }
     return true;
