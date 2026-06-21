@@ -128,7 +128,7 @@ void IncrementalGraphLaplacian::rebuildMatrix()
     state_.column_start.assign(state_.matrix_size + 1, 0);
     for (Size i = 0; i < state_.matrix_size; ++i)
     {
-        state_.column_start[i] = nnz;
+        state_.column_start[i] = static_cast<Index>(nnz);
         for (Size j = 0; j < state_.matrix_size; ++j)
         {
             if (i != j)
@@ -139,7 +139,7 @@ void IncrementalGraphLaplacian::rebuildMatrix()
             }
         }
     }
-    state_.column_start[state_.matrix_size] = nnz;
+    state_.column_start[state_.matrix_size] = static_cast<Index>(nnz);
 }
 
 const LaplacianState &IncrementalGraphLaplacian::getState() const
@@ -240,7 +240,7 @@ std::vector<double> IncrementalGraphLaplacian::computeFiedlerVector() const
             }
             w[i] = row_sum;
         }
-        double mean = std::accumulate(w.begin(), w.end(), 0.0) / n;
+        double mean = std::accumulate(w.begin(), w.end(), 0.0) / static_cast<double>(n);
         for (Size i = 0; i < n; ++i)
             w[i] -= mean;
         double norm = 0.0;

@@ -583,8 +583,6 @@ MPICommunicator &MPICommunicator::operator=(MPICommunicator &&other) noexcept
     return *this;
 }
 
-MPICommunicator::~MPICommunicator() = default;
-
 int MPICommunicator::rank() const
 {
     throw std::logic_error("MPICommunicator::rank() requires MPI support");
