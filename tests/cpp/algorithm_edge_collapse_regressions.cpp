@@ -52,7 +52,7 @@ int main()
         Reducer reducer_defaults(empty_boundary);
         assert(!reducer_defaults.gpuEnabled());
         reducer_defaults.enableGPU(true);
-        assert(reducer_defaults.gpuEnabled());
+        assert(reducer_defaults.gpuEnabled() == nerve::gpu::isAvailable());
 
         OptimizedReducer::Config clearing_defaults;
         assert(!clearing_defaults.enable_gpu);

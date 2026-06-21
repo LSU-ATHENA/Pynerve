@@ -4,6 +4,7 @@
 #include "nerve/core_types.hpp"
 #include "nerve/error/error_registry.hpp"
 #include "nerve/errors/errors.hpp"
+#include "nerve/gpu/gpu_compute.hpp"
 #include "nerve/persistence/accelerated/heterogeneous_fast_vr.hpp"
 
 #include <algorithm>
@@ -31,6 +32,10 @@ struct WorkDistribution
 
     static WorkDistribution compute(nerve::Size total_columns)
     {
+        if (!nerve::gpu::isAvailable())
+        {
+            return {.gpu_columns = 0, .cpu_columns = total_columns};
+        }
         const nerve::Size gpu_work = static_cast<nerve::Size>(total_columns * GPU_RATIO);
         return {
             .gpu_columns = gpu_work,
