@@ -97,8 +97,7 @@ jobs:
               -DBUILD_PYTHON=OFF \
               -DBUILD_CUDA=OFF \
               -DNERVE_SIMD=${{ matrix.simd }} \
-              -DNERVE_ENABLE_AVX512_COMPONENTS=ON \
-              -DNERVE_SKIP_AVX512_RUNTIME_CHECK=ON
+              -DNERVE_ENABLE_AVX512_COMPONENTS=ON
           else
             cmake -S . -B build -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
