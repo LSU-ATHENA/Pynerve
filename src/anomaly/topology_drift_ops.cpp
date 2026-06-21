@@ -39,17 +39,20 @@ PersistenceProfile computePersistenceProfile(const std::vector<nerve::Pair> &pai
 
     for (const auto &p : pairs)
     {
-        Size bin = std::min(static_cast<Size>(p.birth / max_val * num_bins), num_bins - 1);
+        Size bin = std::min(static_cast<Size>(p.birth / max_val * static_cast<double>(num_bins)),
+                            num_bins - 1);
         ++profile.birth_histogram[bin];
         profile.birth_mean += p.birth;
 
         if (std::isfinite(p.death))
         {
-            Size dbin = std::min(static_cast<Size>(p.death / max_val * num_bins), num_bins - 1);
+            Size dbin = std::min(
+                static_cast<Size>(p.death / max_val * static_cast<double>(num_bins)), num_bins - 1);
             ++profile.death_histogram[dbin];
             profile.death_mean += p.death;
             double pers = p.death - p.birth;
-            Size pbin = std::min(static_cast<Size>(pers / max_val * num_bins), num_bins - 1);
+            Size pbin = std::min(static_cast<Size>(pers / max_val * static_cast<double>(num_bins)),
+                                 num_bins - 1);
             ++profile.persistence_histogram[pbin];
             profile.persistence_mean += pers;
             ++finite_count;
@@ -57,9 +60,9 @@ PersistenceProfile computePersistenceProfile(const std::vector<nerve::Pair> &pai
     }
 
     Size n = pairs.size();
-    profile.birth_mean /= n;
-    profile.death_mean /= finite_count > 0 ? finite_count : 1;
-    profile.persistence_mean /= finite_count > 0 ? finite_count : 1;
+    profile.birth_mean /= static_cast<double>(n);
+    profile.death_mean /= finite_count > 0 ? static_cast<double>(finite_count) : 1.0;
+    profile.persistence_mean /= finite_count > 0 ? static_cast<double>(finite_count) : 1.0;
 
     profile.birth_variance = 0.0;
     profile.death_variance = 0.0;
@@ -76,7 +79,7 @@ PersistenceProfile computePersistenceProfile(const std::vector<nerve::Pair> &pai
             profile.persistence_variance += pd * pd;
         }
     }
-    profile.birth_variance /= n;
+    profile.birth_variance /= static_cast<double>(n);
     return profile;
 }
 

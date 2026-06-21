@@ -78,8 +78,6 @@ DeterminismContract::DeterminismContract(DeterminismLevel level, const std::stri
             enable_deterministic_random = true;
             [[fallthrough]];
         case DeterminismLevel::BASIC:
-            enable_checksum_validation = true;
-            break;
         case DeterminismLevel::NONE:
             enable_checksum_validation = true;
             break;

@@ -188,8 +188,8 @@ FeatureCache::CacheStats FeatureCache::getStats() const
     auto h = hits_.load();
     auto m = misses_.load();
     auto total = h + m;
-    stats.hit_rate = total > 0 ? static_cast<double>(h) / total : 0.0;
-    stats.miss_rate = total > 0 ? static_cast<double>(m) / total : 0.0;
+    stats.hit_rate = total > 0 ? static_cast<double>(h) / static_cast<double>(total) : 0.0;
+    stats.miss_rate = total > 0 ? static_cast<double>(m) / static_cast<double>(total) : 0.0;
     stats.evictions = evictions_.load();
     stats.accesses = total;
     stats.memory_usage_bytes = stats.total_entries * sizeof(FeatureEntry);
@@ -409,6 +409,7 @@ std::vector<std::string> CacheManager::getCacheNames() const
 {
     std::shared_lock lock(mutex_);
     std::vector<std::string> names;
+    names.reserve(caches_.size());
     for (const auto &[name, _] : caches_)
         names.push_back(name);
     return names;

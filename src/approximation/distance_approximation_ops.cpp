@@ -15,7 +15,7 @@ void jlProjectRandom(const T *points, Size n, Size dim, Size target_dim, T *proj
     static constexpr T kScale = 3.0;
     std::vector<T> proj(target_dim * dim);
     for (Size i = 0; i < target_dim * dim; ++i)
-        proj[i] = (static_cast<T>(rand()) / RAND_MAX - T{0.5}) * kScale;
+        proj[i] = (static_cast<T>(rand()) / static_cast<T>(RAND_MAX) - T{0.5}) * kScale;
     for (Size i = 0; i < n; ++i)
     {
         for (Size j = 0; j < target_dim; ++j)
@@ -291,8 +291,9 @@ void SlicedWasserstein::updateStats(float distance, float computation_time_ms)
     }
     else
     {
-        stats_.mean_distance = (stats_.mean_distance * (stats_.num_computations - 1) + distance) /
-                               static_cast<float>(stats_.num_computations);
+        stats_.mean_distance =
+            (stats_.mean_distance * static_cast<float>(stats_.num_computations - 1) + distance) /
+            static_cast<float>(stats_.num_computations);
         if (distance < stats_.min_distance)
         {
             stats_.min_distance = distance;
@@ -332,6 +333,7 @@ std::vector<size_t> DiagramLSH::findSimilarDiagrams(const std::vector<DiagramPoi
     std::vector<std::pair<size_t, float>> ranked =
         findSimilarDiagramsWithDistance(query_diagram, max_results);
     std::vector<size_t> result;
+    result.reserve(ranked.size());
     for (const auto &[id, dist] : ranked)
     {
         result.push_back(id);
@@ -436,6 +438,7 @@ CoarseGrainedMatcher::findMatches(const std::vector<DiagramPoint> &query_diagram
         ranked.resize(max_results);
     }
     std::vector<size_t> result;
+    result.reserve(ranked.size());
     for (const auto &[id, d] : ranked)
     {
         result.push_back(id);
@@ -530,7 +533,7 @@ ApproximateBottleneck::selectLandmarkPoints(const std::vector<DiagramPoint> &dia
         static_cast<float>(diagram.size()) / static_cast<float>(config_.num_landmark_points);
     for (size_t i = 0; i < config_.num_landmark_points; ++i)
     {
-        result.push_back(diagram[static_cast<size_t>(i * step)]);
+        result.push_back(diagram[static_cast<size_t>(static_cast<float>(i) * step)]);
     }
     return result;
 }
@@ -542,7 +545,7 @@ ApproximateBottleneck::sampleDiagram(const std::vector<DiagramPoint> &diagram, f
     {
         return {};
     }
-    size_t count = static_cast<size_t>(diagram.size() * ratio);
+    size_t count = static_cast<size_t>(static_cast<float>(diagram.size()) * ratio);
     if (count == 0)
     {
         count = 1;
