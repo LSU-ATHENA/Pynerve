@@ -501,7 +501,7 @@ set(NERVE_ADVANCED_DIFFERENTIABLE_SOURCES
 set(NERVE_MPI_SOURCES
     determinism/mpi_ops.cpp
     distributed/distributed_persistence.cpp
-    distributed/mpi_communicator_mpi.cpp
+    distributed/mpi_communicator.cpp
     distributed/mpi_cuda_ops.cpp
     distributed/nvshmem_bridge.cpp
     distributed/sharded_boundary_matrix.cpp
