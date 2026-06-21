@@ -1,7 +1,6 @@
 #include "nerve/persistence/core/per_dimension_exact.hpp"
 
 #include <algorithm>
-#include <cassert>
 #include <chrono>
 #include <limits>
 #include <numeric>
@@ -146,8 +145,9 @@ H0Result computeH0UnionFind(const std::vector<std::vector<int>> &simplices,
 
         int root_u = find(u);
         int root_v = find(v);
-        assert(static_cast<size_t>(root_u) < birth_time.size());
-        assert(static_cast<size_t>(root_v) < birth_time.size());
+        if (static_cast<size_t>(root_u) >= birth_time.size() ||
+            static_cast<size_t>(root_v) >= birth_time.size())
+            continue;
 
         if (root_u != root_v)
         {

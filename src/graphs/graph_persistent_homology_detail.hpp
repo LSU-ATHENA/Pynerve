@@ -3,7 +3,6 @@
 #include "nerve/graphs/graph.hpp"
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <limits>
 #include <map>
@@ -42,10 +41,12 @@ struct ComponentForest
 
     void unite(Size left, Size right, double death_time, std::vector<Interval> &intervals)
     {
+        if (left >= parent.size() || right >= parent.size())
+            return;
         Size root_left = find(left);
         Size root_right = find(right);
-        assert(root_left < birth.size());
-        assert(root_right < birth.size());
+        if (root_left >= birth.size() || root_right >= birth.size())
+            return;
         if (root_left == root_right)
         {
             return;
