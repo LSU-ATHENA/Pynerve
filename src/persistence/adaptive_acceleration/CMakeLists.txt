@@ -4,14 +4,18 @@ cmake_minimum_required(VERSION 3.20)
 
 # Adaptive Acceleration library options
 option(NERVE_ENABLE_ADAPTIVE_ACCELERATION "Enable Adaptive Acceleration persistent homology" ON)
-option(NERVE_ENABLE_CUDA "Enable CUDA support for Adaptive Acceleration" OFF)
+if(NOT DEFINED NERVE_ENABLE_CUDA)
+    option(NERVE_ENABLE_CUDA "Enable CUDA support for Adaptive Acceleration" OFF)
+endif()
 option(NERVE_ENABLE_STREAMING "Enable streaming support" ON)
 option(NERVE_ENABLE_APPROXIMATION "Enable approximation methods" ON)
 option(NERVE_ENABLE_REPRESENTATIVE_CYCLES "Enable representative cycles" ON)
 option(NERVE_ENABLE_PERFORMANCE_MONITORING "Enable performance monitoring" ON)
-option(NERVE_NATIVE_ARCH
-    "Tune CPU code generation for the build host; disables portable binary output"
-    OFF)
+if(NOT DEFINED NERVE_NATIVE_ARCH)
+    option(NERVE_NATIVE_ARCH
+        "Tune CPU code generation for the build host; disables portable binary output"
+        OFF)
+endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/simd.cmake)
 nerve_configure_x86_simd_support()
