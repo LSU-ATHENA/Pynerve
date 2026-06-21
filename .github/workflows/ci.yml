@@ -88,7 +88,14 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1.2
       - run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis ninja
+      - name: Detect AVX-512 support
+        id: avx512
+        run: |
+          AVX512=0
+          grep -q "avx512" /proc/cpuinfo && AVX512=1 || true
+          echo "supported=$AVX512" >> $GITHUB_OUTPUT
       - name: Configure
+        if: matrix.simd != 'avx512' || steps.avx512.outputs.supported == '1'
         run: |
           if [ "${{ matrix.simd }}" = "avx512" ]; then
             cmake -S . -B build -G Ninja \
@@ -108,7 +115,9 @@ jobs:
               -DNERVE_ENABLE_AVX512_COMPONENTS=ON
           fi
       - run: cmake --build build --parallel
+        if: matrix.simd != 'avx512' || steps.avx512.outputs.supported == '1'
       - run: ctest --test-dir build -L "cpu|generated" --output-on-failure --parallel 2
+        if: matrix.simd != 'avx512' || steps.avx512.outputs.supported == '1'
 
   static-native:
     runs-on: ubuntu-24.04
