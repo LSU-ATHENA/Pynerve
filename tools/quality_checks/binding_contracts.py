@@ -865,11 +865,13 @@ def check_torch_bindings_schema() -> list[Finding]:
                 )
             )
     required_missing_smoke_fragments = {
-        "torch.ops.nerve.filtration_alpha": "registered alpha filtration missing smoke",
-        "torch.ops.nerve.ph_witness": "registered witness persistence missing smoke",
-        "torch.ops.nerve.ph_alpha": "registered alpha persistence missing smoke",
-        "torch.ops.nerve.ph_persistence": ("registered boundary-matrix persistence missing smoke"),
-        "torch.ops.nerve.vr_fast": "registered vr_fast contract smoke",
+        "torch.ops.pynerve.filtration_alpha": "registered alpha filtration missing smoke",
+        "torch.ops.pynerve.ph_witness": "registered witness persistence missing smoke",
+        "torch.ops.pynerve.ph_alpha": "registered alpha persistence missing smoke",
+        "torch.ops.pynerve.ph_persistence": (
+            "registered boundary-matrix persistence missing smoke"
+        ),
+        "torch.ops.pynerve.vr_fast": "registered vr_fast contract smoke",
         "registered vr_fast(large) must return persistence pairs": (
             "vr_fast large concrete implementation smoke"
         ),
@@ -1979,8 +1981,8 @@ def check_binding_smoke_contract() -> list[Finding]:
         "nerve.persistence_image": "installed NumPy persistence image smoke",
         "PH5PH6Engine": "installed production-named PH5/PH6 engine smoke",
         "tda_torch.persistence_image": "installed torch persistence image smoke",
-        "torch.ops.nerve.filtration_distance_matrix": "installed registered distance operator smoke",
-        "torch.ops.nerve.ph_image": "installed registered persistence-image operator smoke",
+        "torch.ops.pynerve.filtration_distance_matrix": "installed registered distance operator smoke",
+        "torch.ops.pynerve.ph_image": "installed registered persistence-image operator smoke",
         "float8_e4m3fn": "installed float8 vectorization smoke",
         "loss.backward()": "installed torch autograd smoke",
         "--require-torch": "required torch install smoke mode",
@@ -2041,16 +2043,16 @@ def check_binding_smoke_contract() -> list[Finding]:
         "image.device != diagram.diagrams.device": "persistence image device preservation check",
         "tda_torch.diagram_wasserstein": "high-level Wasserstein smoke",
         "tda_torch.diagram_bottleneck": "high-level bottleneck smoke",
-        "torch.ops.nerve.filtration_distance_matrix": "registered distance operator smoke",
-        "torch.ops.nerve.ph_image": "registered persistence-image operator smoke",
+        "torch.ops.pynerve.filtration_distance_matrix": "registered distance operator smoke",
+        "torch.ops.pynerve.ph_image": "registered persistence-image operator smoke",
         "float8_e4m3fn": "float8 vectorization smoke",
         "tda_torch.persistence_from_matrix": "matrix persistence smoke",
         "tda_torch.witness_persistence": "witness persistence smoke",
         "tda_torch.alpha_persistence": "alpha persistence smoke",
-        "torch.ops.nerve.filtration_alpha": "registered alpha filtration missing smoke",
-        "torch.ops.nerve.ph_witness": "registered witness persistence missing smoke",
-        "torch.ops.nerve.ph_alpha": "registered alpha persistence missing smoke",
-        "torch.ops.nerve.vr_fast": "registered vr_fast contract smoke",
+        "torch.ops.pynerve.filtration_alpha": "registered alpha filtration missing smoke",
+        "torch.ops.pynerve.ph_witness": "registered witness persistence missing smoke",
+        "torch.ops.pynerve.ph_alpha": "registered alpha persistence missing smoke",
+        "torch.ops.pynerve.vr_fast": "registered vr_fast contract smoke",
         "registered vr_fast(large) must return persistence pairs": (
             "vr_fast large concrete implementation smoke"
         ),

@@ -7,6 +7,58 @@
 
 namespace nerve::serialization
 {
+
+namespace
+{
+
+class BinaryPassthroughSerializer : public Serializer
+{
+public:
+    BinaryPassthroughSerializer() = default;
+    ErrorResult<std::vector<uint8_t>> serialize(const void *data, size_t size,
+                                                const SerializationContext &) override
+    {
+        const auto *bytes = static_cast<const uint8_t *>(data);
+        return ErrorResult<std::vector<uint8_t>>::success(
+            std::vector<uint8_t>(bytes, bytes + size));
+    }
+    ErrorResult<std::vector<uint8_t>>
+    serializeWithMetadata(const void *data, size_t size, const SchemaMetadata &,
+                          const SerializationContext &context) override
+    {
+        return serialize(data, size, context);
+    }
+    ErrorResult<std::vector<uint8_t>> deserialize(const std::vector<uint8_t> &data,
+                                                  const SerializationContext &) override
+    {
+        return ErrorResult<std::vector<uint8_t>>::success(data);
+    }
+    ErrorResult<std::pair<std::vector<uint8_t>, SchemaMetadata>>
+    deserializeWithMetadata(const std::vector<uint8_t> &data,
+                            const SerializationContext &context) override
+    {
+        auto result = deserialize(data, context);
+        if (result.isError())
+        {
+            return ErrorResult<std::pair<std::vector<uint8_t>, SchemaMetadata>>::error(
+                result.errorCode());
+        }
+        SchemaMetadata default_meta;
+        return ErrorResult<std::pair<std::vector<uint8_t>, SchemaMetadata>>::success(
+            {result.moveValue(), std::move(default_meta)});
+    }
+    std::string getFormatName() const override { return "BinaryPassthrough"; }
+    SerializationFormat getFormat() const override { return SerializationFormat::BINARY; }
+};
+
+} // namespace
+
+SerializationManager::SerializationManager()
+{
+    registerSerializer(std::make_unique<BinaryPassthroughSerializer>());
+    registerSerializer(std::make_unique<FlatBuffersSerializer>());
+}
+
 SerializationManager &SerializationManager::instance()
 {
     static SerializationManager instance;

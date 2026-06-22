@@ -55,7 +55,7 @@ DeterminismContract::DeterminismContract()
 {
     enable_checksum_validation = true;
     enable_deterministic_threading = false;
-    enable_deterministic_random = false;
+    enable_deterministic_random = true;
     component_name = "default";
 }
 

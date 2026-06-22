@@ -795,7 +795,7 @@ def _check_torch_bindings() -> None:
     try:
         _expect_registered_validation(
             "diagram_wasserstein infinite p",
-            lambda: torch.ops.nerve.diagram_wasserstein(
+            lambda: torch.ops.pynerve.diagram_wasserstein(
                 torch.tensor([[0.0, 1.0]], dtype=torch.float64),
                 torch.tensor([[0.0, 1.0]], dtype=torch.float64),
                 float("inf"),
@@ -804,19 +804,19 @@ def _check_torch_bindings() -> None:
         )
         _expect_registered_validation(
             "diagram_bottleneck invalid interval",
-            lambda: torch.ops.nerve.diagram_bottleneck(
+            lambda: torch.ops.pynerve.diagram_bottleneck(
                 torch.tensor([[1.0, 0.0]], dtype=torch.float64),
                 torch.tensor([[0.0, 1.0]], dtype=torch.float64),
             ),
             "death values must be >= birth",
         )
-        landscape = torch.ops.nerve.diagram_landscape(
+        landscape = torch.ops.pynerve.diagram_landscape(
             torch.tensor([[0.0, 1.0], [0.0, float("inf")]], dtype=torch.float64),
             8,
         )
         if not torch.isfinite(landscape).all():
             raise RuntimeError("registered diagram_landscape must ignore infinite intervals")
-        betti = torch.ops.nerve.diagram_betti(
+        betti = torch.ops.pynerve.diagram_betti(
             torch.tensor(
                 [[0.0, float("inf"), 0.0], [0.0, float("inf"), 1.0]],
                 dtype=torch.float64,
@@ -826,7 +826,7 @@ def _check_torch_bindings() -> None:
         if int(betti.item()) != 1:
             raise RuntimeError(f"registered diagram_betti must honor dimension column: {betti}")
     except AttributeError:
-        pass  # torch.ops.nerve.* namespace not registered
+        pass  # torch.ops.pynerve.* namespace not registered
     matrix_diagram = tda_torch.persistence_from_matrix(torch.cdist(points, points), max_dim=1)
     if (
         matrix_diagram.diagrams.dim() != 3

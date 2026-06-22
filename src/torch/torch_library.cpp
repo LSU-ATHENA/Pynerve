@@ -321,10 +321,10 @@ TORCH_LIBRARY(pynerve, m)
 // After registration, operations are available as:
 //
 // Available via torch.ops.pynerve:
-//   - Python: torch.ops.nerve.vr_build(points, max_radius)
-//   - Python: torch.ops.nerve.diagram_wasserstein(d1, d2, p=2.0)
-//   - Python: torch.ops.nerve.ph_grad(filtration, max_dim=2)
+//   - Python: torch.ops.pynerve.vr_build(points, max_radius)
+//   - Python: torch.ops.pynerve.diagram_wasserstein(d1, d2, p=2.0)
+//   - Python: torch.ops.pynerve.ph_grad(filtration, max_dim=2)
 //
 // For autograd support:
-//   - Python: torch.ops.nerve.ph_grad(filtration, max_dim=2)
+//   - Python: torch.ops.pynerve.ph_grad(filtration, max_dim=2)
 //   - This enables gradient flow through topology operations

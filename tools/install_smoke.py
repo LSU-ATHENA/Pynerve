@@ -63,10 +63,10 @@ def _check_torch_install(require_torch: bool) -> None:
         requires_grad=True,
     )
     diagram = tda_torch.vr_persistence(points, max_dim=1, max_radius=2.0)
-    op_distances = torch.ops.nerve.filtration_distance_matrix(points[0], "euclidean")
+    op_distances = torch.ops.pynerve.filtration_distance_matrix(points[0], "euclidean")
     if op_distances.shape != (3, 3) or op_distances.dtype != torch.float64:
         raise RuntimeError(f"unexpected installed registered distance operator: {op_distances}")
-    op_image = torch.ops.nerve.ph_image(diagram.diagrams[0, :, :2], 4, 4, 0.1)
+    op_image = torch.ops.pynerve.ph_image(diagram.diagrams[0, :, :2], 4, 4, 0.1)
     if op_image.shape != (4, 4):
         raise RuntimeError(
             f"unexpected installed registered image operator shape: {op_image.shape}"
