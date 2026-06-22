@@ -47,9 +47,9 @@ private:
                        algebra::SimplicialComplex &complex,
                        std::unordered_set<std::vector<size_t>, SimplexKeyHash> &seen);
 
-    const std::vector<double> &all_points_;
+    const std::vector<double> all_points_;
     size_t point_dim_;
-    const std::vector<size_t> &landmarks_;
+    const std::vector<size_t> landmarks_;
     size_t max_dim_;
     double max_radius_;
 };

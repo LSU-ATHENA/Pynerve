@@ -58,8 +58,8 @@ int main()
     assert(complex.simplicesOfDimension(1).size() == 1);
 
     nerve::algebra::SimplicialComplex valid_complex;
-    nerve::persistence::LazyWitnessComplex valid_lazy(std::vector<double>{0.0, 0.0, 1.0, 0.0}, 2,
-                                                      lazy_landmarks, 1, 2.0);
+    const std::vector<double> test_points{0.0, 0.0, 1.0, 0.0};
+    nerve::persistence::LazyWitnessComplex valid_lazy(test_points, 2, lazy_landmarks, 1, 2.0);
     valid_lazy.buildComplex(valid_complex);
     assert(!valid_complex.simplicesOfDimension(0).empty());
 
