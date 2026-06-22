@@ -204,7 +204,7 @@ public:
     bool isFormatSupported(SerializationFormat format) const;
 
 private:
-    SerializationManager() = default;
+    SerializationManager();
     std::unordered_map<SerializationFormat, std::unique_ptr<Serializer>> serializers_;
     VersionNegotiator version_negotiator_;
     mutable std::mutex mutex_;
