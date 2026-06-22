@@ -31,7 +31,7 @@ public:
     ErrorResult<std::vector<uint8_t>> deserialize(const std::vector<uint8_t> &data,
                                                   const SerializationContext &) override
     {
-        return ErrorResult<std::vector<uint8_t>>::success(data);
+        return ErrorResult<std::vector<uint8_t>>::success(std::vector<uint8_t>(data));
     }
     ErrorResult<std::pair<std::vector<uint8_t>, SchemaMetadata>>
     deserializeWithMetadata(const std::vector<uint8_t> &data,
