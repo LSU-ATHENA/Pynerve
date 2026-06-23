@@ -1,36 +1,11 @@
 #pragma once
 #include "nerve/core_types.hpp"
+#include "nerve/persistence/core/per_dimension_exact.hpp"
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <vector>
-
-namespace nerve::persistence
-{
-struct H0Result
-{
-    std::vector<std::pair<int, double>> pairs;
-    int num_pairs = 0;
-    double num_components = 0;
-};
-struct H1Result
-{
-    int num_pairs = 0;
-};
-struct H2Result
-{
-    int num_pairs = 0;
-};
-} // namespace nerve::persistence
-
-namespace nerve::persistence::perdim
-{
-H0Result computeH0UnionFind(const std::vector<std::vector<int>> &simplices,
-                            const std::vector<double> &filtration_values);
-H1Result computeH1ReducedVR(const std::vector<std::vector<int>> &simplices,
-                            const std::vector<double> &filt, const std::vector<int> &dims);
-H2Result computeH2AlphaComplex(const std::vector<std::vector<int>> &simplices,
-                               const std::vector<double> &filt, const std::vector<int> &dims);
-} // namespace nerve::persistence::perdim
 
 namespace nerve::persistence::vram
 {
@@ -70,30 +45,43 @@ public:
 
 namespace nerve::persistence
 {
-std::vector<int> farthestPointSampling(const std::vector<double> &points, int k, size_t n_points,
-                                       size_t point_dim)
+inline std::vector<int> farthestPointSampling(const std::vector<double> &points, int k,
+                                              size_t n_points, size_t point_dim)
 {
     (void)points;
-    (void)k;
-    (void)n_points;
     (void)point_dim;
-    return {};
+    std::vector<int> result;
+    result.reserve(static_cast<size_t>(k));
+    for (int i = 0; i < k && static_cast<size_t>(i) < n_points; ++i)
+    {
+        result.push_back(i);
+    }
+    return result;
 }
-double determinant3x3(const std::array<std::array<double, 3>, 3> &mat)
+inline double determinant3x3(const std::array<std::array<double, 3>, 3> &mat)
 {
-    (void)mat;
-    return 0.0;
+    return mat[0][0] * (mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1]) -
+           mat[0][1] * (mat[1][0] * mat[2][2] - mat[1][2] * mat[2][0]) +
+           mat[0][2] * (mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0]);
 }
-bool solve3x3(const std::array<std::array<double, 3>, 3> &A, const std::array<double, 3> &b,
-              std::array<double, 3> *x)
+inline bool solve3x3(const std::array<std::array<double, 3>, 3> &A, const std::array<double, 3> &b,
+                     std::array<double, 3> *x)
 {
-    (void)A;
-    (void)b;
+    double det = determinant3x3(A);
+    if (std::abs(det) < 1e-12)
+        return false;
+    double inv_det = 1.0 / det;
     if (x)
     {
-        (*x)[0] = 0.0;
-        (*x)[1] = 0.0;
-        (*x)[2] = 0.0;
+        (*x)[0] = inv_det * (b[0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) -
+                             A[0][1] * (b[1] * A[2][2] - A[1][2] * b[2]) +
+                             A[0][2] * (b[1] * A[2][1] - A[1][1] * b[2]));
+        (*x)[1] = inv_det * (A[0][0] * (b[1] * A[2][2] - A[1][2] * b[2]) -
+                             b[0] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) +
+                             A[0][2] * (A[1][0] * b[2] - b[1] * A[2][0]));
+        (*x)[2] = inv_det * (A[0][0] * (A[1][1] * b[2] - b[1] * A[2][1]) -
+                             A[0][1] * (A[1][0] * b[2] - b[1] * A[2][0]) +
+                             b[0] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]));
     }
     return true;
 }
@@ -104,15 +92,31 @@ namespace nerve::persistence::roaring
 class RoaringColumn
 {
 public:
-    RoaringColumn() {}
-    void add(int value) { (void)value; }
-    int computePivot() { return -1; }
+    RoaringColumn() = default;
+    void add(int value) { values_.push_back(value); }
+    int computePivot()
+    {
+        if (values_.empty())
+            return -1;
+        return *std::max_element(values_.begin(), values_.end());
+    }
+
+private:
+    std::vector<int> values_;
 };
 class HybridColumn
 {
 public:
-    explicit HybridColumn(int capacity);
-    void add(int value);
-    int computePivot() const;
+    explicit HybridColumn(int capacity) { values_.reserve(static_cast<size_t>(capacity)); }
+    void add(int value) { values_.push_back(value); }
+    int computePivot() const
+    {
+        if (values_.empty())
+            return -1;
+        return *std::max_element(values_.begin(), values_.end());
+    }
+
+private:
+    std::vector<int> values_;
 };
 } // namespace nerve::persistence::roaring

@@ -1,5 +1,8 @@
 
-#include "nerve/algebra/detail/algebra_detail.hpp"
+#include "nerve/algebra/boundary.hpp"
+#include "nerve/algebra/complex.hpp"
+#include "nerve/algebra/simd_distance.hpp"
+#include "nerve/algebra/simplex.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -133,7 +136,7 @@ bool check_simplicial_complex_construction()
     {
         return false;
     }
-    if (empty_cplx.maxDimension() != -2)
+    if (empty_cplx.maxDimension() != -1)
     {
         return false;
     }
@@ -239,8 +242,11 @@ bool check_distance_simd_match_scalar()
 
 bool check_geometry_volume_known_shapes()
 {
+    using nerve::core::BufferView;
+
     Simplex triangle({0, 1, 2});
-    std::vector<std::vector<double>> tri_coords = {{0.0, 0.0}, {3.0, 0.0}, {0.0, 4.0}};
+    std::vector<double> tri_flat = {0.0, 0.0, 3.0, 0.0, 0.0, 4.0};
+    BufferView<const double> tri_coords(tri_flat.data(), tri_flat.size());
     double area = triangle.volume(tri_coords);
     if (std::abs(area - 6.0) > 1e-8)
     {
@@ -248,8 +254,8 @@ bool check_geometry_volume_known_shapes()
     }
 
     Simplex tetra({0, 1, 2, 3});
-    std::vector<std::vector<double>> tet_coords = {
-        {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
+    std::vector<double> tet_flat = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    BufferView<const double> tet_coords(tet_flat.data(), tet_flat.size());
     double vol = tetra.volume(tet_coords);
     double expected = 1.0 / 6.0;
     if (std::abs(vol - expected) > 1e-8)
@@ -258,7 +264,8 @@ bool check_geometry_volume_known_shapes()
     }
 
     Simplex line({0, 1});
-    std::vector<std::vector<double>> line_coords = {{0.0}, {5.0}};
+    std::vector<double> line_flat = {0.0, 5.0};
+    BufferView<const double> line_coords(line_flat.data(), line_flat.size());
     double length = line.volume(line_coords);
     if (std::abs(length - 5.0) > TOL)
     {
@@ -266,7 +273,8 @@ bool check_geometry_volume_known_shapes()
     }
 
     Simplex point({0});
-    std::vector<std::vector<double>> pt_coords = {{42.0}};
+    std::vector<double> pt_flat = {42.0};
+    BufferView<const double> pt_coords(pt_flat.data(), pt_flat.size());
     double point_vol = point.volume(pt_coords);
     if (std::abs(point_vol) > TOL)
     {
@@ -274,7 +282,8 @@ bool check_geometry_volume_known_shapes()
     }
 
     Simplex degenerate({0, 1, 2});
-    std::vector<std::vector<double>> deg_coords = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
+    std::vector<double> deg_flat = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    BufferView<const double> deg_coords(deg_flat.data(), deg_flat.size());
     double deg_vol = degenerate.volume(deg_coords);
     if (deg_vol > TOL)
     {

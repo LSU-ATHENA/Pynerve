@@ -1,6 +1,7 @@
 
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/core/detail/core_detail.hpp"
+#include "nerve/persistence/vr/vr_h1_reduction_ops.hpp"
 
 #include <algorithm>
 #include <cmath>
