@@ -497,6 +497,8 @@ void Reducer::reduceMatrix()
 
         reduceTwist(lowRowToCol, cleared);
 
+        std::fill(lowRowToCol.begin(), lowRowToCol.end(), Index(-1));
+
         for (Size col = 0; col < cols; ++col)
         {
             if (cleared[col])

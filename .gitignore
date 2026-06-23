@@ -50,3 +50,4 @@ venv/
 .hypothesis/
 *.hypothesis/
 .nerve_cache/
+build*/
