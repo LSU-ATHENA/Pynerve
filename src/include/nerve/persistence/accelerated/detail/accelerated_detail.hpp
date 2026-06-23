@@ -16,9 +16,11 @@ namespace nerve::persistence::accelerated::error_registry
 {
 struct ErrorInfo
 {
+    nerve::errors::ErrorCode code;
     std::string name;
-    std::string category;
     std::string description;
+    std::string category;
+    std::string suggested_action;
 };
 const ErrorInfo &getErrorInfo(nerve::errors::ErrorCode code);
 bool isValidErrorCode(nerve::errors::ErrorCode code);

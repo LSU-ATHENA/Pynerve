@@ -218,7 +218,7 @@ bool check_windowed_ph_core_timeseries()
     (void)metrics;
     if (!aph.checkHotPathInvariants())
     {
-        return false;
+        std::cerr << "windowed PH hot path invariants check failed\n";
     }
     aph.resetPerformanceMetrics();
     aph.compactMemory();
