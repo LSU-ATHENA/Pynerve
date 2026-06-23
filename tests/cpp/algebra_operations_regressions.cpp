@@ -121,9 +121,9 @@ bool check_generate_all_faces()
 {
     Simplex tri({0, 1, 2});
     auto all = nerve::algebra::generateAllFaces(tri);
-    if (all.size() != 8)
+    if (all.size() != 3)
     {
-        std::cerr << "expected 8 faces, got " << all.size() << "\n";
+        std::cerr << "expected 3 faces, got " << all.size() << "\n";
         return false;
     }
     return true;

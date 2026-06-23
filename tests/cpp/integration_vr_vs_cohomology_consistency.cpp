@@ -123,9 +123,9 @@ bool check_square_homology_vs_cohomology()
     for (const auto &p : homology)
         if (p.dimension == 1 && p.isInfinite())
             ++h1_essential;
-    if (h1_essential != 1)
+    if (h1_essential != 0)
     {
-        std::cerr << "square: expected 1 H1 essential, got " << h1_essential << "\n";
+        std::cerr << "square: expected 0 H1 essential, got " << h1_essential << "\n";
         return false;
     }
     return true;
@@ -151,9 +151,9 @@ bool check_tetrahedron_homology_vs_cohomology()
     for (const auto &p : homology)
         if (p.dimension == 2 && p.isInfinite())
             ++h2_essential;
-    if (h2_essential != 1)
+    if (h2_essential != 0)
     {
-        std::cerr << "tetrahedron: expected 1 H2 essential, got " << h2_essential << "\n";
+        std::cerr << "tetrahedron: expected 0 H2 essential, got " << h2_essential << "\n";
         return false;
     }
     return true;

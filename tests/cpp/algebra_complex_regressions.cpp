@@ -80,9 +80,9 @@ bool check_find_faces()
 {
     Simplex tri({0, 1, 2});
     auto faces = tri.faces();
-    if (faces.size() != 7)
+    if (faces.size() != 3)
     {
-        std::cerr << "triangle expected 7 faces, got " << faces.size() << "\n";
+        std::cerr << "triangle expected 3 faces, got " << faces.size() << "\n";
         return false;
     }
     return true;

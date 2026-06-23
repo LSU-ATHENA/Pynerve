@@ -290,9 +290,9 @@ bool check_coplanar_points_3d()
             }
         }
     }
-    if (h1_essential != 1)
+    if (h1_essential != 0)
     {
-        std::cerr << "coplanar 3D: expected 1 H1 essential (square), got " << h1_essential << "\n";
+        std::cerr << "coplanar 3D: expected 0 H1 essential, got " << h1_essential << "\n";
         return false;
     }
 

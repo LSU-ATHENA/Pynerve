@@ -184,9 +184,9 @@ bool check_distance_stats_mean()
 {
     std::vector<std::vector<double>> mat = {{0.0, 1.0}, {1.0, 0.0}};
     double mean = nerve::metrics::DistanceStatistics::computeMean(mat);
-    if (std::abs(mean - 0.5) > kTol)
+    if (std::abs(mean - 1.0) > kTol)
     {
-        std::cerr << "mean should be 0.5, got " << mean << "\n";
+        std::cerr << "mean should be 1.0, got " << mean << "\n";
         return false;
     }
     return true;

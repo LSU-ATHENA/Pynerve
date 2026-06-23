@@ -207,6 +207,7 @@ bool check_validate_edge_extraction_params()
 {
     using nerve::persistence::accelerated::utils::validateEdgeExtractionParams;
     EdgeExtractionConfig cfg;
+    cfg.max_edges = 4950;
     auto r1 = validateEdgeExtractionParams(100, 1.0, cfg);
     if (r1.isError())
         return false;

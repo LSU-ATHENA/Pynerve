@@ -73,6 +73,8 @@ std::vector<ErrorCode> ErrorRegistry::getCodesByCategory(ErrorCategory category)
 }
 void ErrorRegistry::initializeMetadata()
 {
+    registerError(ErrorCode::SUCCESS, ErrorCategory::SUCCESS, ErrorSeverity::INFO, "SUCCESS",
+                  "Operation completed successfully", "No action needed", false, false, false);
     registerError(ErrorCode::E00_IO_TIMEOUT, ErrorCategory::IO_INFRA, ErrorSeverity::ERROR,
                   "E00_IO_TIMEOUT", "Underlying IO timed out (disk / network)",
                   "Check network connectivity and retry", true, false, false);

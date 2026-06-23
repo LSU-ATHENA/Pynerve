@@ -190,6 +190,8 @@ persistence::Diagram diagramFromJson(const std::string &json)
         return v;
     };
     skip_ws();
+    while (p < end && *p != '[')
+        ++p;
     while (p < end)
     {
         if (expect('['))

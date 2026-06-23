@@ -48,7 +48,8 @@ bool check_incremental_laplacian_construction()
 
 bool check_add_vertices_and_edges()
 {
-    IncrementalGraphLaplacian lap;
+    IncrementalLaplacianConfig config;
+    IncrementalGraphLaplacian lap(config);
     lap.addVertex(0);
     lap.addVertex(1);
     lap.addVertex(2);

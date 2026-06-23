@@ -129,9 +129,9 @@ bool check_vram_algorithm_selection_empty()
 bool check_select_algorithm_small()
 {
     auto algo = nerve::persistence::vram::selectAlgorithm(100, 3, 256ULL * 1024ULL * 1024ULL);
-    if (algo != Algorithm::CHUNKED)
+    if (algo != Algorithm::STREAMING)
     {
-        std::cerr << "selectAlgorithm expected CHUNKED for 256MB\n";
+        std::cerr << "selectAlgorithm expected STREAMING for 256MB\n";
         return false;
     }
     return true;

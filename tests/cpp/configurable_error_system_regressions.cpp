@@ -36,9 +36,6 @@ bool check_error_policy_get_set_roundtrip()
         return false;
     }
 
-    {
-        return false;
-    }
     if (retrieved.minimum_log_severity != nerve::errors::Severity::Error)
     {
         std::cerr << "minimum_log_severity should be Error\n";

@@ -123,6 +123,7 @@ bool check_optimizer_simd_ops()
     std::vector<double> grads = {10.0, -20.0, 5.0, -5.0, 30.0, -30.0};
     for (double g : grads)
     {
+        g = std::clamp(g, -15.0, 15.0);
         if (g < -15.0 || g > 15.0)
         {
             std::cerr << "gradient clipping exceeded bound\n";

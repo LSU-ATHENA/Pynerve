@@ -33,7 +33,7 @@ bool check_stability_certificate_default()
         return false;
     if (cert.isExact())
         return false;
-    if (cert.isValid())
+    if (!cert.isValid())
         return false;
     return true;
 }

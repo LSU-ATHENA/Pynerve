@@ -9,16 +9,16 @@ namespace nerve::persistence::accelerated::performance
 namespace
 {
 std::mutex g_metrics_mutex;
-PerformanceMetrics g_last_metrics{};
+nerve::common::PerformanceMetrics g_last_metrics{};
 } // namespace
 
-void updateLastMetrics(const PerformanceMetrics &metrics)
+void updateLastMetrics(const nerve::common::PerformanceMetrics &metrics)
 {
     std::lock_guard<std::mutex> lock(g_metrics_mutex);
     g_last_metrics = metrics;
 }
 
-PerformanceMetrics getLastMetrics()
+nerve::common::PerformanceMetrics getLastMetrics()
 {
     std::lock_guard<std::mutex> lock(g_metrics_mutex);
     return g_last_metrics;

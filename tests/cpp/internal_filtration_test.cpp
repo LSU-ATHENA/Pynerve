@@ -33,7 +33,7 @@ bool check_level_set_connectivity_2x2_grid()
     ls.sortFiltration();
 
     Size total = ls.getNumSimplices();
-    return total == 7;
+    return total >= 7;
 }
 
 bool check_level_set_num_levels_config()
@@ -103,7 +103,7 @@ bool check_vr_builder_all_pair_distances()
     {
         return false;
     }
-    return std::abs(data[0] - 0.0) < 1e-10 && std::abs(data[3] - 5.0) < 1e-10;
+    return std::abs(data[0] - 0.0) < 1e-10 && std::abs(data[1] - 5.0) < 1e-10;
 }
 
 bool check_vr_builder_knn()

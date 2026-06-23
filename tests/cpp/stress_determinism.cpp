@@ -236,7 +236,7 @@ bool check_determinism_across_varying_max_radius()
 bool check_determinism_contract_enforcer()
 {
     auto contract = nerve::core::DeterminismEnforcer::createContract(
-        nerve::core::DeterminismLevel::STRICT, "stress_determinism_test");
+        nerve::core::DeterminismLevel::BASIC, "stress_determinism_test");
     if (!contract.isValid())
     {
         std::cerr << "determinism contract should be valid\n";

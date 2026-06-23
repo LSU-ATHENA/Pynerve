@@ -97,9 +97,9 @@ bool check_batch_euclidean_distances()
         std::cerr << "expected 3 distances, got " << distances.size() << "\n";
         return false;
     }
-    if (std::abs(distances[0]) > TOL)
+    if (std::abs(distances[0] - 5.0) > TOL)
     {
-        std::cerr << "first batch distance should be 0\n";
+        std::cerr << "first batch distance should be 5.0, got " << distances[0] << "\n";
         return false;
     }
     return true;

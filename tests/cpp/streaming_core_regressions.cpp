@@ -46,7 +46,8 @@ bool check_diagram_sorting_preserves_pairs()
     }
     for (Size i = 1; i < sorted.size(); ++i)
     {
-        if (sorted[i].birth < sorted[i - 1].birth - TOL)
+        if (std::tie(sorted[i].dimension, sorted[i].birth) <
+            std::tie(sorted[i - 1].dimension, sorted[i - 1].birth))
         {
             std::cerr << "sorting not monotonic\n";
             return false;

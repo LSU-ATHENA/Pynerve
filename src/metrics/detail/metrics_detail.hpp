@@ -1,6 +1,7 @@
 #pragma once
 #include "nerve/algorithms/distance.hpp"
 
+#include <cmath>
 #include <utility>
 #include <vector>
 
@@ -10,7 +11,10 @@ namespace nerve::metrics
 double bottleneckDistance(const std::vector<std::pair<double, double>> &d1,
                           const std::vector<std::pair<double, double>> &d2);
 bool validateDiagram(const std::vector<std::pair<double, double>> &diagram);
-double diagonalDistance(const std::pair<double, double> &p);
+inline double diagonalDistance(const std::pair<double, double> &p)
+{
+    return std::abs(p.second - p.first) * 0.5;
+}
 
 // Frechet
 double frechetDistance(const std::vector<double> &curve1, const std::vector<double> &curve2);
