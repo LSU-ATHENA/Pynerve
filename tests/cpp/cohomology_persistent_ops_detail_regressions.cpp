@@ -150,7 +150,7 @@ bool check_speedup_estimate()
 
 bool check_should_use_cohomology()
 {
-    if (!shouldUseCohomology(4, 1000, false))
+    if (!shouldUseCohomology(4, 1001, false))
         return false;
     return true;
 }

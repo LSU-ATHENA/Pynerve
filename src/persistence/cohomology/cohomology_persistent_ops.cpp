@@ -252,8 +252,6 @@ CohomologyResult computePersistentCohomology(const std::vector<std::vector<int>>
                     pair.death = simplex_it->second->filtration_value;
                     dim_pairs.push_back(pair);
                     clearing.markCleared(col.pivot);
-                    col.coboundary.clear();
-                    col.pivot = -1;
                     col.reduced = true;
                     continue;
                 }
@@ -264,27 +262,22 @@ CohomologyResult computePersistentCohomology(const std::vector<std::vector<int>>
                 auto it = pivot_to_column.find(col.pivot);
                 if (it != pivot_to_column.end())
                 {
-                    // Add that column
                     addColumn(col, coboundary_matrix[it->second]);
                 }
                 else
                 {
-                    // New pivot found
                     pivot_to_column[col.pivot] = static_cast<int>(i);
-                    // Record persistence pair
                     Pair pair;
                     pair.dimension = dim;
                     pair.birth = dim_simplices[i].filtration_value;
                     pair.death = cohom_simplices[col.pivot].filtration_value;
                     dim_pairs.push_back(pair);
-                    // Mark death simplex as cleared (for next dimension)
                     clearing.markCleared(col.pivot);
                     break;
                 }
             }
             if (col.pivot < 0)
             {
-                // Essential class (infinite persistence)
                 Pair pair;
                 pair.dimension = dim;
                 pair.birth = dim_simplices[i].filtration_value;
