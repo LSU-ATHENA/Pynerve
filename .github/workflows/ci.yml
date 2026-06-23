@@ -73,7 +73,7 @@ jobs:
         continue-on-error: true
       - run: python -m coverage report --fail-under=80
 
-  detect-cpu:
+  detect_cpu:
     runs-on: ubuntu-24.04
     outputs:
       avx512_supported: ${{ steps.detect.outputs.supported }}
@@ -86,10 +86,9 @@ jobs:
           echo "supported=$AVX512" >> $GITHUB_OUTPUT
 
   simd-modes:
-    needs: detect-cpu
+    needs: detect_cpu
     runs-on: ubuntu-24.04
-    if: |
-      matrix.simd != 'avx512' || needs.detect-cpu.outputs.avx512_supported == '1'
+    if: matrix.simd != 'avx512' || needs.detect_cpu.outputs.avx512_supported == '1'
     strategy:
       fail-fast: false
       matrix:
