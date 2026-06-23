@@ -42,20 +42,20 @@ struct FloodComplexResult
     std::vector<Pair> pairs; // Persistence pairs
 
     // Timing breakdown
-    double subset_selection_time_ms = 0.0;
-    double delaunay_time_ms = 0.0;
-    double flooding_time_ms = 0.0;
-    double persistence_time_ms = 0.0;
-    double total_time_ms = 0.0;
+    double subset_selection_time_ms;
+    double delaunay_time_ms;
+    double flooding_time_ms;
+    double persistence_time_ms;
+    double total_time_ms;
 
     // Statistics
-    size_t original_points = 0;
-    size_t subset_points = 0;
-    size_t num_simplices = 0;
-    double simplex_reduction_ratio = 0.0; // vs VR complex
+    size_t original_points;
+    size_t subset_points;
+    size_t num_simplices;
+    double simplex_reduction_ratio; // vs VR complex
 
     // Accuracy metrics
-    double estimated_approximation_error = 0.0;
+    double estimated_approximation_error;
 };
 
 /**
