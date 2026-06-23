@@ -1,10 +1,13 @@
 #include "nerve/algebra/complex.hpp"
 #include "nerve/persistence/utils/exact_engine.hpp"
+#include "nerve/persistence/utils/exact_engine_fast.hpp"
 #include "nerve/persistence/vr/vr_cohomology_ops.hpp"
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <functional>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -62,12 +65,8 @@ ExactPersistenceResult computeCohomologyVR(const std::vector<double> &points, Si
     if (n == 0 || dim == 0 || points.empty())
         return {};
 
-    algebra::SimplicialComplex complex;
-
-    for (Size i = 0; i < n; ++i)
-    {
-        complex.addSimplex({static_cast<Index>(i)}, {});
-    }
+    std::vector<std::vector<int>> neighbors(n);
+    std::unordered_map<std::uint64_t, double> edge_weights;
 
     const double max_radius_sq = max_radius * max_radius;
 
@@ -83,54 +82,24 @@ ExactPersistenceResult computeCohomologyVR(const std::vector<double> &points, Si
             }
             if (dist_sq <= max_radius_sq)
             {
-                complex.addSimplexWithFiltration(
-                    algebra::Simplex{static_cast<Index>(i), static_cast<Index>(j)},
-                    std::sqrt(dist_sq), {});
+                neighbors[i].push_back(static_cast<int>(j));
+                neighbors[j].push_back(static_cast<int>(i));
+                std::uint64_t key =
+                    (static_cast<std::uint64_t>(static_cast<std::uint32_t>(i)) << 32) |
+                    static_cast<std::uint32_t>(j);
+                edge_weights[key] = std::sqrt(dist_sq);
             }
         }
     }
 
-    Size max_dim = dim > 0 ? static_cast<Size>(dim) : 2;
-    const Size max_simplex_size = std::min(n, max_dim + 1);
-    for (Size simplex_size = 3; simplex_size <= max_simplex_size; ++simplex_size)
+    for (auto &nb : neighbors)
     {
-        std::function<void(std::vector<Index>, Size)> enumerate;
-        enumerate = [&](std::vector<Index> current, Size start) {
-            if (current.size() == simplex_size)
-            {
-                double max_filt = 0.0;
-                for (Size a = 0; a < current.size(); ++a)
-                {
-                    for (Size b = a + 1; b < current.size(); ++b)
-                    {
-                        double dist_sq = 0.0;
-                        for (Size d = 0; d < dim; ++d)
-                        {
-                            double diff =
-                                points[current[a] * dim + d] - points[current[b] * dim + d];
-                            dist_sq += diff * diff;
-                        }
-                        if (dist_sq > max_filt * max_filt)
-                            max_filt = std::sqrt(dist_sq);
-                    }
-                }
-                if (max_filt <= max_radius)
-                {
-                    complex.addSimplexWithFiltration(algebra::Simplex(current), max_filt, {});
-                }
-                return;
-            }
-            for (Size i = start; i < n; ++i)
-            {
-                current.push_back(static_cast<Index>(i));
-                enumerate(current, i + 1);
-                current.pop_back();
-            }
-        };
-        enumerate({}, 0);
+        std::sort(nb.begin(), nb.end());
     }
 
-    return computeExactCohomologyZ2(complex, max_dim);
+    Size max_dim = dim > 0 ? static_cast<Size>(dim) : 2;
+    return computeExactCohomologyZ2Fast(static_cast<int>(n), static_cast<int>(max_dim), max_radius,
+                                        neighbors, edge_weights);
 }
 
 } // namespace nerve::persistence

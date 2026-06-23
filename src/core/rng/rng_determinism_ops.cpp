@@ -56,6 +56,8 @@ DeterminismContract::DeterminismContract()
     enable_checksum_validation = true;
     enable_deterministic_threading = false;
     enable_deterministic_random = true;
+    rng_seed_provided = true;
+    rng_seed.fill(0);
     component_name = "default";
 }
 

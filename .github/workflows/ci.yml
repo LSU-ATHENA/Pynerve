@@ -73,8 +73,23 @@ jobs:
         continue-on-error: true
       - run: python -m coverage report --fail-under=80
 
-  simd-modes:
+  detect-cpu:
     runs-on: ubuntu-24.04
+    outputs:
+      avx512_supported: ${{ steps.detect.outputs.supported }}
+    steps:
+      - name: Detect AVX-512 support
+        id: detect
+        run: |
+          AVX512=0
+          grep -q "avx512" /proc/cpuinfo && AVX512=1 || true
+          echo "supported=$AVX512" >> $GITHUB_OUTPUT
+
+  simd-modes:
+    needs: detect-cpu
+    runs-on: ubuntu-24.04
+    if: |
+      matrix.simd != 'avx512' || needs.detect-cpu.outputs.avx512_supported == '1'
     strategy:
       fail-fast: false
       matrix:
@@ -88,14 +103,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1.2
       - run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis ninja
-      - name: Detect AVX-512 support
-        id: avx512
-        run: |
-          AVX512=0
-          grep -q "avx512" /proc/cpuinfo && AVX512=1 || true
-          echo "supported=$AVX512" >> $GITHUB_OUTPUT
       - name: Configure
-        if: matrix.simd != 'avx512' || steps.avx512.outputs.supported == '1'
         run: |
           if [ "${{ matrix.simd }}" = "avx512" ]; then
             cmake -S . -B build -G Ninja \
@@ -111,13 +119,10 @@ jobs:
               -DBUILD_TESTS=ON \
               -DBUILD_PYTHON=OFF \
               -DENABLE_CUDA=OFF \
-              -DNERVE_SIMD=${{ matrix.simd }} \
-              -DNERVE_ENABLE_AVX512_COMPONENTS=ON
+              -DNERVE_SIMD=${{ matrix.simd }}
           fi
       - run: cmake --build build --parallel
-        if: matrix.simd != 'avx512' || steps.avx512.outputs.supported == '1'
       - run: ctest --test-dir build -L "cpu|generated" --output-on-failure --parallel 2
-        if: matrix.simd != 'avx512' || steps.avx512.outputs.supported == '1'
 
   static-native:
     runs-on: ubuntu-24.04
