@@ -1,7 +1,8 @@
 #include "nerve/algebra/complex.hpp"
+#include "nerve/common/accelerated_types.hpp"
 #include "nerve/persistence/utils/exact_engine.hpp"
-#include "nerve/persistence/utils/exact_engine_fast.hpp"
 #include "nerve/persistence/vr/vr_cohomology_ops.hpp"
+#include "nerve/persistence/vr/vr_fast_ops.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -65,41 +66,17 @@ ExactPersistenceResult computeCohomologyVR(const std::vector<double> &points, Si
     if (n == 0 || dim == 0 || points.empty())
         return {};
 
-    std::vector<std::vector<int>> neighbors(n);
-    std::unordered_map<std::uint64_t, double> edge_weights;
+    VRConfig config;
+    config.max_radius = max_radius;
+    config.max_dim = dim > 0 ? static_cast<int>(dim) : 2;
+    config.algorithm = VRAlgorithmSelection::EXACT_STANDARD;
 
-    const double max_radius_sq = max_radius * max_radius;
+    core::BufferView<const double> view(points.data(), points.size());
+    auto pairs = computeVrPersistenceFast(view, static_cast<int>(dim), config);
 
-    for (Size i = 0; i < n; ++i)
-    {
-        for (Size j = i + 1; j < n; ++j)
-        {
-            double dist_sq = 0.0;
-            for (Size d = 0; d < dim; ++d)
-            {
-                double diff = points[i * dim + d] - points[j * dim + d];
-                dist_sq += diff * diff;
-            }
-            if (dist_sq <= max_radius_sq)
-            {
-                neighbors[i].push_back(static_cast<int>(j));
-                neighbors[j].push_back(static_cast<int>(i));
-                std::uint64_t key =
-                    (static_cast<std::uint64_t>(static_cast<std::uint32_t>(i)) << 32) |
-                    static_cast<std::uint32_t>(j);
-                edge_weights[key] = std::sqrt(dist_sq);
-            }
-        }
-    }
-
-    for (auto &nb : neighbors)
-    {
-        std::sort(nb.begin(), nb.end());
-    }
-
-    Size max_dim = dim > 0 ? static_cast<Size>(dim) : 2;
-    return computeExactCohomologyZ2Fast(static_cast<int>(n), static_cast<int>(max_dim), max_radius,
-                                        neighbors, edge_weights);
+    ExactPersistenceResult result;
+    result.pairs = std::move(pairs);
+    return result;
 }
 
 } // namespace nerve::persistence

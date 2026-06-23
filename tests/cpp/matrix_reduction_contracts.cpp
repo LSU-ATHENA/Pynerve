@@ -102,7 +102,7 @@ SimplicialComplex make_square()
 bool check_boundary_reduction_produces_valid_pairs()
 {
     SimplicialComplex complex = make_tetrahedron();
-    BoundaryMatrix matrix(complex, 2);
+    BoundaryMatrix matrix(complex);
     Reducer reducer(matrix);
     reducer.compute();
     auto pairs = reducer.getPairs();
@@ -134,7 +134,7 @@ bool check_boundary_reduction_produces_valid_pairs()
 bool check_algorithm_path_consistency()
 {
     SimplicialComplex complex = make_square();
-    BoundaryMatrix matrix(complex, 2);
+    BoundaryMatrix matrix(complex);
 
     Reducer reducer1(matrix);
     reducer1.compute();
@@ -165,7 +165,7 @@ bool check_algorithm_path_consistency()
 bool check_tetrahedron_betti_numbers()
 {
     SimplicialComplex complex = make_tetrahedron();
-    BoundaryMatrix matrix(complex, 2);
+    BoundaryMatrix matrix(complex);
     Reducer reducer(matrix);
     reducer.compute();
     auto betti = reducer.getBetti();
@@ -195,7 +195,7 @@ bool check_triangle_betti_numbers()
     complex.addSimplex(Simplex({0, 2}));
     complex.addSimplex(Simplex({1, 2}));
     complex.addSimplex(Simplex({0, 1, 2}));
-    BoundaryMatrix matrix(complex, 2);
+    BoundaryMatrix matrix(complex);
     Reducer reducer(matrix);
     reducer.compute();
     auto betti = reducer.getBetti();
@@ -222,7 +222,7 @@ bool check_triangle_betti_numbers()
 bool check_square_betti_numbers()
 {
     SimplicialComplex complex = make_square();
-    BoundaryMatrix matrix(complex, 2);
+    BoundaryMatrix matrix(complex);
     Reducer reducer(matrix);
     reducer.compute();
     auto pairs = reducer.getPairs();
@@ -246,7 +246,7 @@ bool check_square_betti_numbers()
 bool check_reduction_determinism()
 {
     SimplicialComplex complex = make_tetrahedron();
-    BoundaryMatrix matrix(complex, 2);
+    BoundaryMatrix matrix(complex);
 
     Reducer r1(matrix);
     r1.compute();

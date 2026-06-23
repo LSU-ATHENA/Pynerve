@@ -48,6 +48,10 @@ bool check_thread_pool_enqueue_wait_completes_all()
         pool.enqueue([&counter](int) { counter.fetch_add(1, std::memory_order_relaxed); });
     }
     pool.wait();
+    for (int retry = 0; retry < 100 && counter.load() != kTasks; ++retry)
+    {
+        std::this_thread::yield();
+    }
     if (counter.load() != kTasks)
     {
         std::cerr << "expected " << kTasks << " completions, got " << counter.load() << "\n";

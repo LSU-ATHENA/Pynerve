@@ -66,22 +66,25 @@ DeterminismContract::DeterminismContract(DeterminismLevel level, const std::stri
     , component_name(component)
     , start_time(std::chrono::steady_clock::now())
 {
+    enable_checksum_validation = true;
+    if (!rng_seed_provided)
+    {
+        rng_seed_provided = true;
+        rng_seed.fill(0);
+    }
     switch (level)
     {
         case DeterminismLevel::AUDIT:
             enable_audit_trail = true;
             record_intermediate_results = true;
             validate_numerical_stability = true;
-            enable_checksum_validation = true;
             fail_on_non_deterministic = true;
             break;
         case DeterminismLevel::STRICT:
             enable_deterministic_threading = true;
-            enable_deterministic_random = true;
-            [[fallthrough]];
+            break;
         case DeterminismLevel::BASIC:
         case DeterminismLevel::NONE:
-            enable_checksum_validation = true;
             break;
     }
 }

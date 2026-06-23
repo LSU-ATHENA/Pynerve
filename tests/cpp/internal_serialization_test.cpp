@@ -280,10 +280,23 @@ bool check_serialization_manager_singleton()
 bool check_serialization_manager_format_support()
 {
     auto &mgr = nerve::serialization::SerializationManager::instance();
-    bool supported = mgr.isFormatSupported(nerve::serialization::SerializationFormat::FLATBUFFERS);
-    (void)supported;
+    if (!mgr.isFormatSupported(nerve::serialization::SerializationFormat::BINARY))
+    {
+        std::cerr << "BINARY format should be supported\n";
+        return false;
+    }
+    if (!mgr.isFormatSupported(nerve::serialization::SerializationFormat::FLATBUFFERS))
+    {
+        std::cerr << "FLATBUFFERS format should be supported\n";
+        return false;
+    }
     auto formats = mgr.getSupportedFormats();
-    return formats.empty();
+    if (formats.empty())
+    {
+        std::cerr << "no formats registered\n";
+        return false;
+    }
+    return true;
 }
 
 bool check_round_trip_schema_migration()
