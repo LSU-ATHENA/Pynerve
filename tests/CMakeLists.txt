@@ -23,6 +23,17 @@ function(nerve_add_cpp_test target source)
     if(TARGET nerve_core)
         target_link_libraries(${target} PRIVATE nerve_core)
     endif()
+    nerve_apply_simd(${target})
+    if(NERVE_NATIVE_ARCH AND CMAKE_BUILD_TYPE STREQUAL "Release")
+        target_compile_options(${target} PRIVATE
+            "$<$<COMPILE_LANGUAGE:CXX>:-march=native>"
+        )
+        if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+            target_compile_options(${target} PRIVATE
+                "$<$<COMPILE_LANGUAGE:CXX>:-mtune=native>"
+            )
+        endif()
+    endif()
     add_test(NAME ${target} COMMAND ${target})
     # Group tests by category for IDE navigation
     if(source MATCHES "^cpp/")

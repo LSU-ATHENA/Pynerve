@@ -80,6 +80,7 @@ void DistributedReducer::computeDistributed()
     }
 
     initializeReduction();
+    reduceMatrixColumnByColumn();
 
     const Size cols = getMatrix()->cols();
     const Size requested_partitions = std::max<Size>(1, static_cast<Size>(config_.num_nodes));
@@ -186,6 +187,7 @@ DistributedReducer::PartitionLocalData DistributedReducer::reducePartitionWithDa
             local_data.local_pivot_columns.push_back(column);
             local_data.local_pivot_rows.push_back(pivot);
             setPivot(column, pivot);
+            ++local_data.local_operations;
         }
     }
 
