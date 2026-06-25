@@ -87,7 +87,7 @@ jobs:
           cache: pip
       - uses: hendrikmuhs/ccache-action@v1.2
       - run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
-      - run: python -m pip install -U pip pytest hypothesis ninja
+      - run: python -m pip install -U pip pytest hypothesis ninja numpy scipy
       - name: Detect AVX-512 support
         id: avx512
         run: |
@@ -154,7 +154,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1.2
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libeigen3-dev libomp-dev
-      - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy
+      - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy scipy
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_TESTS=ON -DBUILD_PYTHON=OFF -DENABLE_MPI=OFF
       - run: cmake --build build --parallel
       - if: matrix.shard == 0
@@ -179,7 +179,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@v1.2
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
-      - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy
+      - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy scipy
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DENABLE_CUDA=OFF -DNERVE_NATIVE_ARCH=ON
       - run: cmake --build build --parallel
       - run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
@@ -241,13 +241,15 @@ jobs:
 
   mpi:
     runs-on: ubuntu-24.04
+    env:
+      OMPI_MCA_rmaps_base_oversubscribe: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - run: sudo apt-get update && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev ccache openmpi-bin libopenmpi-dev
-      - run: python -m pip install -U pip pytest hypothesis
+      - run: python -m pip install -U pip pytest hypothesis numpy scipy
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DENABLE_MPI=ON -DBUILD_PYTHON=OFF
       - run: cmake --build build --parallel
       - run: ctest --test-dir build -L "distributed|build|cpu" --output-on-failure --parallel 2
