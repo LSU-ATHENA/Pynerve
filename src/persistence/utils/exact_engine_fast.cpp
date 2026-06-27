@@ -516,8 +516,20 @@ computeExactCohomologyZ2Fast(int n, int max_dim, double thr,
                 continue;
             }
 
-            // Non-MST edge: full enumeration with pack_keys for reduction
-            enum_tri_cofs_into(oi, red[cp]);
+            // Non-MST edge: full enumeration with pack_keys for reduction.
+            // Also register triangle filtrations so the dim-2 column set sees them.
+            {
+                std::vector<uint64_t> tmp;
+                enum_tri_cofs_into(oi, tmp);
+                red[cp].swap(tmp);
+                for (uint64_t pk : red[cp])
+                {
+                    int64_t tb = unpack_bidx(pk);
+                    double td = unpack_diam(pk);
+                    if (tri_filtration.find(tb) == tri_filtration.end())
+                        tri_filtration[tb] = td;
+                }
+            }
 
             if (red[cp].empty())
             {
@@ -642,12 +654,8 @@ computeExactCohomologyZ2Fast(int n, int max_dim, double thr,
             double bv = diam[oi2];
             if (!red[cp].empty())
             {
-                int64_t tb = unpack_bidx(red[cp][0]);
-                auto tit = tri_filtration.find(tb);
-                if (tit != tri_filtration.end())
-                {
-                    pairs.push_back({bv, tit->second, 1});
-                }
+                double death_diam = unpack_diam(red[cp][0]);
+                pairs.push_back({bv, death_diam, 1});
             }
         }
     }
