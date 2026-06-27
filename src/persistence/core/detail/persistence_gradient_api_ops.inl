@@ -173,7 +173,7 @@ DifferentiableDiagram computeDifferentiable(
     if (point_dim == 0 || n_points == 0) {
         return result;
     }
-    if (!std::isfinite(max_distance) || max_distance < 0.0) {
+    if (!std::isfinite(max_distance) || max_distance <= 0.0) {
         throw std::invalid_argument(
             "computeDifferentiable: max_distance must be finite and non-negative");
     }

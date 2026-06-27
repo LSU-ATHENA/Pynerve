@@ -4,7 +4,7 @@
 #include <string>
 #include <utility>
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -17,7 +17,7 @@
 namespace nerve::io
 {
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 MmapFile::~MmapFile()
 {
     if (data && data != MAP_FAILED)
@@ -90,7 +90,8 @@ MmapFile mmapReadFile(const std::string &path)
         result.fd = -1;
         throw std::runtime_error("mmap failed for: " + path + " (" + std::strerror(errno) + ")");
     }
-    madvise(result.data, result.size, MADV_SEQUENTIAL | MADV_WILLNEED);
+    madvise(result.data, result.size, MADV_SEQUENTIAL);
+    madvise(result.data, result.size, MADV_WILLNEED);
     result.writable = false;
     return result;
 }

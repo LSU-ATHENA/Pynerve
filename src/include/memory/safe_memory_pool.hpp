@@ -70,6 +70,8 @@ template <typename T, Size SlabCapacity = 256>
 class SlabAllocator
 {
     static_assert(SlabCapacity > 0, "SlabCapacity must be positive");
+    static_assert(sizeof(PageNode) <= sizeof(T),
+                  "T must be at least sizeof(void*) for SlabAllocator");
 
 public:
     SlabAllocator() { addSlab(); }
@@ -175,7 +177,7 @@ private:
         T &operator[](Size i) { return data()[i]; }
     };
 
-    struct alignas(kCacheLineSize) PageNode
+    struct PageNode
     {
         PageNode *next;
     };

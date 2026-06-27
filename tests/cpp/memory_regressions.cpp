@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <iostream>
 #include <limits>
@@ -86,9 +87,9 @@ bool check_raw_array_pool_multiple_allocations()
 
 bool check_slab_allocator_basic()
 {
-    nerve::memory::SlabAllocator<int, 64> slab;
+    nerve::memory::SlabAllocator<int64_t, 64> slab;
 
-    int *a = slab.allocate();
+    int64_t *a = slab.allocate();
     if (!a)
     {
         std::cerr << "slab allocate returned null\n";
@@ -96,7 +97,7 @@ bool check_slab_allocator_basic()
     }
     *a = 42;
 
-    int *b = slab.allocate();
+    int64_t *b = slab.allocate();
     if (!b)
     {
         std::cerr << "second slab allocate returned null\n";
@@ -112,10 +113,10 @@ bool check_slab_allocator_basic()
 
 bool check_slab_allocator_reset()
 {
-    nerve::memory::SlabAllocator<double, 32> slab;
+    nerve::memory::SlabAllocator<int64_t, 32> slab;
 
-    double *p = slab.allocate();
-    *p = 3.14;
+    int64_t *p = slab.allocate();
+    *p = 314;
     slab.reset();
 
     return true;

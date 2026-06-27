@@ -142,7 +142,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-14, macos-13]
+        os: [ubuntu-24.04, macos-14]
         build_type: [Debug, Release]
         shard: [0, 1, 2, 3]
     steps:
