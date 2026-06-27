@@ -244,14 +244,10 @@ class TestWarnDeviceOverridesBackend:
 
     def test_warning_contains_device_and_backend(self):
         with pytest.warns(UserWarning) as record:
-            _warn_device_overrides_backend("mps", PersistenceBackend.CUDA_HYBRID)
+            _warn_device_overrides_backend("cuda:0", PersistenceBackend.CPU_EXACT)
         msg = str(record[0].message)
-        assert "mps" in msg
-        assert "CUDA_HYBRID" in msg
-
-    def test_accepts_any_device_string(self):
-        with pytest.warns(UserWarning):
-            _warn_device_overrides_backend("xpu:1", PersistenceBackend.CPU_ADAPTIVE_ACCELERATION)
+        assert "cuda" in msg
+        assert "CPU_EXACT" in msg
 
     def test_stacklevel_is_three(self):
         with pytest.warns(UserWarning) as record:
@@ -265,10 +261,6 @@ class TestResolveDeviceToBackend:
         [
             ("cpu", PersistenceBackend.CPU_ADAPTIVE_ACCELERATION),
             ("cuda", PersistenceBackend.CUDA_HYBRID),
-            ("mps", PersistenceBackend.CPU_ADAPTIVE_ACCELERATION),
-            ("hip", PersistenceBackend.CUDA_HYBRID),
-            ("xpu", PersistenceBackend.CPU_ADAPTIVE_ACCELERATION),
-            ("rocm", PersistenceBackend.CUDA_HYBRID),
         ],
     )
     def test_known_devices(self, device, expected):
@@ -276,7 +268,7 @@ class TestResolveDeviceToBackend:
 
     @pytest.mark.parametrize(
         "device",
-        ["cuda:0", "cuda:1", "cpu:0", "hip:7", "rocm:3"],
+        ["cuda:0", "cuda:1", "cpu:0"],
     )
     def test_handles_device_with_index(self, device):
         assert isinstance(_resolve_device_to_backend(device), PersistenceBackend)

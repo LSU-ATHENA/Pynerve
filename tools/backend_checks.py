@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Backend verification helpers for CUDA, XPU, and MPI test jobs."""
+"""Backend verification helpers for CUDA and MPI test jobs."""
 
 from __future__ import annotations
 
@@ -138,47 +138,16 @@ def check_mpi(build_dir: str, required: bool, require_cuda_aware_mpi: bool = Fal
     )
 
 
-def check_xpu(required: bool) -> int:
-    probe = subprocess.run(
-        [
-            sys.executable,
-            "-c",
-            "import torch; import sys; sys.exit(0 if hasattr(torch, 'xpu') and torch.xpu.is_available() else 1)",
-        ],
-        cwd=ROOT,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if probe.returncode != 0:
-        print("XPU backend is not loaded", file=sys.stderr)
-        return 1 if required else 0
-    env = os.environ.copy()
-    env["NERVE_TEST_XPU"] = "1"
-    return _run(
-        [
-            sys.executable,
-            "tools/run_tests.py",
-            "--python",
-            "--label",
-            "xpu",
-            "--require-hardware",
-        ],
-        env=env,
-    )
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--backend", choices=("cuda", "xpu", "mpi"), required=True)
+    parser.add_argument("--backend", choices=("cuda", "mpi"), required=True)
     parser.add_argument("--build-dir", default="build")
     parser.add_argument("--required", action="store_true")
     parser.add_argument("--require-cuda-aware-mpi", action="store_true")
     args = parser.parse_args()
     if args.backend == "cuda":
         return check_cuda(args.build_dir, args.required)
-    if args.backend == "xpu":
-        return check_xpu(args.required)
+
     return check_mpi(args.build_dir, args.required, args.require_cuda_aware_mpi)
 
 

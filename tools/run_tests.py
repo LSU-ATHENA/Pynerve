@@ -31,8 +31,7 @@ def _labels_for_paths(paths: list[str]) -> list[str]:
             or "_gpu" in lower_path
         ):
             labels.add("cuda")
-        if "xpu" in lower_path:
-            labels.add("xpu")
+
         if "/distributed/" in lower_path or lower_path.startswith("src/distributed/"):
             labels.add("distributed")
         if "autodiff" in lower_path or "torch" in lower_path or "diff" in lower_path:
@@ -67,8 +66,6 @@ def _missing_accelerators(labels: list[str]) -> list[str]:
     missing: list[str] = []
     if "cuda" in label_set and os.environ.get("NERVE_TEST_CUDA", "").lower() not in TRUTHY:
         missing.append("cuda")
-    if "xpu" in label_set and os.environ.get("NERVE_TEST_XPU", "").lower() not in TRUTHY:
-        missing.append("xpu")
     return missing
 
 

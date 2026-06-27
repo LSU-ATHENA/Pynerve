@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 # Test Organization
 # C++ tests are listed individually below with descriptive target names
 # and LABELS for ctest filtering. Categories:
-#   cpu / cuda / xpu        -- hardware backend
+#   cpu / cuda             -- hardware backend
 #   regression              -- regression tests (the bulk of C++ tests)
 #   generated               -- contract/generated tests
 #   distributed / mpi       -- multi-node tests
@@ -670,7 +670,7 @@ if(Python3_Interpreter_FOUND)
 
     nerve_add_matrix_manifest(nerve_generated_matrix_manifest cpu "generated;cpu")
     nerve_add_matrix_manifest(nerve_generated_matrix_cuda cuda "generated;cuda")
-    nerve_add_matrix_manifest(nerve_generated_matrix_xpu xpu "generated;xpu")
+
 
     execute_process(
         COMMAND ${Python3_EXECUTABLE} -c "import pytest"
@@ -744,22 +744,7 @@ if(Python3_Interpreter_FOUND)
                     ENVIRONMENT "NERVE_TEST_CUDA=1"
                 )
             endif()
-            execute_process(
-                COMMAND ${Python3_EXECUTABLE} -c "import torch; raise SystemExit(0 if hasattr(torch, 'xpu') and torch.xpu.is_available() else 1)"
-                RESULT_VARIABLE NERVE_TORCH_XPU_AVAILABLE
-                OUTPUT_QUIET
-                ERROR_QUIET
-            )
-            if(NERVE_TORCH_XPU_AVAILABLE EQUAL 0)
-                nerve_add_python_test(
-                    nerve_pytest_xpu
-                    MARKER "xpu"
-                    SHARD_INDEX 0
-                    SHARD_COUNT 1
-                    LABELS "xpu;gradient;python"
-                    ENVIRONMENT "NERVE_TEST_XPU=1"
-                )
-            endif()
+
         endif()
     else()
         if(NERVE_ALLOW_MISSING_PYTEST)

@@ -10,15 +10,15 @@ import test_matrix
 @pytest.mark.generated
 def test_matrix_defines_tens_of_thousands_of_cases() -> None:
     cases = list(test_matrix.iter_cases(include_inactive=True))
-    assert len(cases) == 138240, f"expected 138240 cases, got {len(cases)}"
+    assert len(cases) == 92160, f"expected 92160 cases, got {len(cases)}"
     assert test_matrix.total_case_count(include_inactive=True) == len(cases), (
         f"total_case_count returned {test_matrix.total_case_count(include_inactive=True)}, expected {len(cases)}"
     )
     assert len({case.id for case in cases}) == len(cases), (
         f"unique ids ({len({case.id for case in cases})}) != total cases ({len(cases)})"
     )
-    assert {"cpu", "cuda", "xpu"} == {case.backend for case in cases}, (
-        f"backends mismatch: expected cpu/cuda/xpu, got {sorted({case.backend for case in cases})}"
+    assert {"cpu", "cuda"} == {case.backend for case in cases}, (
+        f"backends mismatch: expected cpu/cuda, got {sorted({case.backend for case in cases})}"
     )
     assert {"float64", "float32", "float16", "bfloat16", "float8_e4m3", "float8_e5m2"} == {
         case.dtype for case in cases

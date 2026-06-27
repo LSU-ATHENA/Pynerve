@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(NerveCore VERSION 0.9.6 LANGUAGES CXX)
+project(NerveCore VERSION 0.9.7 LANGUAGES CXX)
 
 # Early checks for first-time developers
 if(NOT CMAKE_CXX_COMPILER)

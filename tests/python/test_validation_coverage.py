@@ -775,18 +775,6 @@ class TestValidateDeviceSpec:
         validate_device_spec("cuda:0")
         validate_device_spec("cuda:5")
 
-    def test_mps_valid(self):
-        validate_device_spec("mps")
-
-    def test_hip_valid(self):
-        validate_device_spec("hip")
-
-    def test_rocm_maps_to_hip(self):
-        validate_device_spec("rocm")
-
-    def test_xpu_valid(self):
-        validate_device_spec("xpu")
-
     def test_empty_raises(self):
         with pytest.raises(ValidationError, match="must be a non-empty string"):
             validate_device_spec("")

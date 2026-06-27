@@ -76,7 +76,6 @@ def pytest_configure(config: pytest.Config) -> None:
         "generated",
         "cpu",
         "cuda",
-        "xpu",
         "gradient",
         "autograd",
         "operators",

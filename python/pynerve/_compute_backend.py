@@ -78,10 +78,6 @@ def _warn_device_overrides_backend(device: str, backend: Any) -> None:
 _DEVICE_TO_BACKEND = {
     "cpu": "CPU_ADAPTIVE_ACCELERATION",
     "cuda": "CUDA_HYBRID",
-    "mps": "CPU_ADAPTIVE_ACCELERATION",
-    "hip": "CUDA_HYBRID",
-    "xpu": "CPU_ADAPTIVE_ACCELERATION",
-    "rocm": "CUDA_HYBRID",
 }
 
 
@@ -93,7 +89,7 @@ def _resolve_device_to_backend(device: str) -> Any:
     raise ValueError(
         f"Unknown device: {device!r}. Supported devices: "
         f"{', '.join(f'{p}[:N]' for p in sorted(_DEVICE_TO_BACKEND))}. "
-        f"Devices like 'mps' fall back to CPU backend; 'hip'/'rocm' map to CUDA_HYBRID."
+        f""
     )
 
 

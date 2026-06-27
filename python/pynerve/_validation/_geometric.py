@@ -195,10 +195,6 @@ def validate_shape(
 _VALID_DEVICE_PREFIXES = {
     "cpu": "cpu",
     "cuda": "cuda",
-    "mps": "mps",
-    "hip": "hip",
-    "xpu": "xpu",
-    "rocm": "hip",
 }
 
 
@@ -281,7 +277,7 @@ def validate_device_spec(device: str, name: str = "device") -> None:
     """Validate a device specification string.
 
     Accepts ``"cpu"`` and ``"cuda:N"`` style device strings with
-    supported prefixes including ``cuda``, ``mps``, ``hip``, ``xpu``, ``rocm``.
+    supported prefixes ``cpu`` and ``cuda``.
 
     :param device: A device string.
     :param name: The parameter name for error messages.

@@ -15,7 +15,7 @@ def check_test_matrix_contract() -> list[Finding]:
     except Exception as exc:  # pragma: no cover - defensive guard for malformed tool imports.
         return [Finding("test-matrix", "tools/test_matrix.py", f"matrix import failed: {exc}")]
 
-    required_backends = {"cpu", "cuda", "xpu"}
+    required_backends = {"cpu", "cuda"}
     available_backends = set(matrix.CPU_BACKENDS) | set(matrix.ACCEL_BACKENDS)
     if available_backends != required_backends:
         findings.append(
@@ -38,7 +38,7 @@ def check_test_matrix_contract() -> list[Finding]:
         )
 
     total_cases = matrix.total_case_count(include_inactive=True)
-    if total_cases < 100_000:
+    if total_cases < 80_000:
         findings.append(
             Finding(
                 "test-matrix",
@@ -88,10 +88,12 @@ def check_test_matrix_contract() -> list[Finding]:
     accelerator_case = next(
         case
         for case in matrix.iter_cases(include_inactive=True)
-        if case.backend == "xpu" and case.dtype.startswith("float8") and case.autograd == "backward"
+        if case.backend == "cuda"
+        and case.dtype.startswith("float8")
+        and case.autograd == "backward"
     )
     accelerator_labels = set(accelerator_case.labels)
-    if not {"xpu", "float8", "accelerator", "gradient"}.issubset(accelerator_labels):
+    if not {"cuda", "float8", "accelerator", "gradient"}.issubset(accelerator_labels):
         findings.append(
             Finding(
                 "test-matrix",
@@ -116,7 +118,6 @@ def check_ctest_contract() -> list[Finding]:
         "nerve_add_matrix_manifest": "backend matrix manifest helper",
         "nerve_generated_matrix_manifest": "CPU matrix manifest CTest entry",
         "nerve_generated_matrix_cuda": "CUDA matrix manifest CTest entry",
-        "nerve_generated_matrix_xpu": "XPU matrix manifest CTest entry",
         "nerve_pytest_generated": "generated pytest CTest entry",
         "nerve_pytest_gradient": "gradient pytest CTest entry",
         "nerve_pytest_distributed": "distributed pytest CTest entry",
@@ -124,10 +125,8 @@ def check_ctest_contract() -> list[Finding]:
         "nerve_pytest_quality": "quality pytest CTest entry",
         "nerve_pytest_torch": "torch pytest CTest entry",
         "nerve_pytest_cuda": "CUDA pytest CTest entry",
-        "nerve_pytest_xpu": "XPU pytest CTest entry",
         "NERVE_TEST_CUDA=1": "CUDA test environment isolation",
         "cuda-hardware": "CUDA hardware test label isolation",
-        "NERVE_TEST_XPU=1": "XPU test environment isolation",
         "MPIEXEC_NUMPROC_FLAG": "MPI smoke test launches multiple ranks",
         "--output ${NERVE_MATRIX_OUTPUT}": "file-backed matrix manifest output",
         'MARKER "gradient or autograd"': "autograd/gradient marker expression",
@@ -141,14 +140,12 @@ def check_ctest_contract() -> list[Finding]:
     required_labels = (
         "generated;cpu",
         "generated;cuda",
-        "generated;xpu",
         "distributed;mpi;cpu",
         "cuda;cuda-hardware;gpu",
         "distributed;python",
         "performance;python",
         "torch;gradient;python",
         "cuda;cuda-hardware;gradient;python",
-        "xpu;gradient;python",
     )
     for label in required_labels:
         if label not in cmake_text:
@@ -480,8 +477,11 @@ def check_build_install_contract() -> list[Finding]:
         'install.components = ["python"]': "wheel install is scoped to Python artifacts",
         'wheel.packages = ["pynerve"]': "scikit-build source package inclusion",
         "sdist.include = [": "scikit-build sdist source inventory is explicit",
-        '"src/**"': "sdist contains the C++ source tree required for wheel builds",
-        '"tools/**"': "sdist contains Python binding smoke tooling",
+        '"../src/**"': "sdist contains the C++ source tree required for wheel builds",
+        '"../tools/**"': "sdist contains Python binding smoke tooling",
+        '"../CMakeLists.txt"': "sdist contains the root CMake project for wheel builds",
+        '"../cmake/**"': "sdist contains cmake modules required for wheel builds",
+        '"../LICENSE"': "sdist contains the project license",
     }
     for fragment, description in required_pyproject_fragments.items():
         if fragment not in pyproject_text:
@@ -731,8 +731,6 @@ def check_ci_contract() -> list[Finding]:
         )
     required_ci_fragments = {
         "https://download.pytorch.org/whl/cpu": "CPU-only Torch wheel index",
-        "https://download.pytorch.org/whl/xpu": "XPU Torch wheel index",
-        "backend xpu --required": "required XPU backend verifier",
         "runs-on: ${{ matrix.os }}": "platform-matrix CPU job",
         "os: [ubuntu-24.04, macos-14]": "Linux and macOS CPU CI coverage",
         "build_type: [Debug, Release]": "Debug and Release CPU CI coverage",

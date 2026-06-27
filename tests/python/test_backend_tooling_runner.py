@@ -51,10 +51,8 @@ def cuda_launch_audit():
 @pytest.mark.quality
 def test_runner_detects_missing_accelerator_selection(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("NERVE_TEST_CUDA", raising=False)
-    monkeypatch.delenv("NERVE_TEST_XPU", raising=False)
 
     assert run_tests()._accelerator_missing(["cuda"]) == "cuda", "expected cuda to be missing"
-    assert run_tests()._accelerator_missing(["xpu"]) == "xpu", "expected xpu to be missing"
     assert run_tests()._accelerator_missing(["cpu", "generated"]) is None, (
         "expected cpu/generated not to be missing"
     )

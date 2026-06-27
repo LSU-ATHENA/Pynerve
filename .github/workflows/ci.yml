@@ -307,21 +307,6 @@ jobs:
       - run: python tools/static_analysis.py --language cuda --required
       - run: python tools/backend_checks.py --backend cuda --build-dir build --required
 
-  xpu:
-    runs-on: [self-hosted, linux, x64, xpu]
-    env:
-      NERVE_TEST_XPU: "1"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - run: python -m pip install -U pip pytest hypothesis numpy
-      - name: Install PyTorch XPU
-        run: python -m pip install torch --index-url https://download.pytorch.org/whl/xpu
-      - run: python tools/run_tests.py --python --label xpu --label generated --require-hardware --retries 2
-      - run: python tools/backend_checks.py --backend xpu --required
-
   changed-module-selection:
     runs-on: ubuntu-24.04
     steps:

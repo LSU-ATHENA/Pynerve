@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "pynerve"
-version = "0.9.6"
+version = "0.9.7"
 description = "Fast TDA library"
 readme = "README.md"
 authors = [
@@ -13,7 +13,7 @@ authors = [
 license = {text = "MIT"}
 requires-python = ">=3.10,<3.14"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -71,10 +71,12 @@ cmake.args = [
 install.components = ["python"]
 wheel.packages = ["pynerve"]
 sdist.include = [
-    "src/**",
-    "tools/**",
+    "../src/**",
+    "../tools/**",
+    "../CMakeLists.txt",
+    "../cmake/**",
     "README.md",
-    "LICENSE",
+    "../LICENSE",
 ]
 
 

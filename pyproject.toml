@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pynerve"
-version = "0.9.6"
+version = "0.9.7"
 description = "Fast TDA library"
 requires-python = ">=3.10,<3.14"
 
@@ -51,7 +51,7 @@ markers = [
     "cpu: CPU-only tests",
     "cuda: CUDA-dependent tests",
     "fast: quick tests (not slow, cuda, or distributed); auto-applied in conftest",
-    "xpu: Intel XPU tests (reserved)",
+
     "gradient: gradient/autograd tests",
     "autograd: autograd-specific tests",
     "operators: operator case matrix tests",

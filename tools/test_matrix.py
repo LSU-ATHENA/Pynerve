@@ -14,7 +14,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 CPU_BACKENDS = ("cpu",)
-ACCEL_BACKENDS = ("cuda", "xpu")
+ACCEL_BACKENDS = ("cuda",)
 DTYPES = ("float64", "float32", "float16", "bfloat16", "float8_e4m3", "float8_e5m2")
 AUTOGRAD_MODES = ("forward", "backward")
 SHAPES = ((1, 2), (2, 3), (4, 4), (8, 3), (16, 8), (32, 16))
@@ -91,8 +91,7 @@ def _backend_available(backend: str) -> bool:
         return True
     if backend == "cuda":
         return os.environ.get("NERVE_TEST_CUDA", "").lower() in {"1", "on", "true", "yes"}
-    if backend == "xpu":
-        return os.environ.get("NERVE_TEST_XPU", "").lower() in {"1", "on", "true", "yes"}
+
     return False
 
 
@@ -184,7 +183,7 @@ def iter_cases(include_inactive: bool = True) -> Iterable[Case]:
         labels.extend(_performance_labels(op, backend, dtype, shape, scenario))
         if dtype.startswith("float8"):
             labels.append("float8")
-        if backend in {"cuda", "xpu"}:
+        if backend == "cuda":
             labels.append("accelerator")
         if autograd == "backward":
             labels.append("gradient")

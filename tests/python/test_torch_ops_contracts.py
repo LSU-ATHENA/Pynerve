@@ -28,17 +28,13 @@ def _skip_if_cuda_unusable() -> None:
     [
         pytest.param("cpu", marks=pytest.mark.cpu),
         pytest.param("cuda", marks=pytest.mark.cuda),
-        pytest.param("xpu", marks=pytest.mark.xpu),
     ],
 )
 @pytest.mark.parametrize("dtype", [torch.float32, torch.float16, torch.bfloat16])
 def test_torch_distance_gradient_cross_product(device: str, dtype: torch.dtype) -> None:
     if device == "cuda":
         _skip_if_cuda_unusable()
-    if device == "xpu" and not hasattr(torch, "xpu"):
-        pytest.skip("XPU backend not loaded")
-    if device == "xpu" and not torch.xpu.is_available():
-        pytest.skip("XPU device missing")
+
     if device == "cpu" and dtype in {torch.float16, torch.bfloat16}:
         pytest.skip("CPU low-precision backward support is backend dependent")
 

@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    project(NervePython VERSION 0.9.6 LANGUAGES CXX)
+    project(NervePython VERSION 0.9.7 LANGUAGES CXX)
     option(BUILD_PYTHON "Build Python bindings" ON)
     if(NOT BUILD_PYTHON)
         message(FATAL_ERROR "The standalone Nerve Python package build requires BUILD_PYTHON=ON")
