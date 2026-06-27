@@ -51,3 +51,5 @@ venv/
 *.hypothesis/
 .nerve_cache/
 build*/
+python/README.md
+python/LICENSE
