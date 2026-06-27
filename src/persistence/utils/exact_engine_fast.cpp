@@ -716,58 +716,6 @@ computeExactCohomologyZ2Fast(int n, int max_dim, double thr,
                 continue;
             }
 
-            // Apparent pair check
-            bool apparent = false;
-            {
-                double od = tc.diam;
-                int64_t zpc_bidx = -1;
-                double zpc_diam = 0;
-                for (int pi = 0; pi < (int)cof_buf.size(); ++pi)
-                {
-                    double kd = unpack_diam(cof_buf[pi]);
-                    if (std::abs(kd - od) < 1e-12)
-                    {
-                        zpc_diam = kd;
-                        zpc_bidx = unpack_bidx(cof_buf[pi]);
-                        break;
-                    }
-                }
-                if (zpc_bidx >= 0)
-                {
-                    int zv[4];
-                    bidx_decode(zpc_bidx, 4, n, zv);
-                    apparent = true;
-                    for (int fk = 3; fk >= 0 && apparent; --fk)
-                    {
-                        int fv[3];
-                        int fi = 0;
-                        for (int jj = 0; jj < 4; ++jj)
-                            if (jj != fk)
-                                fv[fi++] = zv[jj];
-                        std::sort(fv, fv + 3);
-                        int64_t fb = bidx_enc(fv[0], fv[1], fv[2]);
-                        auto tit2 = tri_filtration.find(fb);
-                        if (tit2 == tri_filtration.end())
-                        {
-                            apparent = false;
-                            break;
-                        }
-                        if (std::abs(tit2->second - zpc_diam) < 1e-12)
-                        {
-                            if (fb != tc.bidx)
-                                apparent = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (apparent)
-            {
-                tc.handled = true;
-                pairs.push_back({tc.diam, tc.diam, 2});
-                continue;
-            }
-
             // Assign dynamic tetrahedron positions
             for (uint64_t pk : cof_buf)
             {
