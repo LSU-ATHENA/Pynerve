@@ -734,7 +734,7 @@ def check_ci_contract() -> list[Finding]:
         "https://download.pytorch.org/whl/xpu": "XPU Torch wheel index",
         "backend xpu --required": "required XPU backend verifier",
         "runs-on: ${{ matrix.os }}": "platform-matrix CPU job",
-        "os: [ubuntu-24.04, macos-14, macos-13]": "Linux and macOS CPU CI coverage",
+        "os: [ubuntu-24.04, macos-14]": "Linux and macOS CPU CI coverage",
         "build_type: [Debug, Release]": "Debug and Release CPU CI coverage",
         "hendrikmuhs/ccache-action": "compiler cache integration in native CI",
         "python-bindings:": "dedicated Python binding build job",
