@@ -8,12 +8,16 @@ The auto-select picks whichever is expected to touch fewer global-memory element
 
 from __future__ import annotations
 
-import triton
-import triton.language as tl
-
 import torch
 
-from . import _use_triton, _warn_cpu_fallback
+from . import _check_triton, _use_triton, _warn_cpu_fallback
+
+if _check_triton():
+    import triton
+    import triton.language as tl
+else:
+    triton = None  # type: ignore[assignment]
+    tl = None  # type: ignore[assignment]
 
 
 def _select_strategy(n_pairs: int, resolution: int) -> str:

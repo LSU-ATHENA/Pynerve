@@ -38,6 +38,10 @@ def _auto_select_engine(
     - APPROX mode: PH5
     """
     if device and device.startswith("cuda"):
+        import torch as _t
+
+        if not _t.cuda.is_available():
+            raise RuntimeError("CUDA device requested but CUDA is not available")
         return PersistenceEngine.PH5
 
     mode_str = mode.value if isinstance(mode, Enum) else str(mode or "")

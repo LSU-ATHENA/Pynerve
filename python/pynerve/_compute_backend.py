@@ -40,10 +40,14 @@ def _to_internal_options(py_opts: Any) -> Any:
     if _core is None:
         return py_opts
     int_opts = _core.PersistenceOptions()
-    mode_name = py_opts.mode.name if hasattr(py_opts.mode, "name") else str(py_opts.mode)
+    mode_name = (
+        py_opts.mode.name if hasattr(py_opts.mode, "name") else str(py_opts.mode)
+    )
     int_opts.mode = getattr(_core.PersistenceMode, mode_name)
     backend_name = (
-        py_opts.backend.name if hasattr(py_opts.backend, "name") else str(py_opts.backend)
+        py_opts.backend.name
+        if hasattr(py_opts.backend, "name")
+        else str(py_opts.backend)
     )
     int_opts.backend = getattr(_core.PersistenceBackend, backend_name)
     int_opts.max_dim = int(py_opts.max_dim)
@@ -83,13 +87,22 @@ _DEVICE_TO_BACKEND = {
 
 def _resolve_device_to_backend(device: str) -> Any:
     base = device.split(":", 1)[0]
+    if base == "cuda":
+        try:
+            import torch as _t
+        except ImportError:
+            _t = None
+        if _t is None or not _t.cuda.is_available():
+            raise RuntimeError(
+                f"Device {device!r} requires CUDA, but CUDA is not available. "
+                f"Use 'cpu' instead."
+            )
     backend_name = _DEVICE_TO_BACKEND.get(base)
     if backend_name is not None:
         return getattr(PersistenceBackend, backend_name)
     raise ValueError(
         f"Unknown device: {device!r}. Supported devices: "
-        f"{', '.join(f'{p}[:N]' for p in sorted(_DEVICE_TO_BACKEND))}. "
-        f""
+        f"{', '.join(f'{p}[:N]' for p in sorted(_DEVICE_TO_BACKEND))}."
     )
 
 
@@ -142,7 +155,9 @@ def _compute_with_options(
     filtered_overrides = {
         k: v for k, v in overrides.items() if k not in ("dtype", "max_radius_cap")
     }
-    py_opts = _resolve_options(points, options, **filtered_overrides, max_radius_cap=max_radius_cap)
+    py_opts = _resolve_options(
+        points, options, **filtered_overrides, max_radius_cap=max_radius_cap
+    )
     opts = _to_internal_options(py_opts)
     return PersistenceResult.from_dict(core_func(point_array, opts))
 

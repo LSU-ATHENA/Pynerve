@@ -77,7 +77,9 @@ class PersistentHomology(nn.Module):
         max_radius: float = float("inf"),
         metric: str = "euclidean",
         reduction: str = "clearing",
-        memory_mode: Literal["standard", "memory_mapped", "streaming", "extreme"] = "standard",
+        memory_mode: Literal[
+            "standard", "memory_mapped", "streaming", "extreme"
+        ] = "standard",
         max_memory_gb: float | None = None,
         device: Device | None = None,
         dtype: torch.dtype | None = None,
@@ -295,6 +297,8 @@ class PersistentHomology(nn.Module):
             device).
         :returns: ``self`` so that calls can be chained.
         """
+        if not torch.cuda.is_available():
+            raise RuntimeError("CUDA is not available on this system")
         if device is None:
             self._device = torch.device("cuda")
         elif isinstance(device, int):

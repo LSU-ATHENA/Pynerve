@@ -86,5 +86,8 @@ sdist.include = [
 [tool.ruff.lint.per-file-ignores]
 "pynerve/triton/*" = ["N802", "N803", "N806", "ARG001", "F841", "SIM108", "PLW0603"]
 
+[tool.pyright]
+reportOptionalMemberAccess = false
+
 
 
