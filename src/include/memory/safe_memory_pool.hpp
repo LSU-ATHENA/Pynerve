@@ -70,7 +70,7 @@ template <typename T, Size SlabCapacity = 256>
 class SlabAllocator
 {
     static_assert(SlabCapacity > 0, "SlabCapacity must be positive");
-    static_assert(sizeof(PageNode) <= sizeof(T),
+    static_assert(sizeof(void *) <= sizeof(T),
                   "T must be at least sizeof(void*) for SlabAllocator");
 
 public:
