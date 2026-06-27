@@ -436,14 +436,18 @@ nerve_add_cpp_test(nerve_cpp_streaming_laplacian_regressions cpp/streaming_lapla
 set_tests_properties(nerve_cpp_streaming_laplacian_regressions PROPERTIES LABELS "streaming;laplacian;cpu;regression")
 nerve_add_cpp_test(nerve_cpp_streaming_lockfree_regressions cpp/streaming_lockfree_regressions.cpp)
 set_tests_properties(nerve_cpp_streaming_lockfree_regressions PROPERTIES LABELS "streaming;lockfree;cpu;regression")
+if(NOT NERVE_HAS_MPI)
 nerve_add_cpp_test(nerve_cpp_streaming_windowed_ph_detail_regressions cpp/streaming_windowed_ph_detail_regressions.cpp)
 set_tests_properties(nerve_cpp_streaming_windowed_ph_detail_regressions PROPERTIES LABELS "streaming;windowed;cpu;regression")
+endif()
 
 # Persistence detail tests
 nerve_add_cpp_test(nerve_cpp_persistence_utils_regressions cpp/persistence_utils_regressions.cpp)
 set_tests_properties(nerve_cpp_persistence_utils_regressions PROPERTIES LABELS "persistence;utils;cpu;regression")
+if(NERVE_ENABLE_AVX512_CODEGEN)
 nerve_add_cpp_test(nerve_cpp_avx512_optimizer_regressions cpp/avx512_optimizer_regressions.cpp)
 set_tests_properties(nerve_cpp_avx512_optimizer_regressions PROPERTIES LABELS "persistence;avx512;cpu;regression")
+endif()
 nerve_add_cpp_test(nerve_cpp_exact_engine_fast_regressions cpp/exact_engine_fast_regressions.cpp)
 set_tests_properties(nerve_cpp_exact_engine_fast_regressions PROPERTIES LABELS "persistence;exact;fast;cpu;regression")
 nerve_add_cpp_test(nerve_cpp_parallel_ph_regression cpp/parallel_ph_regression.cpp)
