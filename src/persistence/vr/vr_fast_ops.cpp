@@ -263,8 +263,10 @@ std::vector<Pair> computeVrPersistenceExact(const core::BufferView<const double>
         }
     }
     // For cohomology/accelerated: use fast engine (lexicographic coboundary enumeration)
-    // which avoids SimplicialComplex entirely.
-    bool use_cohomology = config.use_accelerated_runtime || config.use_adaptive_acceleration;
+    // which avoids SimplicialComplex entirely. Falls back to standard engine
+    // for dim >= 2 where the fast engine has known limitations.
+    bool use_cohomology =
+        (config.use_accelerated_runtime || config.use_adaptive_acceleration) && config.max_dim < 2;
     if (use_cohomology)
     {
         auto exact = computeExactCohomologyZ2Fast(static_cast<int>(num_points),
