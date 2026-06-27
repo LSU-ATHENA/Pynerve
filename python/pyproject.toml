@@ -38,6 +38,10 @@ all = [
 torch = [
     "torch>=2.4",
 ]
+triton = [
+    "triton>=2.1",
+    "torch>=2.4",
+]
 ml = [
     "scikit-learn>=1.0.0",
     "numba>=0.56.0",
@@ -78,6 +82,9 @@ sdist.include = [
     "README.md",
     "../LICENSE",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"pynerve/triton/*" = ["N802", "N803", "N806", "ARG001", "F841", "SIM108", "PLW0603"]
 
 
 
