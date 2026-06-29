@@ -517,19 +517,7 @@ computeExactCohomologyZ2Fast(int n, int max_dim, double thr,
             }
 
             // Non-MST edge: full enumeration with pack_keys for reduction.
-            // Also register triangle filtrations so the dim-2 column set sees them.
-            {
-                std::vector<uint64_t> tmp;
-                enum_tri_cofs_into(oi, tmp);
-                red[cp].swap(tmp);
-                for (uint64_t pk : red[cp])
-                {
-                    int64_t tb = unpack_bidx(pk);
-                    double td = unpack_diam(pk);
-                    if (tri_filtration.find(tb) == tri_filtration.end())
-                        tri_filtration[tb] = td;
-                }
-            }
+            enum_tri_cofs_into(oi, red[cp]);
 
             if (red[cp].empty())
             {
@@ -665,36 +653,75 @@ computeExactCohomologyZ2Fast(int n, int max_dim, double thr,
     // Dim-2 reduction (triangle -> tetrahedron, LAZY)
     if (max_dim >= 2 && max_simplex_dim >= 3)
     {
-        // Collect triangles from tri_filtration
-        std::unordered_set<int64_t> cleared_tris;
-        for (auto &[bidx, tpos] : b2pm2)
-        {
-            if (owner.count(tpos))
-                cleared_tris.insert(bidx);
-        }
-
         struct TriColumn
         {
             int64_t bidx;
             double diam;
             int tpos;
-            bool pivoted;
-            bool handled;
+            bool pivoted = false;
+            bool handled = false;
         };
         std::vector<TriColumn> dim2_cols;
 
-        for (auto &[bidx, filt] : tri_filtration)
+        // Build columns from all edges (not just tri_filtration) so that
+        // the actual 2-cycle triangles on structured manifolds are included.
+        std::unordered_set<int64_t> seen_tris;
+        seen_tris.reserve(raw_edge_count * 2);
+        for (int a = 0; a < n; ++a)
         {
-            int tpos = -1;
-            auto tit = b2pm2.find(bidx);
-            if (tit != b2pm2.end())
-                tpos = tit->second;
-            else
+            const auto &na = nb[a];
+            for (int b : na)
             {
-                tpos = S + (int)b2pm2.size();
-                b2pm2[bidx] = tpos;
+                if (b <= a)
+                    continue;
+                double dab = wt(a, b);
+                if (dab > thr)
+                    continue;
+                const auto &nb2 = nb[b];
+                size_t pa = 0, pb = 0;
+                while (pa < na.size() && pb < nb2.size())
+                {
+                    if (na[pa] == nb2[pb])
+                    {
+                        int c = na[pa];
+                        if (c > b)
+                        {
+                            double td = dab;
+                            double dac = wt(a, c);
+                            if (dac > thr)
+                            {
+                                pa++;
+                                pb++;
+                                continue;
+                            }
+                            if (dac > td)
+                                td = dac;
+                            double dbc = wt(b, c);
+                            if (dbc > thr)
+                            {
+                                pa++;
+                                pb++;
+                                continue;
+                            }
+                            if (dbc > td)
+                                td = dbc;
+                            int64_t bidx = bidx_enc(a, b, c);
+                            if (seen_tris.insert(bidx).second)
+                            {
+                                int tpos = S + (int)b2pm2.size();
+                                b2pm2[bidx] = tpos;
+                                dim2_cols.push_back({bidx, td, tpos});
+                            }
+                        }
+                        pa++;
+                        pb++;
+                    }
+                    else if (na[pa] < nb2[pb])
+                        pa++;
+                    else
+                        pb++;
+                }
             }
-            dim2_cols.push_back({bidx, filt, tpos, false, false});
         }
         std::sort(dim2_cols.begin(), dim2_cols.end(),
                   [](auto &a, auto &b) { return a.diam > b.diam; });
