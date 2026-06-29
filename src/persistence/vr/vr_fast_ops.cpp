@@ -263,8 +263,10 @@ std::vector<Pair> computeVrPersistenceExact(const core::BufferView<const double>
         }
     }
     // For cohomology/accelerated: use fast engine (lexicographic coboundary enumeration)
-    // which avoids SimplicialComplex entirely.
-    bool use_cohomology = config.use_accelerated_runtime || config.use_adaptive_acceleration;
+    // which avoids SimplicialComplex entirely, for dim 0-1 where it's verified correct.
+    // For dim >= 2, fall through to the standard engine.
+    bool use_cohomology =
+        (config.use_accelerated_runtime || config.use_adaptive_acceleration) && config.max_dim < 2;
     if (use_cohomology)
     {
         auto exact = computeExactCohomologyZ2Fast(static_cast<int>(num_points),
@@ -320,11 +322,9 @@ std::vector<Pair> computeVrPersistenceExact(const core::BufferView<const double>
                         {
                             if ((Size)d <= (Size)c)
                                 continue;
-                            if (std::find(neighbors[b].begin(), neighbors[b].end(), d) ==
-                                neighbors[b].end())
+                            if (!std::binary_search(neighbors[b].begin(), neighbors[b].end(), d))
                                 continue;
-                            if (std::find(neighbors[c].begin(), neighbors[c].end(), d) ==
-                                neighbors[c].end())
+                            if (!std::binary_search(neighbors[c].begin(), neighbors[c].end(), d))
                                 continue;
                             double dd = dmax;
                             auto it_d = edge_weights.find(makeEdgeKey((int)a, d));
