@@ -663,66 +663,41 @@ computeExactCohomologyZ2Fast(int n, int max_dim, double thr,
         };
         std::vector<TriColumn> dim2_cols;
 
-        // Build columns from all edges (not just tri_filtration) so that
-        // the actual 2-cycle triangles on structured manifolds are included.
+        // Build columns from:
+        // 1. tri_filtration (MST-adjacent triangles, already fast)
+        // 2. non-pivot entries in reduced columns of non-MST edges
+        //    (these are triangles NOT paired in dim-1, candidates for dim-2)
         std::unordered_set<int64_t> seen_tris;
-        seen_tris.reserve(raw_edge_count * 2);
-        for (int a = 0; a < n; ++a)
+        seen_tris.reserve((int)tri_filtration.size() + raw_edge_count * 4);
+
+        for (auto &[bidx, filt] : tri_filtration)
         {
-            const auto &na = nb[a];
-            for (int b : na)
+            int tpos = S + (int)b2pm2.size();
+            b2pm2[bidx] = tpos;
+            dim2_cols.push_back({bidx, filt, tpos});
+            seen_tris.insert(bidx);
+        }
+
+        for (int oi = 0; oi < S; ++oi)
+        {
+            if (dims[oi] != 1)
+                continue;
+            int cp = pos[oi];
+            const auto &wr = red[cp];
+            if (wr.empty())
+                continue;
+            for (uint64_t pk : wr)
             {
-                if (b <= a)
+                int64_t tb = unpack_bidx(pk);
+                if (!seen_tris.insert(tb).second)
                     continue;
-                double dab = wt(a, b);
-                if (dab > thr)
-                    continue;
-                const auto &nb2 = nb[b];
-                size_t pa = 0, pb = 0;
-                while (pa < na.size() && pb < nb2.size())
-                {
-                    if (na[pa] == nb2[pb])
-                    {
-                        int c = na[pa];
-                        if (c > b)
-                        {
-                            double td = dab;
-                            double dac = wt(a, c);
-                            if (dac > thr)
-                            {
-                                pa++;
-                                pb++;
-                                continue;
-                            }
-                            if (dac > td)
-                                td = dac;
-                            double dbc = wt(b, c);
-                            if (dbc > thr)
-                            {
-                                pa++;
-                                pb++;
-                                continue;
-                            }
-                            if (dbc > td)
-                                td = dbc;
-                            int64_t bidx = bidx_enc(a, b, c);
-                            if (seen_tris.insert(bidx).second)
-                            {
-                                int tpos = S + (int)b2pm2.size();
-                                b2pm2[bidx] = tpos;
-                                dim2_cols.push_back({bidx, td, tpos});
-                            }
-                        }
-                        pa++;
-                        pb++;
-                    }
-                    else if (na[pa] < nb2[pb])
-                        pa++;
-                    else
-                        pb++;
-                }
+                double td = unpack_diam(pk);
+                int tpos = S + (int)b2pm2.size();
+                b2pm2[tb] = tpos;
+                dim2_cols.push_back({tb, td, tpos});
             }
         }
+
         std::sort(dim2_cols.begin(), dim2_cols.end(),
                   [](auto &a, auto &b) { return a.diam > b.diam; });
 
