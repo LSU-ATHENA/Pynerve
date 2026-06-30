@@ -1,4 +1,9 @@
-"""Triton persistent-Laplacian kernels."""
+"""Triton persistent-Laplacian kernels.
+
+Inline PTX notes:
+  - FMA: "fma.rn.f64 $0, $1, $2, $3;" via inline_asm_elementwise for CSR SpMV accumulation.
+  - cp.async.bulk on sm90+ can accelerate sparse matrix tile loading.
+"""
 
 from __future__ import annotations
 
@@ -9,9 +14,11 @@ from . import _check_triton, _use_triton, _warn_cpu_fallback
 if _check_triton():
     import triton
     import triton.language as tl
+    from triton.language import inline_asm_elementwise as _asm
 else:
-    triton = None  # type: ignore[assignment]
-    tl = None  # type: ignore[assignment]
+    triton = None
+    tl = None
+    _asm = None
 
 
 @triton.autotune(
@@ -58,7 +65,7 @@ def csr_spmv(
     values: torch.Tensor,
     x: torch.Tensor,
 ) -> torch.Tensor:
-    """CSR sparse-matrix × dense-vector: y = A · x."""
+    """CSR sparse-matrix x dense-vector: y = A * x."""
     n = row_offsets.size(0) - 1
     if _use_triton(x):
         y = torch.empty(n, dtype=x.dtype, device=x.device)

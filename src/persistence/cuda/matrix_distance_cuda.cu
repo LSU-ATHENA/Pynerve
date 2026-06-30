@@ -1,5 +1,6 @@
 #include "nerve/persistence/cuda/cuda_distance_matrix.hpp"
 #include "nerve/persistence/cuda/cuda_error_handling.hpp"
+#include "nerve/gpu/gpu_ptx_ops.cuh"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -10,6 +11,7 @@
 
 namespace nerve::persistence::accelerated
 {
+using namespace nerve::gpu::ptx;
 
 constexpr int DISTANCE_SHARED_TILE = 16;
 
@@ -30,9 +32,8 @@ __device__ inline void writeSymmetricDistance(double *distances, Size n_points, 
 
 __device__ inline bool accumulateSquaredDifference(double diff, double &distance_sq)
 {
-    const double contribution = diff * diff;
-    const double next_distance_sq = distance_sq + contribution;
-    if (!isfinite(diff) || !isfinite(contribution) || !isfinite(next_distance_sq))
+    const double next_distance_sq = ptx::fma_f64(diff, diff, distance_sq);
+    if (!isfinite(diff) || !isfinite(next_distance_sq))
     {
         distance_sq = INFINITY;
         return false;

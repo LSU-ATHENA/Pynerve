@@ -1,10 +1,12 @@
 #include "gpu_kernels.cuh"
+#include "nerve/gpu/gpu_ptx_ops.cuh"
 
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
 
 namespace nerve::core::gpu
 {
+using namespace nerve::gpu::ptx;
 
 __global__ void fillUniformKernel(float *buffer, Size n, unsigned long long seed)
 {
@@ -61,7 +63,7 @@ __global__ void vectorDotKernel(const double *a, const double *b, double *partia
     double sum = 0.0;
     while (i < static_cast<int>(n))
     {
-        sum += a[i] * b[i];
+        sum = ptx::fma_f64(a[i], b[i], sum);
         i += gridDim.x * blockDim.x;
     }
     sdata[tid] = sum;

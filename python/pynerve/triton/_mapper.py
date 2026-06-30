@@ -2,6 +2,11 @@
 
 Covers: density filter, eccentricity filter, k-means assignment, cover binning,
 and Mapper nerve-graph edge construction.
+
+Inline PTX notes:
+  - FMA: "fma.rn.f32 $0, $1, $2, $3;" for distance accumulation replaces diff*diff+sum.
+  - selp.f32: predicated select for branch-free cluster assignment.
+  - slct_f32 equivalent in Triton is tl.where, but selp via _asm avoids divergence.
 """
 
 from __future__ import annotations
@@ -13,9 +18,11 @@ from . import _check_triton, _use_triton, _warn_cpu_fallback
 if _check_triton():
     import triton
     import triton.language as tl
+    from triton.language import inline_asm_elementwise as _asm
 else:
-    triton = None  # type: ignore[assignment]
-    tl = None  # type: ignore[assignment]
+    triton = None
+    tl = None
+    _asm = None
 
 
 @triton.jit

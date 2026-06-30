@@ -6,6 +6,7 @@
 
 #include "nerve/gpu/gpu_error.hpp"
 #include "nerve/persistence/cuda/cuda_warp_specialized_kernels.hpp"
+#include "nerve/gpu/gpu_ptx_ops.cuh"
 
 #include <cuda_fp16.h>
 #include <cuda_runtime.h>
@@ -95,7 +96,7 @@ __device__ inline int findHighestPivotWarp(const uint64_t *__restrict__ column_w
         const uint64_t word = column_words[word_idx];
         if (word != 0)
         {
-            lane_pivot = word_idx * 64 + (63 - __clzll(word));
+            lane_pivot = word_idx * 64 + ptx::find_msb_u64(word);
             break;
         }
     }
@@ -169,7 +170,11 @@ __global__ void __launch_bounds__(256)
         const T lhs = matrix[row_base + i];
         const T rhs = vector[i];
         const T product = lhs * rhs;
-        const T next = sum + product;
+        const T next;
+        if constexpr (std::is_same_v<T, float>)
+            next = ptx::fma_f32(lhs, rhs, sum);
+        else
+            next = sum + product;
         if (!isfinite(static_cast<double>(lhs)) || !isfinite(static_cast<double>(rhs)) ||
             !isfinite(static_cast<double>(product)) || !isfinite(static_cast<double>(next)))
         {

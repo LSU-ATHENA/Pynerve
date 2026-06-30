@@ -1,5 +1,6 @@
 #include "nerve/gpu/cuda_error_check.hpp"
 #include "nerve/gpu/device_array.hpp"
+#include "nerve/gpu/gpu_ptx_ops.cuh"
 #include "nerve/math/persistence_metrics/point2d.hpp"
 
 #include <cuda_runtime.h>
@@ -16,6 +17,7 @@
 
 namespace nerve::gpu::bottleneck
 {
+using namespace nerve::gpu::ptx;
 
 namespace
 {
@@ -52,7 +54,10 @@ __device__ __forceinline__ T device_max(T a, T b)
 template <typename T>
 __device__ __forceinline__ T linf_distance(T x1, T y1, T x2, T y2)
 {
-    return device_max(device_abs(x1 - x2), device_abs(y1 - y2));
+    if constexpr (std::is_same_v<T, float>)
+        return ptx::hwmax_f32(ptx::hwmax_f32(x1 - x2, x2 - x1), ptx::hwmax_f32(y1 - y2, y2 - y1));
+    else
+        return ptx::hwmax_f64(ptx::hwmax_f64(x1 - x2, x2 - x1), ptx::hwmax_f64(y1 - y2, y2 - y1));
 }
 
 template <typename T>

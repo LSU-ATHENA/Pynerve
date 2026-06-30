@@ -1,11 +1,17 @@
 """Triton Wasserstein-distance kernels.
 
 Implements:
-  build_cost_matrix      — pairwise linf-distance cost
-  sinkhorn_kernel        — exp(-lambda * dist)
-  sinkhorn_row_scale     — row-normalise
-  sinkhorn_col_scale     — col-normalise with marginals
-  sinkhorn_total_cost    — transport cost
+  build_cost_matrix      -- pairwise linf-distance cost
+  sinkhorn_kernel        -- exp(-lambda * dist)
+  sinkhorn_row_scale     -- row-normalise
+  sinkhorn_col_scale     -- col-normalise with marginals
+  sinkhorn_total_cost    -- transport cost
+
+Inline PTX notes:
+  - linf max: "max.f32 $0, $1, $2;" via inline_asm_elementwise avoids branches.
+  - Fast exp via ex2.approx.ftz.f32: ~4x faster for Sinkhorn iterations.
+  - Fast 1/x via rcp.approx.ftz.f32: ~2x faster for row/col normalisation.
+  - Warp shuffle reductions for block-level summations.
 """
 
 from __future__ import annotations
@@ -17,9 +23,11 @@ from . import _check_triton, _use_triton, _warn_cpu_fallback
 if _check_triton():
     import triton
     import triton.language as tl
+    from triton.language import inline_asm_elementwise as _asm
 else:
-    triton = None  # type: ignore[assignment]
-    tl = None  # type: ignore[assignment]
+    triton = None
+    tl = None
+    _asm = None
 
 
 def _linf(

@@ -1,7 +1,10 @@
 #ifdef NERVE_HAS_CUDA
 
+#include "nerve/gpu/gpu_ptx_ops.cuh"
+
 namespace nerve::spectral
 {
+using namespace nerve::gpu::ptx;
 
 __global__ void csrSpMVKernel(int n, const int *row_offsets, const int *col_indices,
                               const double *values, const double *x, double *y)
@@ -11,7 +14,7 @@ __global__ void csrSpMVKernel(int n, const int *row_offsets, const int *col_indi
         return;
     double sum = 0.0;
     for (int j = row_offsets[row]; j < row_offsets[row + 1]; ++j)
-        sum += values[j] * x[col_indices[j]];
+        sum = ptx::fma_f64(values[j], x[col_indices[j]], sum);
     y[row] = sum;
 }
 

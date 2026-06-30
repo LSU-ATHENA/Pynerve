@@ -1,5 +1,5 @@
 #include "nerve/algebra/complex.hpp"
-#include "nerve/persistence/utils/exact_engine.hpp"
+#include "nerve/persistence/utils/exact_engine_fast.hpp"
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
 #include "nerve/persistence/vr/vr_fast_simd_ops.hpp"
 
@@ -436,31 +436,25 @@ std::vector<Pair> computeVrPersistenceFastSimd(const core::BufferView<const doub
 
     adj.sortNeighbors(num_points);
 
-    // Enumerate cliques
-    algebra::SimplicialComplex complex;
-    SimplexSet seen;
-    seen.reserve(num_points * 8);
-
-    FastCliqueEnumerator enumerator(adj, edge_weights, config.max_dim, config.max_radius);
-    enumerator.enumerate(num_points, complex, seen);
-
-    // Compute persistence
-    auto exact = computeExactPersistenceZ2(complex, config.max_dim);
+    std::vector<std::vector<int>> neighbors(num_points);
+    std::unordered_map<std::uint64_t, double> ew64;
+    ew64.reserve(edge_weights.size());
+    for (Size i = 0; i < num_points; ++i)
+        neighbors[i].assign(adj.neighbors[i], adj.neighbors[i] + adj.neighbor_counts[i]);
+    for (const auto &[k32, dist] : edge_weights)
+    {
+        int a = (int)(k32 >> 16), b = (int)(k32 & 0xFFFF);
+        if (a > b) std::swap(a, b);
+        ew64[((std::uint64_t)(std::uint32_t)a << 32) | (std::uint32_t)b] = dist;
+    }
+    auto exact = computeExactCohomologyZ2Fast((int)num_points, (int)config.max_dim,
+                                              config.max_radius, neighbors, ew64);
     const auto &diagram = exact.pairs;
-
     std::vector<Pair> pairs;
     pairs.reserve(diagram.size());
     for (const auto &pair : diagram)
-    {
-        if (pair.dimension <= static_cast<Dimension>(config.max_dim))
-        {
-            pairs.push_back(pair);
-        }
-    }
-
-    std::ranges::sort(pairs, {},
-                      [](const Pair &p) { return std::tuple(p.dimension, p.birth, p.death); });
-
+        if (pair.dimension <= (Dimension)config.max_dim) pairs.push_back(pair);
+    std::ranges::sort(pairs, {}, [](const Pair &p) { return std::tuple(p.dimension, p.birth, p.death); });
     return pairs;
 }
 

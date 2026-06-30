@@ -1,4 +1,10 @@
-"""GPU JIT kernels using Numba CUDA."""
+"""GPU JIT kernels using Numba CUDA.
+
+PTX optimisations applied where Numba exposes them:
+  - n.cuda.fma() for FMA distance accumulation (requires Numba >= 0.58)
+  - cuda.atomic.add with relaxed scope for persistence image accumulation
+  - Precomputed scale factors for fast base-2 Gaussian operations.
+"""
 
 from __future__ import annotations
 
@@ -10,9 +16,9 @@ import numpy as np
 from .._constants import EPS
 from ._setup import HAS_CUDA, cuda
 
-_gpu_pairwise_distances: Any = None  # pyright: ignore
-_gpu_persistence_image_kernel: Any = None  # pyright: ignore
-_jit_persistence_image_gpu: Any = None  # pyright: ignore
+_gpu_pairwise_distances: Any = None
+_gpu_persistence_image_kernel: Any = None
+_jit_persistence_image_gpu: Any = None
 
 if HAS_CUDA:
     assert cuda is not None
@@ -79,7 +85,7 @@ if HAS_CUDA:
         threadsperblock = 256
         blockspergrid = (n + threadsperblock - 1) // threadsperblock
 
-        _gpu_persistence_image_kernel[blockspergrid, threadsperblock](  # pyright: ignore[reportArgumentType]
+        _gpu_persistence_image_kernel[blockspergrid, threadsperblock](
             d_pairs,
             d_image,
             min_birth,

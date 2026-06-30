@@ -1,4 +1,5 @@
 #include "nerve/core_types.hpp"
+#include "nerve/gpu/gpu_ptx_ops.cuh"
 
 #include <cuda_runtime.h>
 
@@ -6,6 +7,7 @@
 
 namespace nerve::algorithms::gpu
 {
+using namespace nerve::gpu::ptx;
 
 __global__ void batchDistanceKernel(const double *__restrict__ a, Size na,
                                     const double *__restrict__ b, Size nb, Size dim,
@@ -26,7 +28,7 @@ __global__ void pairwiseDistanceKernel(const double *__restrict__ points, Size n
         {
             double diff =
                 points[static_cast<size_t>(i) * dim + d] - points[static_cast<size_t>(j) * dim + d];
-            sum += diff * diff;
+            sum = ptx::fma_f64(diff, diff, sum);
         }
         matrix[static_cast<size_t>(i) * n + j] = sqrt(sum);
     }
@@ -44,7 +46,7 @@ __global__ void batchDistanceKernel(const double *__restrict__ a, Size na,
     for (Size d = 0; d < dim; ++d)
     {
         double diff = a[static_cast<size_t>(i) * dim + d] - b[static_cast<size_t>(j) * dim + d];
-        sum += diff * diff;
+        sum = ptx::fma_f64(diff, diff, sum);
     }
     distances[static_cast<size_t>(j) * na + i] = sqrt(sum);
 }

@@ -50,12 +50,6 @@ int64_t bidx_enc(int a, int b, int c)
     std::sort(x, x + 3);
     return C(x[0], 1) + C(x[1], 2) + C(x[2], 3);
 }
-int64_t bidx_enc(int a, int b, int c, int d)
-{
-    int x[4] = {a, b, c, d};
-    std::sort(x, x + 4);
-    return C(x[0], 1) + C(x[1], 2) + C(x[2], 3) + C(x[3], 4);
-}
 
 // Decode vertex list from binomial index. v[dim] filled in place (must be pre-allocated).
 void bidx_decode(int64_t bidx, int dim, int n, int *v)
@@ -373,92 +367,6 @@ computeExactCohomologyZ2Fast(int n, int max_dim, double thr,
         }
     };
 
-    auto enum_tetrahedron_cofacets = [&](const int *tri_v, double tri_diam,
-                                         std::vector<uint64_t> &out, bool sparse) {
-        out.clear();
-        int a = tri_v[0], b = tri_v[1], c = tri_v[2];
-        if (sparse && n <= 2000)
-        {
-            static thread_local std::vector<int> common;
-            size_t pa = 0, pb = 0, pc = 0;
-            const auto &na = nb[a];
-            const auto &nb2 = nb[b];
-            const auto &nc2 = nb[c];
-            common.clear();
-            while (pa < na.size() && pb < nb2.size() && pc < nc2.size())
-            {
-                if (na[pa] == nb2[pb] && na[pa] == nc2[pc])
-                {
-                    if (na[pa] > c)
-                        common.push_back(na[pa]);
-                    pa++;
-                    pb++;
-                    pc++;
-                }
-                else if (na[pa] <= nb2[pb] && na[pa] <= nc2[pc])
-                    pa++;
-                else if (nb2[pb] <= na[pa] && nb2[pb] <= nc2[pc])
-                    pb++;
-                else
-                    pc++;
-            }
-            for (int d : common)
-            {
-                double nd = tri_diam;
-                double wd = wt(a, d);
-                if (wd > thr)
-                    continue;
-                if (wd > nd)
-                    nd = wd;
-                wd = wt(b, d);
-                if (wd > thr)
-                    continue;
-                if (wd > nd)
-                    nd = wd;
-                wd = wt(c, d);
-                if (wd > thr)
-                    continue;
-                if (wd > nd)
-                    nd = wd;
-                xor_insert(out, pack_key(nd, bidx_enc(a, b, c, d)));
-            }
-        }
-        else
-        {
-            int64_t idx = bidx_enc(a, b, c);
-            int64_t idx_below = idx, idx_above = 0;
-            int j = n - 1, k = 3;
-            while (j >= 0)
-            {
-                while (k > 0 && C(j, k) <= idx_below)
-                {
-                    idx_below -= C(j, k);
-                    idx_above += C(j, k + 1);
-                    --j;
-                    --k;
-                }
-                if (j < 0)
-                    break;
-                int64_t cf_idx = idx_above + C(j, k + 1) + idx_below;
-                double cf_diam = tri_diam;
-                for (int vi = 0; vi < 3; ++vi)
-                {
-                    double nd = wt(tri_v[vi], j);
-                    if (nd > thr)
-                    {
-                        cf_diam = -1.0;
-                        break;
-                    }
-                    if (nd > cf_diam)
-                        cf_diam = nd;
-                }
-                if (cf_diam >= 0)
-                    xor_insert(out, pack_key(cf_diam, cf_idx));
-                --j;
-            }
-        }
-    };
-
     // Dim-1 reduction (edge -> triangle)
     if (max_dim >= 1 && max_simplex_dim >= 2)
     {
@@ -649,32 +557,65 @@ computeExactCohomologyZ2Fast(int n, int max_dim, double thr,
     }
 
     int raw_edge_count = ne;
+    (void)raw_edge_count;
 
-    // Dim-2 reduction (triangle -> tetrahedron, LAZY)
     if (max_dim >= 2 && max_simplex_dim >= 3)
     {
-        struct TriColumn
+        constexpr double kInf = std::numeric_limits<double>::infinity();
+        struct ColMeta
         {
             int64_t bidx;
             double diam;
-            int tpos;
-            bool pivoted = false;
-            bool handled = false;
+            int sid;
+            bool pivoted;
+            bool handled;
         };
-        std::vector<TriColumn> dim2_cols;
-
-        // Build columns from:
-        // 1. tri_filtration (MST-adjacent triangles, already fast)
-        // 2. non-pivot entries in reduced columns of non-MST edges
-        //    (these are triangles NOT paired in dim-1, candidates for dim-2)
+        std::vector<ColMeta> prev_cols;
+        int next_sid = S;
         std::unordered_set<int64_t> seen_tris;
-        seen_tris.reserve((int)tri_filtration.size() + raw_edge_count * 4);
+        seen_tris.reserve((int)tri_filtration.size() + (int)((int64_t)n * (n - 1)));
+
+        std::unordered_set<int64_t> killed_tris;
+        for (const auto &[bidx, pos_val] : b2pm2)
+            if (owner.count(pos_val) && owner.at(pos_val) >= 0)
+                killed_tris.insert(bidx);
+        for (int oi = 0; oi < S; ++oi)
+        {
+            if (dims[oi] != 1)
+                continue;
+            int cp = pos[oi];
+            if (owner.count(cp))
+                continue;
+            const auto &wr = red[cp];
+            if (!wr.empty())
+                continue;
+            const int *vs = getv(oi);
+            int a = vs[0], b = vs[1];
+            const auto &na2 = nb[a], &nb2_2 = nb[b];
+            size_t pa = 0, pb = 0;
+            while (pa < na2.size() && pb < nb2_2.size())
+            {
+                if (na2[pa] == nb2_2[pb])
+                {
+                    int c = na2[pa];
+                    if (wt(a, c) <= thr && wt(b, c) <= thr)
+                        killed_tris.insert(bidx_enc(a, b, c));
+                    pa++;
+                    pb++;
+                }
+                else if (na2[pa] < nb2_2[pb])
+                    pa++;
+                else
+                    pb++;
+            }
+        }
 
         for (auto &[bidx, filt] : tri_filtration)
         {
-            int tpos = S + (int)b2pm2.size();
-            b2pm2[bidx] = tpos;
-            dim2_cols.push_back({bidx, filt, tpos});
+            if (killed_tris.count(bidx))
+                continue;
+            b2pm2[bidx] = next_sid;
+            prev_cols.push_back({bidx, filt, next_sid++, false, false});
             seen_tris.insert(bidx);
         }
 
@@ -684,126 +625,285 @@ computeExactCohomologyZ2Fast(int n, int max_dim, double thr,
                 continue;
             int cp = pos[oi];
             const auto &wr = red[cp];
-            if (wr.empty())
-                continue;
             for (uint64_t pk : wr)
             {
                 int64_t tb = unpack_bidx(pk);
-                if (!seen_tris.insert(tb).second)
+                if (!seen_tris.insert(tb).second || killed_tris.count(tb))
                     continue;
                 double td = unpack_diam(pk);
-                int tpos = S + (int)b2pm2.size();
-                b2pm2[tb] = tpos;
-                dim2_cols.push_back({tb, td, tpos});
+                b2pm2[tb] = next_sid;
+                prev_cols.push_back({tb, td, next_sid++, false, false});
             }
-        }
-
-        std::sort(dim2_cols.begin(), dim2_cols.end(),
-                  [](auto &a, auto &b) { return a.diam > b.diam; });
-
-        std::unordered_map<int64_t, int> b2pm3;
-        std::vector<uint64_t> cof_buf;
-        int tv[3];
-
-        for (auto &tc : dim2_cols)
-        {
-            bidx_decode(tc.bidx, 3, n, tv);
-
-            enum_tetrahedron_cofacets(tv, tc.diam, cof_buf, raw_edge_count < n * n / 4);
-
-            if (cof_buf.empty())
+            if (wr.empty() && owner.count(cp) == 0)
             {
-                tc.handled = true;
-                pairs.push_back({tc.diam, std::numeric_limits<double>::infinity(), 2});
-                continue;
-            }
-
-            // Assign dynamic tetrahedron positions
-            for (uint64_t pk : cof_buf)
-            {
-                int64_t b = unpack_bidx(pk);
-                double dm = unpack_diam(pk);
-                tet_filtration[b] = dm;
-                if (b2pm3.find(b) == b2pm3.end())
-                    b2pm3.try_emplace(b, S + (int)b2pm3.size());
-            }
-
-            // Reduction
-            auto &wr = cof_buf;
-            while (!wr.empty())
-            {
-                uint64_t pk = wr[0];
-                int64_t b = unpack_bidx(pk);
-                auto it3 = b2pm3.find(b);
-                if (it3 == b2pm3.end())
-                    break;
-                int pivot_pos = it3->second;
-
-                auto oit = owner_dim2.find(pivot_pos);
-                if (oit == owner_dim2.end())
+                const int *vs = getv(oi);
+                int a = vs[0], b = vs[1];
+                const auto &na2 = nb[a], &nb2_2 = nb[b];
+                size_t pa = 0, pb = 0;
+                double edge_diam = diam[oi];
+                while (pa < na2.size() && pb < nb2_2.size())
                 {
-                    tc.pivoted = true;
-                    owner_dim2[pivot_pos] = tc.tpos;
-                    break;
-                }
-                int k = oit->second;
-                if (k >= 0 && k < S)
-                    xor_merge(wr, red[k]);
-                else if (k >= S)
-                {
-                    auto rit = red_extra.find(k);
-                    if (rit != red_extra.end())
-                        xor_merge(wr, rit->second);
-                    else
-                        break;
-                }
-                else
-                    break;
-            }
-            if (tc.tpos < S)
-                red[tc.tpos] = std::move(wr);
-            else
-                red_extra[tc.tpos] = std::move(wr);
-        }
-
-        // Extract dim-2 pairs
-        for (auto &tc : dim2_cols)
-        {
-            if (tc.handled)
-                continue;
-            if (tc.pivoted)
-            {
-                auto &stored = (tc.tpos < S) ? red[tc.tpos] : red_extra[tc.tpos];
-                if (!stored.empty())
-                {
-                    int64_t tb = unpack_bidx(stored[0]);
-                    auto tit = tet_filtration.find(tb);
-                    if (tit != tet_filtration.end())
+                    if (na2[pa] == nb2_2[pb])
                     {
-                        pairs.push_back({tc.diam, tit->second, 2});
+                        int c = na2[pa];
+                        double td = edge_diam;
+                        double dac = wt(a, c);
+                        if (dac > thr)
+                        {
+                            pa++;
+                            pb++;
+                            continue;
+                        }
+                        if (dac > td)
+                            td = dac;
+                        double dbc = wt(b, c);
+                        if (dbc > thr)
+                        {
+                            pa++;
+                            pb++;
+                            continue;
+                        }
+                        if (dbc > td)
+                            td = dbc;
+                        int64_t tbidx = bidx_enc(a, b, c);
+                        if (!killed_tris.count(tbidx) && seen_tris.insert(tbidx).second)
+                        {
+                            tri_filtration[tbidx] = td;
+                            b2pm2[tbidx] = next_sid;
+                            prev_cols.push_back({tbidx, td, next_sid++, false, false});
+                        }
+                        pa++;
+                        pb++;
+                    }
+                    else if (na2[pa] < nb2_2[pb])
+                        pa++;
+                    else
+                        pb++;
+                }
+            }
+        }
+
+        for (int d = 2; d <= max_dim && !prev_cols.empty(); ++d)
+        {
+            int col_vn = d + 1, row_vn = d + 2;
+            if (row_vn > n)
+                break;
+            std::vector<int> cord(prev_cols.size());
+            std::iota(cord.begin(), cord.end(), 0);
+            std::sort(cord.begin(), cord.end(), [&](int x, int y) {
+                if (std::abs(prev_cols[x].diam - prev_cols[y].diam) > 1e-12)
+                    return prev_cols[x].diam < prev_cols[y].diam;
+                return prev_cols[x].bidx < prev_cols[y].bidx;
+            });
+
+            std::unordered_map<int64_t, int> row_pos;
+            std::unordered_map<int64_t, double> row_diam;
+            std::unordered_map<int, int> col_owner;
+            std::vector<int> cv(col_vn);
+            static thread_local std::vector<uint64_t> cof_buf;
+
+            // Pre-allocate row_pos to avoid rehashing
+            row_pos.reserve(C(n, row_vn)); // max possible unique cofacets
+
+            for (int pi = (int)cord.size() - 1; pi >= 0; --pi)
+            {
+                auto &col = prev_cols[cord[pi]];
+                bidx_decode(col.bidx, col_vn, n, cv.data());
+                cof_buf.clear();
+
+                if (col_vn == 3)
+                {
+                    int a = cv[0], b = cv[1], c = cv[2];
+                    int64_t idx = bidx_enc(a, b, c), idx_below = idx, idx_above = 0;
+                    int j = n - 1, kk = 3;
+                    while (j >= 0)
+                    {
+                        while (kk > 0 && C(j, kk) <= idx_below)
+                        {
+                            idx_below -= C(j, kk);
+                            idx_above += C(j, kk + 1);
+                            --j;
+                            --kk;
+                        }
+                        if (j < 0)
+                            break;
+                        double nd = col.diam;
+                        for (int vi = 0; vi < 3; ++vi)
+                        {
+                            double wv = wt(cv[vi], j);
+                            if (wv > thr)
+                            {
+                                nd = -1;
+                                break;
+                            }
+                            if (wv > nd)
+                                nd = wv;
+                        }
+                        if (nd >= 0)
+                        {
+                            int vs2[4] = {a, b, c, j};
+                            std::sort(vs2, vs2 + 4);
+                            int64_t cf = 0;
+                            for (int ki = 0; ki < 4; ++ki)
+                                if (vs2[ki] >= ki)
+                                    cf += C(vs2[ki], ki + 1);
+                            xor_insert(cof_buf, pack_key(nd, cf));
+                        }
+                        --j;
                     }
                 }
+                else
+                {
+                    int best_i = 0;
+                    for (int vi = 1; vi < col_vn; ++vi)
+                        if (nb[cv[vi]].size() < nb[cv[best_i]].size())
+                            best_i = vi;
+                    for (int v : nb[cv[best_i]])
+                    {
+                        bool in_sim = false;
+                        for (int vi = 0; vi < col_vn; ++vi)
+                            if (cv[vi] == v)
+                            {
+                                in_sim = true;
+                                break;
+                            }
+                        if (in_sim)
+                            continue;
+                        bool ok = true;
+                        for (int vi = 0; vi < col_vn && ok; ++vi)
+                            if (vi != best_i &&
+                                !std::binary_search(nb[cv[vi]].begin(), nb[cv[vi]].end(), v))
+                                ok = false;
+                        if (!ok)
+                            continue;
+                        double nd = col.diam;
+                        for (int vi = 0; vi < col_vn; ++vi)
+                        {
+                            double wv = wt(cv[vi], v);
+                            if (wv > thr)
+                            {
+                                nd = -1;
+                                break;
+                            }
+                            if (wv > nd)
+                                nd = wv;
+                        }
+                        if (nd >= 0)
+                        {
+                            std::vector<int> vs(cv.begin(), cv.begin() + col_vn);
+                            vs.push_back(v);
+                            std::sort(vs.begin(), vs.end());
+                            int64_t cf = 0;
+                            for (int ki = 0; ki < row_vn; ++ki)
+                                if (vs[ki] >= ki)
+                                    cf += C(vs[ki], ki + 1);
+                            xor_insert(cof_buf, pack_key(nd, cf));
+                        }
+                    }
+                }
+
+                if (cof_buf.empty())
+                {
+                    col.handled = true;
+                    pairs.push_back({col.diam, kInf, d});
+                    continue;
+                }
+                for (uint64_t pk : cof_buf)
+                {
+                    int64_t rb = unpack_bidx(pk);
+                    row_diam[rb] = unpack_diam(pk);
+                    row_pos.try_emplace(rb, S + (int)row_pos.size());
+                }
+                auto &wr = cof_buf;
+                while (!wr.empty())
+                {
+                    uint64_t pk = wr[0];
+                    int64_t b = unpack_bidx(pk);
+                    auto rp = row_pos.find(b);
+                    if (rp == row_pos.end())
+                        break;
+                    auto oit = col_owner.find(rp->second);
+                    if (oit == col_owner.end())
+                    {
+                        col.pivoted = true;
+                        col_owner[rp->second] = col.sid;
+                        break;
+                    }
+                    int kid = oit->second;
+                    if (kid >= 0 && kid < S)
+                        xor_merge(wr, red[kid]);
+                    else
+                    {
+                        auto rit = red_extra.find(kid);
+                        if (rit != red_extra.end())
+                            xor_merge(wr, rit->second);
+                        else
+                            break;
+                    }
+                }
+                if (col.sid < S)
+                    red[col.sid] = std::move(wr);
+                else
+                    red_extra[col.sid] = std::move(wr);
             }
-            else
+
+            for (auto &col : prev_cols)
             {
-                pairs.push_back({tc.diam, std::numeric_limits<double>::infinity(), 2});
+                if (col.handled)
+                    continue;
+                if (col.pivoted)
+                {
+                    int sid = col.sid;
+                    auto &stored = (sid < S) ? red[sid] : red_extra[sid];
+                    if (!stored.empty())
+                    {
+                        int64_t rb = unpack_bidx(stored[0]);
+                        auto rit = row_diam.find(rb);
+                        if (rit != row_diam.end() && rit->second > col.diam + 1e-12)
+                            pairs.push_back({col.diam, rit->second, d});
+                    }
+                }
+                else
+                    pairs.push_back({col.diam, kInf, d});
             }
+            if (d >= max_dim)
+                break;
+            std::vector<ColMeta> next_cols;
+            std::unordered_set<int64_t> next_seen;
+            for (auto &col : prev_cols)
+            {
+                if (!col.pivoted || col.handled)
+                    continue;
+                int sid = col.sid;
+                auto &stored = (sid < S) ? red[sid] : red_extra[sid];
+                for (uint64_t pk : stored)
+                {
+                    int64_t cb = unpack_bidx(pk);
+                    auto rit = row_diam.find(cb);
+                    if (rit != row_diam.end() && next_seen.insert(cb).second)
+                        next_cols.push_back({cb, rit->second, next_sid++, false, false});
+                }
+            }
+            prev_cols = std::move(next_cols);
         }
     }
 
-    // Zero-persistence filter
-    pairs.erase(std::remove_if(pairs.begin(), pairs.end(),
-                               [](const Pair &p) {
-                                   return p.death > 0 && std::abs(p.death - p.birth) < 1e-10;
-                               }),
-                pairs.end());
+    {
+        size_t w = 0;
+        for (size_t r = 0; r < pairs.size(); ++r)
+        {
+            const auto &p = pairs[r];
+            double diff = p.death - p.birth;
+            if (!(p.death > 0 && diff > -1e-5 && diff < 1e-5))
+                pairs[w++] = pairs[r];
+        }
+        pairs.resize(w);
+    }
 
-    // Build dim_to_cols for each dimension
-    std::vector<Size> betti(max_dim + 1, 0);
+    std::vector<Size> betti(std::max(0, max_dim + 1), 0);
     for (const auto &p : pairs)
         if (std::isinf(p.death) && p.dimension < (int)betti.size())
             betti[p.dimension]++;
-
     return {pairs, betti, 0};
 }
 

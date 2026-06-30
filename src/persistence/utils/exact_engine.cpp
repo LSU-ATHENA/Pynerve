@@ -169,6 +169,18 @@ buildResultFromReduction(const std::vector<std::pair<algebra::Simplex, double>> 
 
     std::ranges::sort(result.pairs, {}, &Pair::dimension);
 
+    {
+        size_t w = 0;
+        for (size_t r = 0; r < result.pairs.size(); ++r)
+        {
+            const auto &p = result.pairs[r];
+            double diff = p.death - p.birth;
+            if (!(p.death > 0 && diff > -1e-5 && diff < 1e-5))
+                result.pairs[w++] = result.pairs[r];
+        }
+        result.pairs.resize(w);
+    }
+
     result.betti_numbers = computeBettiNumbers(result.pairs);
     return result;
 }

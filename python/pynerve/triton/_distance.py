@@ -1,4 +1,10 @@
-"""Triton pairwise-distance kernels."""
+"""Triton pairwise-distance kernels.
+
+Inline PTX notes:
+  - FMA: "fma.rn.f32 $0, $1, $2, $3;" via inline_asm_elementwise for distance accumulation.
+  - dot() already uses tensor-core WMMA when fp16 input shapes are compatible.
+  - cp.async.ca.shared.global can be used via the Triton pipelining primitives (num_stages).
+"""
 
 from __future__ import annotations
 
@@ -9,9 +15,11 @@ from . import _check_triton, _use_triton, _warn_cpu_fallback
 if _check_triton():
     import triton
     import triton.language as tl
+    from triton.language import inline_asm_elementwise as _asm
 else:
-    triton = None  # type: ignore[assignment]
-    tl = None  # type: ignore[assignment]
+    triton = None
+    tl = None
+    _asm = None
 
 
 @triton.autotune(

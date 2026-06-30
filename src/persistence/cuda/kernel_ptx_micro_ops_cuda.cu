@@ -1,8 +1,5 @@
-// PTX helper implementations for GPU advanced utilities.
-// The implementation favors concrete, architecture-safe behavior with
-// alternate implementations when specific PTX instructions are missing.
-
 #include "nerve/gpu/gpu_ptx.hpp"
+#include "nerve/gpu/gpu_ptx_ops.cuh"
 
 #include <cuda_runtime.h>
 
@@ -90,7 +87,7 @@ __device__ int32_t Ptx92MicroOps::szext(int8_t value)
 }
 
 __device__ void DualIssuePerfect::distanceQuadChain(const float *p1, const float *p2, int dim,
-                                                    float &result)
+                                                     float &result)
 {
     float sum0 = 0.0f;
     float sum1 = 0.0f;
@@ -128,5 +125,139 @@ __device__ void CacheLinePacker::packExact(const float *input, float *output, in
         output[i] = input[i];
     }
 }
+
+// Hopper (sm90+) operations
+struct PtxHopperOps
+{
+    __device__ static void tmaPrefetch(const void *desc, int coords[])
+    {
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 900
+        asm volatile("prefetch.tensormap [%0];" : : "l"(desc));
+#else
+        (void)desc;
+        (void)coords;
+#endif
+    }
+
+    __device__ static void fenceMbarrierInit()
+    {
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 900
+        asm volatile("fence.mbarrier_init.release.cluster;" ::: "memory");
+#endif
+    }
+
+    __device__ static bool isHopper()
+    {
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 900
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    __device__ static unsigned int clusterRank()
+    {
+        return ptx::cluster_rank();
+    }
+
+    __device__ static unsigned int clusterSize()
+    {
+        return ptx::cluster_size();
+    }
+
+    __device__ static void clusterBarrierArrive()
+    {
+        ptx::cluster_barrier_arrive();
+    }
+
+    __device__ static void clusterBarrierWait()
+    {
+        ptx::cluster_barrier_wait();
+    }
+};
+
+// Blackwell (sm100+) operations
+struct PtxBlackwellOps
+{
+    __device__ static void stMatrix(float *dst, const float *src, int rows, int cols)
+    {
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 1000
+        asm volatile("stmatrix.sync.aligned.x4.b32 [%0], {%1, %2, %3, %4};"
+                     : : "l"(dst), "f"(src[0]), "f"(src[1]), "f"(src[2]), "f"(src[3]) : "memory");
+#else
+        for (int i = 0; i < rows * cols; ++i)
+            dst[i] = src[i];
+        (void)rows;
+        (void)cols;
+#endif
+    }
+
+    __device__ static bool isBlackwell()
+    {
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 1000
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    __device__ static bool supportsFP4()
+    {
+        return ptx::supports_fp4_hw(100);
+    }
+};
+
+// Advanced warp-level reduction helpers
+struct AdvancedReduction
+{
+    __device__ static unsigned int warpMatchAny(unsigned int mask, unsigned int value)
+    {
+        return ptx::match_any_sync_u32(mask, value);
+    }
+
+    __device__ static unsigned int warpMatchAny64(unsigned int mask, unsigned long long value)
+    {
+        return ptx::match_any_sync_u64(mask, value);
+    }
+
+    __device__ static unsigned int warpReduceOr(unsigned int value)
+    {
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 800
+        for (int offset = 16; offset > 0; offset >>= 1)
+            value |= __shfl_xor_sync(0xFFFFFFFF, value, offset);
+#else
+        for (int offset = 16; offset > 0; offset >>= 1)
+            value |= __shfl_xor(value, offset);
+#endif
+        return value;
+    }
+
+    __device__ static unsigned long long warpReduceOr64(unsigned long long value)
+    {
+        int lane = threadIdx.x & 31;
+        unsigned int lo = static_cast<unsigned int>(value & 0xFFFFFFFFULL);
+        unsigned int hi = static_cast<unsigned int>(value >> 32);
+        lo = warpReduceOr(lo);
+        hi = warpReduceOr(hi);
+        return (static_cast<unsigned long long>(hi) << 32) | lo;
+    }
+
+    __device__ static float warpReduceSum(float value)
+    {
+        return ptx::warp_reduce_sum_f32(value);
+    }
+
+    __device__ static double warpReduceSum64(double value)
+    {
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 800
+        for (int offset = 16; offset > 0; offset >>= 1)
+            value += __shfl_xor_sync(0xFFFFFFFF, value, offset);
+#else
+        for (int offset = 16; offset > 0; offset >>= 1)
+            value += __shfl_xor(value, offset);
+#endif
+        return value;
+    }
+};
 
 } // namespace nerve::gpu::advanced
