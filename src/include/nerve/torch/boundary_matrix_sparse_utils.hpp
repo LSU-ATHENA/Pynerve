@@ -23,7 +23,7 @@ inline EncodedSparse denseToCsc(const at::Tensor &dense_cpu)
 {
     const int64_t n_rows = dense_cpu.size(0);
     const int64_t n_cols = dense_cpu.size(1);
-    std::vector<int64_t> row_indices;
+    std::vector<int32_t> row_indices;
     std::vector<int64_t> indptr(static_cast<size_t>(n_cols + 1), 0);
     std::vector<double> values;
     auto dense_acc = dense_cpu.accessor<double, 2>();
@@ -35,13 +35,13 @@ inline EncodedSparse denseToCsc(const at::Tensor &dense_cpu)
             const double value = dense_acc[row][col];
             if (std::abs(value) > kBoundaryZeroTol)
             {
-                row_indices.push_back(row);
+                row_indices.push_back(static_cast<int32_t>(row));
                 values.push_back(value);
             }
         }
     }
     indptr[static_cast<size_t>(n_cols)] = static_cast<int64_t>(row_indices.size());
-    return {at::tensor(row_indices, at::TensorOptions().dtype(at::kLong)),
+    return {at::tensor(row_indices, at::TensorOptions().dtype(at::kInt)),
             at::tensor(indptr, at::TensorOptions().dtype(at::kLong)),
             at::tensor(values, at::TensorOptions().dtype(at::kDouble)),
             static_cast<int64_t>(values.size())};
@@ -51,7 +51,7 @@ inline EncodedSparse denseToCsr(const at::Tensor &dense_cpu)
 {
     const int64_t n_rows = dense_cpu.size(0);
     const int64_t n_cols = dense_cpu.size(1);
-    std::vector<int64_t> col_indices;
+    std::vector<int32_t> col_indices;
     std::vector<int64_t> indptr(static_cast<size_t>(n_rows + 1), 0);
     std::vector<double> values;
     auto dense_acc = dense_cpu.accessor<double, 2>();
@@ -63,13 +63,13 @@ inline EncodedSparse denseToCsr(const at::Tensor &dense_cpu)
             const double value = dense_acc[row][col];
             if (std::abs(value) > kBoundaryZeroTol)
             {
-                col_indices.push_back(col);
+                col_indices.push_back(static_cast<int32_t>(col));
                 values.push_back(value);
             }
         }
     }
     indptr[static_cast<size_t>(n_rows)] = static_cast<int64_t>(col_indices.size());
-    return {at::tensor(col_indices, at::TensorOptions().dtype(at::kLong)),
+    return {at::tensor(col_indices, at::TensorOptions().dtype(at::kInt)),
             at::tensor(indptr, at::TensorOptions().dtype(at::kLong)),
             at::tensor(values, at::TensorOptions().dtype(at::kDouble)),
             static_cast<int64_t>(values.size())};
@@ -79,8 +79,8 @@ inline EncodedSparse denseToCoo(const at::Tensor &dense_cpu)
 {
     const int64_t n_rows = dense_cpu.size(0);
     const int64_t n_cols = dense_cpu.size(1);
-    std::vector<int64_t> row_indices;
-    std::vector<int64_t> col_indices;
+    std::vector<int32_t> row_indices;
+    std::vector<int32_t> col_indices;
     std::vector<double> values;
     auto dense_acc = dense_cpu.accessor<double, 2>();
     for (int64_t row = 0; row < n_rows; ++row)
@@ -90,18 +90,18 @@ inline EncodedSparse denseToCoo(const at::Tensor &dense_cpu)
             const double value = dense_acc[row][col];
             if (std::abs(value) > kBoundaryZeroTol)
             {
-                row_indices.push_back(row);
-                col_indices.push_back(col);
+                row_indices.push_back(static_cast<int32_t>(row));
+                col_indices.push_back(static_cast<int32_t>(col));
                 values.push_back(value);
             }
         }
     }
     at::Tensor indices =
-        at::zeros({2, static_cast<int64_t>(values.size())}, at::TensorOptions().dtype(at::kLong));
+        at::zeros({2, static_cast<int64_t>(values.size())}, at::TensorOptions().dtype(at::kInt));
     if (!values.empty())
     {
-        indices.select(0, 0).copy_(at::tensor(row_indices, at::TensorOptions().dtype(at::kLong)));
-        indices.select(0, 1).copy_(at::tensor(col_indices, at::TensorOptions().dtype(at::kLong)));
+        indices.select(0, 0).copy_(at::tensor(row_indices, at::TensorOptions().dtype(at::kInt)));
+        indices.select(0, 1).copy_(at::tensor(col_indices, at::TensorOptions().dtype(at::kInt)));
     }
     return {indices, at::empty({0}, at::TensorOptions().dtype(at::kLong)),
             at::tensor(values, at::TensorOptions().dtype(at::kDouble)),
@@ -118,17 +118,17 @@ inline at::Tensor sparseToDenseCpu(BoundaryMatrix::Format format, const at::Tens
     {
         if (indices.dim() == 2 && indices.size(0) == 2 && data.dim() == 1)
         {
-            auto idx_cpu = indices.cpu().to(at::kLong).contiguous();
+            auto idx_cpu = indices.cpu().to(at::kInt).contiguous();
             auto val_cpu = data.cpu().to(at::kDouble).contiguous();
             auto row_indices = idx_cpu.select(0, 0);
             auto col_indices = idx_cpu.select(0, 1);
-            auto row_acc = row_indices.accessor<int64_t, 1>();
-            auto col_acc = col_indices.accessor<int64_t, 1>();
+            auto row_acc = row_indices.accessor<int32_t, 1>();
+            auto col_acc = col_indices.accessor<int32_t, 1>();
             auto val_acc = val_cpu.accessor<double, 1>();
             for (int64_t i = 0; i < val_cpu.size(0); ++i)
             {
-                const int64_t row = row_acc[i];
-                const int64_t col = col_acc[i];
+                const int64_t row = static_cast<int64_t>(row_acc[i]);
+                const int64_t col = static_cast<int64_t>(col_acc[i]);
                 if (row >= 0 && row < n_rows && col >= 0 && col < n_cols)
                 {
                     dense_acc[row][col] = val_acc[i];
@@ -142,10 +142,10 @@ inline at::Tensor sparseToDenseCpu(BoundaryMatrix::Format format, const at::Tens
         return dense;
     }
     auto indptr_cpu = indptr.cpu().to(at::kLong).contiguous();
-    auto indices_cpu = indices.cpu().to(at::kLong).contiguous();
+    auto indices_cpu = indices.cpu().to(at::kInt).contiguous();
     auto values_cpu = data.cpu().to(at::kDouble).contiguous();
     auto indptr_acc = indptr_cpu.accessor<int64_t, 1>();
-    auto idx_acc = indices_cpu.accessor<int64_t, 1>();
+    auto idx_acc = indices_cpu.accessor<int32_t, 1>();
     auto val_acc = values_cpu.accessor<double, 1>();
     if (format == BoundaryMatrix::Format::CSC)
     {
@@ -153,7 +153,7 @@ inline at::Tensor sparseToDenseCpu(BoundaryMatrix::Format format, const at::Tens
         {
             for (int64_t i = indptr_acc[col]; i < indptr_acc[col + 1]; ++i)
             {
-                const int64_t row = idx_acc[i];
+                const int64_t row = static_cast<int64_t>(idx_acc[i]);
                 if (row >= 0 && row < n_rows)
                 {
                     dense_acc[row][col] = val_acc[i];
@@ -167,7 +167,7 @@ inline at::Tensor sparseToDenseCpu(BoundaryMatrix::Format format, const at::Tens
         {
             for (int64_t i = indptr_acc[row]; i < indptr_acc[row + 1]; ++i)
             {
-                const int64_t col = idx_acc[i];
+                const int64_t col = static_cast<int64_t>(idx_acc[i]);
                 if (col >= 0 && col < n_cols)
                 {
                     dense_acc[row][col] = val_acc[i];

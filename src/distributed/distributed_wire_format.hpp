@@ -12,6 +12,7 @@ namespace nerve::distributed::detail
 
 inline constexpr std::size_t kUint32WireSize = 4;
 inline constexpr std::size_t kUint64WireSize = 8;
+inline constexpr std::size_t kPackedWordWireSize = 8;
 
 inline void appendUint32LittleEndian(std::vector<std::uint8_t> &output, std::uint32_t value)
 {
@@ -37,6 +38,21 @@ inline void appendInt32LittleEndian(std::vector<std::uint8_t> &output, std::int3
 inline void appendFloatLittleEndian(std::vector<std::uint8_t> &output, float value)
 {
     appendUint32LittleEndian(output, std::bit_cast<std::uint32_t>(value));
+}
+
+inline void appendPackedWordLittleEndian(std::vector<std::uint8_t> &output, std::uint64_t value)
+{
+    appendUint64LittleEndian(output, value);
+}
+
+inline void appendPackedColumn(const std::vector<std::uint64_t> &words,
+                               std::vector<std::uint8_t> &output)
+{
+    appendUint32LittleEndian(output, static_cast<std::uint32_t>(words.size()));
+    for (const auto word : words)
+    {
+        appendUint64LittleEndian(output, word);
+    }
 }
 
 inline bool canRead(const std::vector<std::uint8_t> &data, std::size_t offset, std::size_t count)
@@ -136,6 +152,37 @@ inline bool readFloatLittleEndian(const std::vector<std::uint8_t> &data, std::si
         return false;
     }
     *value = std::bit_cast<float>(raw);
+    return true;
+}
+
+inline bool readPackedWordLittleEndian(const std::vector<std::uint8_t> &data, std::size_t *offset,
+                                       std::uint64_t *value)
+{
+    return readUint64LittleEndian(data, offset, value);
+}
+
+inline bool readPackedColumn(const std::vector<std::uint8_t> &data, std::size_t *offset,
+                             std::vector<std::uint64_t> &out_words)
+{
+    out_words.clear();
+    std::uint32_t word_count = 0;
+    if (!readUint32LittleEndian(data, offset, &word_count))
+        return false;
+
+    if (!canRead(data, *offset, static_cast<std::size_t>(word_count) * kUint64WireSize))
+        return false;
+
+    out_words.reserve(word_count);
+    for (std::uint32_t i = 0; i < word_count; ++i)
+    {
+        std::uint64_t word = 0;
+        if (!readUint64LittleEndian(data, offset, &word))
+        {
+            out_words.clear();
+            return false;
+        }
+        out_words.push_back(word);
+    }
     return true;
 }
 

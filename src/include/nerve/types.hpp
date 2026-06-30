@@ -15,6 +15,11 @@ using Index = std::int32_t;
 using Size = std::size_t;
 using Dimension = std::int32_t;
 using Field = double;
+using PackedWord = std::uint64_t;
+using Offset = std::int64_t;
+
+inline constexpr Size kBitsPerPackedWord = 64;
+inline constexpr Size kPackedWordBytes = sizeof(PackedWord);
 
 template <typename T>
 concept Numeric = std::is_arithmetic_v<T> && !std::is_same_v<T, bool>;

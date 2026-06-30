@@ -331,6 +331,9 @@ set(NERVE_CORE_SOURCES
     feature_access/feature_flags_config.cpp
     feature_access/feature_flags_validation.cpp
     features/feature_flags.cpp
+    formats/gpu_mpi_overlap.cpp
+    formats/packed_boundary_matrix.cpp
+    formats/persistence_pipeline.cpp
     graphs/graph.cpp
     graphs/graph_neural_layer.cpp
     graphs/graph_homology.cpp
@@ -379,6 +382,7 @@ set(NERVE_CUDA_SOURCES
     cuda/kernels/reduction_kernels_launcher.cpp
     dmt/gpu/dmt_kernels.cu
     filtration/gpu/level_set_cuda.cu
+    formats/packed_gpu_scan.cu
     graphs/graph_algorithms_gpu.cu
     graphs/graph_engine_gpu.cu
     graphs/graph_multi_gpu_ops.cpp
