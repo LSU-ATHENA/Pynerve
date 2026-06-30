@@ -1,5 +1,6 @@
 
 #include "nerve/persistence/cuda/cuda_matrix_reduction.hpp"
+#include "nerve/gpu/packed_column_primitives.cuh"
 
 #include <cooperative_groups.h>
 #include <cuda_runtime.h>
@@ -26,54 +27,18 @@ struct WarpBitset
     __device__ __forceinline__ void add(const WarpBitset &other, cg::thread_block_tile<32> &warp)
     {
         int lane = warp.thread_rank();
-        for (int i = lane; i < numWords; i += warp.size())
-        {
-            uint64_t val = other.data[i];
-            data[i] ^= val;
-        }
+        packed::packed_column_xor(data, other.data, numWords, lane,
+                                           packed::XorStrategy::DirectXor);
     }
     __device__ __forceinline__ int getLowestOne(cg::thread_block_tile<32> &warp)
     {
         int lane = warp.thread_rank();
-        int lowest = -1;
-
-        for (int i = lane; i < numWords; i += warp.size())
-        {
-            if (data[i] != 0)
-            {
-                int bit = __ffsll(static_cast<long long>(data[i])) - 1;
-                int globalBit = i * 64 + bit;
-                for (int offset = WARP_SIZE / 2; offset > 0; offset /= 2)
-                {
-                    int other = __shfl_down_sync(FULL_WARP_MASK, globalBit, offset);
-                    if (other >= 0 && (globalBit < 0 || other < globalBit))
-                    {
-                        globalBit = other;
-                    }
-                }
-
-                if (lane == 0)
-                    lowest = globalBit;
-            }
-        }
-        lowest = __shfl_sync(FULL_WARP_MASK, lowest, 0);
-        return lowest;
+        return packed::packed_column_find_lsb_warp(data, numWords, lane);
     }
     __device__ __forceinline__ bool isEmpty(cg::thread_block_tile<32> &warp)
     {
         int lane = warp.thread_rank();
-        bool empty = true;
-
-        for (int i = lane; i < numWords; i += warp.size())
-        {
-            if (data[i] != 0)
-            {
-                empty = false;
-                break;
-            }
-        }
-        unsigned ballot = __ballot_sync(FULL_WARP_MASK, !empty);
-        return ballot == 0;
+        return packed::packed_column_is_empty_warp(data, numWords, lane);
     }
 };
 __global__ void __launch_bounds__(256)

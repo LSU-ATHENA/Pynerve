@@ -7,6 +7,7 @@
 #include "nerve/gpu/gpu_error.hpp"
 #include "nerve/persistence/cuda/cuda_warp_specialized_kernels.hpp"
 #include "nerve/gpu/gpu_ptx_ops.cuh"
+#include "nerve/gpu/packed_column_primitives.cuh"
 
 #include <cuda_fp16.h>
 #include <cuda_runtime.h>
@@ -84,23 +85,12 @@ __device__ inline T warpSumReduce(T value)
 
 /**
  * Find the highest set-bit pivot in a packed binary column using one warp.
- * Each lane inspects a strided subset of 64-bit words, and the warp then
- * computes the maximum candidate pivot index.
+ * Delegates to the unified packed_column_primitives.
  */
 __device__ inline int findHighestPivotWarp(const uint64_t *__restrict__ column_words, int num_words,
-                                           int lane_id)
+                                            int lane_id)
 {
-    int lane_pivot = -1;
-    for (int word_idx = num_words - 1 - lane_id; word_idx >= 0; word_idx -= WARP_SIZE)
-    {
-        const uint64_t word = column_words[word_idx];
-        if (word != 0)
-        {
-            lane_pivot = word_idx * 64 + ptx::find_msb_u64(word);
-            break;
-        }
-    }
-    return warpMaxReduce(lane_pivot);
+    return packed::packed_column_find_msb_warp(column_words, num_words, lane_id);
 }
 
 __global__ void __launch_bounds__(256)
@@ -118,11 +108,9 @@ __global__ void __launch_bounds__(256)
     }
 
     const int words_to_process = clampWordCount(col_sizes[col_idx], num_words);
-    const int base = col_idx * num_words;
-    for (int i = lane_id; i < words_to_process; i += WARP_SIZE)
-    {
-        columns_a[base + i] ^= columns_b[base + i];
-    }
+    packed::packed_column_xor(columns_a + col_idx * num_words,
+                                       columns_b + col_idx * num_words,
+                                       words_to_process, lane_id, packed::XorStrategy::DirectXor);
 }
 
 __global__ void __launch_bounds__(256)
@@ -225,13 +213,6 @@ __global__ void __launch_bounds__(256) tensorCoreMatVecKernel<__half>(
     }
 }
 
-/**
- * Iterative pivot-driven reduction:
- * - Use current pivot to select a source column.
- * - XOR source into target.
- * - Recompute pivot for target.
- * The loop is bounded to guard against malformed pivot maps.
- */
 __global__ void __launch_bounds__(256)
     pipelinedReductionKernel(uint64_t *__restrict__ columns, const int *__restrict__ col_pivots,
                              const int *__restrict__ pivot_to_col, int num_words, int num_columns,
@@ -246,40 +227,10 @@ __global__ void __launch_bounds__(256)
     }
 
     uint64_t *const target_column = columns + col_idx * num_words;
-    int pivot = col_pivots[col_idx];
-    const int pivot_limit = num_words * 64;
     const int iteration_limit = max(1, num_words * 4);
-
-    for (int iter = 0; pivot >= 0 && iter < iteration_limit; ++iter)
-    {
-        if (pivot >= pivot_limit)
-        {
-            break;
-        }
-        const int source_col = pivot_to_col[pivot];
-        if (source_col < 0 || source_col >= num_columns)
-        {
-            break;
-        }
-
-        if (source_col == col_idx)
-        {
-            for (int i = lane_id; i < num_words; i += WARP_SIZE)
-            {
-                target_column[i] = 0;
-            }
-            pivot = -1;
-            break;
-        }
-
-        const uint64_t *const source_column = columns + source_col * num_words;
-        for (int i = lane_id; i < num_words; i += WARP_SIZE)
-        {
-            target_column[i] ^= source_column[i];
-        }
-        __syncwarp();
-        pivot = findHighestPivotWarp(target_column, num_words, lane_id);
-    }
+    int pivot = packed::packed_column_reduce_iterative(
+        target_column, columns, pivot_to_col, num_words, num_columns, col_idx, lane_id,
+        iteration_limit);
 
     if (lane_id == 0)
     {
@@ -326,28 +277,15 @@ __global__ void __launch_bounds__(256)
 
         if (source_col == col_idx)
         {
-            for (int i = lane_id; i < num_words; i += WARP_SIZE)
-            {
-                target_column[i] = 0;
-            }
+            packed::packed_column_clear(target_column, num_words, lane_id);
             pivot = -1;
             break;
         }
 
-        // Stage the source column into shared memory via async copy pipeline
-        auto pipeline = cuda::make_pipeline();
-        cuda::memcpy_async(warp_buf, columns + static_cast<size_t>(source_col) * num_words,
-                           static_cast<size_t>(num_words), pipeline);
-        pipeline.commit();
-        pipeline.wait();
-
-        // XOR from shared memory
-        for (int i = lane_id; i < num_words; i += WARP_SIZE)
-        {
-            target_column[i] ^= warp_buf[i];
-        }
-        __syncwarp();
-        pivot = findHighestPivotWarp(target_column, num_words, lane_id);
+        packed::async_pipeline_stage_and_xor(target_column,
+                                              columns + static_cast<size_t>(source_col) * num_words,
+                                              warp_buf, num_words, lane_id);
+        pivot = packed::packed_column_find_msb_warp(target_column, num_words, lane_id);
     }
 
     if (lane_id == 0)

@@ -99,7 +99,8 @@ void packedScanKernel(const PackedWord *__restrict__ columns,
         int msb = nerve::gpu::ptx::find_msb_u64(word);
         if (msb >= 0)
         {
-            Index global_row = static_cast<Index>(w) * static_cast<Index>(kBitsPerPackedWord) + static_cast<Index>(msb);
+            Index global_row = static_cast<Index>(w) * static_cast<Index>(kBitsPerPackedWord) +
+                               static_cast<Index>(msb);
             if (global_row > highest_pivot)
             {
                 highest_pivot = global_row;
@@ -132,8 +133,7 @@ void packedScanKernel(const PackedWord *__restrict__ columns,
 
 __global__ __launch_bounds__(kScanBlockSize)
 void packedPivotClaimKernel(const Index *__restrict__ pivot_candidates,
-                            int *__restrict__ low_to_col,
-                            Size n_columns,
+                            int *__restrict__ low_to_col, Size n_columns,
                             Index *__restrict__ stable_list,
                             Index *__restrict__ unstable_list,
                             Size *__restrict__ stable_count,
@@ -144,6 +144,7 @@ void packedPivotClaimKernel(const Index *__restrict__ pivot_candidates,
         return;
 
     Index pivot = pivot_candidates[col];
+
     if (pivot < 0)
     {
         Index idx = atomicAdd(reinterpret_cast<unsigned long long *>(stable_count), 1ULL);

@@ -1,5 +1,6 @@
 #include "nerve/persistence/cuda/cuda_matrix_reduction.hpp"
 #include "nerve/gpu/gpu_ptx_ops.cuh"
+#include "nerve/gpu/packed_column_primitives.cuh"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -186,37 +187,21 @@ __global__ void __launch_bounds__(256)
 
 __device__ __forceinline__ int find_pivot_row_packed(const uint64_t *col_words, Size nw)
 {
-    for (int w = static_cast<int>(nw) - 1; w >= 0; --w)
-    {
-        uint64_t word = col_words[w];
-        if (word != 0ULL)
-        {
-            return static_cast<int>(w) * static_cast<int>(BITS_PER_WORD) + ptx::find_msb_u64(word);
-        }
-    }
-    return -1;
+    return packed::packed_column_find_pivot(col_words, static_cast<int>(nw));
 }
 
 __device__ __forceinline__ bool column_is_empty_packed(const uint64_t *col_words, Size nw)
 {
-    unsigned int total_bits = 0;
-    for (Size w = 0; w < nw; ++w)
-    {
-        total_bits += ptx::popc_u64(col_words[w]);
-    }
-    return total_bits == 0;
+    return packed::packed_column_is_empty(col_words, static_cast<int>(nw));
 }
 
 __device__ __forceinline__ void xor_column_inplace(uint64_t *dst, const uint64_t *src, Size nw)
 {
-    for (Size w = 0; w < nw; ++w)
-    {
-        dst[w] ^= src[w];
-    }
+    packed::packed_column_xor_hw(dst, src, static_cast<int>(nw), threadIdx.x & 31);
 }
 
 __device__ __forceinline__ bool atomically_claim_row(uint64_t *low_row_storage, int pivot_row,
-                                                      Size num_storage_words)
+                                                       Size num_storage_words)
 {
     int word_idx = pivot_row / static_cast<int>(BITS_PER_WORD);
     int bit_idx = pivot_row % static_cast<int>(BITS_PER_WORD);
@@ -244,12 +229,7 @@ __device__ __forceinline__ bool atomically_claim_row(uint64_t *low_row_storage, 
 __device__ __forceinline__ void warp_column_xor_global(uint64_t *dest, const uint64_t *src,
                                                         Size nw)
 {
-    unsigned int lane_id = threadIdx.x & 31;
-    for (Size w = lane_id; w < nw; w += 32)
-    {
-        ptx::atom_xor_global_u64(&dest[w], src[w]);
-    }
-    __syncwarp();
+    packed::packed_column_xor_atomic_hw(dest, src, static_cast<int>(nw), threadIdx.x & 31);
 }
 
 __global__ void __launch_bounds__(256)
@@ -363,13 +343,8 @@ __global__ void __launch_bounds__(256)
     const uint64_t *col_base = columns + global_idx * num_words;
     Size shmem_offset = threadIdx.x * MAX_COLUMN_WORDS;
 
-    for (Size w = 0; w < nw; ++w)
-    {
-        ptx::cp_async_shared_global(&s_columns[shmem_offset + w], col_base + w, sizeof(uint64_t),
-                                     false);
-    }
-    ptx::cp_async_commit_group();
-    ptx::cp_async_wait_group(0);
+    packed::async_pipeline_stage_column(col_base, &s_columns[shmem_offset], static_cast<int>(nw),
+                                         threadIdx.x & 31);
 
     uint64_t col_words[MAX_COLUMN_WORDS];
 #pragma unroll

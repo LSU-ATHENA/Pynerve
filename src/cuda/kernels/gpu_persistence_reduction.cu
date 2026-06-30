@@ -43,21 +43,25 @@ __device__ int warpReduceMin(int val)
 
 __device__ int blockReduceMax(int val, int *shmem)
 {
-    const int lane = threadIdx.x & 31;
-    const int wid = threadIdx.x >> 5;
-    const int num_warps = (blockDim.x + 31) >> 5;
-
-    val = warpReduceMax(val);
-    if (lane == 0)
+    int lane = threadIdx.x & 31;
+    int wid = threadIdx.x >> 5;
+    int num_warps = (blockDim.x + 31) >> 5;
+    for (int offset = 16; offset > 0; offset >>= 1)
     {
-        shmem[wid] = val;
+        int other = __shfl_down_sync(0xFFFFFFFFu, val, offset);
+        val = (val > other) ? val : other;
     }
+    if (lane == 0)
+        shmem[wid] = val;
     __syncthreads();
-
     if (wid == 0)
     {
         val = (lane < num_warps) ? shmem[lane] : -1;
-        val = warpReduceMax(val);
+        for (int offset = 16; offset > 0; offset >>= 1)
+        {
+            int other = __shfl_down_sync(0xFFFFFFFFu, val, offset);
+            val = (val > other) ? val : other;
+        }
     }
     __syncthreads();
     return val;
@@ -65,21 +69,25 @@ __device__ int blockReduceMax(int val, int *shmem)
 
 __device__ int blockReduceMin(int val, int *shmem)
 {
-    const int lane = threadIdx.x & 31;
-    const int wid = threadIdx.x >> 5;
-    const int num_warps = (blockDim.x + 31) >> 5;
-
-    val = warpReduceMin(val);
-    if (lane == 0)
+    int lane = threadIdx.x & 31;
+    int wid = threadIdx.x >> 5;
+    int num_warps = (blockDim.x + 31) >> 5;
+    for (int offset = 16; offset > 0; offset >>= 1)
     {
-        shmem[wid] = val;
+        int other = __shfl_down_sync(0xFFFFFFFFu, val, offset);
+        val = (val < other) ? val : other;
     }
+    if (lane == 0)
+        shmem[wid] = val;
     __syncthreads();
-
     if (wid == 0)
     {
         val = (lane < num_warps) ? shmem[lane] : INT_MAX;
-        val = warpReduceMin(val);
+        for (int offset = 16; offset > 0; offset >>= 1)
+        {
+            int other = __shfl_down_sync(0xFFFFFFFFu, val, offset);
+            val = (val < other) ? val : other;
+        }
     }
     __syncthreads();
     return val;

@@ -47,14 +47,22 @@ __device__ int blockReduceMax(int val, int *shmem)
     int lane = threadIdx.x & 31;
     int wid = threadIdx.x >> 5;
     int num_warps = (blockDim.x + 31) >> 5;
-    val = warpReduceMax(val);
+    for (int offset = 16; offset > 0; offset >>= 1)
+    {
+        int other = __shfl_down_sync(0xFFFFFFFFu, val, offset);
+        val = (val > other) ? val : other;
+    }
     if (lane == 0)
         shmem[wid] = val;
     __syncthreads();
     if (wid == 0)
     {
         val = (lane < num_warps) ? shmem[lane] : -1;
-        val = warpReduceMax(val);
+        for (int offset = 16; offset > 0; offset >>= 1)
+        {
+            int other = __shfl_down_sync(0xFFFFFFFFu, val, offset);
+            val = (val > other) ? val : other;
+        }
     }
     __syncthreads();
     return val;
