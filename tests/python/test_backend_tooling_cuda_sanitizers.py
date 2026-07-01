@@ -44,10 +44,6 @@ def backend_checks():
     return _get_tool("backend_checks")
 
 
-def cuda_launch_audit():
-    return _get_tool("cuda_launch_audit")
-
-
 def _torch_cuda_available() -> bool:
     try:
         import torch

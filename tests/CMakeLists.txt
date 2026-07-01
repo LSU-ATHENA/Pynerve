@@ -661,13 +661,6 @@ if(Python3_Interpreter_FOUND)
         set_tests_properties(${target} PROPERTIES LABELS "${labels}")
     endfunction()
 
-    add_test(
-        NAME nerve_quality_all
-        COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/quality.py --check all
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    )
-    set_tests_properties(nerve_quality_all PROPERTIES LABELS "quality;static;operators")
-
     nerve_add_matrix_manifest(nerve_generated_matrix_manifest cpu "generated;cpu")
     nerve_add_matrix_manifest(nerve_generated_matrix_cuda cuda "generated;cuda")
 

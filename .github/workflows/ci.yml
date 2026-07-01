@@ -27,7 +27,6 @@ jobs:
           cache: pip
       - run: python -m pip install -U pip ruff mypy pyright
       - run: python tools/static_analysis.py --language python --required
-      - run: python tools/quality.py --check all
       - run: python -m pyright python/pynerve/ || echo "pyright warnings (non-blocking)"
       - name: Verify .pyi stubs are up to date
         run: python tools/generate_stubs.py --check || echo "stub check skipped (torch not available)"

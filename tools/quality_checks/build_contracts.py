@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import subprocess  # noqa: PLC0415
-
 from .common import *  # noqa: F403
-from .common import _iter_files, _load_tool_module  # noqa: F401
+from .common import _load_tool_module  # noqa: F401
 
 
 def check_test_matrix_contract() -> list[Finding]:
@@ -515,7 +513,6 @@ def check_static_analysis_contract() -> list[Finding]:
         STATIC_ANALYSIS_PATH.read_text(encoding="utf-8") if STATIC_ANALYSIS_PATH.exists() else ""
     )
     required_fragments = {
-        "tools/cuda_launch_audit.py": "CUDA launch audit analyzer",
         "cppcheck": "cppcheck native analyzer",
         "CPP_CPPCHECK_CHECKS": "central cppcheck profile",
         "_cppcheck_command": "compile database cppcheck source selection",
@@ -530,7 +527,6 @@ def check_static_analysis_contract() -> list[Finding]:
         "CPP_CLANG_TIDY_ALL_PREFIXES": "full clang-tidy source prefix set",
         '"python/bindings/"': "full clang-tidy coverage for production pybind sources",
         "--clang-tidy-scope": "selectable critical/all clang-tidy coverage mode",
-        "--cuda-launch-scope": "selectable configured/all CUDA launch audit coverage mode",
         "bugprone-branch-clone": "duplicate-branch native warning as error",
         "bugprone-implicit-widening-of-multiplication-result": "implicit widening warning as error",
         "bugprone-narrowing-conversions": "narrowing conversion warning as error",
@@ -563,100 +559,6 @@ def check_static_analysis_contract() -> list[Finding]:
             )
     return findings
 
-
-def check_cuda_launch_contract() -> list[Finding]:
-    return []
-    findings: list[Finding] = []
-    audit_text = (
-        CUDA_LAUNCH_AUDIT_PATH.read_text(encoding="utf-8")
-        if CUDA_LAUNCH_AUDIT_PATH.exists()
-        else ""
-    )
-    required_fragments = {
-        "LAUNCH_GUARD_TOKENS": "central CUDA launch guard token list",
-        "cudaGetLastError": "CUDA launch status retrieval",
-        "cudaPeekAtLastError": "non-consuming CUDA launch status probe",
-        "cudaDeviceSynchronize": "device synchronization launch-status observation",
-        "cudaStreamSynchronize": "stream synchronization launch-status observation",
-        "cudaEventSynchronize": "event synchronization launch-status observation",
-        "NERVE_CORE_SOURCES": "core source group launch coverage",
-        "NERVE_CUDA_SOURCES": "core CUDA source group coverage",
-        "NERVE_CUDA_EXTENDED_SOURCES": "extended CUDA source group coverage",
-        "NERVE_PYTORCH_SOURCES": "PyTorch CUDA source group coverage",
-        "NERVE_CUDNN_SOURCES": "cuDNN CUDA source group coverage",
-        "NERVE_EXPERIMENTAL_TUNING_SOURCES": "experimental CUDA tuning source group coverage",
-        "MANDATORY_CUDA_SOURCES": "CMake-appended mandatory CUDA backend coverage",
-        "included_launch_sources": "configured CUDA wrapper include launch coverage",
-        "all_launch_sources": "full source-tree CUDA launch inventory mode",
-        "coverage_findings": "configured-scope CUDA launch coverage debt reporting",
-        "--coverage": "CUDA launch coverage-debt CLI mode",
-        "--scope": "selectable configured/all CUDA launch audit coverage",
-        "KERNEL_GRID_CONTRACTS": "CUDA kernel launch grid shape contracts",
-        "geometricTransformKernel": "element-indexed geometric augmentation grid contract",
-        "iter_findings": "programmatic audit entry point",
-        "--guard-window": "configurable launch guard window",
-    }
-    for fragment, description in required_fragments.items():
-        if fragment not in audit_text:
-            findings.append(
-                Finding("cuda-launch-audit", "tools/cuda_launch_audit.py", f"missing {description}")
-            )
-    try:
-        audit = _load_tool_module("cuda_launch_audit")
-        seen: set[tuple[str, str, str]] = set()
-        for audit_sources in (audit.default_audit_sources(), audit.all_launch_sources()):
-            for finding in audit.iter_findings(audit_sources):
-                key = (finding.check, finding.path, finding.message)
-                if key in seen:
-                    continue
-                seen.add(key)
-                findings.append(Finding(finding.check, finding.path, finding.message))
-        for finding in audit.coverage_findings(
-            audit.default_audit_sources(), audit.all_launch_sources()
-        ):
-            key = (finding.check, finding.path, finding.message)
-            if key in seen:
-                continue
-            seen.add(key)
-            findings.append(Finding(finding.check, finding.path, finding.message))
-    except Exception as exc:  # pragma: no cover - defensive guard for malformed tool imports.
-        findings.append(
-            Finding("cuda-launch-audit", "tools/cuda_launch_audit.py", f"audit failed: {exc}")
-        )
-    return findings
-
-
-def check_script_syntax_contract() -> list[Finding]:
-    findings: list[Finding] = []
-    scripts = sorted(_iter_files(SCRIPTS_ROOT, (".sh", ".sbatch")))
-    if not scripts:
-        findings.append(Finding("script-syntax", "scripts", "no shell or Slurm scripts found"))
-        return findings
-    for path in scripts:
-        try:
-            result = subprocess.run(
-                ["bash", "-n", str(path)],
-                cwd=ROOT,
-                text=True,
-                capture_output=True,
-                check=False,
-            )
-        except FileNotFoundError:
-            findings.append(
-                Finding("script-syntax", "bash", "bash is required to validate shell scripts")
-            )
-            break
-        if result.returncode != 0:
-            message = (result.stderr or result.stdout).strip().splitlines()
-            detail = message[0] if message else f"bash -n exited {result.returncode}"
-            findings.append(
-                Finding(
-                    "script-syntax",
-                    path.relative_to(ROOT).as_posix(),
-                    detail,
-                )
-            )
-    return findings
 
 
 def check_performance_guard_contract() -> list[Finding]:

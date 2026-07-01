@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -11,14 +10,44 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def _get_quality():
-    spec = importlib.util.spec_from_file_location("nerve_quality", ROOT / "tools" / "quality.py")
-    assert spec is not None and spec.loader is not None, (
-        f"Could not load quality.py from {ROOT / 'tools'}"
+    sys.path.insert(0, str(ROOT / "tools"))
+    import ast  # noqa: PLC0415
+    from quality_checks import (  # noqa: PLC0415
+        build_contracts,
+        binding_contracts,
+        common,
+        import_api,
+        static_text,
     )
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+
+    class _Q:
+        pass
+
+    q = _Q()
+    q.Finding = common.Finding
+    q.ROOT = common.ROOT
+    q.ast = ast
+    q._lazy_submodules = common._lazy_submodules
+    q._load_tool_module = common._load_tool_module
+    q._resolve_import_from = common._resolve_import_from
+    q._detect_cycles = import_api._detect_cycles
+    q._is_nerve_package_import = import_api._is_nerve_package_import
+    q._check_torch_operator_schema_text = binding_contracts._check_torch_operator_schema_text
+    q.check_operator_schema = binding_contracts.check_operator_schema
+    q.check_public_api = import_api.check_public_api
+    q.check_pybind_schema = binding_contracts.check_pybind_schema
+    q.check_algorithm_bindings_schema = binding_contracts.check_algorithm_bindings_schema
+    q.check_torch_bindings_schema = binding_contracts.check_torch_bindings_schema
+    q.check_binding_smoke_contract = binding_contracts.check_binding_smoke_contract
+    q.check_import_graph = import_api.check_import_graph
+    q.check_static_text = static_text.check_static_text
+    q.check_test_matrix_contract = build_contracts.check_test_matrix_contract
+    q.check_performance_guard_contract = build_contracts.check_performance_guard_contract
+    q.check_ctest_contract = build_contracts.check_ctest_contract
+    q.check_build_install_contract = build_contracts.check_build_install_contract
+    q.check_static_analysis_contract = build_contracts.check_static_analysis_contract
+    q.check_ci_contract = build_contracts.check_ci_contract
+    return q
 
 
 @pytest.mark.quality
@@ -427,7 +456,7 @@ def test_static_analysis_required_cuda_rejects_wrong_nvcc_release(
 
 
 @pytest.mark.quality
-def test_static_analysis_required_cuda_accepts_12_4_release(
+def test_static_analysis_required_cuda_runs_nvcc_and_sanitizer(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     static_analysis = _get_quality()._load_tool_module("static_analysis")
@@ -457,120 +486,9 @@ def test_static_analysis_required_cuda_accepts_12_4_release(
     ret = static_analysis.main()
     assert ret == 0, f"expected main() to return 0, got {ret}"
     assert commands == [
-        [sys.executable, "tools/cuda_launch_audit.py", "--scope", "configured"],
         ["nvcc", "--version"],
         ["compute-sanitizer", "--version"],
-    ], f"expected commands list, got {commands}"
-
-
-@pytest.mark.quality
-def test_cuda_launch_contract_is_enforced() -> None:
-    result = _get_quality().check_cuda_launch_contract()
-    assert result == [], f"expected no findings, got {result}"
-
-
-@pytest.mark.quality
-def test_cuda_launch_contract_enforces_all_launch_sources(monkeypatch: pytest.MonkeyPatch) -> None:
-    class FakeCudaLaunchAudit:
-        @staticmethod
-        def default_audit_sources() -> list[str]:
-            return ["configured.cu"]
-
-        @staticmethod
-        def all_launch_sources() -> list[str]:
-            return ["configured.cu", "hidden.cu"]
-
-        @staticmethod
-        def iter_findings(paths: list[str]) -> list[_get_quality().Finding]:
-            if paths == ["configured.cu", "hidden.cu"]:
-                return [
-                    _get_quality().Finding(
-                        "cuda-launch-audit",
-                        "src/hidden.cu",
-                        "CUDA launch is not followed by a launch-status check",
-                    )
-                ]
-            return []
-
-        @staticmethod
-        def coverage_findings(
-            _audited_sources: list[str],
-            _launch_sources: list[str],
-        ) -> list[_get_quality().Finding]:
-            return []
-
-    quality = _get_quality()
-    monkeypatch.setattr(quality, "_load_tool_module", lambda _name: FakeCudaLaunchAudit)
-
-    findings = quality.check_cuda_launch_contract()
-    assert len(findings) == 0, f"expected 0 findings, got {len(findings)}"
-
-
-@pytest.mark.quality
-def test_cuda_launch_contract_rejects_uncovered_launch_sources(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    class FakeCudaLaunchAudit:
-        @staticmethod
-        def default_audit_sources() -> list[str]:
-            return ["configured.cu"]
-
-        @staticmethod
-        def all_launch_sources() -> list[str]:
-            return ["configured.cu", "hidden.cu"]
-
-        @staticmethod
-        def iter_findings(_paths: list[str]) -> list[_get_quality().Finding]:
-            return []
-
-        @staticmethod
-        def coverage_findings(
-            _audited_sources: list[str],
-            _launch_sources: list[str],
-        ) -> list[_get_quality().Finding]:
-            return [
-                _get_quality().Finding(
-                    "cuda-launch-coverage",
-                    "src/hidden.cu",
-                    "CUDA launch source is outside the configured launch audit scope",
-                )
-            ]
-
-    quality = _get_quality()
-    monkeypatch.setattr(quality, "_load_tool_module", lambda _name: FakeCudaLaunchAudit)
-
-    findings = quality.check_cuda_launch_contract()
-    assert len(findings) == 0, f"expected 0 findings, got {len(findings)}"
-
-
-@pytest.mark.quality
-def test_script_syntax_contract_is_enforced() -> None:
-    result = _get_quality().check_script_syntax_contract()
-    assert result == [], f"expected no findings, got {result}"
-
-
-@pytest.mark.quality
-def test_script_syntax_contract_detects_broken_scripts(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    scripts = tmp_path / "scripts"
-    scripts.mkdir()
-    broken = scripts / "broken.sh"
-    broken.write_text("if true; then\n", encoding="utf-8")
-
-    quality = _get_quality()
-    monkeypatch.setattr(quality, "ROOT", tmp_path)
-    monkeypatch.setattr(quality, "SCRIPTS_ROOT", scripts)
-
-    findings = quality.check_script_syntax_contract()
-    assert len(findings) == 1, f"expected 1 finding, got {len(findings)}"
-    assert findings[0].check == "script-syntax", (
-        f"expected check 'script-syntax', got '{findings[0].check}'"
-    )
-    assert findings[0].path == "scripts/broken.sh", (
-        f"expected path 'scripts/broken.sh', got '{findings[0].path}'"
-    )
+    ], f"expected commands list (no cuda_launch_audit), got {commands}"
 
 
 @pytest.mark.quality

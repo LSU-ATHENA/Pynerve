@@ -30,9 +30,5 @@ if (err != cudaSuccess) {
 }
 ```
 
-Audit enforcement: tooling at `tools/cuda_launch_audit.py` checks that every
-`cudaLaunchKernel`, `cudaMemcpy`, and `cudaMalloc` call is followed by an
-error check within 3 lines.
-
 
 [Back to index](index.md)

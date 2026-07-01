@@ -44,10 +44,6 @@ def backend_checks():
     return _get_tool("backend_checks")
 
 
-def cuda_launch_audit():
-    return _get_tool("cuda_launch_audit")
-
-
 @pytest.mark.quality
 def test_async_executor_benchmark_checks_cuda_status_and_finite_speedup() -> None:
     text = (_source_path("src", "gpu", "executor_async_ops.cpp")).read_text(encoding="utf-8")

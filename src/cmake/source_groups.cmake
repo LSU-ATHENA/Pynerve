@@ -118,8 +118,7 @@ set(NERVE_CORE_SOURCES
     persistence/adaptive_acceleration/streaming/representative_cycles_visualization.cpp
     persistence/adaptive_acceleration/streaming/approximate_processor_adaptive.cpp
     persistence/adaptive_acceleration/streaming/streaming_processor.cpp
-    persistence/adaptive_acceleration/cuda/hybrid_algorithms.cpp
-    persistence/adaptive_acceleration/cuda/tensor_core_optimizer.cpp
+
     persistence/approximate/approximate_bloom_filter_ops.cpp
     persistence/approximate/approximate_distilled_vr_ops.cpp
     persistence/approximate/approximate_nearest_neighbor_ops.cpp
@@ -146,7 +145,6 @@ set(NERVE_CORE_SOURCES
     persistence/core/roaring_bitmap_container.cpp
     persistence/core/roaring_bitmap_hybrid.cpp
     persistence/core/roaring_bitmap_ops.cpp
-    persistence/core/vram_efficient_algorithms.cpp
     persistence/core/high_dimensional_exact.cpp
     persistence/differentiable/differentiable_finite_diff_ops.cpp
     persistence/differentiable/differentiable_manager.cpp
@@ -165,7 +163,6 @@ set(NERVE_CORE_SOURCES
     persistence/kernels/ph4_summary_ops.cpp
     persistence/kernels/ph5_high_dim_ops.cpp
     persistence/kernels/ph6_high_dim_ops.cpp
-    persistence/kernels/thread_block_cluster.cpp
     persistence/memory/memory_clear_compress_ops.cpp
     persistence/memory/memory_pool_ops.cpp
     persistence/memory/memory_numa_optimizer.cpp
@@ -249,7 +246,6 @@ set(NERVE_CORE_SOURCES
     metrics/general/distance_complex_point_ops.cpp
     metrics/general/distance_factory_ops.cpp
     metrics/general/distance_general_ops.cpp
-    metrics/hungarian/assignment_hungarian_gpu_impl.cpp
     metrics/matrix/matrix_distance_ops.cpp
     metrics/matrix/matrix_lazy_distance_ops.cpp
     metrics/matrix/matrix_sparse_distance_ops.cpp
@@ -281,7 +277,6 @@ set(NERVE_CORE_SOURCES
     sheaf/sheaf_simd_ops.cpp
     spectral/dirac_operator.cpp
     spectral/laplacian.cpp
-    spectral/laplacian_gpu_impl.cpp
     spectral/spectral_simd_ops.cpp
     streaming/core/streaming_distributed_realtime_ops.cpp
     streaming/core/streaming_incremental_ops.cpp
@@ -291,7 +286,6 @@ set(NERVE_CORE_SOURCES
     streaming/core/approximate_streaming_ph.cpp
     streaming/core/streaming_diagram_sort_ops.cpp
     streaming/gpu/gpu_multi_stream_ops.cpp
-    streaming/gpu/streaming_gpu_impl.cpp
     streaming/gpu/streaming_simd_ops.cpp
     streaming/lockfree/streaming_lockfree_ops.cpp
     streaming/lockfree/streaming_lockfree_runtime_ops.cpp
@@ -310,7 +304,6 @@ set(NERVE_CORE_SOURCES
     encoders/encoder_factory.cpp
     encoders/encoder_fusion.cpp
     encoders/encoder_fusion_helpers.cpp
-    encoders/encoder_tensor_cores_benchmark.cpp
     encoders/simd_encoder.cpp
     encoders/encoder_utils.cpp
     encoders/encoder_utils_reporting.cpp
@@ -354,8 +347,6 @@ set(NERVE_CORE_SOURCES
     gpu/matrix_distance_ops.cpp
     gpu/ops_column.cpp
     gpu/ops_streaming.cpp
-    gpu/tuner_nvidia_auto.cpp
-    gpu/tuner_nvidia_auto_reporting.cpp
     instrumentation/high_dim_error_sink.cpp
     instrumentation/stability_certificates.cpp
     io/async_io_ops.cpp
@@ -365,6 +356,28 @@ set(NERVE_CORE_SOURCES
     memory/memory_allocator_ops.cpp
     memory/memory_pool_ops.cpp
     optimization/compact_summaries_memory.cpp
+    filtration/vr/vr_construction_ksimplices.cpp
+    nn/diagram_conv_kernels.cpp
+    persistence/cohomology/cohomology_dual.cpp
+    persistence/cohomology/cohomology_ring.cpp
+    persistence/cohomology/cohomology_sheaf.cpp
+    persistence/core/topology_optimizer.cpp
+)
+
+# CUDA-dependent core sources (always compiled when CUDA is available)
+set(NERVE_CUDA_CORE_SOURCES
+    persistence/adaptive_acceleration/cuda/hybrid_algorithms.cpp
+    persistence/adaptive_acceleration/cuda/tensor_core_optimizer.cpp
+    persistence/kernels/thread_block_cluster.cpp
+    persistence/core/vram_efficient_algorithms.cpp
+    metrics/hungarian/assignment_hungarian_gpu_impl.cpp
+    spectral/laplacian_gpu_impl.cpp
+    streaming/gpu/streaming_gpu_impl.cpp
+    encoders/encoder_tensor_cores_benchmark.cpp
+    gpu/tuner_nvidia_auto.cpp
+    gpu/tuner_nvidia_auto_reporting.cpp
+    algebra/gpu/vr_gpu_clique_cpu.cpp
+    algebra/gpu/vr_gpu_clique_expand.cpp
 )
 
 # CUDA-dependent sources
@@ -399,6 +412,35 @@ set(NERVE_CUDA_SOURCES
     persistence/cuda/matrix_distance_tiled_cuda.cu
     persistence/cuda/matrix_distance_api_cuda.cu
     persistence/cuda/matrix_distance_api_entrypoints.cu
+    # Orphaned CUDA files — wired in from audit
+    graphs/attention_gpu.cu
+    graphs/message_passing_gpu.cu
+    gpu/tuning/tuning_cache_ops.cpp
+    gpu/tuning/tuning_distributed_ops.cpp
+    metrics/diagram/diagram_distance_cuda.cu
+    metrics/diagram/diagram_distance_cuda_impl.cpp
+    persistence/accelerated/gpu_apparent_pairs.cu
+    persistence/adaptive_acceleration/cuda/distance_kernels.cu
+    persistence/adaptive_acceleration/cuda/distance_kernels_inst.cu
+    persistence/adaptive_acceleration/cuda/distance_reduction_kernels.cu
+    persistence/adaptive_acceleration/cuda/reduction_kernels.cu
+    persistence/cuda/adaptive_selector_gpu.cu
+    persistence/cuda/cohomology_clearing_cuda.cu
+    persistence/cuda/cuda_matrix_reduction_apparent_pairs.cu
+    persistence/cuda/cuda_matrix_reduction_compute.cu
+    persistence/cuda/cuda_matrix_reduction_diagram.cu
+    persistence/cuda/cuda_matrix_reduction_kernels.cu
+    persistence/cuda/cuda_matrix_reduction_warp.cu
+    persistence/cuda/gpu_clearing_impl.cpp
+    persistence/cuda/gpu_cohomology_impl.cpp
+    persistence/cuda/gpu_reduction_impl.cpp
+    persistence/cuda/kernel_apparent_pairs_cuda.cu
+    persistence/cuda/kernel_clearing_cuda.cu
+    persistence/cuda/kernel_edge_extraction_cuda.cu
+    persistence/cuda/kernel_tile_cuda.cu
+    persistence/cuda/kernel_warp_specialized_cuda.cu
+    persistence/cuda/matrix_reduction_launch_cuda.cu
+    persistence/cuda/multi_gpu_cuda.cu
 )
 
 # Extended CUDA sources
@@ -460,21 +502,15 @@ set(NERVE_CUDA_EXTENDED_SOURCES
     persistence/cuda/tensor_core_wrappers_cuda.cu
     persistence/cuda/tensor_core_benchmark.cu
     persistence/cuda/tuning_tma_cuda.cu
-)
-
-# PyTorch-dependent sources
-set(NERVE_PYTORCH_SOURCES
-    algorithms/kernel_methods.cpp
-    autodiff/autodiff_graph_optimizer.cpp
-    autodiff/autodiff_variable.cpp
+    # Orphaned CUDA files — wired in from audit
+    persistence/vr/vr_medium_hybrid_gpu_distance.cpp
+    spectral/persistent_laplacian_gpu_kernels.cu
+    spectral/persistent_laplacian_gpu_solver_helpers.cpp
     compression/autoencoder_gpu.cu
-    persistence/differentiable/differentiable_ops.cpp
-    probabilistic/probabilistic_gpu.cu
-    probabilistic/simd/probabilistic_simd_ops.cpp
 )
 
-# Validation benchmark sources
-set(NERVE_VALIDATION_SOURCES
+# Benchmark sources
+set(NERVE_BENCHMARK_SOURCES
     validation/microbenchmarks.cpp
     validation/ph5_ph6_benchmark_ci.cpp
     validation/ph5_ph6_benchmark_metrics.cpp
@@ -482,16 +518,16 @@ set(NERVE_VALIDATION_SOURCES
     validation/ph5_ph6_microbenchmarks_spectral.cpp
 )
 
-# Benchmark harness sources
-set(NERVE_BENCHMARK_SOURCES
-    benchmarks/performance_benchmark.cpp
-    benchmarks/vr_algorithm_benchmark.cpp
-)
-
 # cuDNN-dependent sources
 set(NERVE_CUDNN_SOURCES
     compression/decoder_cudnn.cpp
+    compression/decoder_cudnn_benchmark.cpp
+    compression/decoder_cudnn_layer.cpp
+    compression/decoder_cudnn_model.cpp
     compression/encoder_cudnn.cpp
+    compression/encoder_cudnn_benchmark.cpp
+    compression/encoder_cudnn_layer.cpp
+    compression/encoder_cudnn_model.cpp
     encoders/encoder_tensor_cores.cpp
     graphs/gnn_gpu.cu
 )
@@ -556,50 +592,3 @@ set(NERVE_AVX512_SOURCES
     persistence/utils/avx512_optimizer.cpp
 )
 
-# Staged AVX-512 sources
-set(NERVE_AVX512_STAGED_SOURCES
-)
-
-# Experimental tuning sources
-set(NERVE_EXPERIMENTAL_TUNING_SOURCES
-    gpu/manager_compute.cpp
-    graphs/attention_gpu.cu
-    graphs/message_passing_gpu.cu
-    gpu/matrix_diagram_cost_ops.cpp
-    gpu/matrix_distance_ops.cpp
-    gpu/ops_column.cpp
-    gpu/ops_streaming.cpp
-    persistence/accelerated/gpu_apparent_pairs.cu
-    persistence/accelerated/gpu_distance_matrix.cu
-    gpu/tuning/tuning_distributed_ops.cpp
-    metrics/diagram/diagram_distance_cuda.cu
-    metrics/diagram/diagram_distance_cuda_impl.cpp
-    gpu/tuning/tuning_cache_ops.cpp
-    persistence/adaptive_acceleration/cuda/distance_kernels.cu
-    persistence/adaptive_acceleration/cuda/distance_kernels_inst.cu
-    persistence/adaptive_acceleration/cuda/distance_reduction_kernels.cu
-    persistence/adaptive_acceleration/cuda/reduction_kernels.cu
-    persistence/cuda/adaptive_selector_gpu.cu
-    persistence/cuda/cluster_16_block.cu
-    persistence/cuda/cluster_distributed_l2.cu
-    persistence/cuda/cluster_tma_multicast.cu
-    persistence/cuda/cohomology_clearing_cuda.cu
-    persistence/cuda/cuda_matrix_reduction_apparent_pairs.cu
-    persistence/cuda/cuda_matrix_reduction_compute.cu
-    persistence/cuda/cuda_matrix_reduction_diagram.cu
-    persistence/cuda/cuda_matrix_reduction_kernels.cu
-    persistence/cuda/cuda_matrix_reduction_warp.cu
-    persistence/cuda/error_mapping_cuda.cpp
-    persistence/cuda/kernel_apparent_pairs_cuda.cu
-    persistence/cuda/kernel_clearing_cuda.cu
-    persistence/cuda/kernel_edge_extraction_cuda.cu
-    persistence/cuda/kernel_tile_cuda.cu
-    persistence/cuda/kernel_warp_specialized_cuda.cu
-    persistence/cuda/matrix_reduction_launch_cuda.cu
-    persistence/cuda/multi_gpu_cuda.cu
-    streaming/gpu/streaming_persistence_cuda.cu
-    streaming/gpu/windowed_ph_cuda.cu
-    persistence/cuda/gpu_clearing_impl.cpp
-    persistence/cuda/gpu_cohomology_impl.cpp
-    persistence/cuda/gpu_reduction_impl.cpp
-)

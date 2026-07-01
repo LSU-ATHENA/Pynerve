@@ -44,10 +44,6 @@ def backend_checks():
     return _get_tool("backend_checks")
 
 
-def cuda_launch_audit():
-    return _get_tool("cuda_launch_audit")
-
-
 @pytest.mark.quality
 def test_runner_detects_missing_accelerator_selection(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("NERVE_TEST_CUDA", raising=False)

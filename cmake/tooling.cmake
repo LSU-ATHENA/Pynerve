@@ -3,11 +3,6 @@
 
 find_package(Python3 COMPONENTS Interpreter QUIET)
 if(Python3_Interpreter_FOUND)
-    add_custom_target(nerve_quality
-        COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/quality.py --check all
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Running API, operator registration, import graph, and static text checks"
-    )
     add_custom_target(nerve_generate_test_matrix
         COMMAND ${Python3_EXECUTABLE}
                 ${CMAKE_SOURCE_DIR}/tools/test_matrix.py

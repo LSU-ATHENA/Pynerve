@@ -44,10 +44,6 @@ def backend_checks():
     return _get_tool("backend_checks")
 
 
-def cuda_launch_audit():
-    return _get_tool("cuda_launch_audit")
-
-
 @pytest.mark.quality
 def test_mpi_backend_requires_cuda_aware_runtime_when_requested(
     monkeypatch: pytest.MonkeyPatch,

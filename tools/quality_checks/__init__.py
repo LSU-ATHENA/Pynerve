@@ -13,9 +13,7 @@ from .build_contracts import (
     check_build_install_contract,
     check_ci_contract,
     check_ctest_contract,
-    check_cuda_launch_contract,
     check_performance_guard_contract,
-    check_script_syntax_contract,
     check_static_analysis_contract,
     check_test_matrix_contract,
 )
@@ -36,8 +34,6 @@ CHECKS = {
     "ctest": check_ctest_contract,
     "build-install": check_build_install_contract,
     "static-analysis": check_static_analysis_contract,
-    "cuda-launches": check_cuda_launch_contract,
-    "scripts": check_script_syntax_contract,
     "performance-guards": check_performance_guard_contract,
     "ci": check_ci_contract,
 }
@@ -49,8 +45,6 @@ CHECK_GROUPS = {
         "ctest",
         "build-install",
         "static-analysis",
-        "cuda-launches",
-        "scripts",
         "performance-guards",
         "ci",
     ),

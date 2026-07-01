@@ -47,6 +47,9 @@ if(NERVE_HAS_TORCH)
         torch/ml_statistics.cpp
         torch/ml_kernels.cpp
         torch/mapper.cpp
+        algorithms/kernel_methods.cpp
+        autodiff/autodiff_graph_optimizer.cpp
+        autodiff/autodiff_variable.cpp
     )
 else()
     message(STATUS "PyTorch not found - Building without ML integration")
@@ -170,11 +173,8 @@ endif()
 
 nerve_detect_avx512_codegen()
 
-option(NERVE_ENABLE_VALIDATION_BENCHMARKS
-    "Build validation benchmark sources in nerve_core"
-    OFF)
 option(NERVE_ENABLE_BENCHMARK_SOURCES
-    "Build benchmark harness sources in nerve_core"
+    "Build benchmark/validation sources in nerve_core"
     OFF)
 option(NERVE_ENABLE_CUDNN_COMPONENTS
     "Build cuDNN-dependent compression components in nerve_core"
@@ -191,52 +191,25 @@ option(NERVE_ENABLE_ADVANCED_DIFFERENTIABLE_COMPONENTS
 option(NERVE_ENABLE_AVX512_COMPONENTS
     "Build AVX-512 optimized component sources in nerve_core"
     OFF)
-option(NERVE_ENABLE_AVX512_STAGED_COMPONENTS
-    "Build staged AVX-512 component sources in nerve_core"
-    OFF)
-
-# Production builds should not compile legacy benchmark/validation modules
-# unless benchmark mode is explicitly enabled at the top level.
-if(DEFINED BUILD_BENCHMARKS AND NOT BUILD_BENCHMARKS)
-    if(NERVE_ENABLE_VALIDATION_BENCHMARKS OR NERVE_ENABLE_BENCHMARK_SOURCES)
-        message(STATUS "BUILD_BENCHMARKS=OFF - forcing validation/benchmark source groups OFF")
-    endif()
-    set(NERVE_ENABLE_VALIDATION_BENCHMARKS OFF CACHE BOOL
-        "Build validation benchmark sources in nerve_core" FORCE)
-    set(NERVE_ENABLE_BENCHMARK_SOURCES OFF CACHE BOOL
-        "Build benchmark harness sources in nerve_core" FORCE)
-endif()
 
 # Keep unstable advanced groups out of default production builds unless
 # top-level advanced mode is explicitly enabled.
 if(DEFINED ENABLE_ADVANCED_FEATURES AND NOT ENABLE_ADVANCED_FEATURES)
-    if(NERVE_ENABLE_ADVANCED_DIFFERENTIABLE_COMPONENTS
-       OR NERVE_ENABLE_AVX512_STAGED_COMPONENTS)
-        message(STATUS "ENABLE_ADVANCED_FEATURES=OFF - forcing advanced/staged source groups OFF")
+    if(NERVE_ENABLE_ADVANCED_DIFFERENTIABLE_COMPONENTS)
+        message(STATUS "ENABLE_ADVANCED_FEATURES=OFF - forcing advanced source groups OFF")
     endif()
     set(NERVE_ENABLE_ADVANCED_DIFFERENTIABLE_COMPONENTS OFF CACHE BOOL
         "Build advanced differentiable persistence components in nerve_core" FORCE)
-    set(NERVE_ENABLE_AVX512_STAGED_COMPONENTS OFF CACHE BOOL
-        "Build staged AVX-512 component sources in nerve_core" FORCE)
 endif()
 
 nerve_validate_simd_mode()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/source_groups.cmake)
 set(NERVE_ALL_SOURCES ${NERVE_CORE_SOURCES})
-if(NOT NERVE_HAS_CUDA)
-    list(REMOVE_ITEM NERVE_ALL_SOURCES
-        persistence/adaptive_acceleration/cuda/hybrid_algorithms.cpp
-        persistence/adaptive_acceleration/cuda/tensor_core_optimizer.cpp
-        persistence/kernels/thread_block_cluster.cpp
-        persistence/core/vram_efficient_algorithms.cpp
-        metrics/hungarian/assignment_hungarian_gpu_impl.cpp
-        spectral/laplacian_gpu_impl.cpp
-        streaming/gpu/streaming_gpu_impl.cpp
-        encoders/encoder_tensor_cores_benchmark.cpp
-        gpu/tuner_nvidia_auto.cpp
-        gpu/tuner_nvidia_auto_reporting.cpp
-    )
+if(NERVE_HAS_CUDA)
+    list(APPEND NERVE_ALL_SOURCES ${NERVE_CUDA_CORE_SOURCES})
+    list(LENGTH NERVE_CUDA_CORE_SOURCES NERVE_CUDA_CORE_SOURCE_COUNT)
+    message(STATUS "Added ${NERVE_CUDA_CORE_SOURCE_COUNT} CUDA core source files")
 endif()
 if(NOT NERVE_HAS_MPI)
     list(REMOVE_ITEM NERVE_ALL_SOURCES
@@ -267,21 +240,6 @@ endif()
 # Keep this backend compiled whenever CUDA is available, regardless of the
 # broader optional CUDA component set.
 if(NERVE_HAS_CUDA)
-    list(FIND NERVE_ALL_SOURCES cuda/kernels/distance_kernels.cu NERVE_DISTANCE_KERNEL_IDX)
-    if(NERVE_DISTANCE_KERNEL_IDX EQUAL -1)
-        list(APPEND NERVE_ALL_SOURCES cuda/kernels/distance_kernels.cu)
-        message(STATUS "Added mandatory CUDA distance kernel backend source")
-    endif()
-    foreach(NERVE_GRAPH_BACKEND_SOURCE
-            graphs/graph_algorithms_gpu.cu
-            graphs/graph_engine_gpu.cu
-            graphs/graph_zigzag_gpu.cu)
-        list(FIND NERVE_ALL_SOURCES ${NERVE_GRAPH_BACKEND_SOURCE} NERVE_GRAPH_KERNEL_IDX)
-        if(NERVE_GRAPH_KERNEL_IDX EQUAL -1)
-            list(APPEND NERVE_ALL_SOURCES ${NERVE_GRAPH_BACKEND_SOURCE})
-            message(STATUS "Added mandatory CUDA graph backend source: ${NERVE_GRAPH_BACKEND_SOURCE}")
-        endif()
-    endforeach()
     foreach(NERVE_CLUSTER_BACKEND_SOURCE
             persistence/cuda/cluster_16_block.cu
             persistence/cuda/cluster_distributed_l2.cu
@@ -301,10 +259,7 @@ endif()
 
 if(NERVE_HAS_TORCH)
     list(LENGTH NERVE_TORCH_SOURCES NERVE_TORCH_SOURCE_COUNT)
-    list(LENGTH NERVE_PYTORCH_SOURCES NERVE_PYTORCH_SOURCE_COUNT)
-    math(EXPR NERVE_TORCH_TOTAL_SOURCE_COUNT
-        "${NERVE_TORCH_SOURCE_COUNT} + ${NERVE_PYTORCH_SOURCE_COUNT}")
-    message(STATUS "Configured ${NERVE_TORCH_TOTAL_SOURCE_COUNT} PyTorch source files outside nerve_core")
+    message(STATUS "Configured ${NERVE_TORCH_SOURCE_COUNT} PyTorch source files outside nerve_core")
 endif()
 
 if(NERVE_HAS_MPI)
@@ -338,25 +293,11 @@ if(NERVE_ENABLE_AVX512_CODEGEN AND NERVE_ENABLE_AVX512_COMPONENTS)
     list(APPEND NERVE_ALL_SOURCES ${NERVE_AVX512_SOURCES})
     list(LENGTH NERVE_AVX512_SOURCES NERVE_AVX512_SOURCE_COUNT)
     message(STATUS "Added ${NERVE_AVX512_SOURCE_COUNT} AVX-512 source files")
-    if(NERVE_ENABLE_AVX512_STAGED_COMPONENTS)
-        list(APPEND NERVE_ALL_SOURCES ${NERVE_AVX512_STAGED_SOURCES})
-        list(LENGTH NERVE_AVX512_STAGED_SOURCES NERVE_AVX512_STAGED_SOURCE_COUNT)
-        message(STATUS "Added ${NERVE_AVX512_STAGED_SOURCE_COUNT} staged AVX-512 source files")
-    else()
-        message(STATUS "Staged AVX-512 sources disabled (NERVE_ENABLE_AVX512_STAGED_COMPONENTS=OFF)")
-    endif()
+
 elseif(NERVE_HAS_AVX512 AND NOT NERVE_ENABLE_AVX512_CODEGEN)
     message(STATUS "AVX-512 detected but disabled for codegen (NERVE_SIMD=${NERVE_SIMD})")
 elseif(NERVE_HAS_AVX512)
     message(STATUS "AVX-512 component sources disabled (NERVE_ENABLE_AVX512_COMPONENTS=OFF)")
-endif()
-
-if(NERVE_ENABLE_VALIDATION_BENCHMARKS)
-    list(APPEND NERVE_ALL_SOURCES ${NERVE_VALIDATION_SOURCES})
-    list(LENGTH NERVE_VALIDATION_SOURCES NERVE_VALIDATION_SOURCE_COUNT)
-    message(STATUS "Added ${NERVE_VALIDATION_SOURCE_COUNT} validation benchmark source files")
-else()
-    message(STATUS "Validation benchmark sources disabled (NERVE_ENABLE_VALIDATION_BENCHMARKS=OFF)")
 endif()
 
 if(NERVE_ENABLE_BENCHMARK_SOURCES)

@@ -395,8 +395,4 @@ std::vector<int> StochasticPersistenceGradient::sampleBatch(int n_points)
     return {};
 }
 
-TopologyOptimizer::TopologyOptimizer(const Config &config)
-    : config_(config)
-{}
-
 } // namespace nerve::persistence::gradient

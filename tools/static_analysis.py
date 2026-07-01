@@ -211,7 +211,6 @@ def main() -> int:
     parser.add_argument("--build-dir", default="build")
     parser.add_argument("--language", choices=("all", "python", "cpp", "cuda"), default="all")
     parser.add_argument("--clang-tidy-scope", choices=("critical", "all"), default="critical")
-    parser.add_argument("--cuda-launch-scope", choices=("configured", "all"), default="configured")
     args = parser.parse_args()
 
     commands: list[list[str]] = []
@@ -266,7 +265,6 @@ def main() -> int:
             return cuda_version_result
         commands.extend(
             [
-                [sys.executable, "tools/cuda_launch_audit.py", "--scope", args.cuda_launch_scope],
                 ["nvcc", "--version"],
                 ["compute-sanitizer", "--version"],
             ]

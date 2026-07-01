@@ -44,10 +44,6 @@ def backend_checks():
     return _get_tool("backend_checks")
 
 
-def cuda_launch_audit():
-    return _get_tool("cuda_launch_audit")
-
-
 @pytest.mark.quality
 def test_calibration_gpu_benchmark_keeps_finite_timing_results() -> None:
     text = (_source_path("src", "runtime", "calibration_gpu_benchmark.inl")).read_text(

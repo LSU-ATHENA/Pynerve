@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from .build_contracts import check_cuda_launch_contract
 from .common import *  # noqa: F403
 from .common import (
     _check_torch_operator_schema_text,
@@ -88,7 +87,6 @@ def check_operator_schema() -> list[Finding]:
     findings.extend(check_algorithm_bindings_schema())
     findings.extend(check_torch_bindings_schema())
     findings.extend(check_binding_smoke_contract())
-    findings.extend(check_cuda_launch_contract())
     try:
         operator_schema = _load_tool_module("operator_schema")
         findings.extend(
