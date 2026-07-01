@@ -25,7 +25,6 @@ using namespace nerve::test;
 constexpr double kTol = 1e-10;
 
 
-
 bool check_max_dim0_only_h0()
 {
     const std::vector<double> pts = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0};

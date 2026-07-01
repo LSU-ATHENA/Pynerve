@@ -28,8 +28,6 @@ using namespace nerve::test;
 constexpr double kTol = 1e-5;
 
 
-
-
 static bool is_diagonal_pair(const Pair &p)
 {
     return std::abs(p.birth - p.death) < 1e-12 || (std::isinf(p.death) && p.birth > 0);

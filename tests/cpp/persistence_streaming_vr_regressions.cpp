@@ -18,7 +18,6 @@ namespace
 
 using nerve::Size;
 using nerve::common::VRConfig;
-using nerve::core::BufferView;
 using nerve::persistence::FastVR;
 using nerve::persistence::Pair;
 using nerve::persistence::StreamingVR;

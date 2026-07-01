@@ -26,7 +26,6 @@ using namespace nerve::test;
 constexpr double kTol = 1e-10;
 
 
-
 bool check_max_radius_zero_only_vertices()
 {
     const std::vector<double> pts = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0};

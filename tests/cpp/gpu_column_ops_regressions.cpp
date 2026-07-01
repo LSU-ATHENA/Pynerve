@@ -18,7 +18,6 @@
 namespace
 {
 
-using nerve::core::BufferView;
 using nerve::persistence::Pair;
 
 #ifdef NERVE_HAS_CUDA

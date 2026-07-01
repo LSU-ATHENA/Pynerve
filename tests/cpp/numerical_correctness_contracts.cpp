@@ -27,7 +27,6 @@ using namespace nerve::test;
 // Helpers
 
 
-
 size_t count_pairs_by_dim(const std::vector<Pair> &pairs, Dimension dim)
 {
     size_t count = 0;

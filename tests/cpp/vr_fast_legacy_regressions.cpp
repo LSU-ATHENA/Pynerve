@@ -24,7 +24,6 @@ using nerve::persistence::VRAlgorithmSelection;
 using namespace nerve::test;
 
 
-
 void assert_pairs_equal(const std::vector<Pair> &expected, const std::vector<Pair> &actual)
 {
     assert(expected.size() == actual.size());

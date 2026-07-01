@@ -24,8 +24,6 @@ using namespace nerve::test;
 constexpr double kTol = 1e-10;
 
 
-
-
 bool assert_same_pairs(const std::vector<Pair> &expected, const std::vector<Pair> &actual)
 {
     const auto c1 = canonical(expected);

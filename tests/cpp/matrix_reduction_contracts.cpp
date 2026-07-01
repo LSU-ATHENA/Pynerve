@@ -33,20 +33,6 @@ using nerve::persistence::VRAlgorithmSelection;
 using namespace nerve::test;
 
 
-
-bool pairs_equal(const Pair &a, const Pair &b)
-{
-    if (a.dimension != b.dimension)
-        return false;
-    if (std::abs(a.birth - b.birth) > 1e-12)
-        return false;
-    if (std::isinf(a.death) && std::isinf(b.death))
-        return true;
-    if (std::isinf(a.death) || std::isinf(b.death))
-        return false;
-    return std::abs(a.death - b.death) < 1e-12;
-}
-
 SimplicialComplex make_tetrahedron()
 {
     SimplicialComplex complex;
@@ -139,7 +125,7 @@ bool check_algorithm_path_consistency()
     }
     for (std::size_t i = 0; i < pairs1.size(); ++i)
     {
-        if (!pairs_equal(pairs1[i], pairs2[i]))
+        if (!pairs_equal(pairs1[i], pairs2[i], 1e-12))
         {
             std::cerr << "pair " << i << " differs between algorithms\n";
             return false;
@@ -249,7 +235,7 @@ bool check_reduction_determinism()
     }
     for (std::size_t i = 0; i < p1.size(); ++i)
     {
-        if (!pairs_equal(p1[i], p2[i]))
+        if (!pairs_equal(p1[i], p2[i], 1e-12))
         {
             std::cerr << "determinism: pair " << i << " differs\n";
             return false;

@@ -24,7 +24,6 @@ using nerve::persistence::SparseBoundaryMatrix;
 using namespace nerve::test;
 
 
-
 bool check_sparse_boundary_matrix_construction()
 {
     SparseBoundaryMatrix<> mat(3, 3);

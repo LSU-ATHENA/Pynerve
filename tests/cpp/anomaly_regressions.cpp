@@ -15,7 +15,6 @@
 namespace
 {
 
-using nerve::core::BufferView;
 
 constexpr double kTol = 1e-10;
 

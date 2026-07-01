@@ -27,7 +27,6 @@ using nerve::persistence::Reducer;
 using namespace nerve::test;
 
 
-
 bool check_reducer_construction()
 {
     SimplicialComplex complex;

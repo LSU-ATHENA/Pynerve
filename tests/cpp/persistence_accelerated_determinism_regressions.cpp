@@ -15,7 +15,6 @@
 namespace
 {
 
-using nerve::core::BufferView;
 using nerve::core::DeterminismContract;
 using nerve::core::DeterminismEnforcer;
 using nerve::core::DeterminismLevel;

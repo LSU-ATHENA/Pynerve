@@ -70,20 +70,6 @@ bool does_not_throw(Fn fn)
 }
 
 
-
-bool pairs_equal(const Pair &a, const Pair &b)
-{
-    if (a.dimension != b.dimension)
-        return false;
-    if (std::abs(a.birth - b.birth) > 1e-12)
-        return false;
-    if (std::isinf(a.death) && std::isinf(b.death))
-        return true;
-    if (std::isinf(a.death) || std::isinf(b.death))
-        return false;
-    return std::abs(a.death - b.death) < 1e-12;
-}
-
 // Invariant: birth < death for all finite pairs
 
 bool check_birth_less_than_death_invariant()
@@ -475,7 +461,7 @@ bool check_determinism_invariant()
     }
     for (std::size_t i = 0; i < c1.size(); ++i)
     {
-        if (!pairs_equal(c1[i], c2[i]))
+        if (!pairs_equal(c1[i], c2[i], 1e-12))
         {
             std::cerr << "determinism: pair " << i << " differs\n";
             return false;

@@ -26,7 +26,6 @@ using namespace nerve::test;
 constexpr double kStrictTol = 1e-10;
 
 
-
 bool pairs_match(const Pair &a, const Pair &b, double tol = kStrictTol)
 {
     if (a.dimension != b.dimension)

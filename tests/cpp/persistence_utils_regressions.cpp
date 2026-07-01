@@ -16,7 +16,6 @@
 namespace
 {
 
-using nerve::core::BufferView;
 using nerve::persistence::Diagram;
 using nerve::persistence::Pair;
 

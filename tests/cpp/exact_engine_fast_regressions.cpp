@@ -17,7 +17,6 @@ namespace
 {
 
 using nerve::Size;
-using nerve::core::BufferView;
 
 bool check_fast_engine_triangle()
 {

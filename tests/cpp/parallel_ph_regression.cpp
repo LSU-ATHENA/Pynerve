@@ -17,7 +17,6 @@
 namespace
 {
 
-using nerve::core::BufferView;
 using nerve::persistence::Pair;
 using nerve::persistence::cpp20::BitColumn;
 using nerve::persistence::cpp20::ParallelConfig;

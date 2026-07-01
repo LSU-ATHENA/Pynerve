@@ -16,7 +16,6 @@ namespace
 {
 
 using nerve::approximation::DiagramPoint;
-using nerve::core::BufferView;
 
 constexpr double kTol = 1e-6f;
 
