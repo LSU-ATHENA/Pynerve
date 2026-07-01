@@ -18,7 +18,6 @@ namespace
 {
 
 using nerve::Pair;
-using nerve::Size;
 using nerve::algebra::BoundaryMatrix;
 using nerve::algebra::Simplex;
 using nerve::algebra::SimplicialComplex;

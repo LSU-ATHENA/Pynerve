@@ -13,8 +13,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Index;
 using nerve::Size;
 using nerve::algebra::Simplex;
 using nerve::persistence::Diagram;

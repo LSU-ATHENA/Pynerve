@@ -11,7 +11,6 @@
 namespace
 {
 
-using nerve::Size;
 using nerve::persistence::vram::Algorithm;
 using nerve::persistence::vram::VRAMConfig;
 

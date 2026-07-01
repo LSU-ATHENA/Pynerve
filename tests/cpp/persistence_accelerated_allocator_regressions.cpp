@@ -14,7 +14,6 @@
 namespace
 {
 
-using nerve::Size;
 using nerve::persistence::accelerated::CudaMemoryPool;
 using nerve::persistence::accelerated::ThreadSafeMemoryManager;
 

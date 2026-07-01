@@ -12,9 +12,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Index;
-using nerve::Size;
 using nerve::gpu::ComputeManager;
 using nerve::gpu::GPUBatchMemoryManager;
 using nerve::gpu::tuning::GpuSignature;

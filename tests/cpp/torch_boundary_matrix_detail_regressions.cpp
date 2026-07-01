@@ -16,8 +16,6 @@
 namespace
 {
 
-using nerve::Index;
-using nerve::Size;
 
 #ifdef NERVE_HAS_TORCH
 

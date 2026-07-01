@@ -13,9 +13,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Field;
-using nerve::Size;
 using nerve::metrics::Diagram;
 using nerve::metrics::WassersteinDistance;
 using nerve::persistence::Pair;

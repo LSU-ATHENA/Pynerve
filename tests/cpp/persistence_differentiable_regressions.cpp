@@ -17,11 +17,7 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Field;
-using nerve::Index;
 using nerve::PersistenceBudget;
-using nerve::Size;
 using nerve::autodiff::Tensor;
 using nerve::core::BufferView;
 using nerve::persistence::DifferentiableConfig;

@@ -17,9 +17,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Index;
-using nerve::Size;
 using nerve::core::BufferView;
 using nerve::persistence::Pair;
 using nerve::persistence::cpp20::BitColumn;

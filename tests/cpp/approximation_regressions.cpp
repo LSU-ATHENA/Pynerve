@@ -15,9 +15,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Field;
-using nerve::Size;
 using nerve::approximation::DiagramPoint;
 using nerve::core::BufferView;
 

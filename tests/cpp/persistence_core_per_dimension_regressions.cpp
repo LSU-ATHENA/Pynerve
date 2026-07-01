@@ -14,9 +14,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Index;
-using nerve::Size;
 using nerve::persistence::perdim::H0Result;
 using nerve::persistence::perdim::H1Result;
 using nerve::persistence::perdim::H2Result;

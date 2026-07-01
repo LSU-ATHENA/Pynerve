@@ -13,7 +13,6 @@
 namespace
 {
 
-using nerve::Index;
 using nerve::Size;
 using nerve::algebra::Simplex;
 

@@ -84,7 +84,6 @@ bool check_spectral_simd_basic_ops()
 }
 
 #if HAS_EIGEN && __has_include(<Eigen/Sparse>) && __has_include(<Eigen/Dense>)
-using nerve::Size;
 using nerve::algebra::SimplicialComplex;
 
 bool check_dirac_operator_construction()

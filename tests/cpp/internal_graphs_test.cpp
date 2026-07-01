@@ -11,9 +11,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Index;
-using nerve::Size;
 using nerve::algebra::Simplex;
 using nerve::graphs::Graph;
 using nerve::graphs::GraphNeuralLayer;

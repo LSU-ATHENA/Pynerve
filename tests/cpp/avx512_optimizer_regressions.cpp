@@ -13,7 +13,6 @@
 namespace
 {
 
-using nerve::Size;
 
 bool check_avx512_feature_detection()
 {

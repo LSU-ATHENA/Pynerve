@@ -15,9 +15,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Field;
-using nerve::Size;
 using nerve::core::BufferView;
 using nerve::metrics::Diagram;
 using nerve::persistence::Pair;

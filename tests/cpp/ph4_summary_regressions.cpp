@@ -12,8 +12,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Field;
 using nerve::persistence::CompactSummary;
 using nerve::persistence::Pair;
 using nerve::persistence::StabilityCertificate;

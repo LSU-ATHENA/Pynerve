@@ -12,7 +12,6 @@
 namespace
 {
 
-using nerve::Size;
 
 bool check_simd_encoder_configuration()
 {

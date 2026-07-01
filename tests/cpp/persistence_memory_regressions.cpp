@@ -17,9 +17,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Index;
-using nerve::Size;
 using nerve::persistence::clearcompress::Chunk;
 using nerve::persistence::clearcompress::ChunkColumn;
 using nerve::persistence::clearcompress::ChunkConfig;

@@ -12,7 +12,6 @@
 namespace
 {
 
-using nerve::Dimension;
 using nerve::persistence::adaptive_acceleration::representative::Cycle;
 using nerve::persistence::adaptive_acceleration::representative::CycleVisualizationData;
 using nerve::persistence::adaptive_acceleration::representative::RepresentativeConfig;

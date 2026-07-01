@@ -11,9 +11,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Field;
-using nerve::Size;
 using nerve::metrics::Diagram;
 using nerve::metrics::FrechetDistance;
 using nerve::persistence::Pair;

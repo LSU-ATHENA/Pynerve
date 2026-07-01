@@ -17,9 +17,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Field;
-using nerve::Size;
 using nerve::common::VRConfig;
 using nerve::core::BufferView;
 using nerve::persistence::Pair;

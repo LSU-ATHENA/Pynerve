@@ -16,7 +16,6 @@
 namespace
 {
 
-using nerve::Size;
 using nerve::streaming::lockfree::LockFreeMPMCQueue;
 using nerve::streaming::lockfree::LockFreeStreamingWindow;
 using nerve::streaming::lockfree::WaitFreeRingBuffer;

@@ -16,9 +16,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Field;
-using nerve::Size;
 using nerve::core::BufferView;
 
 constexpr double kTol = 1e-10;

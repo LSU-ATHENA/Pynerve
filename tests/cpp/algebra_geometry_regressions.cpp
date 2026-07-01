@@ -14,7 +14,6 @@
 namespace
 {
 
-using nerve::Size;
 using nerve::algebra::EnhancedSIMDCalculator;
 using nerve::algebra::SIMDDistanceCalculator;
 

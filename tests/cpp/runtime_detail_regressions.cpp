@@ -13,7 +13,6 @@
 namespace
 {
 
-using nerve::Size;
 
 constexpr double kTol = 1e-10;
 

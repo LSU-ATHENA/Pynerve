@@ -15,7 +15,6 @@
 namespace
 {
 
-using nerve::Size;
 using nerve::algebra::Simplex;
 using nerve::persistence::Diagram;
 using nerve::persistence::Pair;

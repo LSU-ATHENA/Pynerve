@@ -13,8 +13,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Size;
 using nerve::persistence::FloodComplexConfig;
 using nerve::persistence::FloodComplexResult;
 using nerve::persistence::IndexedPoint;

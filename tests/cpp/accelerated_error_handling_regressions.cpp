@@ -79,7 +79,6 @@ inline nerve::errors::ErrorResult<void> validatePairs(const std::vector<Pair> &p
 namespace
 {
 
-using nerve::Dimension;
 using nerve::Field;
 using nerve::common::AcceleratedPerformanceStats;
 using nerve::common::PerformanceMetrics;

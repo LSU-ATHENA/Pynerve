@@ -21,9 +21,6 @@
 namespace
 {
 
-using nerve::Dimension;
-using nerve::Field;
-using nerve::Index;
 using nerve::Size;
 using nerve::algebra::BoundaryMatrix;
 using nerve::algebra::Simplex;
