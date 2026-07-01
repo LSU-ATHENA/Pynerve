@@ -292,6 +292,11 @@ int main()
         std::cerr << "FAIL: filtration values monotonic\n";
         return 1;
     }
+    if (!check_filtration_vs_direct_tetrahedron())
+    {
+        std::cerr << "FAIL: filtration vs direct tetrahedron\n";
+        return 1;
+    }
     if (!check_filtration_with_custom_radii())
     {
         std::cerr << "FAIL: filtration custom radii\n";

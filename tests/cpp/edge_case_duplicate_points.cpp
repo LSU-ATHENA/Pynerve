@@ -212,13 +212,10 @@ bool check_duplicate_points_numerical_stability()
     }
 
     Size h0_essential = 0;
-    Size h1_essential = 0;
     for (const auto &p : pairs)
     {
         if (p.dimension == 0 && p.isInfinite())
             ++h0_essential;
-        if (p.dimension == 1 && p.isInfinite())
-            ++h1_essential;
     }
     if (h0_essential < 1)
     {
