@@ -4,6 +4,7 @@
 #include "nerve/core_types.hpp"
 #include "nerve/filtration/vietoris_rips.hpp"
 #include "nerve/filtration/vr_runtime.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -17,12 +18,12 @@ namespace
 
 using nerve::Size;
 using nerve::algebra::Point;
-using nerve::core::BufferView;
 using nerve::core::DeterminismContract;
 using nerve::core::ownership_utils::PointView;
 using nerve::filtration::SparseVietorisRips;
 using nerve::filtration::VietorisRips;
 using nerve::filtration::WeightedVietorisRips;
+using namespace nerve::test;
 
 constexpr double kTol = 1e-10;
 

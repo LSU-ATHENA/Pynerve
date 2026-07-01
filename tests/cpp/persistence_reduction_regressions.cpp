@@ -5,6 +5,7 @@
 #include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/reduction/reduction_ops.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -21,23 +22,11 @@ namespace
 using nerve::algebra::BoundaryMatrix;
 using nerve::algebra::Simplex;
 using nerve::algebra::SimplicialComplex;
-using nerve::core::BufferView;
 using nerve::persistence::Pair;
 using nerve::persistence::Reducer;
+using namespace nerve::test;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
-std::vector<Pair> canonical(std::vector<Pair> pairs)
-{
-    std::sort(pairs.begin(), pairs.end(), [](const Pair &a, const Pair &b) {
-        return std::tuple(a.dimension, a.birth, a.death) <
-               std::tuple(b.dimension, b.birth, b.death);
-    });
-    return pairs;
-}
 
 bool check_reducer_construction()
 {

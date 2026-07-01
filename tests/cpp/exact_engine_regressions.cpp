@@ -6,6 +6,7 @@
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/utils/exact_engine.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -25,23 +26,11 @@ using nerve::algebra::Simplex;
 using nerve::algebra::SimplicialComplex;
 using nerve::common::VRAlgorithmSelection;
 using nerve::common::VRConfig;
-using nerve::core::BufferView;
 using nerve::persistence::ExactPersistenceResult;
 using nerve::persistence::IncrementalExactZ2;
+using namespace nerve::test;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
-std::vector<Pair> canonical(std::vector<Pair> pairs)
-{
-    std::sort(pairs.begin(), pairs.end(), [](const Pair &a, const Pair &b) {
-        return std::tuple(a.dimension, a.birth, a.death) <
-               std::tuple(b.dimension, b.birth, b.death);
-    });
-    return pairs;
-}
 
 bool check_exact_empty_input()
 {

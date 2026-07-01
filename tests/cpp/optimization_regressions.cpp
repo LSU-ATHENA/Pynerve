@@ -4,6 +4,7 @@
 #include "nerve/optimization/component_optimizations.hpp"
 #include "nerve/optimization/hardware_optimizations.hpp"
 #include "nerve/optimization/parameter_sweep.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -17,17 +18,13 @@
 namespace
 {
 
-using nerve::core::BufferView;
 using nerve::optimization::AcceleratedFeatureCache;
 using nerve::optimization::Parameter;
 using nerve::optimization::ParameterCombination;
 using nerve::optimization::ParameterSweepEngine;
 using nerve::optimization::SweepConfig;
+using namespace nerve::test;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
 bool check_parameter_construction()
 {

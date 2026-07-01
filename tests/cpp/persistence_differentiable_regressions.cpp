@@ -4,6 +4,7 @@
 #include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/differentiable/differentiable_persistence.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -19,16 +20,12 @@ namespace
 
 using nerve::PersistenceBudget;
 using nerve::autodiff::Tensor;
-using nerve::core::BufferView;
 using nerve::persistence::DifferentiableConfig;
 using nerve::persistence::DifferentiablePersistenceManager;
 using nerve::persistence::OptimizationResult;
 using nerve::persistence::OptimizationTarget;
+using namespace nerve::test;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
 std::vector<nerve::Pair> canonical(std::vector<nerve::Pair> pairs)
 {

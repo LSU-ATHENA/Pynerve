@@ -3,6 +3,7 @@
 #include "nerve/core_types.hpp"
 #include "nerve/torch/ml_operations.hpp"
 #include "nerve/torch/persistence_diagram.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -20,17 +21,13 @@
 namespace
 {
 
-using nerve::core::BufferView;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
 #ifdef NERVE_HAS_TORCH
 
 using at::Tensor;
 using nerve::torch::PersistenceDiagram;
+using namespace nerve::test;
 
 bool check_ml_total_persistence()
 {

@@ -2,6 +2,7 @@
 #include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -16,16 +17,12 @@ namespace
 
 using nerve::Size;
 using nerve::common::VRConfig;
-using nerve::core::BufferView;
 using nerve::persistence::Pair;
 using nerve::persistence::VRAlgorithmSelection;
+using namespace nerve::test;
 
 constexpr double kTol = 1e-10;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
 bool check_single_point_max_dim0()
 {

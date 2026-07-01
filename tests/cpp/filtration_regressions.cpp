@@ -6,6 +6,7 @@
 #include "nerve/errors/errors.hpp"
 #include "nerve/filtration/simd_filtration.hpp"
 #include "nerve/filtration/vietoris_rips.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -24,11 +25,8 @@ using nerve::algebra::Simplex;
 using nerve::core::BufferView;
 using nerve::core::DeterminismContract;
 using nerve::filtration::VietorisRips;
+using namespace nerve::test;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
 bool check_vietoris_rips_construction()
 {

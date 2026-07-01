@@ -6,6 +6,7 @@
 #include "nerve/filtration/vietoris_rips.hpp"
 #include "nerve/persistence/utils/exact_engine.hpp"
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -20,38 +21,14 @@ namespace
 
 using nerve::algebra::Simplex;
 using nerve::common::VRConfig;
-using nerve::core::BufferView;
 using nerve::persistence::Pair;
 using nerve::persistence::VRAlgorithmSelection;
+using namespace nerve::test;
 
 constexpr double kTol = 1e-5;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
-std::vector<Pair> canonical(std::vector<Pair> pairs)
-{
-    std::sort(pairs.begin(), pairs.end(), [](const Pair &a, const Pair &b) {
-        return std::tuple(a.dimension, a.birth, a.death) <
-               std::tuple(b.dimension, b.birth, b.death);
-    });
-    return pairs;
-}
 
-bool pairs_equal(const Pair &a, const Pair &b)
-{
-    if (a.dimension != b.dimension)
-        return false;
-    if (std::abs(a.birth - b.birth) > kTol)
-        return false;
-    if (a.isInfinite() && b.isInfinite())
-        return true;
-    if (a.isInfinite() || b.isInfinite())
-        return false;
-    return std::abs(a.death - b.death) < kTol;
-}
 
 static bool is_diagonal_pair(const Pair &p)
 {
@@ -71,7 +48,7 @@ bool assert_same_pairs(const std::vector<Pair> &expected, const std::vector<Pair
     }
     for (std::size_t i = 0; i < c1.size(); ++i)
     {
-        if (!pairs_equal(c1[i], c2[i]))
+        if (!pairs_equal(c1[i], c2[i], kTol))
         {
             std::cerr << "pair " << i << " differs: dim=" << c1[i].dimension
                       << " birth=" << c1[i].birth << " death=" << c1[i].death

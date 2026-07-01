@@ -5,6 +5,7 @@
 #include "nerve/core_types.hpp"
 #include "nerve/graphs/gpu_graphs.hpp"
 #include "nerve/graphs/graph.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -19,15 +20,11 @@ namespace
 {
 
 using nerve::algebra::Simplex;
-using nerve::core::BufferView;
 using nerve::graphs::Graph;
 using nerve::graphs::SimplicialGraph;
 using nerve::graphs::WeightedGraph;
+using namespace nerve::test;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
 bool check_graph_construction()
 {

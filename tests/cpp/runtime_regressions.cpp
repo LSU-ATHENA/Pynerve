@@ -2,6 +2,7 @@
 #include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/error/error_registry.hpp"
+#include "test_utils.hpp"
 #include "threading/thread_pool.hpp"
 
 #include <algorithm>
@@ -19,13 +20,9 @@
 namespace
 {
 
-using nerve::core::BufferView;
 using nerve::threading::ThreadPool;
+using namespace nerve::test;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
 bool check_thread_pool_construction()
 {

@@ -3,6 +3,7 @@
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/kernels/ph4_ops.hpp"
 #include "nerve/persistence/kernels/ph5_ph6_ops.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -16,25 +17,13 @@
 namespace
 {
 
-using nerve::core::BufferView;
 using nerve::persistence::CompactSummary;
 using nerve::persistence::Pair;
 using nerve::persistence::PH5PH6Engine;
 using nerve::persistence::SparseBoundaryMatrix;
+using namespace nerve::test;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
-std::vector<Pair> canonical(std::vector<Pair> pairs)
-{
-    std::sort(pairs.begin(), pairs.end(), [](const Pair &a, const Pair &b) {
-        return std::tuple(a.dimension, a.birth, a.death) <
-               std::tuple(b.dimension, b.birth, b.death);
-    });
-    return pairs;
-}
 
 bool check_sparse_boundary_matrix_construction()
 {

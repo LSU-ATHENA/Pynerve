@@ -3,6 +3,7 @@
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -19,25 +20,13 @@ namespace
 
 using nerve::Dimension;
 using nerve::common::VRConfig;
-using nerve::core::BufferView;
 using nerve::persistence::Pair;
 using nerve::persistence::VRAlgorithmSelection;
+using namespace nerve::test;
 
 // Helpers
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
-std::vector<Pair> canonical(std::vector<Pair> pairs)
-{
-    std::sort(pairs.begin(), pairs.end(), [](const Pair &a, const Pair &b) {
-        return std::tuple(a.dimension, a.birth, a.death) <
-               std::tuple(b.dimension, b.birth, b.death);
-    });
-    return pairs;
-}
 
 size_t count_pairs_by_dim(const std::vector<Pair> &pairs, Dimension dim)
 {

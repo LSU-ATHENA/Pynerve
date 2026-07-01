@@ -7,6 +7,7 @@
 #include "nerve/persistence/cohomology/cohomology_ops.hpp"
 #include "nerve/persistence/cohomology/persistent_cohomology.hpp"
 #include "nerve/persistence/core/core_types.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -26,25 +27,13 @@ using nerve::Size;
 using nerve::algebra::Cell;
 using nerve::algebra::CellularComplex;
 using nerve::common::VRConfig;
-using nerve::core::BufferView;
 using nerve::persistence::CohomologyConfig;
 using nerve::persistence::CohomologyResult;
 using nerve::persistence::Pair;
 using nerve::persistence::PersistentCohomologyComputer;
+using namespace nerve::test;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
-std::vector<Pair> canonical(std::vector<Pair> pairs)
-{
-    std::sort(pairs.begin(), pairs.end(), [](const Pair &a, const Pair &b) {
-        return std::tuple(a.dimension, a.birth, a.death) <
-               std::tuple(b.dimension, b.birth, b.death);
-    });
-    return pairs;
-}
 
 CellularComplex make_triangle_complex()
 {

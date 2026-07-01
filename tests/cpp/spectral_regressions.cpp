@@ -5,6 +5,7 @@
 #include "nerve/core_types.hpp"
 #include "nerve/spectral/laplacian.hpp"
 #include "nerve/spectral/persistent_laplacian.hpp"
+#include "test_utils.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -20,13 +21,9 @@ namespace
 
 using nerve::algebra::Simplex;
 using nerve::algebra::SimplicialComplex;
-using nerve::core::BufferView;
 using nerve::spectral::Laplacian;
+using namespace nerve::test;
 
-BufferView<const double> view_of(const std::vector<double> &v)
-{
-    return {v.data(), v.size()};
-}
 
 bool check_laplacian_construction()
 {
