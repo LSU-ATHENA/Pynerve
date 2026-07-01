@@ -1,7 +1,5 @@
 #include "nerve/torch/ml_operations.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <random>

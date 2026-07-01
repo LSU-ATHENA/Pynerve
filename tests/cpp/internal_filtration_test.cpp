@@ -3,10 +3,8 @@
 #include "nerve/filtration/level_set.hpp"
 #include "nerve/filtration/vietoris_rips.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <iostream>
-#include <limits>
 #include <vector>
 
 namespace

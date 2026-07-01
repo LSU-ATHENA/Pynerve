@@ -1,6 +1,5 @@
 #include "nerve/streaming/lock_free_streaming.hpp"
 
-#include <algorithm>
 #include <atomic>
 #include <cassert>
 #include <chrono>

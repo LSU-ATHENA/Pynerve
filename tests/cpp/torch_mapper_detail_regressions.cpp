@@ -1,7 +1,5 @@
 #include "nerve/torch/mapper.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <random>

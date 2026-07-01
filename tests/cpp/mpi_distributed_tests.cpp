@@ -2,7 +2,6 @@
 
 #include <mpi.h>
 
-#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstring>

@@ -3,7 +3,6 @@
 #include "nerve/sheaf/sheaf_laplacian.hpp"
 #include "nerve/sheaf/sheaf_learning.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>

@@ -1,12 +1,10 @@
 
 #include "nerve/persistence/cohomology/cohomology_rref.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <random>
-#include <tuple>
 #include <vector>
 
 namespace

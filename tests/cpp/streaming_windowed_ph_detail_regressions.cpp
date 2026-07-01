@@ -4,11 +4,8 @@
 #include "nerve/streaming/incremental.hpp"
 #include "nerve/streaming/windowed_ph.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <random>
 #include <vector>
 

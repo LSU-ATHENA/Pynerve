@@ -1,11 +1,9 @@
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/memory/vram_algorithms.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <vector>
 
 namespace

@@ -1,7 +1,5 @@
 #include "nerve/core/memory/numa_aware_pool.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <cstring>
 #include <iostream>

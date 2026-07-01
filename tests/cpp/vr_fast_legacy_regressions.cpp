@@ -6,12 +6,10 @@
 #include "nerve/persistence/vr/vr_fast_simd_ops.hpp"
 #include "test_utils.hpp"
 
-#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <limits>
-#include <tuple>
 #include <vector>
 
 namespace

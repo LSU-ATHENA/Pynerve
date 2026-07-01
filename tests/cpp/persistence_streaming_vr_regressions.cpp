@@ -4,13 +4,9 @@
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/streaming/streaming_vr.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <random>
-#include <tuple>
 #include <vector>
 
 namespace

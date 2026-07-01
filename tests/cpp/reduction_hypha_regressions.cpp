@@ -4,12 +4,10 @@
 #include "nerve/algebra/simplex.hpp"
 #include "nerve/persistence/reduction/reduction_hypha_ops.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <random>
-#include <tuple>
 #include <vector>
 
 #ifdef NERVE_HAS_CUDA

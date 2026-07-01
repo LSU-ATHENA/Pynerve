@@ -1,8 +1,6 @@
 #include "nerve/persistence/kernels/ph5_ph6_ops.hpp"
 #include "nerve/serialization/ph5_ph6_schema_serializer.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <random>

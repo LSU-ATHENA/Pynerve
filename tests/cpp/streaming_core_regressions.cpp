@@ -5,8 +5,6 @@
 #include "nerve/streaming/incremental.hpp"
 #include "nerve/streaming/streaming_tda.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <limits>

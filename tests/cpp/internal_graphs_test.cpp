@@ -1,11 +1,9 @@
 
 #include "nerve/graphs/detail/graphs_detail.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <vector>
 
 namespace

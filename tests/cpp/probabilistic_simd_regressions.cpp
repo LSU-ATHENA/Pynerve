@@ -1,7 +1,6 @@
 #include "nerve/core_types.hpp"
 #include "nerve/probabilistic/probabilistic.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>

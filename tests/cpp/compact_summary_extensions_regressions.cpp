@@ -1,6 +1,5 @@
 #include "nerve/core/detail/compact_summary_extensions.hpp"
 
-#include <algorithm>
 #include <cstddef>
 #include <iostream>
 #include <vector>

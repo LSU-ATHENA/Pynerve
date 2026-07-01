@@ -34,7 +34,6 @@
 #include "nerve/persistence/vr/vr_medium_hybrid_ops.hpp"
 #include "nerve/persistence/vr/vr_sparse_rips_ops.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cassert>
 #include <chrono>

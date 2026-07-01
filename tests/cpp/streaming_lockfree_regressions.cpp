@@ -2,12 +2,10 @@
 #include "nerve/core_types.hpp"
 #include "nerve/streaming/lock_free_streaming.hpp"
 
-#include <algorithm>
 #include <atomic>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <optional>
 #include <random>
 #include <thread>

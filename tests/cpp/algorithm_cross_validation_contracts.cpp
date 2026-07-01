@@ -7,13 +7,10 @@
 #include "nerve/persistence/vr/vr_medium_hybrid_ops.hpp"
 #include "test_utils.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <random>
-#include <tuple>
 #include <vector>
 
 namespace

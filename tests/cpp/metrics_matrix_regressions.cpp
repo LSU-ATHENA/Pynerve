@@ -2,7 +2,6 @@
 #include "nerve/metrics/gpu_distances.hpp"
 #include "nerve/metrics/lazy_distance.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>

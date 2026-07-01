@@ -5,12 +5,10 @@
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
 #include "test_utils.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <string>
-#include <tuple>
 #include <vector>
 
 namespace

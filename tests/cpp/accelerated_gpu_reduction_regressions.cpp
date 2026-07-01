@@ -6,13 +6,10 @@
 #include "nerve/persistence/cuda/gpu_reduction_engine.hpp"
 #include "nerve/persistence/hybrid_reduction_engine.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <random>
-#include <tuple>
 #include <vector>
 
 namespace

@@ -1,7 +1,6 @@
 #include "nerve/core_types.hpp"
 #include "nerve/encoders/simd_encoder.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstring>

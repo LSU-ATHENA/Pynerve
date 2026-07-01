@@ -1,7 +1,5 @@
 #include "nerve/distributed/nvshmem_bridge.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <cstdlib>
 #include <iostream>

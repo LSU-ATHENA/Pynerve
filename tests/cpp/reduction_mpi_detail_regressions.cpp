@@ -11,11 +11,8 @@
 #include "nerve/algebra/complex.hpp"
 #include "nerve/algebra/simplex.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <random>
-#include <tuple>
 #include <vector>
 
 namespace

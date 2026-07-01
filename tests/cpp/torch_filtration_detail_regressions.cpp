@@ -1,6 +1,5 @@
 #include "nerve/torch/filtration.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>

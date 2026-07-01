@@ -2,12 +2,10 @@
 #include "nerve/config.hpp"
 #include "nerve/sheaf/gpu_sheaf.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <future>
 #include <iostream>
-#include <limits>
 #include <random>
 #include <vector>
 

@@ -2,12 +2,9 @@
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/utils/avx512_optimizer.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
-#include <limits>
 #include <vector>
 
 namespace

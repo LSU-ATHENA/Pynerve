@@ -1,11 +1,9 @@
 
 #include "nerve/persistence/kernels/ph4_ops.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <random>
 #include <vector>
 

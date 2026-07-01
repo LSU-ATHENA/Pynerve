@@ -1,7 +1,6 @@
 #include "nerve/algorithms/distance.hpp"
 #include "nerve/algorithms/distance_c.h"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>

@@ -4,12 +4,10 @@
 #include "nerve/persistence/memory/clear_and_compress.hpp"
 #include "nerve/persistence/memory/numa_memory_optimizer.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
-#include <limits>
 #include <random>
 #include <unordered_map>
 #include <vector>

@@ -1,7 +1,6 @@
 #include "nerve/encoders/encoders.hpp"
 #include "nerve/encoders/gpu_encoders.hpp"
 
-#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <limits>

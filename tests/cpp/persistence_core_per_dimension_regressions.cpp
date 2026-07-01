@@ -3,11 +3,8 @@
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/core/per_dimension_exact.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <random>
 #include <vector>
 

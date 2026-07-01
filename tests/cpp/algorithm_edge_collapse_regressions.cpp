@@ -21,7 +21,6 @@
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
 #include "nerve/spectral/laplacian.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cassert>
 #include <chrono>

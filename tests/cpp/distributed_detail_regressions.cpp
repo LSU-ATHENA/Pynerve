@@ -9,7 +9,6 @@ int main()
 
 #include <atomic>
 #include <chrono>
-#include <cmath>
 #include <cstddef>
 #include <functional>
 #include <iostream>

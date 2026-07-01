@@ -2,7 +2,6 @@
 #include "nerve/core_types.hpp"
 #include "nerve/streaming/streaming_laplacian.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>

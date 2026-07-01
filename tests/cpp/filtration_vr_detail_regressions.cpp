@@ -6,11 +6,8 @@
 #include "nerve/filtration/vr_runtime.hpp"
 #include "test_utils.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <vector>
 
 namespace

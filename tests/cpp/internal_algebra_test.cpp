@@ -4,11 +4,9 @@
 #include "nerve/algebra/simd_distance.hpp"
 #include "nerve/algebra/simplex.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <vector>
 
 namespace

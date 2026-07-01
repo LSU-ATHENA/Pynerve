@@ -3,7 +3,6 @@
 #include "nerve/probabilistic/detail/probabilistic_detail.hpp"
 #include "nerve/probabilistic/probabilistic.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>

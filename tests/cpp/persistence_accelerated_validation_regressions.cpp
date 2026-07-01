@@ -5,8 +5,6 @@
 #include "nerve/errors/errors.hpp"
 #include "nerve/persistence/accelerated/accelerated_api.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>

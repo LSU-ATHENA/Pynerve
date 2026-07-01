@@ -1,7 +1,6 @@
 
 #include "nerve/persistence/adaptive_acceleration/streaming/representative_cycles.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>

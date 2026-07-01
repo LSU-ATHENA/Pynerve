@@ -2,12 +2,10 @@
 #include "nerve/persistence/vr/detail/vr_detail.hpp"
 #include "nerve/persistence/vr/vr_h1_reduction_ops.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <random>
-#include <tuple>
 #include <vector>
 
 namespace

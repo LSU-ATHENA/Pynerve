@@ -5,7 +5,6 @@
 #include "nerve/persistence/reduction/reduction_distributed_ops.hpp"
 
 #include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <random>

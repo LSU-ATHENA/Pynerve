@@ -2,7 +2,6 @@
 #include "nerve/persistence/cohomology/cohomology_persistent_ops.hpp"
 
 #include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <random>

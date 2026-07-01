@@ -3,7 +3,6 @@
 #include "nerve/core_types.hpp"
 #include "nerve/filtration/level_set.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>

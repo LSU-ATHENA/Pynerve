@@ -2,12 +2,10 @@
 
 #include <mpi.h>
 
-#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
-#include <tuple>
 #include <vector>
 
 int main(int argc, char **argv)

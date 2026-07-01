@@ -1,11 +1,9 @@
 
 #include "nerve/gpu/hybrid_tuning.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <random>
 #include <vector>
 

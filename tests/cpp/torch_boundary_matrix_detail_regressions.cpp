@@ -2,8 +2,6 @@
 #if __has_include(<torch/torch.h>)
 #include "nerve/torch/simplex_tree.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <random>

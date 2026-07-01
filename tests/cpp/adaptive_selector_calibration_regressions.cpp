@@ -2,11 +2,8 @@
 #include "nerve/persistence/adaptive_acceleration/adaptive_algorithm_selector.hpp"
 #include "nerve/persistence/adaptive_acceleration/adaptive_selector_calibration.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <random>
 #include <string>
 #include <vector>

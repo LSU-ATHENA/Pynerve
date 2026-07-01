@@ -4,11 +4,9 @@
 #include "nerve/spectral/laplacian.hpp"
 #include "nerve/spectral/persistent_laplacian.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <iostream>
-#include <limits>
 #include <vector>
 
 namespace

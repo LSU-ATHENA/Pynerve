@@ -4,7 +4,6 @@
 #include "nerve/torch/ml_operations.hpp"
 #include "nerve/torch/persistence_diagram.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <iostream>

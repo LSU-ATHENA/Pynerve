@@ -3,11 +3,9 @@
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/core/flood_complex.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <vector>
 
 namespace

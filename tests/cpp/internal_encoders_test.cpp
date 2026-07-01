@@ -2,10 +2,8 @@
 #include "nerve/encoders/detail/encoders_detail.hpp"
 #include "nerve/encoders/encoders.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <iostream>
-#include <limits>
 #include <map>
 #include <string>
 #include <vector>

@@ -1,7 +1,5 @@
 #include "nerve/core/detail/error_event_extensions.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <memory>

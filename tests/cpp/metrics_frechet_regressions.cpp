@@ -1,11 +1,9 @@
 #include "nerve/core_types.hpp"
 #include "nerve/metrics/distances.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <limits>
 #include <vector>
 
 namespace

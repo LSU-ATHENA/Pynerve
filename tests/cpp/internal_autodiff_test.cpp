@@ -2,12 +2,10 @@
 #include "nerve/autodiff/detail/autodiff_detail.hpp"
 #include "nerve/core_types.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <functional>
 #include <iostream>
-#include <limits>
 #include <vector>
 
 namespace

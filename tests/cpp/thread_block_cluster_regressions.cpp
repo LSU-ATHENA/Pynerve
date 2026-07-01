@@ -1,8 +1,6 @@
 
 #include "nerve/persistence/cuda/thread_block_cluster.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <iostream>
 #include <limits>

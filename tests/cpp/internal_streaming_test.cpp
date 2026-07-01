@@ -1,7 +1,6 @@
 
 #include "nerve/streaming/detail/streaming_detail.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <iostream>

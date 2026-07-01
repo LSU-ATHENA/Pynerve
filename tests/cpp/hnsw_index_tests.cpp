@@ -1,8 +1,6 @@
 #include "nerve/algorithms/knn_hnsw.hpp"
 
-#include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <iostream>
 #include <random>
 #include <stdexcept>

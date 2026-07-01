@@ -3,14 +3,11 @@
 #include "nerve/core_types.hpp"
 #include "nerve/io/npy_io.hpp"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstring>
 #include <iostream>
-#include <limits>
 #include <random>
-#include <tuple>
 #include <vector>
 
 namespace

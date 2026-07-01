@@ -1,7 +1,6 @@
 #include "persistence/field_aware_vietoris_rips.hpp"
 
 #include <cassert>
-#include <cmath>
 #include <exception>
 #include <limits>
 #include <vector>

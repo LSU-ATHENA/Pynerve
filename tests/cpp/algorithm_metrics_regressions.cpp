@@ -61,7 +61,6 @@
 #include "nerve/streaming/lock_free_streaming.hpp"
 #include "nerve/streaming/streaming_tda.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cassert>
 #include <chrono>
