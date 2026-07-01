@@ -24,6 +24,36 @@ if _check_triton():
     import triton
     import triton.language as tl
     from triton.language import inline_asm_elementwise as _asm
+
+    @triton.jit
+    def _build_cost_kernel(
+        d1_x_ptr,
+        d1_y_ptr,
+        d2_x_ptr,
+        d2_y_ptr,
+        cost_ptr,
+        n1: int,
+        n2: int,
+        p: float,
+        stride_cost: int,
+        BLOCK_X: tl.constexpr,
+        BLOCK_Y: tl.constexpr,
+    ):
+        pid_x = tl.program_id(0) * BLOCK_X + tl.arange(0, BLOCK_X)
+        pid_y = tl.program_id(1) * BLOCK_Y + tl.arange(0, BLOCK_Y)
+        mask_x = pid_x < n1
+        mask_y = pid_y < n2
+        mask = mask_x[:, None] & mask_y[None, :]
+        x1 = tl.load(d1_x_ptr + pid_x, mask=mask_x, other=0.0).to(tl.float64)
+        y1 = tl.load(d1_y_ptr + pid_x, mask=mask_x, other=0.0).to(tl.float64)
+        x2 = tl.load(d2_x_ptr + pid_y, mask=mask_y, other=0.0).to(tl.float64)
+        y2 = tl.load(d2_y_ptr + pid_y, mask=mask_y, other=0.0).to(tl.float64)
+        dx = tl.abs(x1[:, None] - x2[None, :])
+        dy = tl.abs(y1[:, None] - y2[None, :])
+        dist = tl.maximum(dx, dy)
+        cost = tl.math.pow(dist.to(tl.float32), float(p))
+        out_ptrs = cost_ptr + pid_x[:, None] * stride_cost + pid_y[None, :]
+        tl.store(out_ptrs, cost, mask=mask)
 else:
     triton = None
     tl = None
@@ -40,37 +70,6 @@ def _linf(
     dx = torch.abs(a_x[:, None] - b_x[None, :])
     dy = torch.abs(a_y[:, None] - b_y[None, :])
     return torch.maximum(dx, dy)
-
-
-@triton.jit
-def _build_cost_kernel(
-    d1_x_ptr,
-    d1_y_ptr,
-    d2_x_ptr,
-    d2_y_ptr,
-    cost_ptr,
-    n1: int,
-    n2: int,
-    p: float,
-    stride_cost: int,
-    BLOCK_X: tl.constexpr,
-    BLOCK_Y: tl.constexpr,
-):
-    pid_x = tl.program_id(0) * BLOCK_X + tl.arange(0, BLOCK_X)
-    pid_y = tl.program_id(1) * BLOCK_Y + tl.arange(0, BLOCK_Y)
-    mask_x = pid_x < n1
-    mask_y = pid_y < n2
-    mask = mask_x[:, None] & mask_y[None, :]
-    x1 = tl.load(d1_x_ptr + pid_x, mask=mask_x, other=0.0).to(tl.float64)
-    y1 = tl.load(d1_y_ptr + pid_x, mask=mask_x, other=0.0).to(tl.float64)
-    x2 = tl.load(d2_x_ptr + pid_y, mask=mask_y, other=0.0).to(tl.float64)
-    y2 = tl.load(d2_y_ptr + pid_y, mask=mask_y, other=0.0).to(tl.float64)
-    dx = tl.abs(x1[:, None] - x2[None, :])
-    dy = tl.abs(y1[:, None] - y2[None, :])
-    dist = tl.maximum(dx, dy)
-    cost = tl.math.pow(dist.to(tl.float32), float(p))
-    out_ptrs = cost_ptr + pid_x[:, None] * stride_cost + pid_y[None, :]
-    tl.store(out_ptrs, cost, mask=mask)
 
 
 def build_cost_matrix(

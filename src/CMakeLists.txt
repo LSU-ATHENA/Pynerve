@@ -243,6 +243,11 @@ if(NOT NERVE_HAS_MPI)
         persistence/distributed/mpi_distributed_ph.cpp
     )
 endif()
+if(NOT NERVE_HAS_CUDA OR NOT NERVE_HAS_MPI)
+    list(REMOVE_ITEM NERVE_ALL_SOURCES
+        formats/gpu_mpi_overlap.cpp
+    )
+endif()
 if(NERVE_HAS_CUDA AND NERVE_ENABLE_CUDA_COMPONENTS)
     list(APPEND NERVE_ALL_SOURCES ${NERVE_CUDA_SOURCES})
     list(LENGTH NERVE_CUDA_SOURCES NERVE_CUDA_SOURCE_COUNT)

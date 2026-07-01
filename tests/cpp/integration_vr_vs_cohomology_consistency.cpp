@@ -23,7 +23,7 @@ using nerve::core::BufferView;
 using nerve::persistence::Pair;
 using nerve::persistence::VRAlgorithmSelection;
 
-constexpr double kTol = 1e-5;
+constexpr double kTol = 1e-10;
 
 BufferView<const double> view_of(const std::vector<double> &v)
 {

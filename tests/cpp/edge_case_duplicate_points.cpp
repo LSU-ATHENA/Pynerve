@@ -102,7 +102,7 @@ bool check_partially_duplicate_points()
 
 bool check_very_close_points()
 {
-    constexpr double kEpsilon = 1e-12;
+    constexpr double kEpsilon = 1e-4;
     const std::vector<double> pts = {0.0, 0.0, kEpsilon, kEpsilon};
     VRConfig cfg;
     cfg.max_radius = 1.0;

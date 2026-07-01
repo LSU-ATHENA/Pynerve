@@ -6,8 +6,8 @@ Two strategies:
 The auto-select picks whichever is expected to touch fewer global-memory elements.
 
 Inline PTX notes:
-  - Gaussian exp(-dist²/(2σ²)) -> ex2.approx.ftz.f32(dist_sq * scale)
-    scale = -1/(2σ²·ln(2)) = -0.72134752/σ². ~4x faster with <0.5% error.
+  - Gaussian exp(-dist^2/(2*sigma^2)) -> ex2.approx.ftz.f32(dist_sq * scale)
+    scale = -1/(2*sigma^2*ln(2)) = -0.72134752/sigma^2. ~4x faster with <0.5% error.
   - FMA available as tl.inline_asm_elementwise("fma.rn.f32 $0, $1, $2, $3;", ...)
   - atom.add.f32 can use relaxed memory scope for image accumulation.
 """
@@ -22,6 +22,95 @@ if _check_triton():
     import triton
     import triton.language as tl
     from triton.language import inline_asm_elementwise as _asm
+
+    @triton.jit
+    def _pixel_kernel(
+        births_ptr,
+        deaths_ptr,
+        image_ptr,
+        n_pairs: int,
+        resolution: int,
+        sigma: float,
+        x_min: float,
+        x_max: float,
+        y_min: float,
+        y_max: float,
+        stride_img_y: int,
+        BLOCK_X: tl.constexpr,
+        BLOCK_Y: tl.constexpr,
+    ):
+        pid_x = tl.program_id(0) * BLOCK_X
+        pid_y = tl.program_id(1) * BLOCK_Y
+        lx = pid_x + tl.arange(0, BLOCK_X)
+        ly = pid_y + tl.arange(0, BLOCK_Y)
+        mask = (lx < resolution) & (ly < resolution)
+        x_range = tl.maximum(x_max - x_min, 1.0)
+        y_range = tl.maximum(y_max - y_min, 1.0)
+        pixel_x = x_min + (lx.to(tl.float64) + 0.5) * x_range / resolution
+        pixel_y = y_min + (ly.to(tl.float64) + 0.5) * y_range / resolution
+        sigma_sq2 = 2.0 * sigma * sigma
+        neg_inv = -1.0 / sigma_sq2
+        weight_sum = tl.zeros((BLOCK_X,), dtype=tl.float64)
+        for i in range(n_pairs):
+            birth = tl.load(births_ptr + i).to(tl.float64)
+            death = tl.load(deaths_ptr + i).to(tl.float64)
+            persistence = death - birth
+            dx = pixel_x - birth
+            dy = pixel_y - persistence
+            dist2 = dx * dx + dy * dy
+            w = tl.exp(neg_inv * dist2)
+            weight_sum += w
+        img_ptr = image_ptr + ly * stride_img_y + lx
+        tl.atomic_add(img_ptr, weight_sum.to(image_ptr.dtype.element_ty), mask=mask)
+
+    @triton.jit
+    def _pair_kernel(
+        births_ptr,
+        deaths_ptr,
+        image_ptr,
+        n_pairs: int,
+        resolution: int,
+        sigma: float,
+        x_min: float,
+        x_max: float,
+        y_min: float,
+        y_max: float,
+        stride_img_y: int,
+        BLOCK_SIZE: tl.constexpr,
+    ):
+        pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+        mask = pid < n_pairs
+        birth = tl.load(births_ptr + pid, mask=mask, other=0.0).to(tl.float64)
+        death = tl.load(deaths_ptr + pid, mask=mask, other=0.0).to(tl.float64)
+        persistence = death - birth
+        x_range = tl.maximum(x_max - x_min, 1.0)
+        y_range = tl.maximum(y_max - y_min, 1.0)
+        sigma_sq2 = 2.0 * sigma * sigma
+        neg_inv = -1.0 / sigma_sq2
+        bx_rel = (birth - x_min) / x_range * (resolution - 1)
+        py_rel = (persistence - y_min) / y_range * (resolution - 1)
+        radius_x = 3.0 * sigma * resolution / x_range
+        radius_y = 3.0 * sigma * resolution / y_range
+        x0 = tl.maximum(0, tl.cast(tl.floor(bx_rel - radius_x), tl.int32))
+        x1 = tl.minimum(resolution - 1, tl.cast(tl.ceil(bx_rel + radius_x), tl.int32))
+        y0 = tl.maximum(0, tl.cast(tl.floor(py_rel - radius_y), tl.int32))
+        y1 = tl.minimum(resolution - 1, tl.cast(tl.ceil(py_rel + radius_y), tl.int32))
+        for y in range(resolution):
+            pixel_y = y_min + (y + 0.5) * y_range / resolution
+            dy = pixel_y - persistence
+            for x in range(resolution):
+                in_bounds = (x >= x0) & (x <= x1) & (y >= y0) & (y <= y1)
+                if not in_bounds:
+                    continue
+                pixel_x = x_min + (x + 0.5) * x_range / resolution
+                dx = pixel_x - birth
+                dist2 = dx * dx + dy * dy
+                w = tl.exp(neg_inv * dist2)
+                tl.atomic_add(
+                    image_ptr + y * stride_img_y + x,
+                    w.to(image_ptr.dtype.element_ty),
+                    mask=mask,
+                )
 else:
     triton = None
     tl = None
@@ -32,99 +121,6 @@ def _select_strategy(n_pairs: int, resolution: int) -> str:
     if n_pairs > resolution * resolution:
         return "pixel"
     return "pair"
-
-
-@triton.jit
-def _pixel_kernel(
-    births_ptr,
-    deaths_ptr,
-    image_ptr,
-    n_pairs: int,
-    resolution: int,
-    sigma: float,
-    x_min: float,
-    x_max: float,
-    y_min: float,
-    y_max: float,
-    stride_img_y: int,
-    BLOCK_X: tl.constexpr,
-    BLOCK_Y: tl.constexpr,
-):
-    pid_x = tl.program_id(0) * BLOCK_X
-    pid_y = tl.program_id(1) * BLOCK_Y
-    lx = pid_x + tl.arange(0, BLOCK_X)
-    ly = pid_y + tl.arange(0, BLOCK_Y)
-    mask = (lx < resolution) & (ly < resolution)
-    x_range = tl.maximum(x_max - x_min, 1.0)
-    y_range = tl.maximum(y_max - y_min, 1.0)
-    pixel_x = x_min + (lx.to(tl.float64) + 0.5) * x_range / resolution
-    pixel_y = y_min + (ly.to(tl.float64) + 0.5) * y_range / resolution
-    sigma_sq2 = 2.0 * sigma * sigma
-    neg_inv = -1.0 / sigma_sq2
-    ln2 = 0.69314718
-    ex2_scale = neg_inv / ln2
-    weight_sum = tl.zeros((BLOCK_X,), dtype=tl.float64)
-    for i in range(n_pairs):
-        birth = tl.load(births_ptr + i).to(tl.float64)
-        death = tl.load(deaths_ptr + i).to(tl.float64)
-        persistence = death - birth
-        dx = pixel_x - birth
-        dy = pixel_y - persistence
-        dist2 = dx * dx + dy * dy
-        w = tl.exp(ex2_scale * dist2)
-        weight_sum += w
-    img_ptr = image_ptr + ly * stride_img_y + lx
-    tl.atomic_add(img_ptr, weight_sum.to(image_ptr.dtype.element_ty), mask=mask)
-
-
-@triton.jit
-def _pair_kernel(
-    births_ptr,
-    deaths_ptr,
-    image_ptr,
-    n_pairs: int,
-    resolution: int,
-    sigma: float,
-    x_min: float,
-    x_max: float,
-    y_min: float,
-    y_max: float,
-    stride_img_y: int,
-    BLOCK_SIZE: tl.constexpr,
-):
-    pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    mask = pid < n_pairs
-    birth = tl.load(births_ptr + pid, mask=mask, other=0.0).to(tl.float64)
-    death = tl.load(deaths_ptr + pid, mask=mask, other=0.0).to(tl.float64)
-    persistence = death - birth
-    x_range = tl.maximum(x_max - x_min, 1.0)
-    y_range = tl.maximum(y_max - y_min, 1.0)
-    sigma_sq2 = 2.0 * sigma * sigma
-    neg_inv = -1.0 / sigma_sq2
-    bx_rel = (birth - x_min) / x_range * (resolution - 1)
-    py_rel = (persistence - y_min) / y_range * (resolution - 1)
-    radius_x = 3.0 * sigma * resolution / x_range
-    radius_y = 3.0 * sigma * resolution / y_range
-    x0 = tl.maximum(0, tl.cast(tl.floor(bx_rel - radius_x), tl.int32))
-    x1 = tl.minimum(resolution - 1, tl.cast(tl.ceil(bx_rel + radius_x), tl.int32))
-    y0 = tl.maximum(0, tl.cast(tl.floor(py_rel - radius_y), tl.int32))
-    y1 = tl.minimum(resolution - 1, tl.cast(tl.ceil(py_rel + radius_y), tl.int32))
-    for y in range(resolution):
-        pixel_y = y_min + (y + 0.5) * y_range / resolution
-        dy = pixel_y - persistence
-        for x in range(resolution):
-            in_bounds = (x >= x0) & (x <= x1) & (y >= y0) & (y <= y1)
-            if not in_bounds:
-                continue
-            pixel_x = x_min + (x + 0.5) * x_range / resolution
-            dx = pixel_x - birth
-            dist2 = dx * dx + dy * dy
-            w = tl.exp(neg_inv * dist2)
-            tl.atomic_add(
-                image_ptr + y * stride_img_y + x,
-                w.to(image_ptr.dtype.element_ty),
-                mask=mask,
-            )
 
 
 def _bounds_and_valid(

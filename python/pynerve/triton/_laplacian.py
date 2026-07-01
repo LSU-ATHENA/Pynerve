@@ -15,48 +15,47 @@ if _check_triton():
     import triton
     import triton.language as tl
     from triton.language import inline_asm_elementwise as _asm
+
+    @triton.autotune(
+        configs=[
+            triton.Config({"BLOCK_SIZE": 128}, num_warps=4),
+            triton.Config({"BLOCK_SIZE": 256}, num_warps=4),
+            triton.Config({"BLOCK_SIZE": 512}, num_warps=8),
+            triton.Config({"BLOCK_SIZE": 1024}, num_warps=8),
+        ],
+        key=["n"],
+    )
+    @triton.jit
+    def _csr_spmv_kernel(
+        row_offsets_ptr,
+        col_indices_ptr,
+        values_ptr,
+        x_ptr,
+        y_ptr,
+        n: int,
+        nnz: int,
+        BLOCK_SIZE: tl.constexpr,
+    ):
+        pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+        mask = pid < n
+        row = pid
+
+        row_start = tl.load(row_offsets_ptr + row, mask=mask, other=0)
+        row_end = tl.load(row_offsets_ptr + row + 1, mask=mask, other=0)
+
+        acc = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
+        for j in range(nnz):
+            j_idx = tl.arange(0, BLOCK_SIZE) + j
+            col = tl.load(col_indices_ptr + j_idx, mask=j_idx < nnz, other=0)
+            val = tl.load(values_ptr + j_idx, mask=j_idx < nnz, other=0.0).to(tl.float64)
+            x_val = tl.load(x_ptr + col, mask=col < n, other=0.0).to(tl.float64)
+            acc += val * x_val
+
+        tl.store(y_ptr + pid, acc.to(y_ptr.dtype.element_ty), mask=mask)
 else:
     triton = None
     tl = None
     _asm = None
-
-
-@triton.autotune(
-    configs=[
-        triton.Config({"BLOCK_SIZE": 128}, num_warps=4),
-        triton.Config({"BLOCK_SIZE": 256}, num_warps=4),
-        triton.Config({"BLOCK_SIZE": 512}, num_warps=8),
-        triton.Config({"BLOCK_SIZE": 1024}, num_warps=8),
-    ],
-    key=["n"],
-)
-@triton.jit
-def _csr_spmv_kernel(
-    row_offsets_ptr,
-    col_indices_ptr,
-    values_ptr,
-    x_ptr,
-    y_ptr,
-    n: int,
-    nnz: int,
-    BLOCK_SIZE: tl.constexpr,
-):
-    pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    mask = pid < n
-    row = pid
-
-    row_start = tl.load(row_offsets_ptr + row, mask=mask, other=0)
-    row_end = tl.load(row_offsets_ptr + row + 1, mask=mask, other=0)
-
-    acc = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
-    for j in range(nnz):
-        j_idx = tl.arange(0, BLOCK_SIZE) + j
-        col = tl.load(col_indices_ptr + j_idx, mask=j_idx < nnz, other=0)
-        val = tl.load(values_ptr + j_idx, mask=j_idx < nnz, other=0.0).to(tl.float64)
-        x_val = tl.load(x_ptr + col, mask=col < n, other=0.0).to(tl.float64)
-        acc += val * x_val
-
-    tl.store(y_ptr + pid, acc.to(y_ptr.dtype.element_ty), mask=mask)
 
 
 def csr_spmv(

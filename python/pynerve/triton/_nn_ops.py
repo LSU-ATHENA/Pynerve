@@ -16,153 +16,150 @@ if _check_triton():
     import triton
     import triton.language as tl
     from triton.language import inline_asm_elementwise as _asm
+
+    @triton.autotune(
+        configs=[
+            triton.Config({"BLOCK_SIZE": 128}, num_warps=4),
+            triton.Config({"BLOCK_SIZE": 256}, num_warps=4),
+            triton.Config({"BLOCK_SIZE": 512}, num_warps=8),
+        ],
+        key=["total"],
+    )
+    @triton.jit
+    def _diagram_conv1d_kernel(
+        features_ptr,
+        kernel_ptr,
+        bias_ptr,
+        output_ptr,
+        batch_size: int,
+        n_pairs: int,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        total: int,
+        stride_f_b: int,
+        stride_f_c: int,
+        stride_k_o: int,
+        stride_k_c: int,
+        BLOCK_SIZE: tl.constexpr,
+    ):
+        pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+        mask = pid < total
+        o = pid % out_channels
+        p = (pid // out_channels) % (n_pairs - kernel_size + 1)
+        b = pid // (out_channels * (n_pairs - kernel_size + 1))
+        pad = kernel_size // 2
+        sum_val = tl.load(bias_ptr + o).to(tl.float64)
+        for k in range(kernel_size):
+            input_idx = p + k - pad
+            valid = (input_idx >= 0) & (input_idx < n_pairs)
+            for c in range(in_channels):
+                feat_idx = b * stride_f_b + c * stride_f_c + input_idx
+                kern_idx = o * stride_k_o + c * stride_k_c + k
+                f_val = tl.load(features_ptr + feat_idx, mask=mask & valid, other=0.0).to(
+                    tl.float64
+                )
+                k_val = tl.load(kernel_ptr + kern_idx).to(tl.float64)
+                sum_val += f_val * k_val
+        tl.store(output_ptr + pid, sum_val.to(output_ptr.dtype.element_ty), mask=mask)
+
+    @triton.autotune(
+        configs=[
+            triton.Config({"BLOCK_SIZE": 128}, num_warps=4),
+            triton.Config({"BLOCK_SIZE": 256}, num_warps=4),
+            triton.Config({"BLOCK_SIZE": 512}, num_warps=8),
+        ],
+        key=["total"],
+    )
+    @triton.jit
+    def _diagram_conv1d_relu_kernel(
+        features_ptr,
+        kernel_ptr,
+        bias_ptr,
+        output_ptr,
+        batch_size: int,
+        n_pairs: int,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        total: int,
+        stride_f_b: int,
+        stride_f_c: int,
+        stride_k_o: int,
+        stride_k_c: int,
+        BLOCK_SIZE: tl.constexpr,
+    ):
+        pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+        mask = pid < total
+        o = pid % out_channels
+        p = (pid // out_channels) % (n_pairs - kernel_size + 1)
+        b = pid // (out_channels * (n_pairs - kernel_size + 1))
+        pad = kernel_size // 2
+        sum_val = tl.load(bias_ptr + o).to(tl.float64)
+        for k in range(kernel_size):
+            input_idx = p + k - pad
+            valid = (input_idx >= 0) & (input_idx < n_pairs)
+            for c in range(in_channels):
+                feat_idx = b * stride_f_b + c * stride_f_c + input_idx
+                kern_idx = o * stride_k_o + c * stride_k_c + k
+                f_val = tl.load(features_ptr + feat_idx, mask=mask & valid, other=0.0).to(
+                    tl.float64
+                )
+                k_val = tl.load(kernel_ptr + kern_idx).to(tl.float64)
+                sum_val += f_val * k_val
+        out = tl.maximum(sum_val, 0.0)
+        tl.store(output_ptr + pid, out.to(output_ptr.dtype.element_ty), mask=mask)
+
+    @triton.autotune(
+        configs=[
+            triton.Config({"BLOCK_SIZE": 128}, num_warps=4),
+            triton.Config({"BLOCK_SIZE": 256}, num_warps=4),
+            triton.Config({"BLOCK_SIZE": 512}, num_warps=8),
+        ],
+        key=["total"],
+    )
+    @triton.jit
+    def _diagram_conv1d_sigmoid_kernel(
+        features_ptr,
+        kernel_ptr,
+        bias_ptr,
+        output_ptr,
+        batch_size: int,
+        n_pairs: int,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: int,
+        total: int,
+        stride_f_b: int,
+        stride_f_c: int,
+        stride_k_o: int,
+        stride_k_c: int,
+        BLOCK_SIZE: tl.constexpr,
+    ):
+        pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+        mask = pid < total
+        o = pid % out_channels
+        p = (pid // out_channels) % (n_pairs - kernel_size + 1)
+        b = pid // (out_channels * (n_pairs - kernel_size + 1))
+        pad = kernel_size // 2
+        sum_val = tl.load(bias_ptr + o).to(tl.float64)
+        for k in range(kernel_size):
+            input_idx = p + k - pad
+            valid = (input_idx >= 0) & (input_idx < n_pairs)
+            for c in range(in_channels):
+                feat_idx = b * stride_f_b + c * stride_f_c + input_idx
+                kern_idx = o * stride_k_o + c * stride_k_c + k
+                f_val = tl.load(features_ptr + feat_idx, mask=mask & valid, other=0.0).to(
+                    tl.float64
+                )
+                k_val = tl.load(kernel_ptr + kern_idx).to(tl.float64)
+                sum_val += f_val * k_val
+        out = 1.0 / (1.0 + tl.exp(-sum_val))
+        tl.store(output_ptr + pid, out.to(output_ptr.dtype.element_ty), mask=mask)
 else:
     triton = None
     tl = None
     _asm = None
-
-
-@triton.autotune(
-    configs=[
-        triton.Config({"BLOCK_SIZE": 128}, num_warps=4),
-        triton.Config({"BLOCK_SIZE": 256}, num_warps=4),
-        triton.Config({"BLOCK_SIZE": 512}, num_warps=8),
-    ],
-    key=["total"],
-)
-@triton.jit
-def _diagram_conv1d_kernel(
-    features_ptr,
-    kernel_ptr,
-    bias_ptr,
-    output_ptr,
-    batch_size: int,
-    n_pairs: int,
-    in_channels: int,
-    out_channels: int,
-    kernel_size: int,
-    total: int,
-    stride_f_b: int,
-    stride_f_c: int,
-    stride_k_o: int,
-    stride_k_c: int,
-    BLOCK_SIZE: tl.constexpr,
-):
-    pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    mask = pid < total
-    o = pid % out_channels
-    p = (pid // out_channels) % (n_pairs - kernel_size + 1)
-    b = pid // (out_channels * (n_pairs - kernel_size + 1))
-    pad = kernel_size // 2
-    sum_val = tl.load(bias_ptr + o).to(tl.float64)
-    for k in range(kernel_size):
-        input_idx = p + k - pad
-        valid = (input_idx >= 0) & (input_idx < n_pairs)
-        for c in range(in_channels):
-            feat_idx = b * stride_f_b + c * stride_f_c + input_idx
-            kern_idx = o * stride_k_o + c * stride_k_c + k
-            f_val = tl.load(features_ptr + feat_idx, mask=mask & valid, other=0.0).to(
-                tl.float64
-            )
-            k_val = tl.load(kernel_ptr + kern_idx).to(tl.float64)
-            sum_val += f_val * k_val
-    tl.store(output_ptr + pid, sum_val.to(output_ptr.dtype.element_ty), mask=mask)
-
-
-@triton.autotune(
-    configs=[
-        triton.Config({"BLOCK_SIZE": 128}, num_warps=4),
-        triton.Config({"BLOCK_SIZE": 256}, num_warps=4),
-        triton.Config({"BLOCK_SIZE": 512}, num_warps=8),
-    ],
-    key=["total"],
-)
-@triton.jit
-def _diagram_conv1d_relu_kernel(
-    features_ptr,
-    kernel_ptr,
-    bias_ptr,
-    output_ptr,
-    batch_size: int,
-    n_pairs: int,
-    in_channels: int,
-    out_channels: int,
-    kernel_size: int,
-    total: int,
-    stride_f_b: int,
-    stride_f_c: int,
-    stride_k_o: int,
-    stride_k_c: int,
-    BLOCK_SIZE: tl.constexpr,
-):
-    pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    mask = pid < total
-    o = pid % out_channels
-    p = (pid // out_channels) % (n_pairs - kernel_size + 1)
-    b = pid // (out_channels * (n_pairs - kernel_size + 1))
-    pad = kernel_size // 2
-    sum_val = tl.load(bias_ptr + o).to(tl.float64)
-    for k in range(kernel_size):
-        input_idx = p + k - pad
-        valid = (input_idx >= 0) & (input_idx < n_pairs)
-        for c in range(in_channels):
-            feat_idx = b * stride_f_b + c * stride_f_c + input_idx
-            kern_idx = o * stride_k_o + c * stride_k_c + k
-            f_val = tl.load(features_ptr + feat_idx, mask=mask & valid, other=0.0).to(
-                tl.float64
-            )
-            k_val = tl.load(kernel_ptr + kern_idx).to(tl.float64)
-            sum_val += f_val * k_val
-    out = tl.maximum(sum_val, 0.0)
-    tl.store(output_ptr + pid, out.to(output_ptr.dtype.element_ty), mask=mask)
-
-
-@triton.autotune(
-    configs=[
-        triton.Config({"BLOCK_SIZE": 128}, num_warps=4),
-        triton.Config({"BLOCK_SIZE": 256}, num_warps=4),
-        triton.Config({"BLOCK_SIZE": 512}, num_warps=8),
-    ],
-    key=["total"],
-)
-@triton.jit
-def _diagram_conv1d_sigmoid_kernel(
-    features_ptr,
-    kernel_ptr,
-    bias_ptr,
-    output_ptr,
-    batch_size: int,
-    n_pairs: int,
-    in_channels: int,
-    out_channels: int,
-    kernel_size: int,
-    total: int,
-    stride_f_b: int,
-    stride_f_c: int,
-    stride_k_o: int,
-    stride_k_c: int,
-    BLOCK_SIZE: tl.constexpr,
-):
-    pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    mask = pid < total
-    o = pid % out_channels
-    p = (pid // out_channels) % (n_pairs - kernel_size + 1)
-    b = pid // (out_channels * (n_pairs - kernel_size + 1))
-    pad = kernel_size // 2
-    sum_val = tl.load(bias_ptr + o).to(tl.float64)
-    for k in range(kernel_size):
-        input_idx = p + k - pad
-        valid = (input_idx >= 0) & (input_idx < n_pairs)
-        for c in range(in_channels):
-            feat_idx = b * stride_f_b + c * stride_f_c + input_idx
-            kern_idx = o * stride_k_o + c * stride_k_c + k
-            f_val = tl.load(features_ptr + feat_idx, mask=mask & valid, other=0.0).to(
-                tl.float64
-            )
-            k_val = tl.load(kernel_ptr + kern_idx).to(tl.float64)
-            sum_val += f_val * k_val
-    out = 1.0 / (1.0 + tl.exp(-sum_val))
-    tl.store(output_ptr + pid, out.to(output_ptr.dtype.element_ty), mask=mask)
 
 
 def _diagram_conv1d_cpu(

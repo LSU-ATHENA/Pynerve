@@ -57,6 +57,7 @@ __device__ __forceinline__ void packed_column_xor(uint64_t *dest, const uint64_t
         {
             ptx::atom_xor_global_u64(&dest[w], src[w]);
         }
+        __syncwarp();
         break;
     case XorStrategy::DirectXor:
     default:

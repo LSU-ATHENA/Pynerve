@@ -118,8 +118,14 @@ bool check_max_dim1_has_h0_and_h1()
     return true;
 }
 
-bool check_max_dim2_has_all_dimensions()
+bool check_max_dim2_produces_valid_output()
 {
+    // Tetrahedron: all faces and the 3-simplex appear at r = sqrt(2).
+    // With max_dim=2 the 3-simplex is still present in the VR complex
+    // (max_dim controls persistence computation, not simplex inclusion),
+    // so the 2-cycle is killed immediately -- zero persistence, filtered.
+    // This test verifies that the algorithm does not crash and
+    // produces at least H0 (the only guaranteed output at max_dim=2).
     const std::vector<double> pts = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
     VRConfig cfg;
     cfg.max_radius = 2.0;
@@ -129,26 +135,15 @@ bool check_max_dim2_has_all_dimensions()
     const auto pairs = nerve::persistence::computeVrPersistenceFast(view_of(pts), 3, cfg);
 
     bool has_h0 = false;
-    bool has_h1 = false;
-    bool has_h2 = false;
     for (const auto &p : pairs)
     {
         if (p.dimension == 0)
             has_h0 = true;
-        if (p.dimension == 1)
-            has_h1 = true;
-        if (p.dimension == 2)
-            has_h2 = true;
     }
 
     if (!has_h0)
     {
         std::cerr << "max_dim=2: missing H0\n";
-        return false;
-    }
-    if (!has_h2)
-    {
-        std::cerr << "max_dim=2: missing H2 (tetrahedron has H2)\n";
         return false;
     }
 
@@ -269,9 +264,9 @@ int main()
         std::cerr << "FAIL: max_dim=1 has H0 and H1\n";
         return 1;
     }
-    if (!check_max_dim2_has_all_dimensions())
+    if (!check_max_dim2_produces_valid_output())
     {
-        std::cerr << "FAIL: max_dim=2 has all dimensions\n";
+        std::cerr << "FAIL: max_dim=2 produces valid output\n";
         return 1;
     }
     if (!check_lower_dim_is_subset_of_higher_dim())

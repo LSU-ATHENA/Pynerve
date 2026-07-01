@@ -19,78 +19,190 @@ if _check_triton():
     import triton
     import triton.language as tl
     from triton.language import inline_asm_elementwise as _asm
+
+    @triton.jit
+    def _density_kernel(
+        points_ptr,
+        densities_ptr,
+        n_points: int,
+        dim: int,
+        k_neighbors: int,
+        stride_m: int,
+        stride_d: int,
+        BLOCK_SIZE: tl.constexpr,
+    ):
+        pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+        mask = pid < n_points
+        total_dist = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
+        count = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
+        for j in range(n_points):
+            same = (pid == j) & mask
+            dist_sq = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
+            for d in range(dim):
+                a = tl.load(
+                    points_ptr + pid * stride_m + d * stride_d, mask=mask, other=0.0
+                ).to(tl.float64)
+                b = tl.load(points_ptr + j * stride_m + d * stride_d, other=0.0).to(
+                    tl.float64
+                )
+                diff = a - b
+                dist_sq += diff * diff
+            dist = tl.sqrt(dist_sq)
+            valid = tl.where(same, 0.0, 1.0)
+            total_dist += dist * valid
+            count += tl.cast(valid, tl.int32)
+        density = tl.where(
+            count > 0,
+            count.to(tl.float64) / (total_dist + 1e-9),
+            tl.zeros((BLOCK_SIZE,), dtype=tl.float64),
+        )
+        tl.store(densities_ptr + pid, density.to(densities_ptr.dtype.element_ty), mask=mask)
+
+    @triton.jit
+    def _eccentricity_kernel(
+        points_ptr,
+        ecc_ptr,
+        n_points: int,
+        dim: int,
+        stride_m: int,
+        stride_d: int,
+        BLOCK_SIZE: tl.constexpr,
+    ):
+        pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+        mask = pid < n_points
+        max_dist = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
+        for j in range(n_points):
+            same = (pid == j) & mask
+            dist_sq = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
+            for d in range(dim):
+                a = tl.load(
+                    points_ptr + pid * stride_m + d * stride_d, mask=mask, other=0.0
+                ).to(tl.float64)
+                b = tl.load(points_ptr + j * stride_m + d * stride_d, other=0.0).to(
+                    tl.float64
+                )
+                diff = a - b
+                dist_sq += diff * diff
+            max_dist = tl.where(~same & (dist_sq > max_dist), dist_sq, max_dist)
+        tl.store(ecc_ptr + pid, tl.sqrt(max_dist).to(ecc_ptr.dtype.element_ty), mask=mask)
+
+    @triton.autotune(
+        configs=[
+            triton.Config({"BLOCK_SIZE": 128}, num_warps=4),
+            triton.Config({"BLOCK_SIZE": 256}, num_warps=4),
+            triton.Config({"BLOCK_SIZE": 512}, num_warps=8),
+        ],
+        key=["n_points", "dim"],
+    )
+    @triton.jit
+    def _kmeans_assign_kernel(
+        points_ptr,
+        centroids_ptr,
+        labels_ptr,
+        n_points: int,
+        dim: int,
+        k: int,
+        stride_m: int,
+        stride_d: int,
+        BLOCK_SIZE: tl.constexpr,
+    ):
+        pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+        mask = pid < n_points
+        best_cluster = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
+        best_dist = tl.full((BLOCK_SIZE,), float("inf"), dtype=tl.float64)
+        for c in range(k):
+            dist_sq = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
+            for d in range(dim):
+                p_val = tl.load(
+                    points_ptr + pid * stride_m + d * stride_d, mask=mask, other=0.0
+                ).to(tl.float64)
+                c_val = tl.load(centroids_ptr + c * dim + d).to(tl.float64)
+                diff = p_val - c_val
+                dist_sq += diff * diff
+            better = dist_sq < best_dist
+            best_dist = tl.where(better, dist_sq, best_dist)
+            best_cluster = tl.where(
+                better, tl.full((BLOCK_SIZE,), c, dtype=tl.int32), best_cluster
+            )
+        tl.store(labels_ptr + pid, best_cluster, mask=mask)
+
+    @triton.jit
+    def _build_cover_kernel(
+        filter_ptr,
+        cover_sizes_ptr,
+        cover_indices_ptr,
+        n_points: int,
+        n_filter_dims: int,
+        resolution: int,
+        overlap: float,
+        max_cover_size: int,
+        stride_f: int,
+        BLOCK_SIZE: tl.constexpr,
+    ):
+        pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+        mask = pid < n_points
+        interval = (1.0 + 2.0 * overlap) / resolution
+        write_pos = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
+        for s in range(resolution):
+            for d in range(n_filter_dims):
+                f_val = tl.load(filter_ptr + pid * stride_f + d, mask=mask, other=0.0)
+                bucket = s
+                center = (bucket + 0.5) * interval - overlap
+                half_width = interval / 2.0
+                in_range = (f_val >= center - half_width) & (f_val <= center + half_width)
+                out_idx = pid * max_cover_size + write_pos
+                tl.store(
+                    cover_indices_ptr + out_idx,
+                    tl.full((BLOCK_SIZE,), s, dtype=tl.int32),
+                    mask=mask & in_range & (write_pos < max_cover_size),
+                )
+                write_pos = tl.where(in_range, write_pos + 1, write_pos)
+        tl.store(cover_sizes_ptr + pid, write_pos, mask=mask)
+
+    @triton.jit
+    def _nerve_edges_kernel(
+        node_cover_sets_ptr,
+        node_cover_starts_ptr,
+        node_cover_sizes_ptr,
+        edge_src_ptr,
+        edge_dst_ptr,
+        edge_count_ptr,
+        n_nodes: int,
+        max_edges: int,
+        BLOCK_SIZE: tl.constexpr,
+    ):
+        pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+        n_pairs = n_nodes * (n_nodes - 1) // 2
+        mask = pid < n_pairs
+        i = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
+        j = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
+        for _p in range(n_pairs):
+            found = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
+            size_i = tl.load(node_cover_sizes_ptr + i, mask=mask, other=0)
+            size_j = tl.load(node_cover_sizes_ptr + j, mask=mask, other=0)
+            start_i = tl.load(node_cover_starts_ptr + i, mask=mask, other=0)
+            start_j = tl.load(node_cover_starts_ptr + j, mask=mask, other=0)
+            for si in range(128):
+                for sj in range(128):
+                    set_i = tl.load(
+                        node_cover_sets_ptr + start_i + si,
+                        mask=mask & (si < size_i),
+                        other=-1,
+                    )
+                    set_j = tl.load(
+                        node_cover_sets_ptr + start_j + sj,
+                        mask=mask & (sj < size_j),
+                        other=-2,
+                    )
+                    overlap = (set_i == set_j) & (set_i >= 0)
+                    found = tl.where(overlap, 1, found)
+        pos = tl.atomic_add(edge_count_ptr, found)
+        tl.store(edge_src_ptr + pos, i, mask=mask & (found > 0) & (pos < max_edges))
+        tl.store(edge_dst_ptr + pos, j, mask=mask & (found > 0) & (pos < max_edges))
 else:
     triton = None
     tl = None
     _asm = None
-
-
-@triton.jit
-def _density_kernel(
-    points_ptr,
-    densities_ptr,
-    n_points: int,
-    dim: int,
-    k_neighbors: int,
-    stride_m: int,
-    stride_d: int,
-    BLOCK_SIZE: tl.constexpr,
-):
-    pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    mask = pid < n_points
-    total_dist = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
-    count = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
-    for j in range(n_points):
-        same = (pid == j) & mask
-        dist_sq = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
-        for d in range(dim):
-            a = tl.load(
-                points_ptr + pid * stride_m + d * stride_d, mask=mask, other=0.0
-            ).to(tl.float64)
-            b = tl.load(points_ptr + j * stride_m + d * stride_d, other=0.0).to(
-                tl.float64
-            )
-            diff = a - b
-            dist_sq += diff * diff
-        dist = tl.sqrt(dist_sq)
-        valid = tl.where(same, 0.0, 1.0)
-        total_dist += dist * valid
-        count += tl.cast(valid, tl.int32)
-    density = tl.where(
-        count > 0,
-        count.to(tl.float64) / (total_dist + 1e-9),
-        tl.zeros((BLOCK_SIZE,), dtype=tl.float64),
-    )
-    tl.store(densities_ptr + pid, density.to(densities_ptr.dtype.element_ty), mask=mask)
-
-
-@triton.jit
-def _eccentricity_kernel(
-    points_ptr,
-    ecc_ptr,
-    n_points: int,
-    dim: int,
-    stride_m: int,
-    stride_d: int,
-    BLOCK_SIZE: tl.constexpr,
-):
-    pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    mask = pid < n_points
-    max_dist = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
-    for j in range(n_points):
-        same = (pid == j) & mask
-        dist_sq = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
-        for d in range(dim):
-            a = tl.load(
-                points_ptr + pid * stride_m + d * stride_d, mask=mask, other=0.0
-            ).to(tl.float64)
-            b = tl.load(points_ptr + j * stride_m + d * stride_d, other=0.0).to(
-                tl.float64
-            )
-            diff = a - b
-            dist_sq += diff * diff
-        max_dist = tl.where(~same & (dist_sq > max_dist), dist_sq, max_dist)
-    tl.store(ecc_ptr + pid, tl.sqrt(max_dist).to(ecc_ptr.dtype.element_ty), mask=mask)
 
 
 def density_filter(points: torch.Tensor, k_neighbors: int = 10) -> torch.Tensor:
@@ -168,47 +280,6 @@ def kmeans_plusplus_init(
     return centroids
 
 
-@triton.autotune(
-    configs=[
-        triton.Config({"BLOCK_SIZE": 128}, num_warps=4),
-        triton.Config({"BLOCK_SIZE": 256}, num_warps=4),
-        triton.Config({"BLOCK_SIZE": 512}, num_warps=8),
-    ],
-    key=["n_points", "dim"],
-)
-@triton.jit
-def _kmeans_assign_kernel(
-    points_ptr,
-    centroids_ptr,
-    labels_ptr,
-    n_points: int,
-    dim: int,
-    k: int,
-    stride_m: int,
-    stride_d: int,
-    BLOCK_SIZE: tl.constexpr,
-):
-    pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    mask = pid < n_points
-    best_cluster = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
-    best_dist = tl.full((BLOCK_SIZE,), float("inf"), dtype=tl.float64)
-    for c in range(k):
-        dist_sq = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
-        for d in range(dim):
-            p_val = tl.load(
-                points_ptr + pid * stride_m + d * stride_d, mask=mask, other=0.0
-            ).to(tl.float64)
-            c_val = tl.load(centroids_ptr + c * dim + d).to(tl.float64)
-            diff = p_val - c_val
-            dist_sq += diff * diff
-        better = dist_sq < best_dist
-        best_dist = tl.where(better, dist_sq, best_dist)
-        best_cluster = tl.where(
-            better, tl.full((BLOCK_SIZE,), c, dtype=tl.int32), best_cluster
-        )
-    tl.store(labels_ptr + pid, best_cluster, mask=mask)
-
-
 def kmeans_assign(points: torch.Tensor, centroids: torch.Tensor) -> torch.Tensor:
     """Assign each point to its nearest centroid."""
     n_points, dim = points.shape
@@ -242,40 +313,6 @@ def kmeans_cluster(
                 new_centroids[c] = points[mask_c].mean(dim=0)
         centroids = new_centroids
     return kmeans_assign(points, centroids)
-
-
-@triton.jit
-def _build_cover_kernel(
-    filter_ptr,
-    cover_sizes_ptr,
-    cover_indices_ptr,
-    n_points: int,
-    n_filter_dims: int,
-    resolution: int,
-    overlap: float,
-    max_cover_size: int,
-    stride_f: int,
-    BLOCK_SIZE: tl.constexpr,
-):
-    pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    mask = pid < n_points
-    interval = (1.0 + 2.0 * overlap) / resolution
-    write_pos = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
-    for s in range(resolution):
-        for d in range(n_filter_dims):
-            f_val = tl.load(filter_ptr + pid * stride_f + d, mask=mask, other=0.0)
-            bucket = s
-            center = (bucket + 0.5) * interval - overlap
-            half_width = interval / 2.0
-            in_range = (f_val >= center - half_width) & (f_val <= center + half_width)
-            out_idx = pid * max_cover_size + write_pos
-            tl.store(
-                cover_indices_ptr + out_idx,
-                tl.full((BLOCK_SIZE,), s, dtype=tl.int32),
-                mask=mask & in_range & (write_pos < max_cover_size),
-            )
-            write_pos = tl.where(in_range, write_pos + 1, write_pos)
-    tl.store(cover_sizes_ptr + pid, write_pos, mask=mask)
 
 
 def build_cover(
@@ -328,48 +365,6 @@ def build_cover(
                 write_pos += 1
         cover_sizes[i] = write_pos
     return cover_sizes, cover_indices
-
-
-@triton.jit
-def _nerve_edges_kernel(
-    node_cover_sets_ptr,
-    node_cover_starts_ptr,
-    node_cover_sizes_ptr,
-    edge_src_ptr,
-    edge_dst_ptr,
-    edge_count_ptr,
-    n_nodes: int,
-    max_edges: int,
-    BLOCK_SIZE: tl.constexpr,
-):
-    pid = tl.program_id(0) * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
-    n_pairs = n_nodes * (n_nodes - 1) // 2
-    mask = pid < n_pairs
-    i = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
-    j = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
-    for _p in range(n_pairs):
-        found = tl.zeros((BLOCK_SIZE,), dtype=tl.int32)
-        size_i = tl.load(node_cover_sizes_ptr + i, mask=mask, other=0)
-        size_j = tl.load(node_cover_sizes_ptr + j, mask=mask, other=0)
-        start_i = tl.load(node_cover_starts_ptr + i, mask=mask, other=0)
-        start_j = tl.load(node_cover_starts_ptr + j, mask=mask, other=0)
-        for si in range(128):
-            for sj in range(128):
-                set_i = tl.load(
-                    node_cover_sets_ptr + start_i + si,
-                    mask=mask & (si < size_i),
-                    other=-1,
-                )
-                set_j = tl.load(
-                    node_cover_sets_ptr + start_j + sj,
-                    mask=mask & (sj < size_j),
-                    other=-2,
-                )
-                overlap = (set_i == set_j) & (set_i >= 0)
-                found = tl.where(overlap, 1, found)
-    pos = tl.atomic_add(edge_count_ptr, found)
-    tl.store(edge_src_ptr + pos, i, mask=mask & (found > 0) & (pos < max_edges))
-    tl.store(edge_dst_ptr + pos, j, mask=mask & (found > 0) & (pos < max_edges))
 
 
 def compute_nerve_edges(
