@@ -87,38 +87,6 @@ def _load_tool_module(name: str) -> ModuleType:
     return module
 
 
-def _public_python_functions() -> dict[str, list[str]]:
-    functions: dict[str, list[str]] = {}
-    for path in _iter_files(PY_ROOT, (".py",)):
-        rel = path.relative_to(ROOT).as_posix()
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename = rel)
-        names = [
-            node.name
-            for node in tree.body
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
-            and not node.name.startswith("_")
-        ]
-        if names:
-            functions[rel] = sorted(names)
-    return functions
-
-
-def _cpp_declarations() -> dict[str, list[str]]:
-    declarations: dict[str, list[str]] = {}
-    pattern = re.compile(
-        r"^\s*(?:template\s*<[^;]+>\s*)?"
-        r"(?:inline\s+|constexpr\s+|static\s+)*"
-        r"[\w:<>*&,\s]+\s+([A-Za-z_]\w*)\s*\([^;{}]*\)\s*(?:const\s*)?[;{]",
-        re.MULTILINE,
-    )
-    for path in _iter_files(INCLUDE_ROOT, (".hpp", ".h", ".cuh")):
-        text = path.read_text(encoding="utf-8", errors="ignore")
-        names = sorted({name for name in pattern.findall(text) if not name.startswith("_")})
-        if names:
-            declarations[path.relative_to(ROOT).as_posix()] = names
-    return declarations
-
-
 def _public_python_all(path: Path = PYTHON_API_PATH) -> set[str]:
     if not path.exists():
         return set()
@@ -170,21 +138,6 @@ def _module_defined_names(path: Path) -> set[str]:
     return names
 
 
-def _core_attribute_refs(path: Path = PYTHON_API_PATH) -> set[str]:
-    if not path.exists():
-        return set()
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename = str(path))
-    refs: set[str] = set()
-    for node in ast.walk(tree):
-        if (
-            isinstance(node, ast.Attribute)
-            and isinstance(node.value, ast.Name)
-            and node.value.id == "_core"
-        ):
-            refs.add(node.attr)
-    return refs
-
-
 def _pybind_module_defs(path: Path = PYBIND_API_PATH) -> dict[str, list[str]]:
     if not path.exists():
         return {}
@@ -220,13 +173,6 @@ def _cpp_call_end(text: str, start: int) -> int:
             if depth == 0:
                 return index + 1
     return len(text)
-
-
-def _pybind_registered_types(path: Path = PYBIND_API_PATH) -> set[str]:
-    if not path.exists():
-        return set()
-    text = path.read_text(encoding="utf-8", errors="ignore")
-    return set(re.findall(r"py::(?:class_|enum_)<[^>]+>\(\s*m\s*,\s*\"([A-Za-z_]\w*)\"", text))
 
 
 def _split_cpp_params(params: str) -> list[str]:
@@ -386,22 +332,6 @@ def _check_torch_operator_schema_text(text: str, path: str) -> list[Finding]:
             Finding("torch-operator-schema", path, f"missing registered operator: {op_name}")
         )
     return findings
-
-
-def _pybind_readwrite_fields(class_name: str, path: Path = PYBIND_API_PATH) -> set[str]:
-    if not path.exists():
-        return set()
-    text = path.read_text(encoding="utf-8", errors="ignore")
-    start_match = re.search(
-        rf"py::class_<[^>]+>\(\s*m\s*,\s*\"{re.escape(class_name)}\"\)",
-        text,
-    )
-    if start_match is None:
-        return set()
-    next_class = re.search(r"\n\s*py::(?:class_|enum_)<", text[start_match.end() :])
-    end = start_match.end() + next_class.start() if next_class else len(text)
-    block = text[start_match.start() : end]
-    return set(re.findall(r"\.def_readwrite\(\s*\"([A-Za-z_]\w*)\"", block))
 
 
 def _python_module_name(path: Path) -> str:

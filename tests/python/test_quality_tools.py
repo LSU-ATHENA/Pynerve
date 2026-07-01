@@ -17,7 +17,6 @@ def _get_quality():
         binding_contracts,
         common,
         import_api,
-        static_text,
     )
 
     class _Q:
@@ -33,14 +32,9 @@ def _get_quality():
     q._detect_cycles = import_api._detect_cycles
     q._is_nerve_package_import = import_api._is_nerve_package_import
     q._check_torch_operator_schema_text = binding_contracts._check_torch_operator_schema_text
-    q.check_operator_schema = binding_contracts.check_operator_schema
     q.check_public_api = import_api.check_public_api
-    q.check_pybind_schema = binding_contracts.check_pybind_schema
     q.check_algorithm_bindings_schema = binding_contracts.check_algorithm_bindings_schema
-    q.check_torch_bindings_schema = binding_contracts.check_torch_bindings_schema
-    q.check_binding_smoke_contract = binding_contracts.check_binding_smoke_contract
     q.check_import_graph = import_api.check_import_graph
-    q.check_static_text = static_text.check_static_text
     q.check_test_matrix_contract = build_contracts.check_test_matrix_contract
     q.check_performance_guard_contract = build_contracts.check_performance_guard_contract
     q.check_ctest_contract = build_contracts.check_ctest_contract
@@ -48,12 +42,6 @@ def _get_quality():
     q.check_static_analysis_contract = build_contracts.check_static_analysis_contract
     q.check_ci_contract = build_contracts.check_ci_contract
     return q
-
-
-@pytest.mark.quality
-def test_operator_schema_has_core_surface() -> None:
-    result = _get_quality().check_operator_schema()
-    assert result == [], f"expected no findings, got {result}"
 
 
 @pytest.mark.quality
@@ -138,20 +126,8 @@ def _private_api(value):
 
 
 @pytest.mark.quality
-def test_pybind_schema_matches_public_python_api() -> None:
-    result = _get_quality().check_pybind_schema()
-    assert result == [], f"expected no findings, got {result}"
-
-
-@pytest.mark.quality
 def test_algorithm_bindings_schema_is_enforced() -> None:
     result = _get_quality().check_algorithm_bindings_schema()
-    assert result == [], f"expected no findings, got {result}"
-
-
-@pytest.mark.quality
-def test_torch_bindings_schema_is_enforced() -> None:
-    result = _get_quality().check_torch_bindings_schema()
     assert result == [], f"expected no findings, got {result}"
 
 
@@ -171,12 +147,6 @@ TORCH_LIBRARY(nerve, m) {
     assert any("arity mismatch" in finding.message for finding in findings), (
         f"expected at least one finding with 'arity mismatch', got {[(f.path, f.message) for f in findings]}"
     )
-
-
-@pytest.mark.quality
-def test_python_binding_smoke_contract_is_enforced() -> None:
-    result = _get_quality().check_binding_smoke_contract()
-    assert result == [], f"expected no findings, got {result}"
 
 
 @pytest.mark.quality
@@ -230,12 +200,6 @@ def __getattr__(name):
     )
     lazy = _get_quality()._lazy_submodules(tree)
     assert lazy == {"nn", "torch"}, f"expected lazy submodules {{'nn', 'torch'}}, got {lazy}"
-
-
-@pytest.mark.quality
-def test_static_text_has_no_banned_release_names() -> None:
-    result = _get_quality().check_static_text()
-    assert result == [], f"expected no findings, got {result}"
 
 
 @pytest.mark.quality

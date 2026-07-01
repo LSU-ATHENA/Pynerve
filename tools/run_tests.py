@@ -38,7 +38,7 @@ def _labels_for_paths(paths: list[str]) -> list[str]:
             labels.add("gradient")
         if lower_path.startswith("python/"):
             labels.add("python")
-        if lower_path.startswith(("src/", "tests/", "tools/", "scripts/", ".github/")):
+        if lower_path.startswith(("src/", "tests/", "tools/", ".github/")):
             labels.add("generated")
     return sorted(labels or {"generated"})
 
