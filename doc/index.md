@@ -13,6 +13,9 @@ result = pynerve.compute_persistence(points, max_dim=2, max_radius=1.0)
 print(result.pairs)
 ```
 
+!!! note "Version 1.0.0 — Windows native support"
+    Windows native support via the `nerve::sys` platform abstraction layer (MSVC, Clang-cl). Full platform support: Linux, macOS, and Windows.
+
 ## When to use Pynerve
 
 Pynerve is the right choice when you need to:
@@ -75,6 +78,16 @@ See the [Quickstart guide](quickstart.md) and [API Reference](reference/api_pyth
 | **Determinism** | Bitwise reproducibility by default through seeded PRNG and deterministic seed propagation |
 | **PyTorch** | Native `pynerve.torch` sub-package with autograd, batched `PersistenceDiagram`, Wasserstein and bottleneck distances, Mapper |
 | **Differentiable** | Analytical subgradients through birth and death indices, learned filtration layers, topology-aware neural network layers |
+
+## Platform support
+
+| Platform | Status |
+| -------- | ------ |
+| Linux    | Full support (primary target) |
+| macOS    | Full support |
+| Windows  | Native support via `nerve::sys` abstraction layer (MSVC, Clang-cl) |
+
+GPU acceleration requires an NVIDIA GPU with compute capability 7.5 or higher.
 
 ## Module overview
 
