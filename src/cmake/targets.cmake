@@ -17,6 +17,10 @@ function(nerve_apply_project_warnings target)
                 "$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wall,-Wextra>"
             )
         endif()
+    elseif(MSVC)
+        target_compile_options(${target} PRIVATE
+            "$<$<COMPILE_LANGUAGE:CXX>:/W4>"
+        )
     endif()
 endfunction()
 
@@ -38,9 +42,7 @@ if(NERVE_HAS_OPENMP)
     target_link_libraries(nerve_core PRIVATE OpenMP::OpenMP_CXX)
     target_compile_definitions(nerve_core PRIVATE NERVE_USE_OPENMP=1)
 endif()
-if(NERVE_ENABLE_AVX512_CODEGEN)
-    target_compile_definitions(nerve_core PRIVATE NERVE_USE_SIMD=1 NERVE_HAS_AVX512=1)
-endif()
+nerve_record_simd_capabilities()
 if(NERVE_HAS_TORCH AND TORCH_CXX_FLAGS)
     separate_arguments(NERVE_TORCH_CXX_FLAGS NATIVE_COMMAND "${TORCH_CXX_FLAGS}")
     target_compile_options(nerve_core PUBLIC ${NERVE_TORCH_CXX_FLAGS})
@@ -77,9 +79,15 @@ if(NERVE_HAS_NUMA)
 endif()
 
 if(NERVE_ENABLE_AVX512_CODEGEN)
-    target_compile_options(nerve_core PRIVATE
-        "$<$<COMPILE_LANGUAGE:CXX>:-mavx512f;-mavx512dq;-mavx512bw;-mfma>"
-    )
+    if(MSVC)
+        target_compile_options(nerve_core PRIVATE
+            "$<$<COMPILE_LANGUAGE:CXX>:/arch:AVX512>"
+        )
+    else()
+        target_compile_options(nerve_core PRIVATE
+            "$<$<COMPILE_LANGUAGE:CXX>:-mavx512f;-mavx512dq;-mavx512bw;-mfma>"
+        )
+    endif()
 endif()
 
 nerve_apply_project_warnings(nerve_core)
@@ -96,6 +104,15 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
             "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-fno-associative-math;-fno-unsafe-math-optimizations;-ffp-contract=off>"
         )
     endif()
+elseif(MSVC)
+    target_compile_options(nerve_core PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/std:c++20;/bigobj;/utf-8>")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        target_compile_options(nerve_core PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/O2;/DNDEBUG>")
+    elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_compile_options(nerve_core PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/Od;/D_DEBUG>")
+    endif()
+    # MSVC: /fp:precise is the default (strict IEEE 754), matching -fno-fast-math
+    target_compile_options(nerve_core PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/fp:precise>")
 endif()
 
 target_include_directories(nerve_core
