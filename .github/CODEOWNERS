@@ -1,0 +1,48 @@
+# CODEOWNERS - Pynerve
+#
+# Each line is a file pattern followed by one or more owners.
+# Order matters: the last matching pattern takes precedence.
+# More details: https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for the entire repository
+* @spinxog
+
+# Build system
+/CMakeLists.txt @spinxog
+/src/CMakeLists.txt @spinxog
+/python/CMakeLists.txt @spinxog
+/cmake/ @spinxog
+
+# Core C++ library
+/src/include/ @spinxog
+/src/algebra/ @spinxog
+/src/persistence/ @spinxog
+/src/algorithms/ @spinxog
+/src/simd/ @spinxog
+/src/formats/ @spinxog
+
+# GPU / CUDA
+/src/cuda/ @spinxog
+/src/gpu/ @spinxog
+
+# Python bindings
+/python/ @spinxog
+
+# Tests
+/tests/ @spinxog
+
+# Documentation
+/doc/ @spinxog
+/README.md @spinxog
+/mkdocs.yml @spinxog
+
+# CI/CD
+/.github/ @spinxog
+
+# Tools
+/tools/ @spinxog
+
+# Configuration files
+/pyproject.toml @spinxog
+/python/pyproject.toml @spinxog
+/.bumpversion.toml @spinxog
