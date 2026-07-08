@@ -8,6 +8,8 @@
 namespace nerve::persistence::accelerated
 {
 using namespace gpu_kernels;
+using namespace nerve::gpu::packed;
+using namespace nerve::gpu::ptx;
 
 static constexpr Size BITS_PER_WORD = 64;
 static constexpr Size MAX_COLUMN_WORDS = (MAX_DIM + BITS_PER_WORD - 1) / BITS_PER_WORD;
@@ -187,17 +189,17 @@ __global__ void __launch_bounds__(256)
 
 __device__ __forceinline__ int find_pivot_row_packed(const uint64_t *col_words, Size nw)
 {
-    return packed::packed_column_find_pivot(col_words, static_cast<int>(nw));
+    return packed_column_find_pivot(col_words, static_cast<int>(nw));
 }
 
 __device__ __forceinline__ bool column_is_empty_packed(const uint64_t *col_words, Size nw)
 {
-    return packed::packed_column_is_empty(col_words, static_cast<int>(nw));
+    return packed_column_is_empty(col_words, static_cast<int>(nw));
 }
 
 __device__ __forceinline__ void xor_column_inplace(uint64_t *dst, const uint64_t *src, Size nw)
 {
-    packed::packed_column_xor_hw(dst, src, static_cast<int>(nw), threadIdx.x & 31);
+    packed_column_xor_hw(dst, src, static_cast<int>(nw), threadIdx.x & 31);
 }
 
 __device__ __forceinline__ bool atomically_claim_row(uint64_t *low_row_storage, int pivot_row,
@@ -212,8 +214,8 @@ __device__ __forceinline__ bool atomically_claim_row(uint64_t *low_row_storage, 
         return false;
     }
 
-    uint64_t old = low_row_storage[word_idx];
-    uint64_t assumed;
+    unsigned long long old = low_row_storage[word_idx];
+    unsigned long long assumed;
     do
     {
         if (old & bit_mask)
@@ -221,7 +223,8 @@ __device__ __forceinline__ bool atomically_claim_row(uint64_t *low_row_storage, 
             return false;
         }
         assumed = old;
-        old = atomicCAS(&low_row_storage[word_idx], assumed, assumed | bit_mask);
+        old = atomicCAS(reinterpret_cast<unsigned long long*>(&low_row_storage[word_idx]),
+                       assumed, assumed | bit_mask);
     } while (assumed != old);
     return true;
 }
@@ -229,7 +232,7 @@ __device__ __forceinline__ bool atomically_claim_row(uint64_t *low_row_storage, 
 __device__ __forceinline__ void warp_column_xor_global(uint64_t *dest, const uint64_t *src,
                                                         Size nw)
 {
-    packed::packed_column_xor_atomic_hw(dest, src, static_cast<int>(nw), threadIdx.x & 31);
+    packed_column_xor_atomic_hw(dest, src, static_cast<int>(nw), threadIdx.x & 31);
 }
 
 __global__ void __launch_bounds__(256)
@@ -267,7 +270,7 @@ __global__ void __launch_bounds__(256)
 
     if (global_idx + 1 < n_columns)
     {
-        ptx::prefetch_l2(columns + (global_idx + 1) * num_words);
+        prefetch_l2(columns + (global_idx + 1) * num_words);
     }
 
     Size iter_limit = nw * 4;
@@ -290,7 +293,7 @@ __global__ void __launch_bounds__(256)
         }
 
         bool claimed = atomically_claim_row(low_row_storage, pivot_row, num_words);
-        int selected_pivot = ptx::slct_s32(claimed, pivot_row, -1);
+        int selected_pivot = slct_s32(claimed, pivot_row, -1);
 
         if (claimed)
         {
@@ -343,7 +346,7 @@ __global__ void __launch_bounds__(256)
     const uint64_t *col_base = columns + global_idx * num_words;
     Size shmem_offset = threadIdx.x * MAX_COLUMN_WORDS;
 
-    packed::async_pipeline_stage_column(col_base, &s_columns[shmem_offset], static_cast<int>(nw),
+    async_pipeline_stage_column(col_base, &s_columns[shmem_offset], static_cast<int>(nw),
                                          threadIdx.x & 31);
 
     uint64_t col_words[MAX_COLUMN_WORDS];
@@ -357,7 +360,7 @@ __global__ void __launch_bounds__(256)
 
     if (global_idx + blockDim.x < n_columns)
     {
-        ptx::prefetch_l2(columns + (global_idx + blockDim.x) * num_words);
+        prefetch_l2(columns + (global_idx + blockDim.x) * num_words);
     }
 
     Size iter_limit = nw * 4;
@@ -382,7 +385,7 @@ __global__ void __launch_bounds__(256)
         }
 
         bool claimed = atomically_claim_row(low_row_storage, pivot_row, num_words);
-        int selected = ptx::slct_s32(claimed, pivot_row, -1);
+        int selected = slct_s32(claimed, pivot_row, -1);
 
         if (claimed)
         {
@@ -453,11 +456,11 @@ __global__ void __launch_bounds__(256)
 
         if (out_weight_f32)
         {
-            ptx::st_global_cs_f32(&out_weight_f32[idx], static_cast<float>(w_col));
+            st_global_cs_f32(&out_weight_f32[idx], static_cast<float>(w_col));
         }
         if (out_weight_f64)
         {
-            ptx::st_global_cs_f64(&out_weight_f64[idx], w_piv);
+            st_global_cs_f64(&out_weight_f64[idx], w_piv);
         }
     }
 }
@@ -497,7 +500,7 @@ __global__ void __launch_bounds__(256)
 
     if (global_idx + 1 < gpu_columns)
     {
-        ptx::prefetch_l2(columns + (global_idx + 1) * num_words);
+        prefetch_l2(columns + (global_idx + 1) * num_words);
     }
 
     unsigned int lane_id = threadIdx.x & 31;
@@ -523,12 +526,12 @@ __global__ void __launch_bounds__(256)
         }
 
         unsigned int matching_lanes =
-            ptx::match_any_sync_u64(warp_mask, static_cast<unsigned long long>(pivot_row));
+            match_any_sync_u64(warp_mask, static_cast<unsigned long long>(pivot_row));
 
         if ((matching_lanes & (1u << lane_id)) != 0)
         {
             bool claimed = atomically_claim_row(low_row_storage, pivot_row, num_words);
-            int selected = ptx::slct_s32(claimed, pivot_row, -1);
+            int selected = slct_s32(claimed, pivot_row, -1);
 
             if (claimed)
             {

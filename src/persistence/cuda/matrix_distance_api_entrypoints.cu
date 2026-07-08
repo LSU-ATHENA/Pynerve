@@ -5,7 +5,7 @@
 namespace nerve::persistence::accelerated
 {
 
-errors::ErrorResult<void> computeDistanceMatrixGpu(const core::BufferView<const double> &points,
+errors::ErrorResult<void> computeDistanceMatrixGpu(core::BufferView<const double>points,
                                                    core::BufferView<double> &distances,
                                                    Size point_dim, double max_radius)
 {

@@ -1,6 +1,5 @@
 #include "nerve/algebra/boundary.hpp"
 #include "nerve/errors/detail/error_result.hpp"
-#include "nerve/persistence/reduction/reducer.hpp"
 
 #include <cuda_runtime.h>
 

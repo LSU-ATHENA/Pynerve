@@ -16,7 +16,7 @@ __global__ void NERVE_CLUSTER_DIMS(16, 1, 1) __launch_bounds__(256)
     cluster16DistanceMatrixKernel(const float *__restrict__ points, float *__restrict__ distances,
                                   uint32_t nPoints, uint32_t pointDim, float maxRadiusSq)
 {
-#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 900
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 900 && CUDART_VERSION < 13000
     if (nPoints == 0 || pointDim == 0 || pointDim > TMA_MAX_POINT_DIMENSIONS)
     {
         return;
@@ -56,10 +56,10 @@ __global__ void NERVE_CLUSTER_DIMS(16, 1, 1) __launch_bounds__(256)
         }
     }
 
-    __syncthreads();
-
-    asm volatile("barrier.cluster.arrive;" ::: "memory");
+    __syncthreads();            asm volatile("barrier.cluster.arrive;" ::: "memory");
     asm volatile("barrier.cluster.wait;" ::: "memory");
+    (void)clusterRank;
+    (void)clusterSize;
 
     int rowsPerBlock = (nPoints + gridDim.x - 1) / gridDim.x;
     int myRowStart = blockIdx.x * rowsPerBlock;
@@ -93,7 +93,7 @@ __global__ void NERVE_CLUSTER_DIMS(16, 1, 1) __launch_bounds__(256)
                 uint32_t value;
                 asm volatile("mapa.sync.aligned.b32 %0, [%1], %2;"
                              : "=r"(value)
-                             : "r"(targetAddr + d * sizeof(float)), "r"(sourceBlock));
+                             : "r"(static_cast<unsigned int>(targetAddr + d * sizeof(float))), "r"(sourceBlock));
                 pointA[d] = __uint_as_float(value);
             }
         }
@@ -122,7 +122,7 @@ __global__ void NERVE_CLUSTER_DIMS(16, 1, 1) __launch_bounds__(256)
                     uint32_t value;
                     asm volatile("mapa.sync.aligned.b32 %0, [%1], %2;"
                                  : "=r"(value)
-                                 : "r"(targetAddr + d * sizeof(float)), "r"(blockB));
+                                 : "r"(static_cast<unsigned int>(targetAddr + d * sizeof(float))), "r"(blockB));
                     pointB[d] = __uint_as_float(value);
                 }
             }
@@ -135,7 +135,7 @@ __global__ void NERVE_CLUSTER_DIMS(16, 1, 1) __launch_bounds__(256)
                 float nextDistSq = distSq + contribution;
                 if (!isfinite(diff) || !isfinite(contribution) || !isfinite(nextDistSq))
                 {
-                    distSq = CUDART_INF_F;
+                    distSq = __int_as_float(0x7f800000);
                     break;
                 }
                 distSq = nextDistSq;

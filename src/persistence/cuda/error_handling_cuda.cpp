@@ -63,12 +63,6 @@ errors::ErrorCode mapErrorCode(cudaError_t error_code)
 namespace cuda_utils
 {
 
-void log_cuda_error(cudaError_t error_code, const ErrCtx &context, const std::string &operation)
-{
-    std::cerr << "[Nerve CUDA] " << operation << " failed with " << cudaGetErrorString(error_code)
-              << " :: " << context.toString() << '\n';
-}
-
 } // namespace cuda_utils
 
 namespace cuda_error_handling

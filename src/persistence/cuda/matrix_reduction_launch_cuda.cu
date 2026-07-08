@@ -38,7 +38,7 @@ launchMatrixReductionKernel(const int *d_columns, const Size *d_column_sizes,
                                                 "Matrix reduction launch size overflows");
     }
     const bool use_streaming =
-        config.acceleration.enable_streaming && total_elements > STREAMING_THRESHOLD;
+        config.enable_streaming && total_elements > STREAMING_THRESHOLD;
 
     unsigned tpb =
         static_cast<unsigned>(std::min<Size>(utils::get_optimal_block_size(n_columns, 1024), 1024));

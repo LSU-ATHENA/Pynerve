@@ -32,7 +32,7 @@ __device__ inline void writeSymmetricDistance(double *distances, Size n_points, 
 
 __device__ inline bool accumulateSquaredDifference(double diff, double &distance_sq)
 {
-    const double next_distance_sq = ptx::fma_f64(diff, diff, distance_sq);
+    const double next_distance_sq = fma_f64(diff, diff, distance_sq);
     if (!isfinite(diff) || !isfinite(next_distance_sq))
     {
         distance_sq = INFINITY;

@@ -267,61 +267,6 @@ __global__ void __launch_bounds__(256)
     }
 }
 
-// Host function implementations
-void GPUApparentPairs::detectApparentPairsAdvancedKernel(
-    const int *vertex_data, const int *vertex_counts, const int *vertex_offsets,
-    const double *filtration_values, int *apparent_pairs, int *pair_types, int n_simplices,
-    int max_dimension, int determinism_level)
-{
-    // Configure grid and block dimensions
-    dim3 threadsPerBlock(MAX_APPARENT_PAIRS_BLOCK_SIZE);
-    dim3 blocksPerGrid((n_simplices + threadsPerBlock.x - 1) / threadsPerBlock.x);
 
-    // Launch advanced apparent pair detection kernel
-    ::nerve::persistence::accelerated::
-        detectApparentPairsAdvancedKernel<<<blocksPerGrid, threadsPerBlock>>>(
-            vertex_data, vertex_counts, vertex_offsets, filtration_values, apparent_pairs,
-            pair_types, n_simplices, max_dimension, determinism_level);
-    GPU_CHECK(cudaPeekAtLastError());
-}
-
-void GPUApparentPairs::gpuMatrixReductionKernel(const int *columns_data, const int *column_offsets,
-                                                const int *column_sizes, int *low_row_to_col,
-                                                int *col_pivot, int *clear_flags, int n_columns,
-                                                int n_rows)
-{
-    dim3 threadsPerBlock(MAX_APPARENT_PAIRS_BLOCK_SIZE);
-    dim3 blocksPerGrid((n_columns + threadsPerBlock.x - 1) / threadsPerBlock.x);
-
-    ::nerve::persistence::accelerated::gpuMatrixReductionKernel<<<blocksPerGrid, threadsPerBlock>>>(
-        columns_data, column_offsets, column_sizes, low_row_to_col, col_pivot, clear_flags,
-        n_columns, n_rows);
-    GPU_CHECK(cudaPeekAtLastError());
-}
-
-void GPUApparentPairs::gpuClearingKernel(const int *col_pivot, int *clear_flags, int n_columns,
-                                         int target_dimension)
-{
-    dim3 threadsPerBlock(MAX_APPARENT_PAIRS_BLOCK_SIZE);
-    dim3 blocksPerGrid((n_columns + threadsPerBlock.x - 1) / threadsPerBlock.x);
-
-    ::nerve::persistence::accelerated::gpuClearingKernel<<<blocksPerGrid, threadsPerBlock>>>(
-        col_pivot, clear_flags, n_columns, target_dimension);
-    GPU_CHECK(cudaPeekAtLastError());
-}
-
-void GPUApparentPairs::computeWorkDistributionKernel(const int *apparent_pairs,
-                                                     const int *pair_types, int *gpu_work_count,
-                                                     int *cpu_work_count, int n_simplices,
-                                                     double gpu_ratio)
-{
-    dim3 threadsPerBlock(MAX_APPARENT_PAIRS_BLOCK_SIZE);
-    dim3 blocksPerGrid((n_simplices + threadsPerBlock.x - 1) / threadsPerBlock.x);
-
-    ::nerve::persistence::accelerated::
-        computeWorkDistributionKernel<<<blocksPerGrid, threadsPerBlock>>>(
-            apparent_pairs, pair_types, gpu_work_count, cpu_work_count, n_simplices, gpu_ratio);
-    GPU_CHECK(cudaPeekAtLastError());
-}
 
 } // namespace nerve::persistence::accelerated

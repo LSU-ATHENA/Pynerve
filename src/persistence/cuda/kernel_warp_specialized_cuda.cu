@@ -28,6 +28,9 @@ namespace persistence
 namespace gpu
 {
 
+using namespace nerve::gpu::packed;
+using namespace nerve::gpu::ptx;
+
 constexpr int WARP_SIZE = 32;
 constexpr int WARPS_PER_BLOCK = 8;
 constexpr int THREADS_PER_BLOCK = WARP_SIZE * WARPS_PER_BLOCK;
@@ -90,7 +93,7 @@ __device__ inline T warpSumReduce(T value)
 __device__ inline int findHighestPivotWarp(const uint64_t *__restrict__ column_words, int num_words,
                                             int lane_id)
 {
-    return packed::packed_column_find_msb_warp(column_words, num_words, lane_id);
+    return packed_column_find_msb_warp(column_words, num_words, lane_id);
 }
 
 __global__ void __launch_bounds__(256)
@@ -108,9 +111,9 @@ __global__ void __launch_bounds__(256)
     }
 
     const int words_to_process = clampWordCount(col_sizes[col_idx], num_words);
-    packed::packed_column_xor(columns_a + col_idx * num_words,
-                                       columns_b + col_idx * num_words,
-                                       words_to_process, lane_id, packed::XorStrategy::DirectXor);
+    packed_column_xor(columns_a + col_idx * num_words,
+                               columns_b + col_idx * num_words,
+                               words_to_process, lane_id, XorStrategy::DirectXor);
 }
 
 __global__ void __launch_bounds__(256)
@@ -160,7 +163,7 @@ __global__ void __launch_bounds__(256)
         const T product = lhs * rhs;
         const T next;
         if constexpr (std::is_same_v<T, float>)
-            next = ptx::fma_f32(lhs, rhs, sum);
+            next = fma_f32(lhs, rhs, sum);
         else
             next = sum + product;
         if (!isfinite(static_cast<double>(lhs)) || !isfinite(static_cast<double>(rhs)) ||
@@ -228,7 +231,7 @@ __global__ void __launch_bounds__(256)
 
     uint64_t *const target_column = columns + col_idx * num_words;
     const int iteration_limit = max(1, num_words * 4);
-    int pivot = packed::packed_column_reduce_iterative(
+    int pivot = packed_column_reduce_iterative(
         target_column, columns, pivot_to_col, num_words, num_columns, col_idx, lane_id,
         iteration_limit);
 
@@ -277,15 +280,15 @@ __global__ void __launch_bounds__(256)
 
         if (source_col == col_idx)
         {
-            packed::packed_column_clear(target_column, num_words, lane_id);
+            packed_column_clear(target_column, num_words, lane_id);
             pivot = -1;
             break;
         }
 
-        packed::async_pipeline_stage_and_xor(target_column,
-                                              columns + static_cast<size_t>(source_col) * num_words,
-                                              warp_buf, num_words, lane_id);
-        pivot = packed::packed_column_find_msb_warp(target_column, num_words, lane_id);
+        async_pipeline_stage_and_xor(target_column,
+                                      columns + static_cast<size_t>(source_col) * num_words,
+                                      warp_buf, num_words, lane_id);
+        pivot = packed_column_find_msb_warp(target_column, num_words, lane_id);
     }
 
     if (lane_id == 0)

@@ -16,7 +16,7 @@ __global__ void NERVE_CLUSTER_DIMS(8, 1, 1) __launch_bounds__(256)
     clusterTMAMulticastKernel(const float *__restrict__ points, float *__restrict__ distances,
                               uint32_t nPoints, uint32_t pointDim, float maxRadiusSq)
 {
-#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 900
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 900 && CUDART_VERSION < 13000
     if (nPoints == 0 || pointDim == 0 || pointDim > TMA_MAX_POINT_DIMENSIONS)
     {
         return;
@@ -95,7 +95,7 @@ __global__ void NERVE_CLUSTER_DIMS(8, 1, 1) __launch_bounds__(256)
                 uint32_t value;
                 asm volatile("mapa.sync.aligned.b32 %0, [%1], %2;"
                              : "=r"(value)
-                             : "r"(targetAddr + d * sizeof(float)), "r"(sourceBlockA));
+                             : "r"(static_cast<unsigned int>(targetAddr + d * sizeof(float))), "r"(sourceBlockA));
                 pointA[d] = __uint_as_float(value);
             }
         }
@@ -124,7 +124,7 @@ __global__ void NERVE_CLUSTER_DIMS(8, 1, 1) __launch_bounds__(256)
                     uint32_t value;
                     asm volatile("mapa.sync.aligned.b32 %0, [%1], %2;"
                                  : "=r"(value)
-                                 : "r"(targetAddr + d * sizeof(float)), "r"(sourceBlockB));
+                                 : "r"(static_cast<unsigned int>(targetAddr + d * sizeof(float))), "r"(sourceBlockB));
                     pointB[d] = __uint_as_float(value);
                 }
             }
@@ -137,7 +137,7 @@ __global__ void NERVE_CLUSTER_DIMS(8, 1, 1) __launch_bounds__(256)
                 float nextDistSq = distSq + contribution;
                 if (!isfinite(diff) || !isfinite(contribution) || !isfinite(nextDistSq))
                 {
-                    distSq = CUDART_INF_F;
+                    distSq = __int_as_float(0x7f800000);
                     break;
                 }
                 distSq = nextDistSq;
