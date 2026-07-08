@@ -1,5 +1,6 @@
 
 #include "nerve/sheaf/sheaf_laplacian.hpp"
+#include "nerve/algebra/simplex.hpp"
 
 #include <algorithm>
 #include <cmath>

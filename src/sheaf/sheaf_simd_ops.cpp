@@ -1,6 +1,4 @@
-#include "nerve/config.hpp"
-#include "nerve/cpu/simd.hpp"
-#include "nerve/cpu/x86_intrinsics.hpp"
+#include "nerve/simd/simd_base.hpp"
 #include "nerve/sheaf/sheaf_learning.hpp"
 
 #include <cmath>
@@ -9,91 +7,64 @@
 namespace nerve::sheaf
 {
 
-namespace
-{
-bool useSimd()
-{
-    static const bool has = cpu::simd::CPUFeatureDetector::hasAVX2();
-    return has;
-}
-
-} // namespace
-
 template <typename T>
-void computeSheafRestrictionSimd(const T *source_stalk, const T *restriction_matrix, Size stalk_dim,
-                                 Size source_dim, T *output)
+void computeSheafRestrictionSimd(const T *source_stalk, const T *restriction_matrix,
+                                 std::size_t stalk_dim, std::size_t source_dim, T *output)
 {
-#if defined(NERVE_HAS_X86_INTRINSICS)
-    if (useSimd() && sizeof(T) == sizeof(double))
+    // Use SIMD dispatch table for float64; scalar fallback for float32
+    if constexpr (std::is_same_v<T, double>)
     {
-        if constexpr (std::is_same_v<T, double>)
-        {
-            std::memset(output, 0, stalk_dim * sizeof(T));
-            for (Size i = 0; i < source_dim; ++i)
-            {
-                Size j = 0;
-#if defined(__AVX2__)
-                __m256d src = _mm256_set1_pd(source_stalk[i]);
-                for (; j + 4 <= stalk_dim; j += 4)
-                {
-                    __m256d r = _mm256_loadu_pd(restriction_matrix + i * stalk_dim + j);
-                    __m256d out = _mm256_loadu_pd(output + j);
-                    out = _mm256_fmadd_pd(src, r, out);
-                    _mm256_storeu_pd(output + j, out);
-                }
-#endif
-                for (; j < stalk_dim; ++j)
-                    output[j] += source_stalk[i] * restriction_matrix[i * stalk_dim + j];
-            }
-            return;
-        }
+        // output[j] += source_stalk[i] * restriction_matrix[i * stalk_dim + j]
+        std::memset(output, 0, stalk_dim * sizeof(T));
+        auto *R = reinterpret_cast<const double *>(restriction_matrix);
+        auto *src = reinterpret_cast<const double *>(source_stalk);
+        auto *out = reinterpret_cast<double *>(output);
+        for (std::size_t i = 0; i < source_dim; ++i)
+            nerve::simd::simd_axpy(src[i], R + i * stalk_dim, out, stalk_dim);
     }
-#endif
-    for (Size i = 0; i < source_dim; ++i)
-        for (Size j = 0; j < stalk_dim; ++j)
-            output[j] += source_stalk[i] * restriction_matrix[i * stalk_dim + j];
+    else
+    {
+        std::memset(output, 0, stalk_dim * sizeof(T));
+        for (std::size_t i = 0; i < source_dim; ++i)
+            for (std::size_t j = 0; j < stalk_dim; ++j)
+                output[j] += source_stalk[i] * restriction_matrix[i * stalk_dim + j];
+    }
 }
 
 template <typename T>
 void computeSheafLaplacianDiagSimd(const T *restriction_maps, const T *coboundary_maps,
-                                   Size n_cells, Size max_stalk_dim, T *diagonal)
+                                   std::size_t n_cells, std::size_t max_stalk_dim, T *diagonal)
 {
     (void)coboundary_maps;
     std::memset(diagonal, 0, n_cells * sizeof(T));
-    for (Size c = 0; c < n_cells; ++c)
+    for (std::size_t c = 0; c < n_cells; ++c)
     {
         const T *R = restriction_maps + c * max_stalk_dim * max_stalk_dim;
+        // diagonal[c] = sum of all R[j]^2
         T sum = T{0};
-        Size j = 0;
-#if defined(__AVX2__)
-        if (useSimd() && sizeof(T) == sizeof(double))
+        if constexpr (std::is_same_v<T, double>)
         {
-            if constexpr (std::is_same_v<T, double>)
-            {
-                __m256d acc = _mm256_setzero_pd();
-                for (; j + 4 <= max_stalk_dim * max_stalk_dim; j += 4)
-                {
-                    __m256d r = _mm256_loadu_pd(reinterpret_cast<const double *>(R + j));
-                    acc = _mm256_fmadd_pd(r, r, acc);
-                }
-                double tmp[4];
-                _mm256_storeu_pd(tmp, acc);
-                sum = static_cast<T>(tmp[0] + tmp[1] + tmp[2] + tmp[3]);
-            }
+            sum = static_cast<T>(nerve::simd::simd_norm2(
+                reinterpret_cast<const double *>(R),
+                max_stalk_dim * max_stalk_dim));
+            // norm2 returns sqrt(sum(R^2)), so square it back
+            sum = sum * sum;
         }
-#endif
-        for (; j < max_stalk_dim * max_stalk_dim; ++j)
-            sum += R[j] * R[j];
+        else
+        {
+            for (std::size_t j = 0; j < max_stalk_dim * max_stalk_dim; ++j)
+                sum += R[j] * R[j];
+        }
         diagonal[c] = sum;
     }
 }
 
-template void computeSheafRestrictionSimd<float>(const float *, const float *, Size, Size, float *);
-template void computeSheafRestrictionSimd<double>(const double *, const double *, Size, Size,
+template void computeSheafRestrictionSimd<float>(const float *, const float *, std::size_t, std::size_t, float *);
+template void computeSheafRestrictionSimd<double>(const double *, const double *, std::size_t, std::size_t,
                                                   double *);
-template void computeSheafLaplacianDiagSimd<float>(const float *, const float *, Size, Size,
+template void computeSheafLaplacianDiagSimd<float>(const float *, const float *, std::size_t, std::size_t,
                                                    float *);
-template void computeSheafLaplacianDiagSimd<double>(const double *, const double *, Size, Size,
+template void computeSheafLaplacianDiagSimd<double>(const double *, const double *, std::size_t, std::size_t,
                                                     double *);
 
 } // namespace nerve::sheaf

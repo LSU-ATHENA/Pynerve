@@ -1,5 +1,6 @@
 #include "nerve/sheaf/sheaf_laplacian.hpp"
 #include "sheaf_laplacian_detail.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -127,20 +128,32 @@ Eigen::SparseMatrix<double> SheafLaplacianRuntime::buildAttributeLaplacian()
         {
             detail::normalizeValues(values, config_.numerical_tolerance);
         }
+        // Pre-allocate batch buffer for SIMD exp
+        std::vector<double> exp_args(n);
         for (Size i = 0; i < n; ++i)
         {
+            Size count = 0;
             for (Size j = i + 1; j < n; ++j)
             {
-                const double similarity =
-                    std::exp(-std::abs(values[i] - values[j])) * config_.attribute_weight;
-                triplets.emplace_back(static_cast<Eigen::Index>(i), static_cast<Eigen::Index>(j),
-                                      -similarity);
-                triplets.emplace_back(static_cast<Eigen::Index>(j), static_cast<Eigen::Index>(i),
-                                      -similarity);
-                triplets.emplace_back(static_cast<Eigen::Index>(i), static_cast<Eigen::Index>(i),
-                                      similarity);
-                triplets.emplace_back(static_cast<Eigen::Index>(j), static_cast<Eigen::Index>(j),
-                                      similarity);
+                exp_args[count] = -std::abs(values[i] - values[j]);
+                ++count;
+            }
+            if (count > 0)
+            {
+                nerve::simd::simd_exp(exp_args.data(), count);
+                for (Size k = 0; k < count; ++k)
+                {
+                    const double similarity = exp_args[k] * config_.attribute_weight;
+                    const Size j = i + 1 + k;
+                    triplets.emplace_back(static_cast<Eigen::Index>(i), static_cast<Eigen::Index>(j),
+                                          -similarity);
+                    triplets.emplace_back(static_cast<Eigen::Index>(j), static_cast<Eigen::Index>(i),
+                                          -similarity);
+                    triplets.emplace_back(static_cast<Eigen::Index>(i), static_cast<Eigen::Index>(i),
+                                          similarity);
+                    triplets.emplace_back(static_cast<Eigen::Index>(j), static_cast<Eigen::Index>(j),
+                                          similarity);
+                }
             }
         }
     }
