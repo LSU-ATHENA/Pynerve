@@ -1,4 +1,5 @@
 #include "nerve/streaming/streaming_laplacian.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -174,11 +175,8 @@ LaplacianSpectrum IncrementalGraphLaplacian::computeSpectrum() const
         {
             result.eigenvalues = spec.eigenvalues;
             result.trace = std::accumulate(state_.diagonal.begin(), state_.diagonal.end(), 0.0);
-            double fn_sq = 0.0;
-            for (double v : state_.diagonal)
-                fn_sq += v * v;
-            for (double v : state_.values)
-                fn_sq += v * v;
+            double fn_sq = nerve::simd::simd_dot(state_.diagonal.data(), state_.diagonal.data(), state_.matrix_size)
+                         + nerve::simd::simd_dot(state_.values.data(), state_.values.data(), state_.values.size());
             result.frobenius_norm = std::sqrt(fn_sq);
             result.rank = 0;
             for (double ev : result.eigenvalues)
@@ -193,11 +191,8 @@ LaplacianSpectrum IncrementalGraphLaplacian::computeSpectrum() const
     result.eigenvalues = lanczosIteration(state_, k, config_.eigenvalue_tolerance);
     std::sort(result.eigenvalues.begin(), result.eigenvalues.end());
     result.trace = std::accumulate(state_.diagonal.begin(), state_.diagonal.end(), 0.0);
-    double fn_sq = 0.0;
-    for (double v : state_.diagonal)
-        fn_sq += v * v;
-    for (double v : state_.values)
-        fn_sq += v * v;
+    double fn_sq = nerve::simd::simd_dot(state_.diagonal.data(), state_.diagonal.data(), state_.matrix_size)
+                 + nerve::simd::simd_dot(state_.values.data(), state_.values.data(), state_.values.size());
     result.frobenius_norm = std::sqrt(fn_sq);
     result.rank = 0;
     for (double ev : result.eigenvalues)
@@ -243,14 +238,11 @@ std::vector<double> IncrementalGraphLaplacian::computeFiedlerVector() const
         double mean = std::accumulate(w.begin(), w.end(), 0.0) / static_cast<double>(n);
         for (Size i = 0; i < n; ++i)
             w[i] -= mean;
-        double norm = 0.0;
-        for (double x : w)
-            norm += x * x;
-        norm = std::sqrt(norm);
+        double norm = nerve::simd::simd_norm2(w.data(), n);
         if (norm < tol)
             break;
-        for (Size i = 0; i < n; ++i)
-            w[i] /= norm;
+        double inv_norm = 1.0 / norm;
+        nerve::simd::simd_scale(w.data(), inv_norm, n);
         lambda = 0.0;
         for (Size i = 0; i < n; ++i)
             lambda += w[i] * v[i];

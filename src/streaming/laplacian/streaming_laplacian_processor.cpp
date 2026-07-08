@@ -1,4 +1,5 @@
 #include "nerve/streaming/streaming_laplacian.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -22,30 +23,39 @@ void StreamingLaplacianProcessor::ingestPoints(const std::vector<double> &points
         return;
     for (Index idx : indices)
         laplacian_.addVertex(idx);
-    for (Size i = 0; i < indices.size(); ++i)
+
+    const Size n = indices.size();
+    // Batch edge weights per source point to use SIMD exp
+    std::vector<double> batch_weights(n);
+    std::vector<Index> batch_targets(n);
+
+    for (Size i = 0; i < n; ++i)
     {
-        for (Size j = i + 1; j < indices.size(); ++j)
+        Size count = 0;
+        for (Size j = i + 1; j < n; ++j)
         {
             double d = pairwiseDistance(&points[indices[i] * dim], &points[indices[j] * dim], dim);
             if (d <= edge_threshold_)
             {
-                laplacian_.addEdge(indices[i], indices[j], std::exp(-d * d));
+                batch_weights[count] = -d * d;
+                batch_targets[count] = indices[j];
+                ++count;
             }
         }
+        if (count > 0)
+        {
+            nerve::simd::simd_exp(batch_weights.data(), count);
+            for (Size k = 0; k < count; ++k)
+                laplacian_.addEdge(indices[i], batch_targets[k], batch_weights[k]);
+        }
     }
-    processed_count_ += indices.size();
+    processed_count_ += n;
 }
 
 double StreamingLaplacianProcessor::pairwiseDistance(const double *a, const double *b,
                                                      Size dim) const
 {
-    double s = 0.0;
-    for (Size i = 0; i < dim; ++i)
-    {
-        double df = a[i] - b[i];
-        s += df * df;
-    }
-    return std::sqrt(s);
+    return std::sqrt(nerve::simd::simd_sqdiff_sum(a, b, dim));
 }
 
 void StreamingLaplacianProcessor::ingestPointBatch(const std::vector<double> &points, Size dim,
@@ -88,14 +98,8 @@ double StreamingLaplacianProcessor::getStabilityScore() const
     const auto &prev = spectrum_timeline_[spectrum_timeline_.size() - 2];
     const auto &curr = spectrum_timeline_.back();
     Size n = std::min(prev.eigenvalues.size(), curr.eigenvalues.size());
-    double diff = 0.0;
-    double sum = 0.0;
-    for (Size i = 0; i < n; ++i)
-    {
-        double d = curr.eigenvalues[i] - prev.eigenvalues[i];
-        diff += d * d;
-        sum += curr.eigenvalues[i] * curr.eigenvalues[i];
-    }
+    double diff = nerve::simd::simd_sqdiff_sum(curr.eigenvalues.data(), prev.eigenvalues.data(), n);
+    double sum = nerve::simd::simd_dot(curr.eigenvalues.data(), curr.eigenvalues.data(), n);
     if (sum < config_.eigenvalue_tolerance)
         return 1.0;
     return 1.0 - std::sqrt(diff / sum);
