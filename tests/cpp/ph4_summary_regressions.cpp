@@ -22,10 +22,9 @@ std::mt19937_64 make_rng()
 
 bool check_stability_certificate_default()
 {
-    StabilityCertificate cert;
-    if (std::abs(cert.getStabilityConstant() - 0.0) > 1e-10)
-        return false;
-    if (std::abs(cert.getNumericalResidual() - 0.0) > 1e-10)
+    StabilityCertificate cert;        if (std::abs(cert.stabilityConstant() - 0.0) > 1e-10)
+            return false;
+        if (std::abs(cert.numericalResidual() - 0.0) > 1e-10)
         return false;
     if (cert.isExact())
         return false;
@@ -36,10 +35,9 @@ bool check_stability_certificate_default()
 
 bool check_stability_certificate_valid()
 {
-    StabilityCertificate cert(1.0, 0.5, true);
-    if (std::abs(cert.getStabilityConstant() - 1.0) > 1e-10)
-        return false;
-    if (std::abs(cert.getNumericalResidual() - 0.5) > 1e-10)
+    StabilityCertificate cert(1.0, 0.5, true);        if (std::abs(cert.stabilityConstant() - 1.0) > 1e-10)
+            return false;
+        if (std::abs(cert.numericalResidual() - 0.5) > 1e-10)
         return false;
     if (!cert.isExact())
         return false;

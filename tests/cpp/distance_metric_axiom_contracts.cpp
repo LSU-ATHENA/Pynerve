@@ -336,7 +336,7 @@ bool check_known_euclidean_distances()
         }
     }
     {
-        // distance((1,2,3), (4,5,6)) = sqrt(27) ≈ 5.196
+        // distance((1,2,3), (4,5,6)) = sqrt(27) ~~ 5.196
         EuclideanMetric<double> metric;
         const double p1[] = {1.0, 2.0, 3.0};
         const double p2[] = {4.0, 5.0, 6.0};

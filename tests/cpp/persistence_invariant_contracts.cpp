@@ -296,7 +296,7 @@ bool check_betti_number_consistency()
     return true;
 }
 
-// Invariant: boundary of boundary is zero (partial∘partial = 0)
+// Invariant: boundary of boundary is zero (partialopartial = 0)
 
 bool check_boundary_matrix_dims()
 {
@@ -310,29 +310,29 @@ bool check_boundary_matrix_dims()
     complex.addSimplex(Simplex({1, 2}));
     complex.addSimplex(Simplex({0, 1, 2}));
 
-    // partial₂: C₂ -> C₁ : 3 edges x 1 triangle
+    // partial2: C2 -> C1 : 3 edges x 1 triangle
     nerve::algebra::BoundaryMatrix boundary2(complex, 2);
     if (boundary2.rows() != 3 || boundary2.cols() != 1)
     {
-        std::cerr << "∂₂ expected 3x1, got " << boundary2.rows() << "x" << boundary2.cols() << "\n";
+        std::cerr << "d2 expected 3x1, got " << boundary2.rows() << "x" << boundary2.cols() << "\n";
         return false;
     }
 
-    // partial₁: C₁ -> C₀ : 3 vertices x 3 edges
+    // partial1: C1 -> C0 : 3 vertices x 3 edges
     nerve::algebra::BoundaryMatrix boundary1(complex, 1);
     if (boundary1.rows() != 3 || boundary1.cols() != 3)
     {
-        std::cerr << "∂₁ expected 3x3, got " << boundary1.rows() << "x" << boundary1.cols() << "\n";
+        std::cerr << "d1 expected 3x3, got " << boundary1.rows() << "x" << boundary1.cols() << "\n";
         return false;
     }
 
-    // partial₂ entries should be +/-1 (each triangle boundary has 3 edges)
+    // partial2 entries should be +/-1 (each triangle boundary has 3 edges)
     for (Size row = 0; row < boundary2.rows(); ++row)
     {
         const auto c = boundary2.getCoefficient(row, 0);
         if (std::abs(c) != 1.0)
         {
-            std::cerr << "∂₂ coeff at (" << row << ",0) expected +/-1, got " << c << "\n";
+            std::cerr << "d2 coeff at (" << row << ",0) expected +/-1, got " << c << "\n";
             return false;
         }
     }

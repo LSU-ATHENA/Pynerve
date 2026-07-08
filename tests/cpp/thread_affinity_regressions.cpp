@@ -49,7 +49,7 @@ bool check_thread_pool_enqueue_wait_completes_all()
     pool.wait();
     for (int retry = 0; retry < 100 && counter.load() != kTasks; ++retry)
     {
-        std::this_thread::yield();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     if (counter.load() != kTasks)
     {
