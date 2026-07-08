@@ -3,6 +3,7 @@
 #include "nerve/serialization/serialization_manager.hpp"
 
 #include <algorithm>
+#include <cstring>
 #include <fstream>
 
 namespace nerve::serialization
