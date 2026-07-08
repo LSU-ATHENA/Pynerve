@@ -76,7 +76,7 @@ private:
     };
     template <typename Field>
     error::Result<std::vector<Edge<Field>>>
-    computeEdgesWithField(const core::BufferView<const double> &points, Size point_dim,
+    computeEdgesWithField(core::BufferView<const double>points, Size point_dim,
                           double max_radius_sq)
     {
         try
@@ -272,7 +272,7 @@ private:
     }
     template <typename Field>
     error::Result<std::vector<Pair>>
-    computeVrPersistenceFastWithField(const core::BufferView<const double> &points, Size point_dim,
+    computeVrPersistenceFastWithField(core::BufferView<const double>points, Size point_dim,
                                       const VRConfig &config)
     {
         try
@@ -485,7 +485,7 @@ public:
         return error::Result<void>::ok();
     }
     error::Result<std::vector<Pair>>
-    computeVrPersistenceFast(const core::BufferView<const double> &points, Size point_dim,
+    computeVrPersistenceFast(core::BufferView<const double>points, Size point_dim,
                              const VRConfig &config)
     {
         switch (field_characteristic_)

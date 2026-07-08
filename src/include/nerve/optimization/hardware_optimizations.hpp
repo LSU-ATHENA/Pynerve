@@ -3,6 +3,7 @@
 
 #include "nerve/config.hpp"
 #include "nerve/cpu/x86_intrinsics.hpp"
+#include "nerve/platform.hpp"
 
 #include <atomic>
 #include <cmath>
@@ -131,15 +132,9 @@ inline double branchlessAbs(double x)
     return caster.d;
 }
 
-// Likely/Unlikely Hints
-
-#ifdef __GNUC__
-#define LIKELY(x) __builtin_expect(!!(x), 1)
-#define UNLIKELY(x) __builtin_expect(!!(x), 0)
-#else
-#define LIKELY(x) (x)
-#define UNLIKELY(x) (x)
-#endif
+// Likely/Unlikely Hints - delegate to portable NERVE_LIKELY/UNLIKELY from platform.hpp
+#define OPT_LIKELY(x)   NERVE_LIKELY(x)
+#define OPT_UNLIKELY(x) NERVE_UNLIKELY(x)
 
 // Cache Control
 
@@ -153,16 +148,10 @@ inline void streamStore(double *dst, double value)
 #endif
 }
 
-// Flush cache line
+// Flush cache line - delegate to portable nerve_cache_flush from platform.hpp
 inline void cacheFlush(const void *ptr)
 {
-#if NERVE_HAS_X86_INTRINSICS && (defined(__GNUC__) || defined(__clang__))
-    __builtin_ia32_clflush(ptr);
-#elif NERVE_HAS_X86_INTRINSICS
-    _mm_clflush(ptr);
-#else
-    (void)ptr;
-#endif
+    nerve_cache_flush(ptr);
 }
 
 // Memory fence

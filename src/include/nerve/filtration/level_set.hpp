@@ -26,26 +26,26 @@ public:
     Size getNumLevels() const;
     void setAdaptiveLevels(bool adaptive);
     errors::ErrorResult<std::vector<std::pair<algebra::Simplex, double>>>
-    buildFiltration(const core::BufferView<const double> &scalar_field,
+    buildFiltration(core::BufferView<const double>scalar_field,
                     const core::DeterminismContract &contract = {});
 #ifdef USE_TORCH
     errors::ErrorResult<std::vector<std::pair<algebra::Simplex, double>>>
     buildFiltration(const at::Tensor &scalar_field, const core::DeterminismContract &contract = {});
 #endif
     errors::ErrorResult<std::vector<std::pair<algebra::Simplex, double>>>
-    buildFiltration(const core::BufferView<const double> &scalar_field,
+    buildFiltration(core::BufferView<const double>scalar_field,
                     const std::vector<std::vector<Index>> &connectivity,
                     const core::DeterminismContract &contract = {});
     std::vector<std::pair<algebra::Simplex, double>>
-    build2dFiltration(const core::BufferView<const double> &scalar_field, Size width, Size height,
+    build2dFiltration(core::BufferView<const double>scalar_field, Size width, Size height,
                       const core::DeterminismContract &contract = {});
     std::vector<std::pair<algebra::Simplex, double>>
-    build3dFiltration(const core::BufferView<const double> &scalar_field, Size width, Size height,
+    build3dFiltration(core::BufferView<const double>scalar_field, Size width, Size height,
                       Size depth, const core::DeterminismContract &contract = {});
-    std::vector<double> computeLevels(const core::BufferView<const double> &scalar_field) const;
+    std::vector<double> computeLevels(core::BufferView<const double>scalar_field) const;
     std::vector<double>
-    computeAdaptiveLevels(const core::BufferView<const double> &scalar_field) const;
-    std::vector<double> computeQuantileLevels(const core::BufferView<const double> &scalar_field,
+    computeAdaptiveLevels(core::BufferView<const double>scalar_field) const;
+    std::vector<double> computeQuantileLevels(core::BufferView<const double>scalar_field,
                                               Size num_quantiles) const;
     Size getNumSimplices() const;
     Size getNumSimplicesOfDimension(Size dim) const;
@@ -101,20 +101,20 @@ public:
     void setSimplificationTolerance(double tolerance);
     void setPersistenceThreshold(double threshold);
     std::vector<std::pair<algebra::Simplex, double>>
-    buildMorseSmaleComplex(const core::BufferView<const double> &scalar_field,
+    buildMorseSmaleComplex(core::BufferView<const double>scalar_field,
                            const core::DeterminismContract &contract = {});
     std::vector<std::vector<Index>>
-    computeGradientFlow(const core::BufferView<const double> &scalar_field,
+    computeGradientFlow(core::BufferView<const double>scalar_field,
                         const core::DeterminismContract &contract = {}) const;
     std::map<Index, std::string>
-    classifyCriticalPoints(const core::BufferView<const double> &scalar_field,
+    classifyCriticalPoints(core::BufferView<const double>scalar_field,
                            const core::DeterminismContract &contract = {}) const;
     std::vector<std::vector<Index>>
-    computeSeparatrices(const core::BufferView<const double> &scalar_field) const;
+    computeSeparatrices(core::BufferView<const double>scalar_field) const;
     std::vector<std::vector<Index>>
-    computeAttractorBasins(const core::BufferView<const double> &scalar_field) const;
+    computeAttractorBasins(core::BufferView<const double>scalar_field) const;
     std::vector<std::vector<Index>>
-    computeRepellerBasins(const core::BufferView<const double> &scalar_field) const;
+    computeRepellerBasins(core::BufferView<const double>scalar_field) const;
 
 private:
     std::vector<Size> grid_shape_;
@@ -137,16 +137,16 @@ public:
     void setMinRegionSize(Size min_size);
     void setMergeThreshold(double threshold);
     std::vector<std::pair<algebra::Simplex, double>>
-    buildWatershedFiltration(const core::BufferView<const double> &scalar_field,
+    buildWatershedFiltration(core::BufferView<const double>scalar_field,
                              const std::vector<Size> &shape,
                              const core::DeterminismContract &contract = {});
     std::vector<std::vector<Index>>
-    computeWatershedSegments(const core::BufferView<const double> &scalar_field,
+    computeWatershedSegments(core::BufferView<const double>scalar_field,
                              const std::vector<Size> &shape,
                              const core::DeterminismContract &contract = {}) const;
     std::vector<std::vector<Index>>
     mergeSmallBasins(const std::vector<std::vector<Index>> &basins,
-                     const core::BufferView<const double> &scalar_field,
+                     core::BufferView<const double>scalar_field,
                      const core::DeterminismContract &contract = {}) const;
 
 private:
