@@ -158,7 +158,7 @@ bool hasNaN(const double *data, size_t count)
 int main()
 {
     nerve::algebra::SIMDDistanceCalculator base_calc;
-    nerve::algebra::EnhancedSIMDCalculator enhanced_calc;
+    nerve::algebra::SIMDCalculator enhanced_calc;
 
     const size_t dimensions[] = {1, 3, 8, 16, 100};
     const double tolerance = 1e-10;

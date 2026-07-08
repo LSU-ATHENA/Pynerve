@@ -1,4 +1,5 @@
 #include "nerve/nn/diagram_conv.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cassert>

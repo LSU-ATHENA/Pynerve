@@ -45,7 +45,7 @@ void assertResourceLimit(const nerve::errors::ErrorResult<std::vector<double>> &
 
 int main()
 {
-    nerve::algebra::EnhancedSIMDCalculator calculator;
+    nerve::algebra::SIMDCalculator calculator;
     nerve::algebra::SIMDDistanceCalculator base_calculator;
 
     const double points[] = {0.0, 0.0, 3.0, 4.0};
