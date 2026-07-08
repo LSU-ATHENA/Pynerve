@@ -83,6 +83,7 @@ def pytest_configure(config: pytest.Config) -> None:
         "performance",
         "quality",
         "torch",
+        "nerve_extras",
     ):
         config.addinivalue_line("markers", f"{marker}: Nerve generated test category")
 

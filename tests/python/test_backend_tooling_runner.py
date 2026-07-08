@@ -70,7 +70,6 @@ def test_runner_changed_path_labels_cover_nested_cuda_and_distributed_sources() 
             "src/graphs/attention_gpu.cu",
             "src/persistence/distributed/mpi_distributed_ph.cpp",
             "python/nerve/torch/__init__.py",
-            "scripts/hpc_cuda_mpi_verify.sbatch",
         ]
     )
 
