@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pynerve"
-version = "0.9.7"
+version = "1.0.0"
 description = "Fast TDA library"
 requires-python = ">=3.10,<3.14"
 
@@ -60,6 +60,7 @@ markers = [
     "quality: static analysis / contract checks",
     "torch: PyTorch-dependent tests",
     "asyncio: asyncio-dependent tests",
+    "nerve_extras: C++ backed nerve_extras submodule tests",
 ]
 filterwarnings = [
     "error",
