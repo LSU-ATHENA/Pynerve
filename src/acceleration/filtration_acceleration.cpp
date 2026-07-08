@@ -9,6 +9,7 @@
 #include <mpi.h>
 #endif
 
+#include "nerve/types.hpp"
 #include "nerve/acceleration_fwd.hpp"
 
 namespace nerve::filtration::multi_gpu

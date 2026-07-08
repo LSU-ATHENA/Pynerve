@@ -9,10 +9,13 @@
 #include <mpi.h>
 #endif
 
+#include "nerve/types.hpp"
 #include "nerve/acceleration_fwd.hpp"
 
 namespace nerve::persistence::mpi_cuda
 {
+using nerve::algorithms::mpi::algoSize;
+
 cudaError_t distributeColumnsGPU(const int *d_columns, Size ncols, int ngpus, int **d_partitions,
                                  Size *counts)
 {

@@ -1,5 +1,6 @@
 #include "nerve/approximation/distance_approximation.hpp"
 #include "nerve/core_types.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -20,9 +21,11 @@ void jlProjectRandom(const T *points, Size n, Size dim, Size target_dim, T *proj
     {
         for (Size j = 0; j < target_dim; ++j)
         {
-            T sum = T{0};
-            for (Size k = 0; k < dim; ++k)
-                sum += points[i * dim + k] * proj[j * dim + k];
+            T sum;
+            if constexpr (std::is_same_v<T, double>)
+                sum = nerve::simd::simd_dot(&points[i * dim], &proj[j * dim], dim);
+            else
+                sum = nerve::simd::simd_dot_f32(&points[i * dim], &proj[j * dim], dim);
             projected[i * target_dim + j] = sum;
         }
     }
