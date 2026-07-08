@@ -133,7 +133,7 @@ void PrecisionPolicyManager::updateStabilityCertificateForDowngrade(
     double stability_impact =
         computeStabilityImpact(reason, policy.maxPrecision, state.current_precision);
     if (!certificate.isValid() ||
-        stability_impact + certificate.getNumericalResidual() > policy.stabilityThreshold)
+        stability_impact + certificate.numericalResidual() > policy.stabilityThreshold)
     {
         PolicyViolation violation;
         violation.algorithmName = algorithm_name;

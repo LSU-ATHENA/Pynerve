@@ -6,13 +6,13 @@
 
 #if defined(__linux__) || defined(__APPLE__)
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
 
 #include "nerve/io/diagram_io.hpp"
 #include "nerve/io/mmap_io.hpp"
+#include "nerve/platform.hpp"
 
 namespace nerve::io
 {
@@ -20,9 +20,9 @@ namespace nerve::io
 #if defined(__linux__) || defined(__APPLE__)
 MmapFile::~MmapFile()
 {
-    if (data && data != MAP_FAILED)
+    if (data && data != nerve::sys::kMapFailed)
     {
-        munmap(data, size);
+        nerve::sys::unmap(data, size);
     }
     if (fd >= 0)
     {
@@ -45,8 +45,8 @@ MmapFile &MmapFile::operator=(MmapFile &&other) noexcept
 {
     if (this != &other)
     {
-        if (data && data != MAP_FAILED)
-            munmap(data, size);
+        if (data && data != nerve::sys::kMapFailed)
+            nerve::sys::unmap(data, size);
         if (fd >= 0)
             close(fd);
         data = other.data;
@@ -83,15 +83,16 @@ MmapFile mmapReadFile(const std::string &path)
         result.fd = -1;
         return result;
     }
-    result.data = mmap(nullptr, result.size, PROT_READ, MAP_PRIVATE, result.fd, 0);
-    if (result.data == MAP_FAILED)
+    result.data = nerve::sys::map(nullptr, result.size, nerve::sys::MAP_PROT_READ,
+                                     nerve::sys::MAP_FLAG_PRIVATE, result.fd, 0);
+    if (result.data == nerve::sys::kMapFailed)
     {
         close(result.fd);
         result.fd = -1;
         throw std::runtime_error("mmap failed for: " + path + " (" + std::strerror(errno) + ")");
     }
-    madvise(result.data, result.size, MADV_SEQUENTIAL);
-    madvise(result.data, result.size, MADV_WILLNEED);
+    nerve::sys::advise(result.data, result.size, nerve::sys::MAP_ADV_SEQUENTIAL);
+    nerve::sys::advise(result.data, result.size, nerve::sys::MAP_ADV_WILLNEED);
     result.writable = false;
     return result;
 }
@@ -113,8 +114,9 @@ MmapFile mmapWriteFile(const std::string &path, Size file_size)
         throw std::runtime_error("Cannot truncate file: " + path + " (" + std::strerror(errno) +
                                  ")");
     }
-    result.data = mmap(nullptr, file_size, PROT_READ | PROT_WRITE, MAP_SHARED, result.fd, 0);
-    if (result.data == MAP_FAILED)
+    result.data = nerve::sys::map(nullptr, file_size, nerve::sys::MAP_PROT_RW,
+                                     nerve::sys::MAP_FLAG_SHARED, result.fd, 0);
+    if (result.data == nerve::sys::kMapFailed)
     {
         close(result.fd);
         result.fd = -1;
@@ -140,7 +142,7 @@ void saveDiagramMmap(const std::string &path, const persistence::Diagram &diagra
     auto data = serializeDiagramBinary(diagram);
     auto file = mmapWriteFile(path, data.size());
     std::memcpy(file.mutableBytes(), data.data(), data.size());
-    msync(file.data, file.size, MS_SYNC);
+    nerve::sys::sync_map(file.data, file.size);
 }
 #else
 MmapFile::~MmapFile() {}

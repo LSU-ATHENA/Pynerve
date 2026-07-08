@@ -1,6 +1,7 @@
 #include "nerve/io/diagram_io.hpp"
 
 #include <cmath>
+#include <cstring>
 #include <fstream>
 #include <limits>
 #include <sstream>

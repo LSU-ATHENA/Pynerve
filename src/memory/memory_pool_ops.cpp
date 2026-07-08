@@ -1,5 +1,3 @@
-#include <sys/mman.h>
-
 #include <algorithm>
 #include <atomic>
 #include <cassert>
@@ -11,6 +9,7 @@
 #endif
 
 #include "memory/safe_memory_pool.hpp"
+#include "nerve/platform.hpp"
 
 namespace nerve::memory
 {
@@ -103,17 +102,18 @@ GlobalPagePool &GlobalPagePool::instance()
 
 static void *tryHugepageAlloc()
 {
-#ifdef __linux__
-    void *p =
-        mmap(nullptr, kHugePageSize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (p != MAP_FAILED)
+#if defined(__linux__) && defined(MAP_ANONYMOUS)
+    void *p = nerve::sys::map(nullptr, kHugePageSize, nerve::sys::MAP_PROT_RW,
+                               nerve::sys::MAP_FLAG_PRIVATE | nerve::sys::MAP_FLAG_ANONYMOUS);
+    if (p != nerve::sys::kMapFailed)
     {
-        madvise(p, kHugePageSize, MADV_HUGEPAGE);
+        nerve::sys::advise(p, kHugePageSize, nerve::sys::MAP_ADV_HUGEPAGE);
         return p;
     }
-    p = mmap(nullptr, kHugePageSize, PROT_READ | PROT_WRITE,
-             MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB, -1, 0);
-    if (p != MAP_FAILED)
+    p = nerve::sys::map(nullptr, kHugePageSize, nerve::sys::MAP_PROT_RW,
+                         nerve::sys::MAP_FLAG_PRIVATE | nerve::sys::MAP_FLAG_ANONYMOUS |
+                         nerve::sys::MAP_FLAG_HUGETLB);
+    if (p != nerve::sys::kMapFailed)
         return p;
 #endif
     return nullptr;
@@ -138,7 +138,7 @@ GlobalPagePool::~GlobalPagePool()
     while (node)
     {
         PageNode *next = node->next;
-        munmap(node, kHugePageSize);
+        nerve::sys::unmap(node, kHugePageSize);
         node = next;
     }
 }

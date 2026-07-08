@@ -25,11 +25,10 @@ using nerve::algebra::Point;
 #include "nerve/cpu/x86_intrinsics.hpp"
 #endif
 
-namespace nerve {
-namespace filtration {
-namespace vr {
-namespace parallel {
-namespace {
+namespace nerve::filtration::vr::parallel
+{
+namespace
+{
 
 constexpr size_t kMaxSpatialGridCells = 8'000'000;
 
@@ -423,7 +422,4 @@ VRBenchmark benchmarkParallelVR(int n_points, float threshold, int num_threads) 
     return bench;
 }
 
-}  // namespace parallel
-}  // namespace vr
-}  // namespace filtration
-}  // namespace nerve
+} // namespace nerve::filtration::vr::parallel

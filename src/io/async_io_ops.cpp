@@ -1,4 +1,5 @@
 #include "nerve/io/async_io.hpp"
+#include "nerve/platform.hpp"
 
 #include <cerrno>
 #include <cstring>
@@ -9,7 +10,6 @@
 
 #ifdef __linux__
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
@@ -17,7 +17,6 @@
 #ifdef __APPLE__
 #include <dispatch/dispatch.h>
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
@@ -112,22 +111,22 @@ Size MmapIoEngine::read(int fd, void *buffer, Size offset, Size size, IoFlags fl
         Size total = 0;
         while (total < size)
         {
-            Size aligned_off = (offset + total) & ~(static_cast<Size>(getpagesize()) - 1);
+            Size aligned_off = (offset + total) & ~(nerve::sys::page_size() - 1);
             Size map_size = std::min(static_cast<Size>(kMmapChunkSize),
                                      size - total + ((offset + total) - aligned_off));
-            void *mapped = mmap(nullptr, map_size, PROT_READ, MAP_PRIVATE, fd,
-                                static_cast<off_t>(aligned_off));
-            if (mapped == MAP_FAILED)
+            void *mapped = nerve::sys::map(nullptr, map_size, nerve::sys::MAP_PROT_READ,
+                                            nerve::sys::MAP_FLAG_PRIVATE, fd, aligned_off);
+            if (mapped == nerve::sys::kMapFailed)
             {
                 return preadFull(fd, static_cast<uint8_t *>(buffer) + total, size - total,
                                  offset + total);
             }
             Size page_off = (offset + total) - aligned_off;
             Size copy_size = std::min(size - total, map_size - page_off);
-            madvise(mapped, map_size, MADV_SEQUENTIAL);
+            nerve::sys::advise(mapped, map_size, nerve::sys::MAP_ADV_SEQUENTIAL);
             std::memcpy(static_cast<uint8_t *>(buffer) + total,
                         static_cast<const uint8_t *>(mapped) + page_off, copy_size);
-            munmap(mapped, map_size);
+            nerve::sys::unmap(mapped, map_size);
             total += copy_size;
         }
         stats_.bytes_read += size;

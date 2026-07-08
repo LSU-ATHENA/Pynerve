@@ -54,7 +54,7 @@ void LevelSet::setAdaptiveLevels(bool adaptive)
 }
 
 errors::ErrorResult<std::vector<std::pair<algebra::Simplex, double>>>
-LevelSet::buildFiltration(const core::BufferView<const double> &scalar_field,
+LevelSet::buildFiltration(core::BufferView<const double>scalar_field,
                           const core::DeterminismContract &contract)
 {
     if (contract.level == core::DeterminismLevel::STRICT &&
@@ -162,7 +162,7 @@ LevelSet::buildFiltration(const at::Tensor &scalar_field, const core::Determinis
 }
 #endif // USE_TORCH
 errors::ErrorResult<std::vector<std::pair<algebra::Simplex, double>>>
-LevelSet::buildFiltration(const core::BufferView<const double> &scalar_field,
+LevelSet::buildFiltration(core::BufferView<const double>scalar_field,
                           const std::vector<std::vector<Index>> &connectivity,
                           const core::DeterminismContract &contract)
 {
@@ -201,7 +201,7 @@ LevelSet::buildFiltration(const core::BufferView<const double> &scalar_field,
         std::vector<std::pair<algebra::Simplex, double>>(filtration_));
 }
 std::vector<std::pair<algebra::Simplex, double>>
-LevelSet::build2dFiltration(const core::BufferView<const double> &scalar_field, Size width,
+LevelSet::build2dFiltration(core::BufferView<const double>scalar_field, Size width,
                             Size height, const core::DeterminismContract &contract)
 {
     setGridShape({width, height});
@@ -211,7 +211,7 @@ LevelSet::build2dFiltration(const core::BufferView<const double> &scalar_field, 
     return result.isSuccess() ? result.value() : std::vector<std::pair<algebra::Simplex, double>>();
 }
 std::vector<std::pair<algebra::Simplex, double>>
-LevelSet::build3dFiltration(const core::BufferView<const double> &scalar_field, Size width,
+LevelSet::build3dFiltration(core::BufferView<const double>scalar_field, Size width,
                             Size height, Size depth, const core::DeterminismContract &contract)
 {
     setGridShape({width, height, depth});
@@ -221,7 +221,7 @@ LevelSet::build3dFiltration(const core::BufferView<const double> &scalar_field, 
     return result.isSuccess() ? result.value() : std::vector<std::pair<algebra::Simplex, double>>();
 }
 std::vector<double>
-LevelSet::computeLevels(const core::BufferView<const double> &scalar_field) const
+LevelSet::computeLevels(core::BufferView<const double>scalar_field) const
 {
     if (scalar_field.size() == 0)
         return {};
@@ -243,7 +243,7 @@ LevelSet::computeLevels(const core::BufferView<const double> &scalar_field) cons
     return levels;
 }
 std::vector<double>
-LevelSet::computeAdaptiveLevels(const core::BufferView<const double> &scalar_field) const
+LevelSet::computeAdaptiveLevels(core::BufferView<const double>scalar_field) const
 {
     if (scalar_field.size() == 0)
         return {};
@@ -260,7 +260,7 @@ LevelSet::computeAdaptiveLevels(const core::BufferView<const double> &scalar_fie
     return levels;
 }
 std::vector<double>
-LevelSet::computeQuantileLevels(const core::BufferView<const double> &scalar_field,
+LevelSet::computeQuantileLevels(core::BufferView<const double>scalar_field,
                                 Size num_quantiles) const
 {
     if (scalar_field.size() == 0)
