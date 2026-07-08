@@ -1,9 +1,9 @@
 # API Reference
 
-### compute_persistence_ph4
+### compute_persistence_up_to_dim_4
 
 ```python
-pynerve.compute_persistence_ph4(
+pynerve.compute_persistence_up_to_dim_4(
     points,
     options=None,
     *,
@@ -42,10 +42,10 @@ Each additional dimension adds roughly one order of magnitude more simplices in 
 
 ```python
 # Default: strict comparison
-result = pynerve.compute_persistence_ph4(points, error_tolerance=0.0)
+result = pynerve.compute_persistence_up_to_dim_4(points, error_tolerance=0.0)
 
 # Relaxed: treat values within 1e-8 as equal
-result = pynerve.compute_persistence_ph4(points, error_tolerance=1e-8)
+result = pynerve.compute_persistence_up_to_dim_4(points, error_tolerance=1e-8)
 ```
 
 **Determinism guarantee levels**:

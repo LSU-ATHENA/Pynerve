@@ -9,15 +9,15 @@ result = pynerve.compute_persistence(points, max_dim=1)
 
 # Scenario 2: Moderate data, production pipeline
 opts = PersistenceOptions(threads=os.cpu_count())
-result = pynerve.compute_persistence_ph4(points, opts, max_dim=2, max_radius=0.5)
+result = pynerve.compute_persistence_up_to_dim_4(points, opts, max_dim=2, max_radius=0.5)
 
 # Scenario 3: Large data, GPU-accelerated
 opts = PersistenceOptions(backend=PersistenceBackend.CUDA_HYBRID)
-result = pynerve.compute_persistence_ph4(points, opts, max_dim=2, max_radius=0.3)
+result = pynerve.compute_persistence_up_to_dim_4(points, opts, max_dim=2, max_radius=0.3)
 
 # Scenario 4: Memory-constrained, approximate mode
 opts = PersistenceOptions(mode=PersistenceMode.APPROX)
-result = pynerve.compute_persistence_ph4(points, opts, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_4(points, opts, max_dim=2)
 ```
 
 ### Performance Tuning Checklist

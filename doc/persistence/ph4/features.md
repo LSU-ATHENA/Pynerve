@@ -41,8 +41,8 @@ PH4 is bitwise reproducible by default. Every run with the same inputs produces 
 - No floating-point atomics in the GPU path
 
 ```python
-r1 = pynerve.compute_persistence_ph4(points)
-r2 = pynerve.compute_persistence_ph4(points)
+r1 = pynerve.compute_persistence_up_to_dim_4(points)
+r2 = pynerve.compute_persistence_up_to_dim_4(points)
 assert r1.pairs == r2.pairs  # always passes
 ```
 
@@ -55,7 +55,7 @@ For very large datasets, PH4 can compute approximate persistence using witness s
 ```python
 opts = PersistenceOptions(mode=PersistenceMode.APPROX)
 
-result = pynerve.compute_persistence_ph4(points, opts, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_4(points, opts, max_dim=2)
 ```
 
 **How it works**:
@@ -73,7 +73,7 @@ The `error_tolerance` parameter controls approximation quality:
 ```python
 opts = PersistenceOptions(mode=PersistenceMode.APPROX, error_tolerance=0.01)
 
-result = pynerve.compute_persistence_ph4(points, opts, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_4(points, opts, max_dim=2)
 ```
 
 **Quality-quality tradeoff**:
@@ -91,7 +91,7 @@ PH4 can operate within a fixed memory budget:
 from pynerve import PH5PH6Config
 
 config = PH5PH6Config()
-result = pynerve.compute_persistence_ph5(points, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_5(points, max_dim=2)
 ```
 
 When the estimated memory exceeds the budget:
