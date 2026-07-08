@@ -32,9 +32,6 @@ set(NERVE_CORE_SOURCES
     algebra/complex/complex_ops.cpp
     algebra/complex/simplex_set_ops.cpp
     algebra/geometry/distance_simd_avx_ops.cpp
-    algebra/geometry/distance_simd_avx2.cpp
-    algebra/geometry/distance_simd_avx512.cpp
-    algebra/geometry/distance_simd_baseline.cpp
     algebra/geometry/distance_simd_ops.cpp
     algebra/geometry/distance_sse_ops.cpp
     algebra/geometry/geometry_analytic_ops.cpp
@@ -53,7 +50,6 @@ set(NERVE_CORE_SOURCES
     anomaly/topology_drift_ops.cpp
     approximation/distance_approximation_ops.cpp
     dmt/discrete_gradient_parallel.cpp
-    dmt/dmt_simd_ops.cpp
     core/core_simd_ops.cpp
     core/thread_affinity_ops.cpp
     core/compact_summary/compact_summary_extensions.cpp
@@ -76,12 +72,10 @@ set(NERVE_CORE_SOURCES
     cpu/avx512_ph_ops.cpp
     nn/diagram_conv.cpp
     nn/diagram_conv_image_ops.cpp
-    nn/diagram_conv_image_ops_detail.cpp
     nn/simd_nn_ops.cpp
     runtime/calibration_model.cpp
     runtime/calibration_model_detail.cpp
     runtime/hardware_probe.cpp
-    runtime/runtime_simd_ops.cpp
     persistence/accelerated/cuda_edge_extraction.cpp
     persistence/accelerated/determinism.cpp
     persistence/accelerated/determinism_validation.cpp
@@ -159,10 +153,9 @@ set(NERVE_CORE_SOURCES
     persistence/kernels/kernel_h4_chunked_ops.cpp
     persistence/kernels/kernel_h5_prefetch_ops.cpp
     persistence/kernels/kernel_h6_streaming_ops.cpp
-    persistence/kernels/ph4_ops.cpp
-    persistence/kernels/ph4_summary_ops.cpp
     persistence/kernels/ph5_high_dim_ops.cpp
     persistence/kernels/ph6_high_dim_ops.cpp
+    persistence/kernels/ph4_summary_ops.cpp
     persistence/memory/memory_clear_compress_ops.cpp
     persistence/memory/memory_pool_ops.cpp
     persistence/memory/memory_numa_optimizer.cpp
@@ -353,11 +346,9 @@ set(NERVE_CORE_SOURCES
     io/diagram_io_ops.cpp
     io/mmap_io_ops.cpp
     io/npy_io_ops.cpp
-    memory/memory_allocator_ops.cpp
     memory/memory_pool_ops.cpp
     optimization/compact_summaries_memory.cpp
     filtration/vr/vr_construction_ksimplices.cpp
-    nn/diagram_conv_kernels.cpp
     persistence/cohomology/cohomology_dual.cpp
     persistence/cohomology/cohomology_ring.cpp
     persistence/cohomology/cohomology_sheaf.cpp
@@ -391,6 +382,10 @@ set(NERVE_CUDA_SOURCES
     autodiff/autodiff_gpu_kernels.cu
     core/gpu/gpu_kernels.cu
     cuda/kernels/distance_kernels.cu
+    cuda/kernels/distance_tedjoin.cu
+    cuda/kernels/bottleneck_distance.cu
+    cuda/kernels/wasserstein_distance.cu
+    cuda/kernels/persistence_image.cu
     cuda/kernels/reduction_kernels.cu
     cuda/kernels/reduction_kernels_launcher.cpp
     dmt/gpu/dmt_kernels.cu
@@ -412,7 +407,7 @@ set(NERVE_CUDA_SOURCES
     persistence/cuda/matrix_distance_tiled_cuda.cu
     persistence/cuda/matrix_distance_api_cuda.cu
     persistence/cuda/matrix_distance_api_entrypoints.cu
-    # Orphaned CUDA files — wired in from audit
+    # Orphaned CUDA files - wired in from audit
     graphs/attention_gpu.cu
     graphs/message_passing_gpu.cu
     gpu/tuning/tuning_cache_ops.cpp
@@ -441,20 +436,16 @@ set(NERVE_CUDA_SOURCES
     persistence/cuda/kernel_warp_specialized_cuda.cu
     persistence/cuda/matrix_reduction_launch_cuda.cu
     persistence/cuda/multi_gpu_cuda.cu
+    persistence/vr/vr_medium_hybrid_gpu_distance.cpp
+    cuda/kernels/gpu_persistence_launcher.cu
+    cuda/kernels/gpu_persistence_reduction.cu
+    cuda/kernels/specseq_reduction.cu
 )
 
 # Extended CUDA sources
 set(NERVE_CUDA_EXTENDED_SOURCES
-    cuda/kernels/bottleneck_distance.cu
     cuda/kernels/distance_fasted.cu
-    cuda/kernels/distance_tedjoin.cu
-    cuda/kernels/gpu_persistence_launcher.cu
-    cuda/kernels/gpu_persistence_reduction.cu
     cuda/kernels/mapper_gpu.cu
-    cuda/kernels/persistence_image.cu
-    cuda/kernels/specseq_reduction.cu
-    cuda/kernels/wasserstein_distance.cu
-    persistence/cuda/kernel_hypha_scan.cu
     persistence/reduction/reduction_hypha_ops.cpp
     encoders/encoder_gpu_kernels.cu
     filtration/gpu/vr_sparse_cuda.cu
@@ -466,7 +457,6 @@ set(NERVE_CUDA_EXTENDED_SOURCES
     ml/nn/diagram_message_passing.cu
     optimization/gpu/opt_kernels.cu
     probabilistic/probabilistic_gpu.cu
-    probabilistic/simd/probabilistic_simd_ops.cpp
     regularization/augmentation_gpu.cu
     regularization/loss_kernels.cu
     regularization/regularizer_gpu.cu
@@ -502,10 +492,9 @@ set(NERVE_CUDA_EXTENDED_SOURCES
     persistence/cuda/tensor_core_wrappers_cuda.cu
     persistence/cuda/tensor_core_benchmark.cu
     persistence/cuda/tuning_tma_cuda.cu
-    # Orphaned CUDA files — wired in from audit
-    persistence/vr/vr_medium_hybrid_gpu_distance.cpp
+    # Orphaned CUDA files - wired in from audit
     spectral/persistent_laplacian_gpu_kernels.cu
-    spectral/persistent_laplacian_gpu_solver_helpers.cpp
+    spectral/persistent_laplacian_gpu_solver_helpers.cu
     compression/autoencoder_gpu.cu
 )
 
@@ -580,14 +569,10 @@ set(NERVE_NUMA_SOURCES
 )
 
 # AVX-512-dependent sources
+# Note: distance_simd_*.cpp were removed from this list; they now delegate to
+# the SIMD dispatch table (nerve::simd::SIMD) which handles all ISA levels.
 set(NERVE_AVX512_SOURCES
-    algebra/geometry/distance_simd_avx_ops.cpp
-    algebra/geometry/distance_simd_avx2.cpp
-    algebra/geometry/distance_simd_avx512.cpp
-    algebra/geometry/distance_simd_baseline.cpp
-    algebra/geometry/distance_simd_ops.cpp
     compression/simd/compression_simd_ops.cpp
-    encoders/simd_encoder_ops.cpp
     metrics/matrix/matrix_distance_avx512_ops.cpp
     persistence/utils/avx512_optimizer.cpp
 )
