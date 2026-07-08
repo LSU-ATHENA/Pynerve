@@ -58,19 +58,19 @@ The function can return `E20_NUM_NAN` if NaN is encountered in points, `E50_PH_A
 
 ```cpp
 // Specific engines
-ErrorResult<PersistenceResult> computePersistencePh4(
+ErrorResult<PersistenceResult> computePersistenceUpToDim4(
     const core::BufferView<const double>& points,
     Size point_dim,
     const PersistenceOptions& options = {}
 );
 
-ErrorResult<PersistenceResult> computePersistencePh5(
+ErrorResult<PersistenceResult> computePersistenceUpToDim5(
     const core::BufferView<const double>& points,
     Size point_dim,
     const PersistenceOptions& options = {}
 );
 
-ErrorResult<PersistenceResult> computePersistencePh6(
+ErrorResult<PersistenceResult> computePersistenceUpToDim6(
     const core::BufferView<const double>& points,
     Size point_dim,
     const PersistenceOptions& options = {}

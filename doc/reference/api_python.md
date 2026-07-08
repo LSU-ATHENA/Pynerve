@@ -88,9 +88,9 @@ result = pynerve.compute_persistence(
 
 ```python
 def compute_persistence_ph3(points, options=None, **kwargs) -> PersistenceResult
-def compute_persistence_ph4(points, options=None, **kwargs) -> PersistenceResult
-def compute_persistence_ph5(points, options=None, **kwargs) -> PersistenceResult
-def compute_persistence_ph6(points, options=None, **kwargs) -> PersistenceResult
+def compute_persistence_up_to_dim_4(points, options=None, **kwargs) -> PersistenceResult
+def compute_persistence_up_to_dim_5(points, options=None, **kwargs) -> PersistenceResult
+def compute_persistence_up_to_dim_6(points, options=None, **kwargs) -> PersistenceResult
 ```
 
 Convenience wrappers with `engine` pre-selected.
@@ -111,51 +111,51 @@ Compute persistence using the PH3 engine. Cohomology-based reduction for small-t
 **Best for:** n < 10,000, cohomology-based exact computation.
 
 
-## `pynerve.compute_persistence_ph4`
+## `pynerve.compute_persistence_up_to_dim_4`
 
 ```python
-pynerve.compute_persistence_ph4(
+pynerve.compute_persistence_up_to_dim_4(
     points: PointCloud,
     options: PersistenceOptions | None = None,
     **kwargs: Any,
 ) -> PersistenceResult
 ```
 
-Compute persistence using the PH4 engine. Exact VR for small-to-moderate point clouds (n < 10K). Same parameters and return type as `compute_persistence`.
+Compute persistence capped at dimension 4 (same as Ph4). Same parameters and return type as `compute_persistence`.
 
 **Cost:** O(n^2 * d) distance + O(n^{d+1} log n) filtration + O(n^{3d+3}) worst-case reduction.
 
 **Best for:** n < 10,000, exact results required.
 
 
-## `pynerve.compute_persistence_ph5`
+## `pynerve.compute_persistence_up_to_dim_5`
 
 ```python
-pynerve.compute_persistence_ph5(
+pynerve.compute_persistence_up_to_dim_5(
     points: PointCloud,
     options: PersistenceOptions | None = None,
     **kwargs: Any,
 ) -> PersistenceResult
 ```
 
-Compute persistence using the PH5 engine. Approximate VR with iterative refinement. Suitable for 10K-1M points. Uses sparse distance matrix with configurable compression.
+Compute persistence capped at dimension 5 (same as Ph5). Same parameters and return type as `compute_persistence`.
 
 **Cost:** O(n * k * d) for sparse distance (k = neighbors) + iterative refinement O(m^{d+1}).
 
 **Best for:** 10K - 1M points, configurable accuracy.
 
 
-## `pynerve.compute_persistence_ph6`
+## `pynerve.compute_persistence_up_to_dim_6`
 
 ```python
-pynerve.compute_persistence_ph6(
+pynerve.compute_persistence_up_to_dim_6(
     points: PointCloud,
     options: PersistenceOptions | None = None,
     **kwargs: Any,
 ) -> PersistenceResult
 ```
 
-Compute persistence using the PH6 engine. Block-sparse reduction optimized for witness and large-scale VR. Suitable for 100K-10M+ points.
+Compute persistence capped at dimension 6 (same as Ph6). Same parameters and return type as `compute_persistence`.
 
 **Cost:** O(k * n * d) for witness distance (k = landmarks) + O(k^{d+1}) for block-sparse reduction.
 

@@ -2,7 +2,7 @@
 
 ### ThreadPool
 
-Pinned thread pool with `pthread_setaffinity_np`. Each worker thread is pinned to a specific core for cache locality and consistent scheduling. Round-robin core assignment by default.
+Pinned thread pool with `nerve::sys::thread_set_affinity()`. Each worker thread is pinned to a specific core for cache locality and consistent scheduling. Round-robin core assignment by default.
 
 ```cpp
 nerve::core::ThreadPool pool(/* threads = */ 8, /* pin_to_cores = */ true);

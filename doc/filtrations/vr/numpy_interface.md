@@ -22,13 +22,13 @@ betti = result.betti_numbers   # [b0, b1, b2, ...]
 
 ```python
 # PH4 -- sparse optimization engine, recommended for VR
-result = pynerve.compute_persistence_ph4(points, max_dim=2, max_radius=1.0)
+result = pynerve.compute_persistence_up_to_dim_4(points, max_dim=2, max_radius=1.0)
 
 # PH5 -- balanced exact/approximate
-result = pynerve.compute_persistence_ph5(points, max_dim=2, max_radius=1.0)
+result = pynerve.compute_persistence_up_to_dim_5(points, max_dim=2, max_radius=1.0)
 
 # PH6 -- high-precision accelerated
-result = pynerve.compute_persistence_ph6(points, max_dim=2, max_radius=1.0)
+result = pynerve.compute_persistence_up_to_dim_6(points, max_dim=2, max_radius=1.0)
 
 # PH3 (cohomology) -- faster for H1 and above on large data
 result = pynerve.compute_persistence_ph3(points, max_dim=2, max_radius=1.0)

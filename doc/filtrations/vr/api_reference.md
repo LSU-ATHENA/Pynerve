@@ -28,10 +28,10 @@ The `compute_persistence` function accepts the following parameters. `points` is
 - `betti_numbers`: list of Betti numbers per dimension
 - `diagnostics`: dict with optional diagnostic info
 
-### `pynerve.compute_persistence_ph4`
+### `pynerve.compute_persistence_up_to_dim_4`
 
 ```python
-def compute_persistence_ph4(
+def compute_persistence_up_to_dim_4(
     points: np.ndarray,
     options: PersistenceOptions | None = None,
     *,
@@ -44,13 +44,14 @@ def compute_persistence_ph4(
 ) -> PersistenceResult:
 ```
 
-PH4 engine: uses clearing optimization with cohomology-based reduction
-for maximum throughput on filtration sizes up to $10^6$ simplices.
+Persistence capped at dimension 4 (same as Ph4). Uses clearing optimization
+with cohomology-based reduction for maximum throughput on filtration sizes
+up to $10^6$ simplices.
 
-### `pynerve.compute_persistence_ph5`
+### `pynerve.compute_persistence_up_to_dim_5`
 
 ```python
-def compute_persistence_ph5(
+def compute_persistence_up_to_dim_5(
     points: np.ndarray,
     options: PersistenceOptions | None = None,
     *,
@@ -63,14 +64,14 @@ def compute_persistence_ph5(
 ) -> PersistenceResult:
 ```
 
-PH5 engine: balanced exact/approximate reduction. Uses a hybrid approach
-that falls back to sparse approximation when the boundary matrix exceeds
-a configurable threshold.
+Persistence capped at dimension 5 (same as Ph5). Balanced exact/approximate
+reduction that falls back to sparse approximation when the boundary matrix
+exceeds a configurable threshold.
 
-### `pynerve.compute_persistence_ph6`
+### `pynerve.compute_persistence_up_to_dim_6`
 
 ```python
-def compute_persistence_ph6(
+def compute_persistence_up_to_dim_6(
     points: np.ndarray,
     options: PersistenceOptions | None = None,
     *,
@@ -83,9 +84,9 @@ def compute_persistence_ph6(
 ) -> PersistenceResult:
 ```
 
-PH6 engine: high-precision accelerated reduction. Uses double-precision
-arithmetic throughout and applies iterative refinement to resolve
-near-degeneracies.
+Persistence capped at dimension 6 (same as Ph6). High-precision accelerated
+reduction using double-precision arithmetic throughout with iterative
+refinement to resolve near-degeneracies.
 
 ### `pynerve.torch.vr_persistence`
 
