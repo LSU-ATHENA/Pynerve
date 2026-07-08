@@ -321,7 +321,7 @@ assert result_a == result_b  # holds
 ## Package version
 
 ```python
-pynerve.__version__  # e.g. "0.9.6"
+pynerve.__version__  # e.g. "1.0.0"
 ```
 
 
