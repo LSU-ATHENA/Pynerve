@@ -1,6 +1,7 @@
 #include "nerve/formats/packed_boundary_matrix.hpp"
 #include "nerve/formats/packed_gpu_scan.hpp"
 #include "nerve/formats/persistence_pipeline.hpp"
+#include "nerve/platform.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -41,7 +42,7 @@ Index findPivotInPacked(const PackedWord *col, Size nw)
     {
         if (col[w - 1] != 0)
         {
-            int msb = static_cast<int>(__builtin_clzll(col[w - 1]));
+            int msb = nerve::bits::clz64(col[w - 1]);
             int bit = 63 - msb;
             return static_cast<Index>((w - 1) * kBitsPerPackedWord + static_cast<Size>(bit));
         }
@@ -57,16 +58,6 @@ bool isColumnEmpty(const PackedWord *col, Size nw)
             return false;
     }
     return true;
-}
-
-PackedWord popcountPacked(const PackedWord *col, Size nw)
-{
-    PackedWord count = 0;
-    for (Size w = 0; w < nw; ++w)
-    {
-        count += static_cast<PackedWord>(__builtin_popcountll(col[w]));
-    }
-    return count;
 }
 
 void xorColumnsPacked(PackedWord *dst, const PackedWord *src, Size nw)
@@ -186,7 +177,6 @@ PipelineResult PersistencePipeline::runGpuScanAndReduce(const PackedBoundaryMatr
     PackedBoundaryMatrix packed(matrix);
     packed.convertToPacked();
 
-    Size n_rows = packed.numRows();
     Size n_cols = packed.numCols();
     Size nw = packed.numWordsPerColumn();
 

@@ -1,8 +1,8 @@
 #include "nerve/cache/feature_cache.hpp"
 #include "nerve/core_types.hpp"
+#include "nerve/platform.hpp"
 
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -234,8 +234,9 @@ void FeatureCache::initializeSharedMemory()
         shm_size_ = 0;
         return;
     }
-    shm_ptr_ = ::mmap(nullptr, shm_size_, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd_, 0);
-    if (shm_ptr_ == MAP_FAILED)
+    shm_ptr_ = nerve::sys::map(nullptr, shm_size_, nerve::sys::MAP_PROT_RW,
+                                 nerve::sys::MAP_FLAG_SHARED, shm_fd_, 0);
+    if (shm_ptr_ == nerve::sys::kMapFailed)
     {
         shm_ptr_ = nullptr;
         ::close(shm_fd_);
@@ -248,7 +249,7 @@ void FeatureCache::cleanupSharedMemory()
 {
     if (shm_ptr_)
     {
-        ::munmap(shm_ptr_, shm_size_);
+        nerve::sys::unmap(shm_ptr_, shm_size_);
         shm_ptr_ = nullptr;
     }
     if (shm_fd_ >= 0)

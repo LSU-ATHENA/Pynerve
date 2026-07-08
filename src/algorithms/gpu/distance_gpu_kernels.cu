@@ -28,7 +28,7 @@ __global__ void pairwiseDistanceKernel(const double *__restrict__ points, Size n
         {
             double diff =
                 points[static_cast<size_t>(i) * dim + d] - points[static_cast<size_t>(j) * dim + d];
-            sum = ptx::fma_f64(diff, diff, sum);
+            sum = fma_f64(diff, diff, sum);
         }
         matrix[static_cast<size_t>(i) * n + j] = sqrt(sum);
     }
@@ -46,7 +46,9 @@ __global__ void batchDistanceKernel(const double *__restrict__ a, Size na,
     for (Size d = 0; d < dim; ++d)
     {
         double diff = a[static_cast<size_t>(i) * dim + d] - b[static_cast<size_t>(j) * dim + d];
-        sum = ptx::fma_f64(diff, diff, sum);
+        sum = fma_f64(diff, diff, sum);
     }
     distances[static_cast<size_t>(j) * na + i] = sqrt(sum);
 }
+
+} // namespace nerve::algorithms::gpu

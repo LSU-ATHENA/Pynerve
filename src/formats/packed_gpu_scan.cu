@@ -230,6 +230,11 @@ launchPackedScan(const GpuPackedLayout &layout, void *stream_handle, int device_
     cudaSetDevice(device_id);
 
     cudaError_t err;
+    Size stable_count = 0;
+    Size unstable_count = 0;
+    int grid = 0;
+    std::vector<Size> h_sizes(n_cols, n_words);
+
     err = cudaMalloc(&buf.d_columns, col_data_bytes);
     if (err != cudaSuccess)
         goto cleanup;
@@ -241,29 +246,10 @@ launchPackedScan(const GpuPackedLayout &layout, void *stream_handle, int device_
     err = cudaMalloc(&buf.d_column_sizes, size_array_bytes);
     if (err != cudaSuccess)
         goto cleanup;
-    {
-        std::vector<Size> h_sizes(n_cols, n_words);
-        for (Size i = 0; i < n_cols && i < layout.column_offsets.size() - 1; ++i)
-        {
-            Size off = layout.column_offsets[i];
-            Size end = layout.column_offsets[i + 1];
-            Size nw = (end > off) ? (end - off) : n_words;
-            Size actual = 0;
-            for (Size w = nw; w > 0; --w)
-            {
-                if (layout.columns_flat[off + (w - 1)] != 0)
-                {
-                    actual = w;
-                    break;
-                }
-            }
-            h_sizes[i] = actual;
-        }
-        err = cudaMemcpyAsync(buf.d_column_sizes, h_sizes.data(), size_array_bytes,
-                              cudaMemcpyHostToDevice, stream);
-        if (err != cudaSuccess)
-            goto cleanup;
-    }
+    err = cudaMemcpyAsync(buf.d_column_sizes, h_sizes.data(), size_array_bytes,
+                          cudaMemcpyHostToDevice, stream);
+    if (err != cudaSuccess)
+        goto cleanup;
 
     err = cudaMalloc(&buf.d_pivot_candidates, index_array_bytes);
     if (err != cudaSuccess)
@@ -294,7 +280,7 @@ launchPackedScan(const GpuPackedLayout &layout, void *stream_handle, int device_
     cudaMemsetAsync(buf.d_stable_count, 0, sizeof(Size), stream);
     cudaMemsetAsync(buf.d_unstable_count, 0, sizeof(Size), stream);
 
-    int grid = gridFor(n_cols);
+    grid = gridFor(n_cols);
     if (grid == 0)
     {
         freeGpuBuffers(buf);
@@ -320,8 +306,6 @@ launchPackedScan(const GpuPackedLayout &layout, void *stream_handle, int device_
 
     cudaStreamSynchronize(stream);
 
-    Size stable_count = 0;
-    Size unstable_count = 0;
     cudaMemcpy(&stable_count, buf.d_stable_count, sizeof(Size), cudaMemcpyDeviceToHost);
     cudaMemcpy(&unstable_count, buf.d_unstable_count, sizeof(Size), cudaMemcpyDeviceToHost);
 
@@ -342,26 +326,28 @@ launchPackedScan(const GpuPackedLayout &layout, void *stream_handle, int device_
     }
 
     result.leftmost_column_by_row.resize(n_rows, static_cast<Index>(-1));
-    Index *d_leftmost = nullptr;
-    if (n_rows > 0 && stable_count > 0)
     {
+        Index *d_leftmost = nullptr;
         const Size lmr_bytes = n_rows * sizeof(Index);
-        cudaMalloc(&d_leftmost, lmr_bytes);
-        if (d_leftmost)
+        if (n_rows > 0 && stable_count > 0)
         {
-            cudaMemsetAsync(d_leftmost, 0xFF, lmr_bytes, stream);
-            int lmr_grid = gridFor(stable_count);
-            if (lmr_grid > 0)
+            cudaMalloc(&d_leftmost, lmr_bytes);
+            if (d_leftmost)
             {
-                packedLeftmostOneKernel<<<lmr_grid, kScanBlockSize, 0, stream>>>(
-                    buf.d_columns, buf.d_column_sizes,
-                    buf.d_stable_list, stable_count,
-                    d_leftmost, n_rows, n_words);
-                cudaStreamSynchronize(stream);
-                cudaMemcpy(result.leftmost_column_by_row.data(), d_leftmost,
-                           lmr_bytes, cudaMemcpyDeviceToHost);
+                cudaMemsetAsync(d_leftmost, 0xFF, lmr_bytes, stream);
+                int lmr_grid = gridFor(stable_count);
+                if (lmr_grid > 0)
+                {
+                    packedLeftmostOneKernel<<<lmr_grid, kScanBlockSize, 0, stream>>>(
+                        buf.d_columns, buf.d_column_sizes,
+                        buf.d_stable_list, stable_count,
+                        d_leftmost, n_rows, n_words);
+                    cudaStreamSynchronize(stream);
+                    cudaMemcpy(result.leftmost_column_by_row.data(), d_leftmost,
+                               lmr_bytes, cudaMemcpyDeviceToHost);
+                }
+                cudaFree(d_leftmost);
             }
-            cudaFree(d_leftmost);
         }
     }
 
