@@ -12,9 +12,10 @@ ROOT = Path(__file__).resolve().parents[2]
 def _get_quality():
     sys.path.insert(0, str(ROOT / "tools"))
     import ast  # noqa: PLC0415
+
     from quality_checks import (  # noqa: PLC0415
-        build_contracts,
         binding_contracts,
+        build_contracts,
         common,
         import_api,
     )

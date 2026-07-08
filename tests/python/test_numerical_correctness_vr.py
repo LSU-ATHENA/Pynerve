@@ -105,11 +105,11 @@ class TestVrPersistenceHandComputed:
         assert len(res_20.pairs) >= len(res_05.pairs)
 
     def test_ph4_equivalence(self) -> None:
-        from pynerve import compute_persistence, compute_persistence_ph4
+        from pynerve import compute_persistence, compute_persistence_up_to_dim_4
 
         pts = torch.randn(10, 3)
         gen = compute_persistence(pts, max_dim=1, max_radius=5.0)
-        ph4 = compute_persistence_ph4(pts, max_dim=1, max_radius=5.0)
+        ph4 = compute_persistence_up_to_dim_4(pts, max_dim=1, max_radius=5.0)
         assert len(gen.pairs) > 0
         assert len(ph4.pairs) > 0
 
