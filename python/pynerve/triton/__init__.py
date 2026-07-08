@@ -1,12 +1,12 @@
 """Triton GPU kernels for Nerve.
 
 Structure:
-  _distance.py     — Pairwise distance, norms
-  _persistence.py  — Persistence image rasterisation
-  _laplacian.py    — CSR SpMV, AXPY, scale, orthogonalise
-  _wasserstein.py  — Wasserstein/Sinkhorn distance
-  _mapper.py       — Mapper filter, k-means, cover, nerve edges
-  _nn_ops.py       — Activation fusion for diagram conv
+  _distance.py     -- Pairwise distance, norms
+  _persistence.py  -- Persistence image rasterisation
+  _laplacian.py    -- CSR SpMV, AXPY, scale, orthogonalise
+  _wasserstein.py  -- Wasserstein/Sinkhorn distance
+  _mapper.py       -- Mapper filter, k-means, cover, nerve edges
+  _nn_ops.py       -- Activation fusion for diagram conv
 """
 
 from __future__ import annotations
