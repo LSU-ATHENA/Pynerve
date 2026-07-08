@@ -145,6 +145,9 @@ set_tests_properties(nerve_cpp_vr_fast_input_regressions PROPERTIES LABELS "pers
 nerve_add_cpp_test(nerve_cpp_vr_fast_compat_regressions cpp/vr_fast_compat_regressions.cpp)
 set_tests_properties(nerve_cpp_vr_fast_compat_regressions PROPERTIES LABELS "persistence;cpu;regression")
 
+nerve_add_cpp_test(nerve_cpp_vr_fast_legacy_regressions cpp/vr_fast_legacy_regressions.cpp)
+set_tests_properties(nerve_cpp_vr_fast_legacy_regressions PROPERTIES LABELS "persistence;cpu;regression")
+
 nerve_add_cpp_test(nerve_cpp_witness_regressions cpp/witness_regressions.cpp)
 set_tests_properties(nerve_cpp_witness_regressions PROPERTIES LABELS "persistence;witness;cpu;regression")
 
@@ -159,6 +162,9 @@ set_tests_properties(nerve_cpp_probabilistic_regressions PROPERTIES LABELS "prob
 
 nerve_add_cpp_test(nerve_cpp_distance_matrix_regressions cpp/distance_matrix_regressions.cpp)
 set_tests_properties(nerve_cpp_distance_matrix_regressions PROPERTIES LABELS "distance;cpu;regression")
+
+nerve_add_cpp_test(nerve_cpp_simd_primitive_regressions cpp/simd_primitive_regressions.cpp)
+set_tests_properties(nerve_cpp_simd_primitive_regressions PROPERTIES LABELS "simd;primitives;cpu;regression")
 
 nerve_add_cpp_test(nerve_cpp_simd_distance_regressions cpp/simd_distance_regressions.cpp)
 set_tests_properties(nerve_cpp_simd_distance_regressions PROPERTIES LABELS "algebra;simd;cpu;regression")
@@ -377,6 +383,864 @@ if(ENABLE_CUDA AND CMAKE_CUDA_COMPILER)
     endif()
     add_test(NAME nerve_cuda_gpu_distance_tests COMMAND nerve_cuda_gpu_distance_tests)
     set_tests_properties(nerve_cuda_gpu_distance_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;metrics;regression")
+
+    add_executable(nerve_cuda_gpu_cohomology_tests cpp/gpu_cohomology_tests.cu)
+    set_target_properties(nerve_cuda_gpu_cohomology_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_cohomology_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_cohomology_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_cohomology_tests COMMAND nerve_cuda_gpu_cohomology_tests)
+    set_tests_properties(nerve_cuda_gpu_cohomology_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;cohomology;regression")
+
+    add_executable(nerve_cuda_warp_specialized_kernels_tests cpp/warp_specialized_kernels_tests.cu)
+    set_target_properties(nerve_cuda_warp_specialized_kernels_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_warp_specialized_kernels_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_warp_specialized_kernels_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_warp_specialized_kernels_tests COMMAND nerve_cuda_warp_specialized_kernels_tests)
+    set_tests_properties(nerve_cuda_warp_specialized_kernels_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;persistence;warp;regression")
+
+    add_executable(nerve_cuda_gpu_distance_matrix_tests cpp/gpu_distance_matrix_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_distance_matrix_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_distance_matrix_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_distance_matrix_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_distance_matrix_tests COMMAND nerve_cuda_gpu_distance_matrix_tests)
+    set_tests_properties(nerve_cuda_gpu_distance_matrix_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;distance;cluster;regression")
+
+    add_executable(nerve_cuda_gpu_edge_extraction_tests cpp/gpu_edge_extraction_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_edge_extraction_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_edge_extraction_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_edge_extraction_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_edge_extraction_tests COMMAND nerve_cuda_gpu_edge_extraction_tests)
+    set_tests_properties(nerve_cuda_gpu_edge_extraction_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;edge;regression")
+
+    add_executable(nerve_cuda_gpu_edge_edge_cases_tests cpp/gpu_edge_edge_cases_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_edge_edge_cases_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_edge_edge_cases_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_edge_edge_cases_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_edge_edge_cases_tests COMMAND nerve_cuda_gpu_edge_edge_cases_tests)
+    set_tests_properties(nerve_cuda_gpu_edge_edge_cases_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;edge;edge-cases;regression")
+
+    add_executable(nerve_cuda_gpu_filtered_kernel_tests cpp/gpu_filtered_kernel_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_filtered_kernel_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_filtered_kernel_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_filtered_kernel_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_filtered_kernel_tests COMMAND nerve_cuda_gpu_filtered_kernel_tests)
+    set_tests_properties(nerve_cuda_gpu_filtered_kernel_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;edge;filtered;regression")
+
+    add_executable(nerve_cuda_gpu_spectral_tests cpp/gpu_spectral_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_spectral_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_spectral_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_spectral_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_spectral_tests COMMAND nerve_cuda_gpu_spectral_tests)
+    set_tests_properties(nerve_cuda_gpu_spectral_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;spectral;regression")
+    target_sources(nerve_cuda_gpu_spectral_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/spectral/persistent_laplacian_gpu.cpp
+        ${CMAKE_SOURCE_DIR}/src/spectral/persistent_laplacian_gpu_kernels.cu
+        ${CMAKE_SOURCE_DIR}/src/spectral/persistent_laplacian_gpu_solver_helpers.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_spectral_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_dirac_tests cpp/gpu_dirac_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_dirac_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_dirac_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_dirac_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_dirac_tests COMMAND nerve_cuda_gpu_dirac_tests)
+    set_tests_properties(nerve_cuda_gpu_dirac_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;spectral;dirac;regression")
+    target_compile_definitions(nerve_cuda_gpu_dirac_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_graphs_tests cpp/gpu_graphs_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_graphs_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_graphs_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_graphs_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_graphs_tests COMMAND nerve_cuda_gpu_graphs_tests)
+    set_tests_properties(nerve_cuda_gpu_graphs_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;graphs;regression")
+    target_sources(nerve_cuda_gpu_graphs_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/graphs/graph_algorithms_gpu.cu
+        ${CMAKE_SOURCE_DIR}/src/graphs/graph_engine_gpu.cu
+        ${CMAKE_SOURCE_DIR}/src/graphs/message_passing_gpu.cu
+    )
+
+    add_executable(nerve_cuda_gpu_regularization_tests cpp/gpu_regularization_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_regularization_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_regularization_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_regularization_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_regularization_tests COMMAND nerve_cuda_gpu_regularization_tests)
+    set_tests_properties(nerve_cuda_gpu_regularization_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;regularization;regression")
+    target_sources(nerve_cuda_gpu_regularization_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/regularization/regularizer_gpu.cu
+        ${CMAKE_SOURCE_DIR}/src/regularization/augmentation_gpu.cu
+        ${CMAKE_SOURCE_DIR}/src/regularization/loss_kernels.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_regularization_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_specialized_tests cpp/gpu_specialized_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_specialized_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_specialized_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_specialized_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_specialized_tests COMMAND nerve_cuda_gpu_specialized_tests)
+    set_tests_properties(nerve_cuda_gpu_specialized_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;specialized;regression")
+
+    add_executable(nerve_cuda_gpu_reeb_graph_tests cpp/gpu_reeb_graph_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_reeb_graph_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_reeb_graph_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_reeb_graph_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_reeb_graph_tests COMMAND nerve_cuda_gpu_reeb_graph_tests)
+    set_tests_properties(nerve_cuda_gpu_reeb_graph_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;specialized;reeb;regression")
+    target_compile_definitions(nerve_cuda_gpu_reeb_graph_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_filtration_tests cpp/gpu_filtration_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_filtration_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_filtration_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_filtration_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_filtration_tests COMMAND nerve_cuda_gpu_filtration_tests)
+    set_tests_properties(nerve_cuda_gpu_filtration_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;filtration;regression")
+    target_sources(nerve_cuda_gpu_filtration_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/filtration/gpu/level_set_cuda.cu
+    )
+
+    add_executable(nerve_cuda_gpu_vr_sparse_tests cpp/gpu_vr_sparse_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_vr_sparse_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_vr_sparse_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_vr_sparse_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_vr_sparse_tests COMMAND nerve_cuda_gpu_vr_sparse_tests)
+    set_tests_properties(nerve_cuda_gpu_vr_sparse_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;filtration;vr-sparse;regression")
+    target_compile_definitions(nerve_cuda_gpu_vr_sparse_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_streaming_tests cpp/gpu_streaming_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_streaming_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_streaming_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_streaming_tests PRIVATE nerve_core)
+    endif()
+    target_sources(nerve_cuda_gpu_streaming_tests PRIVATE ${CMAKE_SOURCE_DIR}/src/streaming/gpu/windowed_ph_cuda.cu)
+    add_test(NAME nerve_cuda_gpu_streaming_tests COMMAND nerve_cuda_gpu_streaming_tests)
+    set_tests_properties(nerve_cuda_gpu_streaming_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;streaming;regression")
+
+    add_executable(nerve_cuda_gpu_streaming_persistence_tests cpp/gpu_streaming_persistence_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_streaming_persistence_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_streaming_persistence_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_streaming_persistence_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_streaming_persistence_tests COMMAND nerve_cuda_gpu_streaming_persistence_tests)
+    set_tests_properties(nerve_cuda_gpu_streaming_persistence_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;streaming;persistence;regression")
+    target_compile_definitions(nerve_cuda_gpu_streaming_persistence_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_sheaf_tests cpp/gpu_sheaf_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_sheaf_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_sheaf_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_sheaf_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_sheaf_tests COMMAND nerve_cuda_gpu_sheaf_tests)
+    set_tests_properties(nerve_cuda_gpu_sheaf_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;sheaf;regression")
+    target_sources(nerve_cuda_gpu_sheaf_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/sheaf/sheaf_laplacian_gpu.cu
+    )
+
+    add_executable(nerve_cuda_gpu_hungarian_tests cpp/gpu_hungarian_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_hungarian_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_hungarian_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_hungarian_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_hungarian_tests COMMAND nerve_cuda_gpu_hungarian_tests)
+    set_tests_properties(nerve_cuda_gpu_hungarian_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;hungarian;regression")
+
+    add_executable(nerve_cuda_gpu_compression_tests cpp/gpu_compression_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_compression_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_compression_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_compression_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_compression_tests COMMAND nerve_cuda_gpu_compression_tests)
+    set_tests_properties(nerve_cuda_gpu_compression_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;compression;regression")
+    target_sources(nerve_cuda_gpu_compression_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/compression/autoencoder_gpu.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_compression_tests PRIVATE NERVE_HAS_CUDA=1)
+    if(NERVE_CUDNN_INCLUDE_DIR)
+        target_sources(nerve_cuda_gpu_compression_tests PRIVATE
+            ${CMAKE_SOURCE_DIR}/src/compression/encoder_cudnn_benchmark.cpp
+            ${CMAKE_SOURCE_DIR}/src/compression/decoder_cudnn_benchmark.cpp
+        )
+        target_include_directories(nerve_cuda_gpu_compression_tests PRIVATE ${NERVE_CUDNN_INCLUDE_DIR})
+    endif()
+
+    add_executable(nerve_cuda_gpu_probabilistic_tests cpp/gpu_probabilistic_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_probabilistic_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_probabilistic_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_probabilistic_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_probabilistic_tests COMMAND nerve_cuda_gpu_probabilistic_tests)
+    set_tests_properties(nerve_cuda_gpu_probabilistic_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;probabilistic;regression")
+    target_sources(nerve_cuda_gpu_probabilistic_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/probabilistic/probabilistic_gpu.cu
+    )
+
+    add_executable(nerve_cuda_gpu_dmt_tests cpp/gpu_dmt_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_dmt_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_dmt_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_dmt_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_dmt_tests COMMAND nerve_cuda_gpu_dmt_tests)
+    set_tests_properties(nerve_cuda_gpu_dmt_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;dmt;regression")
+
+    add_executable(nerve_cuda_gpu_encoders_tests cpp/gpu_encoders_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_encoders_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_encoders_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_encoders_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_encoders_tests COMMAND nerve_cuda_gpu_encoders_tests)
+    set_tests_properties(nerve_cuda_gpu_encoders_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;encoders;regression")
+    target_sources(nerve_cuda_gpu_encoders_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/encoders/encoder_gpu_kernels.cu
+        ${CMAKE_SOURCE_DIR}/src/encoders/encoder_fusion.cpp
+    )
+    target_compile_definitions(nerve_cuda_gpu_encoders_tests PRIVATE NERVE_HAS_CUDA=1)
+    if(NERVE_CUDNN_INCLUDE_DIR)
+        target_sources(nerve_cuda_gpu_encoders_tests PRIVATE
+            ${CMAKE_SOURCE_DIR}/src/encoders/encoder_tensor_cores.cpp
+            ${CMAKE_SOURCE_DIR}/src/encoders/encoder_tensor_cores_benchmark.cpp
+        )
+        target_include_directories(nerve_cuda_gpu_encoders_tests PRIVATE ${NERVE_CUDNN_INCLUDE_DIR})
+    endif()
+
+    add_executable(nerve_cuda_gpu_autodiff_tests cpp/gpu_autodiff_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_autodiff_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_autodiff_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_autodiff_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_autodiff_tests COMMAND nerve_cuda_gpu_autodiff_tests)
+    set_tests_properties(nerve_cuda_gpu_autodiff_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;autodiff;regression")
+    target_sources(nerve_cuda_gpu_autodiff_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/autodiff/autodiff_tensor.cpp
+        ${CMAKE_SOURCE_DIR}/src/autodiff/autodiff_variable.cpp
+        ${CMAKE_SOURCE_DIR}/src/autodiff/autodiff_graph.cpp
+    )
+
+    add_executable(nerve_cuda_gpu_algebra_tests cpp/gpu_algebra_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_algebra_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_algebra_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_algebra_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_algebra_tests COMMAND nerve_cuda_gpu_algebra_tests)
+    set_tests_properties(nerve_cuda_gpu_algebra_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;algebra;regression")
+
+    add_executable(nerve_cuda_gpu_optimization_tests cpp/gpu_optimization_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_optimization_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_optimization_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_optimization_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_optimization_tests COMMAND nerve_cuda_gpu_optimization_tests)
+    set_tests_properties(nerve_cuda_gpu_optimization_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;optimization;regression")
+
+    add_executable(nerve_cuda_gpu_formats_tests cpp/gpu_formats_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_formats_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_formats_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_formats_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_formats_tests COMMAND nerve_cuda_gpu_formats_tests)
+    set_tests_properties(nerve_cuda_gpu_formats_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;formats;regression")
+
+    add_executable(nerve_cuda_gpu_packed_scan_tests cpp/gpu_packed_scan_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_packed_scan_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_packed_scan_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_packed_scan_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_packed_scan_tests COMMAND nerve_cuda_gpu_packed_scan_tests)
+    set_tests_properties(nerve_cuda_gpu_packed_scan_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;formats;packed-scan;regression")
+    target_sources(nerve_cuda_gpu_packed_scan_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/formats/packed_gpu_scan.cu
+        ${CMAKE_SOURCE_DIR}/src/formats/packed_boundary_matrix.cpp
+    )
+    target_compile_definitions(nerve_cuda_gpu_packed_scan_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_metrics_tests cpp/gpu_metrics_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_metrics_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_metrics_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_metrics_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_metrics_tests COMMAND nerve_cuda_gpu_metrics_tests)
+    set_tests_properties(nerve_cuda_gpu_metrics_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;metrics;regression")
+    target_sources(nerve_cuda_gpu_metrics_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/metrics/wasserstein/distance_sinkhorn_ops.cpp
+        ${CMAKE_SOURCE_DIR}/src/metrics/bottleneck/distance_bottleneck_ops.cpp
+    )
+
+    add_executable(nerve_cuda_gpu_persistence_tests cpp/gpu_persistence_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_persistence_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_persistence_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_persistence_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_persistence_tests COMMAND nerve_cuda_gpu_persistence_tests)
+    set_tests_properties(nerve_cuda_gpu_persistence_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;persistence;accelerated;regression")
+
+    add_executable(nerve_cuda_gpu_blackwell_tests cpp/gpu_blackwell_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_blackwell_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_blackwell_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_blackwell_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_blackwell_tests COMMAND nerve_cuda_gpu_blackwell_tests)
+    set_tests_properties(nerve_cuda_gpu_blackwell_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;blackwell;regression")
+    target_sources(nerve_cuda_gpu_blackwell_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/persistence/cuda/cuda_blackwell_benchmark.cu
+        ${CMAKE_SOURCE_DIR}/src/persistence/cuda/cuda_blackwell_tma.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_blackwell_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_thread_cluster_tests cpp/gpu_thread_cluster_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_thread_cluster_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_thread_cluster_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_thread_cluster_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_thread_cluster_tests COMMAND nerve_cuda_gpu_thread_cluster_tests)
+    set_tests_properties(nerve_cuda_gpu_thread_cluster_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;cluster;regression")
+    target_sources(nerve_cuda_gpu_thread_cluster_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/persistence/kernels/thread_block_cluster.cpp
+    )
+
+    add_executable(nerve_cuda_gpu_multigpu_tests cpp/gpu_multigpu_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_multigpu_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_multigpu_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_multigpu_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_multigpu_tests COMMAND nerve_cuda_gpu_multigpu_tests)
+    set_tests_properties(nerve_cuda_gpu_multigpu_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;multi-gpu;regression")
+    target_sources(nerve_cuda_gpu_multigpu_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/persistence/cuda/multi_gpu_cuda.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_multigpu_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_tensorcore_tests cpp/gpu_tensorcore_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_tensorcore_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_tensorcore_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_tensorcore_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_tensorcore_tests COMMAND nerve_cuda_gpu_tensorcore_tests)
+    set_tests_properties(nerve_cuda_gpu_tensorcore_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;tensor-core;regression")
+    target_sources(nerve_cuda_gpu_tensorcore_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/persistence/cuda/tensor_core_benchmark.cu
+        ${CMAKE_SOURCE_DIR}/src/persistence/cuda/tensor_core_cuda.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_tensorcore_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_calibration_tests cpp/gpu_calibration_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_calibration_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_calibration_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_calibration_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_calibration_tests COMMAND nerve_cuda_gpu_calibration_tests)
+    set_tests_properties(nerve_cuda_gpu_calibration_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;runtime;calibration;regression")
+    target_sources(nerve_cuda_gpu_calibration_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/runtime/calibration_gpu.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_calibration_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_adaptive_selector_tests cpp/gpu_adaptive_selector_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_adaptive_selector_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_adaptive_selector_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_adaptive_selector_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_adaptive_selector_tests COMMAND nerve_cuda_gpu_adaptive_selector_tests)
+    set_tests_properties(nerve_cuda_gpu_adaptive_selector_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;adaptive;selector;regression")
+    target_sources(nerve_cuda_gpu_adaptive_selector_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/persistence/cuda/adaptive_selector_gpu.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_adaptive_selector_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_capability_tests cpp/gpu_capability_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_capability_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_capability_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_capability_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_capability_tests COMMAND nerve_cuda_gpu_capability_tests)
+    set_tests_properties(nerve_cuda_gpu_capability_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;core;capability;regression")
+
+    add_executable(nerve_cuda_gpu_adaptive_accel_tests cpp/gpu_adaptive_accel_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_adaptive_accel_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_adaptive_accel_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_adaptive_accel_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_adaptive_accel_tests COMMAND nerve_cuda_gpu_adaptive_accel_tests)
+    set_tests_properties(nerve_cuda_gpu_adaptive_accel_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;adaptive-accel;regression")
+
+    add_executable(nerve_cuda_gpu_distance_all_tests cpp/gpu_distance_all_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_distance_all_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_distance_all_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_distance_all_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_distance_all_tests COMMAND nerve_cuda_gpu_distance_all_tests)
+    set_tests_properties(nerve_cuda_gpu_distance_all_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;distance;regression")
+    target_sources(nerve_cuda_gpu_distance_all_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/cuda/kernels/distance_fasted.cu
+        ${CMAKE_SOURCE_DIR}/src/cuda/kernels/distance_tedjoin.cu
+        ${CMAKE_SOURCE_DIR}/src/cuda/kernels/wasserstein_distance.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_distance_all_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_attention_tests cpp/gpu_attention_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_attention_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_attention_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_attention_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_attention_tests COMMAND nerve_cuda_gpu_attention_tests)
+    set_tests_properties(nerve_cuda_gpu_attention_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;attention;gnn;regression")
+    target_sources(nerve_cuda_gpu_attention_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/graphs/attention_gpu.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_attention_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_mapper_tests cpp/gpu_mapper_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_mapper_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_mapper_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_mapper_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_mapper_tests COMMAND nerve_cuda_gpu_mapper_tests)
+    set_tests_properties(nerve_cuda_gpu_mapper_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;mapper;regression")
+    target_sources(nerve_cuda_gpu_mapper_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/cuda/kernels/mapper_gpu.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_mapper_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_persistence_image_tests cpp/gpu_persistence_image_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_persistence_image_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_persistence_image_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_persistence_image_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_persistence_image_tests COMMAND nerve_cuda_gpu_persistence_image_tests)
+    set_tests_properties(nerve_cuda_gpu_persistence_image_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;persistence-image;regression")
+    target_sources(nerve_cuda_gpu_persistence_image_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/cuda/kernels/persistence_image.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_persistence_image_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_bottleneck_kernels_tests cpp/gpu_bottleneck_kernels_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_bottleneck_kernels_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_bottleneck_kernels_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_bottleneck_kernels_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_bottleneck_kernels_tests COMMAND nerve_cuda_gpu_bottleneck_kernels_tests)
+    set_tests_properties(nerve_cuda_gpu_bottleneck_kernels_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;bottleneck;regression")
+    target_sources(nerve_cuda_gpu_bottleneck_kernels_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/cuda/kernels/bottleneck_distance.cu
+        ${CMAKE_SOURCE_DIR}/src/cuda/kernels/wasserstein_distance.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_bottleneck_kernels_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_distance_kernels_tests cpp/gpu_distance_kernels_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_distance_kernels_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_distance_kernels_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_distance_kernels_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_distance_kernels_tests COMMAND nerve_cuda_gpu_distance_kernels_tests)
+    set_tests_properties(nerve_cuda_gpu_distance_kernels_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;distance;regression")
+    target_sources(nerve_cuda_gpu_distance_kernels_tests PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/cuda/kernels/distance_kernels.cu
+    )
+    target_compile_definitions(nerve_cuda_gpu_distance_kernels_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_distance_ext_tests cpp/gpu_distance_ext_tests.cu cpp/gpu_test_helpers.cuh)
+    set_target_properties(nerve_cuda_gpu_distance_ext_tests PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_distance_ext_tests PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_distance_ext_tests PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_distance_ext_tests COMMAND nerve_cuda_gpu_distance_ext_tests)
+    set_tests_properties(nerve_cuda_gpu_distance_ext_tests PROPERTIES LABELS "cuda;cuda-hardware;gpu;distance;regression")
+    target_compile_definitions(nerve_cuda_gpu_distance_ext_tests PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cpp_hypha_correctness_quantitative cpp/hypha_correctness_quantitative.cpp)
+    target_compile_features(nerve_cpp_hypha_correctness_quantitative PRIVATE cxx_std_20)
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cpp_hypha_correctness_quantitative PRIVATE nerve_core)
+    endif()
+    nerve_apply_simd(nerve_cpp_hypha_correctness_quantitative)
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cpp_hypha_correctness_quantitative PRIVATE CUDA::cudart)
+    endif()
+    add_test(NAME nerve_cpp_hypha_correctness_quantitative COMMAND nerve_cpp_hypha_correctness_quantitative)
+    set_tests_properties(nerve_cpp_hypha_correctness_quantitative PROPERTIES LABELS "persistence;reduction;hypha;cuda;gpu;correctness;quantitative" TIMEOUT 1800)
+    target_sources(nerve_cpp_hypha_correctness_quantitative PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/persistence/reduction/reduction_hypha_ops.cpp
+    )
+    target_compile_definitions(nerve_cpp_hypha_correctness_quantitative PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cuda_gpu_generated_reduction_contracts cpp/gpu_generated_reduction_contracts.cu)
+    set_target_properties(nerve_cuda_gpu_generated_reduction_contracts PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cuda_gpu_generated_reduction_contracts PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cuda_gpu_generated_reduction_contracts PRIVATE nerve_core)
+    endif()
+    add_test(NAME nerve_cuda_gpu_generated_reduction_contracts COMMAND nerve_cuda_gpu_generated_reduction_contracts)
+    set_tests_properties(nerve_cuda_gpu_generated_reduction_contracts PROPERTIES LABELS "cuda;cuda-hardware;gpu;persistence;generated;contracts" TIMEOUT 3600)
+    target_sources(nerve_cuda_gpu_generated_reduction_contracts PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/persistence/reduction/reduction_hypha_ops.cpp
+    )
+    target_compile_definitions(nerve_cuda_gpu_generated_reduction_contracts PRIVATE NERVE_HAS_CUDA=1)
+
+    add_executable(nerve_cpp_reduction_hypha_regressions cpp/reduction_hypha_regressions.cpp)
+    target_compile_features(nerve_cpp_reduction_hypha_regressions PRIVATE cxx_std_20)
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cpp_reduction_hypha_regressions PRIVATE nerve_core)
+    endif()
+    nerve_apply_simd(nerve_cpp_reduction_hypha_regressions)
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cpp_reduction_hypha_regressions PRIVATE CUDA::cudart)
+    endif()
+    add_test(NAME nerve_cpp_reduction_hypha_regressions COMMAND nerve_cpp_reduction_hypha_regressions)
+    set_tests_properties(nerve_cpp_reduction_hypha_regressions PROPERTIES LABELS "persistence;reduction;hypha;cuda;regression")
+    target_sources(nerve_cpp_reduction_hypha_regressions PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/persistence/reduction/reduction_hypha_ops.cpp
+    )
+    target_compile_definitions(nerve_cpp_reduction_hypha_regressions PRIVATE NERVE_HAS_CUDA=1)
+endif()
+
+# GPU integration pipeline tests (cross-component, guarded by NERVE_HAS_CUDA)
+nerve_add_cpp_test(nerve_cpp_gpu_integration_pipeline_tests cpp/gpu_integration_pipeline_tests.cpp)
+set_tests_properties(nerve_cpp_gpu_integration_pipeline_tests PROPERTIES LABELS "persistence;gpu;cuda;integration" TIMEOUT 600)
+
+# GPU property-based & fuzz tests (guarded by NERVE_HAS_CUDA)
+nerve_add_cpp_test(nerve_cpp_gpu_property_fuzz_tests cpp/gpu_property_fuzz_tests.cpp)
+set_tests_properties(nerve_cpp_gpu_property_fuzz_tests PROPERTIES LABELS "persistence;gpu;cuda;generated;quality" TIMEOUT 300)
+
+if(ENABLE_CUDA AND CMAKE_CUDA_COMPILER)
+    add_executable(nerve_cpp_hypha_gpu_benchmark cpp/hypha_gpu_benchmark.cpp)
+    target_compile_features(nerve_cpp_hypha_gpu_benchmark PRIVATE cxx_std_20)
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cpp_hypha_gpu_benchmark PRIVATE nerve_core)
+    endif()
+    nerve_apply_simd(nerve_cpp_hypha_gpu_benchmark)
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cpp_hypha_gpu_benchmark PRIVATE CUDA::cudart)
+    endif()
+    add_test(NAME nerve_cpp_hypha_gpu_benchmark COMMAND nerve_cpp_hypha_gpu_benchmark)
+    set_tests_properties(nerve_cpp_hypha_gpu_benchmark PROPERTIES LABELS "persistence;reduction;hypha;cuda;gpu;benchmark" TIMEOUT 900)
+    target_sources(nerve_cpp_hypha_gpu_benchmark PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/persistence/reduction/reduction_hypha_ops.cpp
+    )
+    target_compile_definitions(nerve_cpp_hypha_gpu_benchmark PRIVATE NERVE_HAS_CUDA=1)
 endif()
 
 # Integration tests
@@ -390,6 +1254,9 @@ nerve_add_cpp_test(nerve_cpp_integration_distance_persistence cpp/integration_di
 set_tests_properties(nerve_cpp_integration_distance_persistence PROPERTIES LABELS "cpu;integration;distance")
 nerve_add_cpp_test(nerve_cpp_integration_serialization_persistence cpp/integration_serialization_persistence.cpp)
 set_tests_properties(nerve_cpp_integration_serialization_persistence PROPERTIES LABELS "cpu;integration;serialization")
+
+nerve_add_cpp_test(nerve_cpp_integration_persistence_pipeline cpp/integration_persistence_pipeline.cpp)
+set_tests_properties(nerve_cpp_integration_persistence_pipeline PROPERTIES LABELS "cpu;integration;persistence;pipeline")
 
 # Stress tests
 nerve_add_cpp_test(nerve_cpp_stress_large_random_clouds cpp/stress_large_random_clouds.cpp)
@@ -432,8 +1299,34 @@ nerve_add_cpp_test(nerve_cpp_streaming_core_regressions cpp/streaming_core_regre
 set_tests_properties(nerve_cpp_streaming_core_regressions PROPERTIES LABELS "streaming;core;cpu;regression")
 nerve_add_cpp_test(nerve_cpp_streaming_zigzag_regressions cpp/streaming_zigzag_regressions.cpp)
 set_tests_properties(nerve_cpp_streaming_zigzag_regressions PROPERTIES LABELS "streaming;zigzag;cpu;regression")
-nerve_add_cpp_test(nerve_cpp_streaming_laplacian_regressions cpp/streaming_laplacian_regressions.cpp)
-set_tests_properties(nerve_cpp_streaming_laplacian_regressions PROPERTIES LABELS "streaming;laplacian;cpu;regression")
+if(ENABLE_CUDA AND CMAKE_CUDA_COMPILER)
+    add_executable(nerve_cpp_streaming_laplacian_regressions cpp/streaming_laplacian_regressions.cpp)
+    target_compile_features(nerve_cpp_streaming_laplacian_regressions PRIVATE cxx_std_20)
+    set_target_properties(nerve_cpp_streaming_laplacian_regressions PROPERTIES
+        CUDA_STANDARD 20
+        CUDA_STANDARD_REQUIRED ON
+        CUDA_SEPARABLE_COMPILATION ON
+    )
+    if(TARGET CUDA::cudart)
+        target_link_libraries(nerve_cpp_streaming_laplacian_regressions PRIVATE CUDA::cudart)
+    endif()
+    if(TARGET nerve_core)
+        target_link_libraries(nerve_cpp_streaming_laplacian_regressions PRIVATE nerve_core)
+    endif()
+    nerve_apply_simd(nerve_cpp_streaming_laplacian_regressions)
+    add_test(NAME nerve_cpp_streaming_laplacian_regressions COMMAND nerve_cpp_streaming_laplacian_regressions)
+    set_tests_properties(nerve_cpp_streaming_laplacian_regressions PROPERTIES LABELS "streaming;laplacian;cuda;regression")
+    target_sources(nerve_cpp_streaming_laplacian_regressions PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/streaming/laplacian/incremental_graph_laplacian.cpp
+        ${CMAKE_SOURCE_DIR}/src/streaming/laplacian/streaming_laplacian_ops.cpp
+        ${CMAKE_SOURCE_DIR}/src/streaming/laplacian/streaming_laplacian_processor.cpp
+        ${CMAKE_SOURCE_DIR}/src/spectral/persistent_laplacian_gpu.cpp
+        ${CMAKE_SOURCE_DIR}/src/spectral/persistent_laplacian_gpu_solver_helpers.cu
+        ${CMAKE_SOURCE_DIR}/src/spectral/persistent_laplacian_gpu_kernels.cu
+    )
+    target_compile_definitions(nerve_cpp_streaming_laplacian_regressions PRIVATE NERVE_HAS_CUDA=1)
+endif()
+
 nerve_add_cpp_test(nerve_cpp_streaming_lockfree_regressions cpp/streaming_lockfree_regressions.cpp)
 set_tests_properties(nerve_cpp_streaming_lockfree_regressions PROPERTIES LABELS "streaming;lockfree;cpu;regression")
 if(NOT NERVE_HAS_MPI)
@@ -513,7 +1406,7 @@ set_tests_properties(nerve_cpp_determinism_detail_regressions PROPERTIES LABELS 
 
 # Core/error tests
 nerve_add_cpp_test(nerve_cpp_thread_affinity_regressions cpp/thread_affinity_regressions.cpp)
-set_tests_properties(nerve_cpp_thread_affinity_regressions PROPERTIES LABELS "core;threading;cpu;regression")
+set_tests_properties(nerve_cpp_thread_affinity_regressions PROPERTIES LABELS "core;threading;cpu;regression" TIMEOUT 300)
 nerve_add_cpp_test(nerve_cpp_compact_summary_extensions_regressions cpp/compact_summary_extensions_regressions.cpp)
 set_tests_properties(nerve_cpp_compact_summary_extensions_regressions PROPERTIES LABELS "summary;extensions;cpu;regression")
 nerve_add_cpp_test(nerve_cpp_error_event_extensions_regressions cpp/error_event_extensions_regressions.cpp)
@@ -535,8 +1428,6 @@ set_tests_properties(nerve_cpp_cohomology_rref_regressions PROPERTIES LABELS "pe
 # Reduction detail tests
 nerve_add_cpp_test(nerve_cpp_reduction_distributed_regressions cpp/reduction_distributed_regressions.cpp)
 set_tests_properties(nerve_cpp_reduction_distributed_regressions PROPERTIES LABELS "persistence;reduction;distributed;cpu;regression")
-nerve_add_cpp_test(nerve_cpp_reduction_hypha_regressions cpp/reduction_hypha_regressions.cpp)
-set_tests_properties(nerve_cpp_reduction_hypha_regressions PROPERTIES LABELS "persistence;reduction;hypha;cpu;regression")
 nerve_add_cpp_test(nerve_cpp_reduction_mpi_detail_regressions cpp/reduction_mpi_detail_regressions.cpp)
 set_tests_properties(nerve_cpp_reduction_mpi_detail_regressions PROPERTIES LABELS "persistence;reduction;mpi;cpu;regression")
 
@@ -606,6 +1497,9 @@ nerve_add_cpp_test(nerve_cpp_internal_persistence_vr cpp/internal_persistence_vr
 nerve_add_cpp_test(nerve_cpp_internal_persistence_core cpp/internal_persistence_core_test.cpp)
 nerve_add_cpp_test(nerve_cpp_internal_persistence_kernels cpp/internal_persistence_kernels_test.cpp)
 nerve_add_cpp_test(nerve_cpp_internal_persistence_accelerated cpp/internal_persistence_accelerated_test.cpp)
+target_sources(nerve_cpp_internal_persistence_accelerated PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/persistence/accelerated/validation.cpp
+)
 nerve_add_cpp_test(nerve_cpp_internal_persistence_cuda cpp/internal_persistence_cuda_test.cpp)
 nerve_add_cpp_test(nerve_cpp_internal_gpu cpp/internal_gpu_test.cpp)
 nerve_add_cpp_test(nerve_cpp_internal_streaming cpp/internal_streaming_test.cpp)
@@ -615,6 +1509,10 @@ nerve_add_cpp_test(nerve_cpp_internal_metrics cpp/internal_metrics_test.cpp)
 nerve_add_cpp_test(nerve_cpp_internal_filtration cpp/internal_filtration_test.cpp)
 nerve_add_cpp_test(nerve_cpp_internal_core cpp/internal_core_test.cpp)
 nerve_add_cpp_test(nerve_cpp_internal_serialization cpp/internal_serialization_test.cpp)
+
+nerve_add_cpp_test(nerve_cpp_internal_compression cpp/internal_compression_test.cpp)
+
+nerve_add_cpp_test(nerve_cpp_internal_algorithms cpp/internal_algorithms_test.cpp)
 nerve_add_cpp_test(nerve_cpp_internal_encoders cpp/internal_encoders_test.cpp)
 nerve_add_cpp_test(nerve_cpp_internal_autodiff cpp/internal_autodiff_test.cpp)
 nerve_add_cpp_test(nerve_cpp_internal_sheaf cpp/internal_sheaf_test.cpp)
