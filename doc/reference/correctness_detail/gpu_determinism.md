@@ -46,5 +46,13 @@ RFA protocol:
 5. Result: bit-identical across any GPU count or topology
 ```
 
+### HyphaReducer GPU Persistence Reduction
+
+The HyphaReducer (`src/persistence/reduction/reduction_hypha_ops.cpp`) implements GPU-accelerated persistence reduction using warp-level packed-column operations. Unlike the fixed-tree GPU operations described above, the HyphaReducer uses **atomicCAS** for pivot claiming -- multiple warps race to claim pivots via CAS, and the lowest column index always wins.
+
+This introduces **non-determinism** at the pair-value level (which birth simplex pairs with which death simplex) and a **~0.22% residual count-level error** vs the sequential ground truth. The root cause is that `d_reduced[i]` is a snapshot written once at claim time while other warps are still racing, making survivors' forms non-deterministic. A post-pass cascade corrects most but not all of this (the lockfree CPU reducer achieves 0.0000% count accuracy because it works on shared mutable final state, not snapshots).
+
+For applications requiring reproducible persistence reduction on GPU, use the deterministic sequential reducer (`Reducer::reduceTwist` / `reduceSequentialFast`) at the cost of lower throughput.
+
 
 [Back to Correctness Index](index.md)

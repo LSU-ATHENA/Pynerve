@@ -65,6 +65,7 @@ contract.record_intermediate_results = true;
 - **Cross-architecture bit-identity**: A computation on an AMD CPU may produce slightly different results than the same computation on an Intel CPU, due to differences in FMA and transcendental instruction implementations. STRICT mode minimizes this but cannot eliminate it for non-IEEE-754-compliant instructions.
 - **Cross-GPU-architecture bit-identity without RFA**: Different GPU architectures (e.g., Ampere vs Hopper) may produce different results due to different reduction tree structures. Enable RFA (`NERVE_GPU_DETERMINISM=1`) for cross-GPU reproducibility.
 - **Cross-MPI-process-count bit-identity**: Different numbers of MPI ranks change the order of floating-point accumulation. Use binned accumulation for cross-count reproducibility.
+- **Parallel reducer pair-value determinism**: The lockfree (CPU multi-threaded) and HyphaReducer (GPU warp-level) persistence reducers are **non-deterministic at the pair-value level** due to racing pivot claims via atomic operations. Different runs of the same input produce different but topologically valid persistence diagrams. The lockfree reducer achieves **0.0000% count-level accuracy** vs the sequential ground truth, while the GPU reducer has a **~0.22% residual count error** (see [GPU Determinism](gpu_determinism.md)). For deterministic output at the pair-value level, use the sequential reducer.
 
 
 [Back to Correctness Index](index.md)
