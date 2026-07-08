@@ -43,10 +43,10 @@ When multiple simplices have nearly identical filtration values, the pairing is 
 
 ```python
 # Without tolerance: unstable pairing near degeneracies
-result = pynerve.compute_persistence_ph5(points, error_tolerance=0.0)
+result = pynerve.compute_persistence_up_to_dim_5(points, error_tolerance=0.0)
 
 # With tolerance: stable pairing, meaningful gradients
-result = pynerve.compute_persistence_ph5(points, error_tolerance=1e-8)
+result = pynerve.compute_persistence_up_to_dim_5(points, error_tolerance=1e-8)
 ```
 
 ### Pitfall 5: Stability test flakiness on multi-GPU systems

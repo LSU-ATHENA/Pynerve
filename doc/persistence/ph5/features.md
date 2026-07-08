@@ -78,7 +78,7 @@ Every PH5 computation produces a SHA-256 checksum of the result, which can be us
 
 ```python
 engine = PH5PH6Engine()
-result = pynerve.compute_persistence_ph5(points, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_5(points, max_dim=2)
 metrics = engine.getComputationMetrics()
 
 # Checksum is available for downstream validation
@@ -108,7 +108,7 @@ with open("expected_checksum.json") as f:
     expected = json.load(f)
 
 # Compute current result
-result = pynerve.compute_persistence_ph5(points, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_5(points, max_dim=2)
 engine = PH5PH6Engine()
 checksum = engine.getComputationMetrics().result_checksum
 
@@ -209,7 +209,7 @@ PH5 provides detailed structured error logs:
 
 ```python
 engine = PH5PH6Engine()
-result = pynerve.compute_persistence_ph5(points, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_5(points, max_dim=2)
 metrics = engine.getComputationMetrics()
 
 # Access error log

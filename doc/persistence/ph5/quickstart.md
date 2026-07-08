@@ -5,7 +5,7 @@ import pynerve
 import numpy as np
 
 points = np.random.rand(200, 3)
-result = pynerve.compute_persistence_ph5(points, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_5(points, max_dim=2)
 print(f"Found {len(result.pairs)} pairs")
 ```
 
@@ -20,7 +20,7 @@ config = PH5PH6Config(
     enable_checksum_validation=True,
 )
 engine = PH5PH6Engine(config)
-result = pynerve.compute_persistence_ph5(
+result = pynerve.compute_persistence_up_to_dim_5(
     points, max_dim=2, max_radius=0.5
 )
 ```
