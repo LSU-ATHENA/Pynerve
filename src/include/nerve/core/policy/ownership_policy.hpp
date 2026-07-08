@@ -44,26 +44,10 @@ public:
         : data_(const_cast<T *>(vector.data()))
         , size_(vector.size())
     {}
-    BufferView(const BufferView &) = delete;
-    BufferView &operator=(const BufferView &) = delete;
-    BufferView(BufferView &&other) noexcept
-        : data_(other.data_)
-        , size_(other.size_)
-    {
-        other.data_ = nullptr;
-        other.size_ = 0;
-    }
-    BufferView &operator=(BufferView &&other) noexcept
-    {
-        if (this != &other)
-        {
-            data_ = other.data_;
-            size_ = other.size_;
-            other.data_ = nullptr;
-            other.size_ = 0;
-        }
-        return *this;
-    }
+    BufferView(const BufferView &) = default;
+    BufferView &operator=(const BufferView &) = default;
+    BufferView(BufferView &&) noexcept = default;
+    BufferView &operator=(BufferView &&) noexcept = default;
     T *data() noexcept { return data_; }
     const T *data() const noexcept { return data_; }
     T &operator[](size_type index) noexcept { return data_[index]; }
@@ -108,30 +92,10 @@ public:
         , size_(vector.size())
         , numa_node_(numaNode)
     {}
-    PinnedBufferView(const PinnedBufferView &) = delete;
-    PinnedBufferView &operator=(const PinnedBufferView &) = delete;
-    PinnedBufferView(PinnedBufferView &&other) noexcept
-        : data_(other.data_)
-        , size_(other.size_)
-        , numa_node_(other.numa_node_)
-    {
-        other.data_ = nullptr;
-        other.size_ = 0;
-        other.numa_node_ = -1;
-    }
-    PinnedBufferView &operator=(PinnedBufferView &&other) noexcept
-    {
-        if (this != &other)
-        {
-            data_ = other.data_;
-            size_ = other.size_;
-            numa_node_ = other.numa_node_;
-            other.data_ = nullptr;
-            other.size_ = 0;
-            other.numa_node_ = -1;
-        }
-        return *this;
-    }
+    PinnedBufferView(const PinnedBufferView &) = default;
+    PinnedBufferView &operator=(const PinnedBufferView &) = default;
+    PinnedBufferView(PinnedBufferView &&) noexcept = default;
+    PinnedBufferView &operator=(PinnedBufferView &&) noexcept = default;
     T *data() noexcept { return data_; }
     const T *data() const noexcept { return data_; }
     T &operator[](size_type index) noexcept { return data_[index]; }
@@ -284,12 +248,6 @@ using PinnedPointView = PinnedBufferView<const double>;
 template <typename T>
 using HugeBufferView = PinnedBufferView<T>;
 template <typename T>
-BufferView<T> transferView(OwnedBuffer<T> &buffer) noexcept
-{
-    const std::size_t size = buffer.size();
-    return BufferView<T>(buffer.release(), size);
-}
-template <typename T>
 PinnedBufferView<T> makePinnedView(T *data, std::size_t size, int numaNode = -1) noexcept
 {
     return PinnedBufferView<T>(data, size, numaNode);
@@ -306,8 +264,12 @@ PinnedBufferView<T> makeHugeBufferView(T *data, std::size_t size, int numaNode =
 }
 static_assert(std::is_trivially_destructible_v<BufferView<double>>,
               "BufferView must be trivially destructible for hot-path performance");
+static_assert(std::is_trivially_copyable_v<BufferView<double>>,
+              "BufferView must be trivially copyable (non-owning view, std::span semantics)");
 static_assert(std::is_trivially_destructible_v<PinnedBufferView<double>>,
               "PinnedBufferView must be trivially destructible for hot-path performance");
+static_assert(std::is_trivially_copyable_v<PinnedBufferView<double>>,
+              "PinnedBufferView must be trivially copyable (non-owning view, std::span semantics)");
 static_assert(sizeof(BufferView<double>) <= 16, "BufferView must be small for hot-path efficiency");
 static_assert(sizeof(PinnedBufferView<double>) <= 24,
               "PinnedBufferView must be small for hot-path efficiency");
@@ -318,5 +280,6 @@ constexpr bool is_zero_copy_compatible_v =
 template <typename T>
 constexpr bool is_huge_buffer_compatible_v =
     std::is_same_v<T, PinnedBufferView<typename T::value_type>>;
-} // namespace ownership_utils
+} // namespace nerve::core::ownership_utils
+
 } // namespace nerve::core

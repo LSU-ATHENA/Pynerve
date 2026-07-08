@@ -60,7 +60,7 @@ struct FeatureFlagInfo
     std::vector<std::string> dependencies;
     std::function<bool()> availability_check;
     FeatureFlagInfo()
-        : flag(FeatureFlag::PH4)
+        : flag(FeatureFlag::DIFFERENTIABLE_PERSISTENCE)
         , enabledByDefault(false)
         , requiresRebuild(false)
     {}
@@ -137,11 +137,6 @@ struct CompileTimeFeatureFlag
     static constexpr bool isEnabled() { return false; }
 };
 template <>
-struct CompileTimeFeatureFlag<FeatureFlag::PH4>
-{
-    static constexpr bool isEnabled() { return TOPOLOGIB_FEATURE_FLAG_PH4 != 0; }
-};
-template <>
 struct CompileTimeFeatureFlag<FeatureFlag::DIFFERENTIABLE_PERSISTENCE>
 {
     static constexpr bool isEnabled()
@@ -192,10 +187,6 @@ public:
     static std::vector<std::string> getValidationErrors();
     static void generateValidationReport(const std::string &filename);
 };
-#define TOPOLOGIB_FEATURE_ACCESS_API_PH4(return_type, name, ...)                                   \
-    nerve::feature_access::FeatureGatedApi<nerve::feature_access::FeatureFlag::PH4, return_type,   \
-                                           ##__VA_ARGS__>                                          \
-        name
 #define TOPOLOGIB_FEATURE_ACCESS_API_DIFF_PERSISTENCE(return_type, name, ...)                      \
     nerve::feature_access::FeatureGatedApi<                                                        \
         nerve::feature_access::FeatureFlag::DIFFERENTIABLE_PERSISTENCE, return_type,               \
