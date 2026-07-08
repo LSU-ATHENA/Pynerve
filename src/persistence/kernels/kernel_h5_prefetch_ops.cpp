@@ -2,6 +2,7 @@
 
 #include "nerve/persistence/kernels/kernel_h5_prefetch_ops.hpp"
 #include "nerve/persistence/kernels/simplex_reduction_utils.hpp"
+#include "nerve/platform.hpp"
 
 #include <chrono>
 
@@ -17,11 +18,7 @@ void prefetchSimplex(const std::vector<int> &simplex)
     {
         return;
     }
-#if defined(__GNUC__) || defined(__clang__)
-    __builtin_prefetch(simplex.data(), 0, 3);
-#else
-    (void)simplex;
-#endif
+    nerve_prefetch_read(simplex.data(), NervePrefetchLevel::L1);
 }
 
 H5Pair toH5Pair(const Pair &pair)

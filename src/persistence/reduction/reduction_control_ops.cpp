@@ -55,8 +55,18 @@ void Reducer::cohomologyReduction()
         auto result = gpu_reducer.computeCohomology(*matrix_, pivots, pairs);
         if (result.isSuccess())
         {
-            pivots_.swap(pivots);
-            persistence_pairs_.swap(pairs);
+            pivot_columns_.swap(pivots);
+            pairs_.clear();
+            for (const auto &[birth_idx, death_idx] : pairs)
+            {
+                Pair p;
+                p.birth_index = static_cast<Index>(birth_idx);
+                p.death_index = static_cast<Index>(death_idx);
+                p.birth = matrix_->getFiltrationValue(birth_idx);
+                p.death = matrix_->getFiltrationValue(death_idx);
+                p.dimension = matrix_->getColSimplexDimension(birth_idx);
+                pairs_.push_back(p);
+            }
             computeBettiNumbersFromPivots();
             classifyEssentials();
             return;
@@ -80,8 +90,18 @@ void Reducer::acceleratedReduction()
         auto result = gpu_reducer.compute(*matrix_, pivots, pairs);
         if (result.isSuccess())
         {
-            pivots_.swap(pivots);
-            persistence_pairs_.swap(pairs);
+            pivot_columns_.swap(pivots);
+            pairs_.clear();
+            for (const auto &[birth_idx, death_idx] : pairs)
+            {
+                Pair p;
+                p.birth_index = static_cast<Index>(birth_idx);
+                p.death_index = static_cast<Index>(death_idx);
+                p.birth = matrix_->getFiltrationValue(birth_idx);
+                p.death = matrix_->getFiltrationValue(death_idx);
+                p.dimension = matrix_->getColSimplexDimension(birth_idx);
+                pairs_.push_back(p);
+            }
             computeBettiNumbersFromPivots();
             classifyEssentials();
             return;
