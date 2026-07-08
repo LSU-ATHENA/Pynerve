@@ -1,6 +1,7 @@
 #include "nerve/gpu/distance_fasted.cuh"
 
 #include <cuda_runtime.h>
+#include <mma.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -52,7 +53,7 @@ __global__ void fastedDistanceKernel(const half *__restrict__ points, int n_poin
     int warp_offset_m = (warp_id & 1) * WARP_TILE_M;
     int warp_offset_n = (warp_id >> 1) * WARP_TILE_N;
 
-    nvcuda::wmma::fragment<nvcuba::wmma::accumulator, WMMA_M, WMMA_N, WMMA_K, float> acc[4];
+    nvcuda::wmma::fragment<nvcuda::wmma::accumulator, WMMA_M, WMMA_N, WMMA_K, float> acc[4];
 #pragma unroll
     for (int i = 0; i < 4; ++i)
     {
@@ -64,7 +65,9 @@ __global__ void fastedDistanceKernel(const half *__restrict__ points, int n_poin
 
     for (int k = 0; k < dim_padded; k += WARP_TILE_K)
     {
-        // Stage 1: Async copy A tile from global to shared memory
+        pipeline.producer_acquire();
+
+        // Async copy A tile from global to shared memory
         if (tile_row + warp_offset_m + lane_id < n_points)
         {
             cuda::memcpy_async(&shmem_points_a[(warp_offset_m + lane_id) * WARP_TILE_K],
@@ -81,17 +84,18 @@ __global__ void fastedDistanceKernel(const half *__restrict__ points, int n_poin
         }
         __syncwarp();
 
-        pipeline.commit();
+        pipeline.producer_commit();
         __syncwarp();
-        pipeline.wait();
+        pipeline.consumer_wait();
+        pipeline.consumer_release();
         __syncwarp();
         __syncthreads();
 
-        nvcuba::wmma::fragment<nvcuba::wmma::matrix_a, WMMA_M, WMMA_N, WMMA_K, half,
-                               nvcuba::wmma::row_major>
+        nvcuda::wmma::fragment<nvcuda::wmma::matrix_a, WMMA_M, WMMA_N, WMMA_K, half,
+                               nvcuda::wmma::row_major>
             frag_a[4];
-        nvcuba::wmma::fragment<nvcuba::wmma::matrix_b, WMMA_M, WMMA_N, WMMA_K, half,
-                               nvcuba::wmma::col_major>
+        nvcuda::wmma::fragment<nvcuda::wmma::matrix_b, WMMA_M, WMMA_N, WMMA_K, half,
+                               nvcuda::wmma::col_major>
             frag_b[4];
 
 #pragma unroll
@@ -99,15 +103,15 @@ __global__ void fastedDistanceKernel(const half *__restrict__ points, int n_poin
         {
             int a_row = (i >> 1) * WMMA_M;
             int a_col = 0;
-            nvcuba::wmma::load_matrix_sync(frag_a[i], &shmem_points_a[a_row * WARP_TILE_K + a_col],
+            nvcuda::wmma::load_matrix_sync(frag_a[i], &shmem_points_a[a_row * WARP_TILE_K + a_col],
                                            WARP_TILE_K);
 
             int b_row = (i & 1) * WMMA_N;
             int b_col = 0;
-            nvcuba::wmma::load_matrix_sync(frag_b[i], &shmem_points_b[b_row * WARP_TILE_K + b_col],
+            nvcuda::wmma::load_matrix_sync(frag_b[i], &shmem_points_b[b_row * WARP_TILE_K + b_col],
                                            WARP_TILE_K);
 
-            nvcuba::wmma::mma_sync(acc[i], frag_a[i], frag_b[i], acc[i]);
+            nvcuda::wmma::mma_sync(acc[i], frag_a[i], frag_b[i], acc[i]);
         }
         __syncthreads();
     }
@@ -120,7 +124,7 @@ __global__ void fastedDistanceKernel(const half *__restrict__ points, int n_poin
         int out_col = tile_col + warp_offset_n + ((i & 1) * WMMA_N);
 
         float *out_ptr = &distances[out_row * dist_stride + out_col];
-        nvcuba::wmma::store_matrix_sync(out_ptr, acc[i], dist_stride, nvcuba::wmma::mem_row_major);
+        nvcuda::wmma::store_matrix_sync(out_ptr, acc[i], dist_stride, nvcuda::wmma::mem_row_major);
     }
 }
 

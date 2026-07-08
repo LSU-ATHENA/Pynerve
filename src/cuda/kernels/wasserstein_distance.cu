@@ -86,7 +86,7 @@ __device__ __forceinline__ T linf_distance(T x1, T y1, T x2, T y2)
 
 template <typename T>
 __global__ __launch_bounds__(256)
-    build_cost_matrix_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
+    void build_cost_matrix_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
                              const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2, T p,
                              T *__restrict__ cost, int cost_ld)
 {
@@ -102,7 +102,7 @@ __global__ __launch_bounds__(256)
 // Fast Sinkhorn kernel using ex2.approx for exp(-lambda * dist)
 template <typename T>
 __global__ __launch_bounds__(256)
-    build_sinkhorn_kernel_matrix(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
+    void build_sinkhorn_kernel_matrix(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
                                   const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
                                   T lambda, T *__restrict__ K, int ld)
 {
@@ -118,7 +118,7 @@ __global__ __launch_bounds__(256)
 // Row-scale with fast reciprocal
 template <typename T>
 __global__ __launch_bounds__(256)
-    sinkhorn_row_scale_kernel(T *__restrict__ K, T *__restrict__ u, const T *__restrict__ v,
+    void sinkhorn_row_scale_kernel(T *__restrict__ K, T *__restrict__ u, const T *__restrict__ v,
                                int n_rows, int n_cols, int ld, T lambda)
 {
     int row = blockIdx.x * blockDim.x + threadIdx.x;
@@ -149,7 +149,7 @@ __global__ __launch_bounds__(256)
 
 template <typename T>
 __global__ __launch_bounds__(256)
-    sinkhorn_col_scale_kernel(T *__restrict__ K, const T *__restrict__ u, T *__restrict__ v,
+    void sinkhorn_col_scale_kernel(T *__restrict__ K, const T *__restrict__ u, T *__restrict__ v,
                                int n_rows, int n_cols, int ld, T lambda,
                                const T *__restrict__ target_marginals)
 {
@@ -183,7 +183,7 @@ __global__ __launch_bounds__(256)
 // Sinkhorn cost with warp reduction + shared memory accumulation
 template <typename T>
 __global__ __launch_bounds__(256)
-    sinkhorn_cost_kernel(const T *__restrict__ K, const T *__restrict__ u, const T *__restrict__ v,
+    void sinkhorn_cost_kernel(const T *__restrict__ K, const T *__restrict__ u, const T *__restrict__ v,
                           const T *__restrict__ cost, T *__restrict__ total_cost, int n_rows,
                           int n_cols, int cost_ld)
 {
@@ -227,7 +227,7 @@ __global__ __launch_bounds__(256)
 
 template <typename T>
 __global__ __launch_bounds__(256)
-    auction_init_bids_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
+    void auction_init_bids_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
                               const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2, T p,
                               T *__restrict__ cost, int cost_ld)
 {
@@ -243,7 +243,7 @@ __global__ __launch_bounds__(256)
 // Auction bidding with warp reduction for best and second-best
 template <typename T>
 __global__ __launch_bounds__(256)
-    auction_bidding_kernel(const T *__restrict__ cost, int n_rows, int n_cols, int cost_ld,
+    void auction_bidding_kernel(const T *__restrict__ cost, int n_rows, int n_cols, int cost_ld,
                             T *__restrict__ prices, int *__restrict__ assignments,
                             int *__restrict__ converged, T epsilon)
 {
@@ -299,7 +299,7 @@ __global__ __launch_bounds__(256)
 
 template <typename T>
 __global__ __launch_bounds__(256)
-    auction_assign_kernel(int *__restrict__ assignments, const T *__restrict__ prices,
+    void auction_assign_kernel(int *__restrict__ assignments, const T *__restrict__ prices,
                            const T *__restrict__ cost, int n_rows, int n_cols, int cost_ld,
                            T *__restrict__ final_assignments)
 {

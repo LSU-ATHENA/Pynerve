@@ -192,88 +192,16 @@ struct GpuReductionState
 class GpuPersistenceReducer
 {
 public:
-    GpuPersistenceReducer() = default;
-    ~GpuPersistenceReducer() = default;
+    GpuPersistenceReducer();
+    ~GpuPersistenceReducer();
 
     errors::ErrorResult<void> compute(const algebra::BoundaryMatrix &boundary_matrix,
                                       std::vector<Index> &out_pivots,
-                                      std::vector<std::pair<Size, Size>> &out_pairs)
-    {
-        out_pivots.clear();
-        out_pairs.clear();
-
-        if (boundary_matrix.cols() == 0)
-        {
-            return errors::ErrorResult<void>::success();
-        }
-
-        auto convert_result = convertToGpu(boundary_matrix);
-        if (convert_result.isError())
-        {
-            return convert_result;
-        }
-
-        auto state_result = allocateState(matrix_.n_columns);
-        if (state_result.isError())
-        {
-            return state_result;
-        }
-
-        auto init_result = initializeState(matrix_.n_columns);
-        if (init_result.isError())
-        {
-            return init_result;
-        }
-
-        auto reduce_result = reduceMatrix();
-        if (reduce_result.isError())
-        {
-            return reduce_result;
-        }
-
-        auto extract_result = extractPairs(out_pivots, out_pairs);
-        return extract_result;
-    }
+                                      std::vector<std::pair<Size, Size>> &out_pairs);
 
     errors::ErrorResult<void> computeCohomology(const algebra::BoundaryMatrix &boundary_matrix,
                                                 std::vector<Index> &out_pivots,
-                                                std::vector<std::pair<Size, Size>> &out_pairs)
-    {
-        out_pivots.clear();
-        out_pairs.clear();
-
-        if (boundary_matrix.cols() == 0)
-        {
-            return errors::ErrorResult<void>::success();
-        }
-
-        auto convert_result = convertToGpu(boundary_matrix);
-        if (convert_result.isError())
-        {
-            return convert_result;
-        }
-
-        auto state_result = allocateState(matrix_.n_columns);
-        if (state_result.isError())
-        {
-            return state_result;
-        }
-
-        auto init_result = initializeState(matrix_.n_columns);
-        if (init_result.isError())
-        {
-            return init_result;
-        }
-
-        auto reduce_result = reduceMatrixCohomology();
-        if (reduce_result.isError())
-        {
-            return reduce_result;
-        }
-
-        auto extract_result = extractPairs(out_pivots, out_pairs);
-        return extract_result;
-    }
+                                                std::vector<std::pair<Size, Size>> &out_pairs);
 
     void setMaxIterations(int n) { max_iterations_ = n; }
     void setBlockSize(int b) { block_size_ = b; }
@@ -752,6 +680,91 @@ private:
     int clearing_interval_ = detail::kDefaultClearingInterval;
     bool use_clearing_ = true;
 };
+
+GpuPersistenceReducer::GpuPersistenceReducer() = default;
+GpuPersistenceReducer::~GpuPersistenceReducer() = default;
+
+errors::ErrorResult<void>
+GpuPersistenceReducer::compute(const algebra::BoundaryMatrix &boundary_matrix,
+                                std::vector<Index> &out_pivots,
+                                std::vector<std::pair<Size, Size>> &out_pairs)
+{
+    out_pivots.clear();
+    out_pairs.clear();
+
+    if (boundary_matrix.cols() == 0)
+    {
+        return errors::ErrorResult<void>::success();
+    }
+
+    auto convert_result = convertToGpu(boundary_matrix);
+    if (convert_result.isError())
+    {
+        return convert_result;
+    }
+
+    auto state_result = allocateState(matrix_.n_columns);
+    if (state_result.isError())
+    {
+        return state_result;
+    }
+
+    auto init_result = initializeState(matrix_.n_columns);
+    if (init_result.isError())
+    {
+        return init_result;
+    }
+
+    auto reduce_result = reduceMatrix();
+    if (reduce_result.isError())
+    {
+        return reduce_result;
+    }
+
+    auto extract_result = extractPairs(out_pivots, out_pairs);
+    return extract_result;
+}
+
+errors::ErrorResult<void>
+GpuPersistenceReducer::computeCohomology(const algebra::BoundaryMatrix &boundary_matrix,
+                                          std::vector<Index> &out_pivots,
+                                          std::vector<std::pair<Size, Size>> &out_pairs)
+{
+    out_pivots.clear();
+    out_pairs.clear();
+
+    if (boundary_matrix.cols() == 0)
+    {
+        return errors::ErrorResult<void>::success();
+    }
+
+    auto convert_result = convertToGpu(boundary_matrix);
+    if (convert_result.isError())
+    {
+        return convert_result;
+    }
+
+    auto state_result = allocateState(matrix_.n_columns);
+    if (state_result.isError())
+    {
+        return state_result;
+    }
+
+    auto init_result = initializeState(matrix_.n_columns);
+    if (init_result.isError())
+    {
+        return init_result;
+    }
+
+    auto reduce_result = reduceMatrixCohomology();
+    if (reduce_result.isError())
+    {
+        return reduce_result;
+    }
+
+    auto extract_result = extractPairs(out_pivots, out_pairs);
+    return extract_result;
+}
 
 } // namespace kernels
 } // namespace gpu

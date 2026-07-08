@@ -45,7 +45,7 @@ __device__ __forceinline__ T device_min(T a, T b)
 
 template <typename T>
 __global__ __launch_bounds__(256)
-    persistence_image_pixel_kernel(const T *__restrict__ births, const T *__restrict__ deaths,
+    void persistence_image_pixel_kernel(const T *__restrict__ births, const T *__restrict__ deaths,
                                    int n_pairs, int resolution, T sigma, T *__restrict__ image,
                                    T x_min, T x_max, T y_min, T y_max)
 {
@@ -87,7 +87,7 @@ __global__ __launch_bounds__(256)
 
 template <typename T>
 __global__ __launch_bounds__(256)
-    persistence_image_pair_kernel(const T *__restrict__ births, const T *__restrict__ deaths,
+    void persistence_image_pair_kernel(const T *__restrict__ births, const T *__restrict__ deaths,
                                   int n_pairs, int resolution, T sigma, T *__restrict__ image,
                                   T x_min, T x_max, T y_min, T y_max)
 {
@@ -139,7 +139,7 @@ __global__ __launch_bounds__(256)
 // PTX-optimized kernels (sm80+)
 
 __global__ __launch_bounds__(256)
-    persistence_image_pixel_ptx_kernel(const float *__restrict__ births,
+    void persistence_image_pixel_ptx_kernel(const float *__restrict__ births,
                                        const float *__restrict__ deaths, int n_pairs,
                                        int resolution, float sigma, float *__restrict__ image,
                                        float x_min, float x_max, float y_min, float y_max)
@@ -190,7 +190,7 @@ __global__ __launch_bounds__(256)
 }
 
 __global__ __launch_bounds__(256)
-    persistence_image_pair_ptx_kernel(const float *__restrict__ births,
+    void persistence_image_pair_ptx_kernel(const float *__restrict__ births,
                                       const float *__restrict__ deaths, int n_pairs,
                                       int resolution, float sigma, float *__restrict__ image,
                                       float x_min, float x_max, float y_min, float y_max)
@@ -208,10 +208,10 @@ __global__ __launch_bounds__(256)
 
     if (threadIdx.x == 0)
     {
-        cp_async_shared_global(&s_birth, &births[pair_idx], static_cast<int>(sizeof(float)));
-        cp_async_shared_global(&s_death, &deaths[pair_idx], static_cast<int>(sizeof(float)));
+        cp_async_shared_global<sizeof(float)>(&s_birth, &births[pair_idx]);
+        cp_async_shared_global<sizeof(float)>(&s_death, &deaths[pair_idx]);
         cp_async_commit_group();
-        cp_async_wait_group(1);
+        cp_async_wait_group<1>();
     }
     __syncthreads();
 

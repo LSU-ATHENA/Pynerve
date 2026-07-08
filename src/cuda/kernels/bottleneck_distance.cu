@@ -62,9 +62,9 @@ __device__ __forceinline__ T linf_distance(T x1, T y1, T x2, T y2)
 
 template <typename T>
 __global__ __launch_bounds__(256)
-    build_candidate_epsilon_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
-                                   const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
-                                   T *__restrict__ candidates, int *__restrict__ candidate_count)
+    void build_candidate_epsilon_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
+                                        const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
+                                        T *__restrict__ candidates, int *__restrict__ candidate_count)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int total_pairs = n1 * n2;
@@ -99,10 +99,10 @@ __global__ __launch_bounds__(256)
 
 template <typename T>
 __global__ __launch_bounds__(256)
-    build_adjacency_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
-                           const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
-                           T epsilon, int *__restrict__ adj_offsets, int *__restrict__ adj_data,
-                           int max_degree)
+    void build_adjacency_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
+                                const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
+                                T epsilon, int *__restrict__ adj_offsets, int *__restrict__ adj_data,
+                                int max_degree)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= n1)
@@ -133,10 +133,10 @@ __global__ __launch_bounds__(256)
 
 template <typename T>
 __global__ __launch_bounds__(256)
-    greedy_matching_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
-                           const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
-                           T epsilon, int *__restrict__ match_l, int *__restrict__ match_r,
-                           int *__restrict__ matched_count)
+    void greedy_matching_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
+                                const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
+                                T epsilon, int *__restrict__ match_l, int *__restrict__ match_r,
+                                int *__restrict__ matched_count)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= n1)
@@ -163,7 +163,7 @@ __global__ __launch_bounds__(256)
     {
         match_l[i] = best_j;
         match_r[best_j] = i;
-        atomicAdd(matched_count, 1);
+        atomicAdd(matched_count, 2);
     }
     else
     {
@@ -178,8 +178,8 @@ __global__ __launch_bounds__(256)
 
 template <typename T>
 __global__ __launch_bounds__(256)
-    greedy_matching_kernel_d2(const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
-                              T epsilon, int *__restrict__ match_r, int *__restrict__ matched_count)
+    void greedy_matching_kernel_d2(const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
+                                   T epsilon, int *__restrict__ match_r, int *__restrict__ matched_count)
 {
     int j = blockIdx.x * blockDim.x + threadIdx.x;
     if (j >= n2)
@@ -198,8 +198,8 @@ __global__ __launch_bounds__(256)
 
 template <typename T>
 __global__ __launch_bounds__(256)
-    check_convergence_kernel(int *__restrict__ matched_count, int *__restrict__ converged,
-                             int target_count)
+    void check_convergence_kernel(int *__restrict__ matched_count, int *__restrict__ converged,
+                                  int target_count)
 {
     if (blockIdx.x == 0 && threadIdx.x == 0)
     {
@@ -260,11 +260,13 @@ void compute_bottleneck_distance_gpu(const std::vector<nerve::math::Point2D> &d1
         <<<grid_cand, block>>>(dd1_x.get(), dd1_y.get(), n1, dd2_x.get(), dd2_y.get(), n2,
                                d_candidates.get(), d_candidate_count.get());
     cudaDeviceSynchronize();
-    cudaError_t launch_err = cudaGetLastError();
-    if (launch_err != cudaSuccess)
     {
-        throw std::runtime_error("Kernel launch failed: " +
-                                 std::string(cudaGetErrorString(launch_err)));
+        cudaError_t err = cudaGetLastError();
+        if (err != cudaSuccess)
+        {
+            throw std::runtime_error("Kernel launch failed: " +
+                                     std::string(cudaGetErrorString(err)));
+        }
     }
 
     std::vector<double> h_candidates(total_candidates);
@@ -307,15 +309,20 @@ void compute_bottleneck_distance_gpu(const std::vector<nerve::math::Point2D> &d1
             cudaDeviceSynchronize();
 
             int grid_n1 = (n1 + block - 1) / block;
-            greedy_matching_kernel<double><<<grid_n1, block>>>(
-                dd1_x.get(), dd1_y.get(), n1, dd2_x.get(), dd2_y.get(), n2, epsilon,
-                d_match_l.get(), d_match_r.get(), d_matched_count.get());
-            cudaDeviceSynchronize();
-            cudaError_t launch_err = cudaGetLastError();
-            if (launch_err != cudaSuccess)
+            if (grid_n1 > 0)
             {
-                throw std::runtime_error("Kernel launch failed: " +
-                                         std::string(cudaGetErrorString(launch_err)));
+                greedy_matching_kernel<double><<<grid_n1, block>>>(
+                    dd1_x.get(), dd1_y.get(), n1, dd2_x.get(), dd2_y.get(), n2, epsilon,
+                    d_match_l.get(), d_match_r.get(), d_matched_count.get());
+                cudaDeviceSynchronize();
+                {
+                    cudaError_t err = cudaGetLastError();
+                    if (err != cudaSuccess)
+                    {
+                        throw std::runtime_error("Kernel launch failed: " +
+                                                 std::string(cudaGetErrorString(err)));
+                    }
+                }
             }
 
             int grid_n2 = (n2 + block - 1) / block;
@@ -324,22 +331,26 @@ void compute_bottleneck_distance_gpu(const std::vector<nerve::math::Point2D> &d1
                 greedy_matching_kernel_d2<double><<<grid_n2, block>>>(
                     dd2_x.get(), dd2_y.get(), n2, epsilon, d_match_r.get(), d_matched_count.get());
                 cudaDeviceSynchronize();
-                cudaError_t launch_err = cudaGetLastError();
-                if (launch_err != cudaSuccess)
                 {
-                    throw std::runtime_error("Kernel launch failed: " +
-                                             std::string(cudaGetErrorString(launch_err)));
+                    cudaError_t err = cudaGetLastError();
+                    if (err != cudaSuccess)
+                    {
+                        throw std::runtime_error("Kernel launch failed: " +
+                                                 std::string(cudaGetErrorString(err)));
+                    }
                 }
             }
 
             check_convergence_kernel<double>
                 <<<1, 1>>>(d_matched_count.get(), d_converged.get(), target_matched);
             cudaDeviceSynchronize();
-            cudaError_t launch_err = cudaGetLastError();
-            if (launch_err != cudaSuccess)
             {
-                throw std::runtime_error("Kernel launch failed: " +
-                                         std::string(cudaGetErrorString(launch_err)));
+                cudaError_t err = cudaGetLastError();
+                if (err != cudaSuccess)
+                {
+                    throw std::runtime_error("Kernel launch failed: " +
+                                             std::string(cudaGetErrorString(err)));
+                }
             }
 
             int h_converged = 0;

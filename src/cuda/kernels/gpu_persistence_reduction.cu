@@ -94,7 +94,7 @@ __device__ int blockReduceMin(int val, int *shmem)
 }
 
 __global__ __launch_bounds__(256)
-    gpuComputePivotsKernel(const int *__restrict__ col_data, const int *__restrict__ col_indices,
+    void gpuComputePivotsKernel(const int *__restrict__ col_data, const int *__restrict__ col_indices,
                            const int *__restrict__ col_starts, int *__restrict__ pivots,
                            int n_columns, int max_height)
 {
@@ -127,9 +127,9 @@ __global__ __launch_bounds__(256)
 }
 
 __global__ __launch_bounds__(256)
-    gpuComputePivotsCohomologyKernel(const int *__restrict__ col_data,
-                                     const int *__restrict__ col_indices,
-                                     const int *__restrict__ col_starts, int *__restrict__ pivots,
+    void gpuComputePivotsCohomologyKernel(const int *__restrict__ col_data,
+                                          const int *__restrict__ col_indices,
+                                          const int *__restrict__ col_starts, int *__restrict__ pivots,
                                      int n_columns, int max_height)
 {
     const int col = blockIdx.x;
@@ -161,7 +161,7 @@ __global__ __launch_bounds__(256)
 }
 
 __global__ __launch_bounds__(256)
-    gpuAssignPivotOwnersKernel(const int *__restrict__ pivots, int *__restrict__ low_to_col,
+    void gpuAssignPivotOwnersKernel(const int *__restrict__ pivots, int *__restrict__ low_to_col,
                                int *__restrict__ conflict_src, char *__restrict__ has_conflict,
                                int n_columns)
 {
@@ -192,7 +192,7 @@ __global__ __launch_bounds__(256)
 }
 
 __global__ __launch_bounds__(256)
-    gpuAddColumnsKernel(int *__restrict__ col_data, int *__restrict__ col_indices,
+    void gpuAddColumnsKernel(int *__restrict__ col_data, int *__restrict__ col_indices,
                         const int *__restrict__ col_starts, const int *__restrict__ conflict_src,
                         const char *__restrict__ has_conflict, int n_columns, int max_height)
 {
@@ -263,7 +263,7 @@ __global__ __launch_bounds__(256)
 }
 
 __global__ __launch_bounds__(256)
-    gpuResolveConflictsKernel(int *__restrict__ col_data, int *__restrict__ col_indices,
+    void gpuResolveConflictsKernel(int *__restrict__ col_data, int *__restrict__ col_indices,
                               const int *__restrict__ col_starts, int *__restrict__ pivots,
                               int *__restrict__ low_to_col, int *__restrict__ changed,
                               int n_columns, int max_height, int max_passes)
@@ -391,7 +391,7 @@ __global__ __launch_bounds__(256)
 }
 
 __global__ __launch_bounds__(256)
-    gpuCohomologyReductionKernel(int *__restrict__ cob_data, int *__restrict__ cob_indices,
+    void gpuCohomologyReductionKernel(int *__restrict__ cob_data, int *__restrict__ cob_indices,
                                  const int *__restrict__ cob_starts, int *__restrict__ pivots,
                                  int *__restrict__ low_to_col, int *__restrict__ changed,
                                  int n_cochains, int max_height, int max_passes)
@@ -525,7 +525,7 @@ __global__ __launch_bounds__(256)
 }
 
 __global__ __launch_bounds__(256)
-    gpuClearingKernel(const int *__restrict__ pivots, const int *__restrict__ low_to_col,
+    void gpuClearingKernel(const int *__restrict__ pivots, const int *__restrict__ low_to_col,
                       int *__restrict__ col_data, int *__restrict__ col_indices,
                       const int *__restrict__ col_starts, int n_columns, int max_height)
 {
@@ -558,7 +558,7 @@ __global__ __launch_bounds__(256)
 }
 
 __global__ __launch_bounds__(256)
-    gpuExtractPairsKernel(const int *__restrict__ pivots, const int *__restrict__ low_to_col,
+    void gpuExtractPairsKernel(const int *__restrict__ pivots, const int *__restrict__ low_to_col,
                           int2 *__restrict__ pairs, int *__restrict__ pair_count, int n_columns)
 {
     const int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -584,7 +584,7 @@ __global__ __launch_bounds__(256)
 }
 
 __global__ __launch_bounds__(256)
-    gpuCheckConvergenceKernel(int *__restrict__ changed, int *__restrict__ iteration_flag)
+    void gpuCheckConvergenceKernel(int *__restrict__ changed, int *__restrict__ iteration_flag)
 {
     if (blockIdx.x != 0 || threadIdx.x != 0)
     {

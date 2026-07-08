@@ -244,6 +244,7 @@ __global__ void __launch_bounds__(256)
     for (nerve::Size t = 0; t < n_tiles; ++t)
     {
         auto pipeline = cuda::make_pipeline();
+        pipeline.producer_acquire();
 
         const nerve::Size dim_base = t * TILE;
         const size_t tile_elems =
@@ -251,7 +252,7 @@ __global__ void __launch_bounds__(256)
                 ? static_cast<size_t>(TILE)
                 : (dim > dim_base ? static_cast<size_t>(dim - dim_base) : static_cast<size_t>(0));
 
-        // Stage 0: copy each row of tile_a as a contiguous block
+        // copy each row of tile_a as a contiguous block
         for (int r = 0; r < TILE; ++r)
         {
             const T *src =
@@ -259,7 +260,7 @@ __global__ void __launch_bounds__(256)
             cuda::memcpy_async(tile_a[r], src, tile_elems, pipeline);
         }
 
-        // Stage 1: copy each row of tile_b as a contiguous block
+        // copy each row of tile_b as a contiguous block
         for (int r = 0; r < TILE; ++r)
         {
             const T *src =
@@ -267,8 +268,9 @@ __global__ void __launch_bounds__(256)
             cuda::memcpy_async(tile_b[r], src, tile_elems, pipeline);
         }
 
-        pipeline.commit();
-        pipeline.wait();
+        pipeline.producer_commit();
+        pipeline.consumer_wait();
+        pipeline.consumer_release();
 
         // Zero elements copied from out-of-bounds source rows
         if (row + threadIdx.y >= n)
