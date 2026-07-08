@@ -55,11 +55,11 @@ public:
     [[nodiscard]] Size cols() const noexcept;
     [[nodiscard]] Size dimension() const noexcept;
     [[nodiscard]] bool isEmpty() const noexcept;
-    std::vector<double> multiply(const core::BufferView<const double> &vector) const;
-    std::vector<double> transposeMultiply(const core::BufferView<const double> &vector) const;
+    std::vector<double> multiply(core::BufferView<const double>vector) const;
+    std::vector<double> transposeMultiply(core::BufferView<const double>vector) const;
     BoundaryMatrix transpose() const;
-    std::vector<double> applyBoundary(const core::BufferView<const double> &chain) const;
-    std::vector<double> applyCoboundary(const core::BufferView<const double> &cochain) const;
+    std::vector<double> applyBoundary(core::BufferView<const double>chain) const;
+    std::vector<double> applyCoboundary(core::BufferView<const double>cochain) const;
     static_assert(core::ownership_utils::is_view_type<core::BufferView<const double>>::value,
                   "Matrix operations should use non-owning views");
     static_assert(core::ownership_utils::validateHotPathApi<core::BufferView<const double>>(),
@@ -81,6 +81,8 @@ public:
     [[nodiscard]] std::string nonzeroPatternString() const;
     Size numNonzeros() const noexcept;
     double sparsityRatio() const noexcept;
+    int maxColumnHeight() const noexcept;
+    int columnHeight(Size col) const;
     double getCoefficient(Size row, Size col) const;
     double getMatrixEntry(Size row, Size col) const;
     double getFiltrationValue(Size col) const;
@@ -89,11 +91,20 @@ public:
     int getColSimplexDimension(Size col) const;
     Index getColumnIndexForRowSimplex(Size row) const;
 
+    // Build CSC (Compressed Sparse Column) arrays for GPU transfer.
+    // col_ptr: size = cols_ + 1, start offset of each column
+    // row_indices: size = numNonzeros(), row index per entry
+    // values: size = numNonzeros(), coefficient per entry (always 1.0 in Z2)
+    void buildCSC(std::vector<int> &col_ptr, std::vector<int> &row_indices,
+                  std::vector<int> &values) const;
+
 private:
     std::map<std::pair<Size, Size>, double> entries_;
     Size rows_ = 0;
     Size cols_ = 0;
     Size dimension_ = 0;
+    std::vector<int> col_heights_;
+    int max_column_height_ = 0;
     std::unordered_map<Simplex, Index, Simplex::Hash> simplex_to_col_;
     std::unordered_map<Simplex, Index, Simplex::Hash> simplex_to_row_;
     std::vector<Simplex> col_to_simplex_;
@@ -118,9 +129,9 @@ public:
     Size rank(Size k) const;
     Size bettiNumber(Size k) const;
     Size maxDimension() const noexcept;
-    std::vector<double> applyBoundary(Size k, const core::BufferView<const double> &chain) const;
+    std::vector<double> applyBoundary(Size k, core::BufferView<const double>chain) const;
     std::vector<double> applyCoboundary(Size k,
-                                        const core::BufferView<const double> &cochain) const;
+                                        core::BufferView<const double>cochain) const;
     static_assert(core::ownership_utils::is_view_type<core::BufferView<const double>>::value,
                   "Chain operations should use non-owning views");
     static_assert(core::ownership_utils::validateHotPathApi<core::BufferView<const double>>(),
