@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(NerveCore VERSION 0.9.7 LANGUAGES CXX)
+project(NerveCore VERSION 1.0.0 LANGUAGES CXX)
 
 # Early checks for first-time developers
 if(NOT CMAKE_CXX_COMPILER)
@@ -152,6 +152,7 @@ endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/simd.cmake)
 nerve_configure_x86_simd_support()
+nerve_configure_arm_simd_support()
 
 if(NOT DEFINED ENABLE_NUMA)
     option(ENABLE_NUMA "Enable NUMA memory optimizations" ON)
@@ -205,7 +206,11 @@ endif()
 nerve_validate_simd_mode()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/source_groups.cmake)
-set(NERVE_ALL_SOURCES ${NERVE_CORE_SOURCES})
+
+# SIMD primitive library - scalar + ISA-specific backends
+add_subdirectory(simd)
+
+set(NERVE_ALL_SOURCES ${NERVE_CORE_SOURCES} ${NERVE_SIMD_PRIMITIVE_SOURCES})
 if(NERVE_HAS_CUDA)
     list(APPEND NERVE_ALL_SOURCES ${NERVE_CUDA_CORE_SOURCES})
     list(LENGTH NERVE_CUDA_CORE_SOURCES NERVE_CUDA_CORE_SOURCE_COUNT)
