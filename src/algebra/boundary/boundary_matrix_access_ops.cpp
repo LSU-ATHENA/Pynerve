@@ -30,7 +30,7 @@ constexpr double BOUNDARY_MATRIX_TOLERANCE = 1e-10;
     return entries_.empty();
 }
 
-std::vector<double> BoundaryMatrix::multiply(const core::BufferView<const double> &vector) const
+std::vector<double> BoundaryMatrix::multiply(core::BufferView<const double>vector) const
 {
     if (vector.size() != cols_)
     {
@@ -59,7 +59,7 @@ std::vector<double> BoundaryMatrix::multiply(const core::BufferView<const double
 }
 
 std::vector<double>
-BoundaryMatrix::transposeMultiply(const core::BufferView<const double> &vector) const
+BoundaryMatrix::transposeMultiply(core::BufferView<const double>vector) const
 {
     if (vector.size() != rows_)
     {
@@ -110,13 +110,13 @@ BoundaryMatrix BoundaryMatrix::transpose() const
     return result;
 }
 
-std::vector<double> BoundaryMatrix::applyBoundary(const core::BufferView<const double> &chain) const
+std::vector<double> BoundaryMatrix::applyBoundary(core::BufferView<const double>chain) const
 {
     return multiply(chain);
 }
 
 std::vector<double>
-BoundaryMatrix::applyCoboundary(const core::BufferView<const double> &cochain) const
+BoundaryMatrix::applyCoboundary(core::BufferView<const double>cochain) const
 {
     return transposeMultiply(cochain);
 }
@@ -223,6 +223,20 @@ double BoundaryMatrix::sparsityRatio() const noexcept
     return 1.0 - static_cast<double>(static_cast<long double>(entries_.size()) / total);
 }
 
+int BoundaryMatrix::maxColumnHeight() const noexcept
+{
+    return max_column_height_;
+}
+
+int BoundaryMatrix::columnHeight(Size col) const
+{
+    if (col >= col_heights_.size())
+    {
+        return 0;
+    }
+    return col_heights_[col];
+}
+
 double BoundaryMatrix::getCoefficient(Size row, Size col) const
 {
     return getEntry(row, col);
@@ -248,11 +262,27 @@ void BoundaryMatrix::setEntry(Size row, Size col, double value)
     const auto key = std::make_pair(row, col);
     if (std::abs(value) < BOUNDARY_MATRIX_TOLERANCE)
     {
-        entries_.erase(key);
+        if (entries_.erase(key) > 0 && col < col_heights_.size())
+        {
+            --col_heights_[col];
+        }
     }
     else
     {
+        const bool is_new = entries_.find(key) == entries_.end();
         entries_[key] = value;
+        if (is_new)
+        {
+            if (col >= col_heights_.size())
+            {
+                col_heights_.resize(cols_, 0);
+            }
+            ++col_heights_[col];
+            if (col_heights_[col] > max_column_height_)
+            {
+                max_column_height_ = col_heights_[col];
+            }
+        }
     }
 }
 
@@ -353,6 +383,46 @@ Index BoundaryMatrix::getColumnIndexForRowSimplex(Size row) const
         return -1;
     }
     return static_cast<Index>(it->second);
+}
+
+void BoundaryMatrix::buildCSC(std::vector<int> &col_ptr, std::vector<int> &row_indices,
+                              std::vector<int> &values) const
+{
+    const Size nnz = entries_.size();
+    col_ptr.assign(cols_ + 1, 0);
+    row_indices.resize(nnz);
+    values.resize(nnz);
+
+    // count entries per column
+    for (const auto &entry : entries_)
+    {
+        auto [row_col, val] = entry;
+        auto [row, col] = row_col;
+        (void)row;
+        (void)val;
+        ++col_ptr[col + 1];
+    }
+
+    // Prefix sum to get start offsets
+    for (Size c = 0; c < cols_; ++c)
+    {
+        col_ptr[c + 1] += col_ptr[c];
+    }
+
+    // fill row indices and values
+    std::vector<int> col_pos(cols_, 0);
+    for (Size c = 0; c < cols_; ++c)
+    {
+        col_pos[c] = col_ptr[c];
+    }
+    for (const auto &entry : entries_)
+    {
+        auto [row_col, val] = entry;
+        auto [row, col] = row_col;
+        const int pos = col_pos[col]++;
+        row_indices[static_cast<std::size_t>(pos)] = static_cast<int>(row);
+        values[static_cast<std::size_t>(pos)] = static_cast<int>(val);
+    }
 }
 
 } // namespace nerve::algebra

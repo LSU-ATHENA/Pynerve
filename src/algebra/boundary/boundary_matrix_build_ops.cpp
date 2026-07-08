@@ -71,6 +71,8 @@ void BoundaryMatrix::buildFromComplex(const SimplicialComplex &complex)
     row_to_simplex_.clear();
     filtration_values_.clear();
     row_filtration_values_.clear();
+    col_heights_.clear();
+    max_column_height_ = 0;
     last_low_row_to_col_.clear();
 
     const Dimension max_dim = safeMaxDimension(complex);
@@ -85,6 +87,7 @@ void BoundaryMatrix::buildFromComplex(const SimplicialComplex &complex)
     dimension_ = static_cast<Size>(max_dim);
 
     buildIndexMaps(complex);
+    col_heights_.assign(cols_, 0);
     auto boundary_entries = computeBoundaryEntries(complex);
     for (const auto &entry : boundary_entries)
     {
@@ -115,6 +118,8 @@ void BoundaryMatrix::buildKDimensional(const SimplicialComplex &complex, Size k)
     row_to_simplex_.clear();
     filtration_values_.clear();
     row_filtration_values_.clear();
+    col_heights_.clear();
+    max_column_height_ = 0;
     last_low_row_to_col_.clear();
     dimension_ = k;
 
@@ -145,6 +150,7 @@ void BoundaryMatrix::buildKDimensional(const SimplicialComplex &complex, Size k)
 
     rows_ = row_idx;
     cols_ = col_idx;
+    col_heights_.assign(cols_, 0);
 
     for (const auto &simplex : k_simplices)
     {

@@ -138,13 +138,13 @@ Size ChainComplex::maxDimension() const noexcept
 }
 
 std::vector<double> ChainComplex::applyBoundary(Size k,
-                                                const core::BufferView<const double> &chain) const
+                                                core::BufferView<const double>chain) const
 {
     return boundary(k).applyBoundary(chain);
 }
 
 std::vector<double>
-ChainComplex::applyCoboundary(Size k, const core::BufferView<const double> &cochain) const
+ChainComplex::applyCoboundary(Size k, core::BufferView<const double>cochain) const
 {
     return boundary(k).applyCoboundary(cochain);
 }
