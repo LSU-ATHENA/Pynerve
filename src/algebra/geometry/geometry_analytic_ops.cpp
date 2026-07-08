@@ -1,5 +1,6 @@
 
 #include "nerve/algebra/simplex.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -170,10 +171,7 @@ std::vector<double> centroid(const std::vector<Index> &simplex_vertices,
     for (const Index vertex : simplex_vertices)
     {
         const auto &p = coord_table[static_cast<Size>(vertex)];
-        for (Size d = 0; d < dim; ++d)
-        {
-            center[d] += p[d];
-        }
+        nerve::simd::simd_add(center.data(), p.data(), dim);
     }
     const double inv_count = 1.0 / static_cast<double>(simplex_vertices.size());
     for (double &value : center)
@@ -262,19 +260,10 @@ double squaredDistance(const std::vector<double> &lhs, const std::vector<double>
         throw std::invalid_argument("simplex coordinate dimensions must match");
     }
     const Size dim = lhs.size();
-    double acc = 0.0;
-    for (Size d = 0; d < dim; ++d)
+    double acc = nerve::simd::simd_sqdiff_sum(lhs.data(), rhs.data(), dim);
+    if (!std::isfinite(acc))
     {
-        const double diff = lhs[d] - rhs[d];
-        if (!std::isfinite(diff))
-        {
-            throw std::overflow_error("squared distance overflowed");
-        }
-        acc += diff * diff;
-        if (!std::isfinite(acc))
-        {
-            throw std::overflow_error("squared distance overflowed");
-        }
+        throw std::overflow_error("squared distance overflowed");
     }
     return acc;
 }
