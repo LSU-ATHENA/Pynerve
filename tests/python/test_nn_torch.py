@@ -13,7 +13,7 @@ from pynerve.exceptions import InvalidArgumentError, ValidationError
 
 from torch import Tensor, nn
 
-# -------------------------------------------------------------------- helpers
+# helpers
 
 
 def _has_core_backend() -> bool:
@@ -51,7 +51,7 @@ def _make_dist_matrix(n_points=4, batch=2, seed=42):
     return torch.cdist(pts, pts)
 
 
-# ------------------------------------------------------------------- _ph_autograd
+# _ph_autograd
 
 
 class TestPadDiagramBatch:
@@ -170,7 +170,7 @@ class TestPersistentHomologyFunction:
         assert (pts.grad.abs().sum() > 0).item()
 
 
-# ------------------------------------------------------------------ _ph_module
+# _ph_module
 
 
 class TestEffectiveMaxRadius:
@@ -604,7 +604,7 @@ class TestPersistentHomology:
             assert isinstance(diagrams[0], Tensor)
 
 
-# ----------------------------------------------------------- _persistence_core_impl
+# _persistence_core_impl
 
 
 class TestPersistenceResult:
@@ -1078,7 +1078,7 @@ class TestAbstractPersistenceComputer:
             comp.compute_distance_matrix(None, 0)
 
 
-# -------------------------------------------------------------- _persistence_core
+# _persistence_core
 
 
 class TestPersistenceCoreReExports:

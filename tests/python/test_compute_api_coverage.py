@@ -152,19 +152,19 @@ class TestMakeEngineFunc:
         from pynerve._compute_api import _make_engine_func
 
         func = _make_engine_func(PersistenceEngine.PH4)
-        assert func.__name__ == "compute_persistence_ph4"
+        assert func.__name__ == "compute_persistence_up_to_dim_4"
 
     def test_func_name_ph5(self):
         from pynerve._compute_api import _make_engine_func
 
         func = _make_engine_func(PersistenceEngine.PH5)
-        assert func.__name__ == "compute_persistence_ph5"
+        assert func.__name__ == "compute_persistence_up_to_dim_5"
 
     def test_func_name_ph6(self):
         from pynerve._compute_api import _make_engine_func
 
         func = _make_engine_func(PersistenceEngine.PH6)
-        assert func.__name__ == "compute_persistence_ph6"
+        assert func.__name__ == "compute_persistence_up_to_dim_6"
 
     def test_unknown_engine_still_has_name(self):
         from pynerve._compute_api import _make_engine_func
@@ -237,23 +237,23 @@ class TestModuleLevelEngineFunctions:
         assert callable(compute_persistence_ph3)
         assert compute_persistence_ph3.__name__ == "compute_persistence_ph3"
 
-    def test_compute_persistence_ph4_exists(self):
-        from pynerve._compute_api import compute_persistence_ph4
+    def test_compute_persistence_up_to_dim_4_exists(self):
+        from pynerve._compute_api import compute_persistence_up_to_dim_4
 
-        assert callable(compute_persistence_ph4)
-        assert compute_persistence_ph4.__name__ == "compute_persistence_ph4"
+        assert callable(compute_persistence_up_to_dim_4)
+        assert compute_persistence_up_to_dim_4.__name__ == "compute_persistence_up_to_dim_4"
 
-    def test_compute_persistence_ph5_exists(self):
-        from pynerve._compute_api import compute_persistence_ph5
+    def test_compute_persistence_up_to_dim_5_exists(self):
+        from pynerve._compute_api import compute_persistence_up_to_dim_5
 
-        assert callable(compute_persistence_ph5)
-        assert compute_persistence_ph5.__name__ == "compute_persistence_ph5"
+        assert callable(compute_persistence_up_to_dim_5)
+        assert compute_persistence_up_to_dim_5.__name__ == "compute_persistence_up_to_dim_5"
 
-    def test_compute_persistence_ph6_exists(self):
-        from pynerve._compute_api import compute_persistence_ph6
+    def test_compute_persistence_up_to_dim_6_exists(self):
+        from pynerve._compute_api import compute_persistence_up_to_dim_6
 
-        assert callable(compute_persistence_ph6)
-        assert compute_persistence_ph6.__name__ == "compute_persistence_ph6"
+        assert callable(compute_persistence_up_to_dim_6)
+        assert compute_persistence_up_to_dim_6.__name__ == "compute_persistence_up_to_dim_6"
 
 
 class TestComputePersistence:
@@ -694,9 +694,9 @@ class TestExports:
         assert "update_persistence" in __all__
         assert "compute_persistence_ph0" in __all__
         assert "compute_persistence_ph3" in __all__
-        assert "compute_persistence_ph4" in __all__
-        assert "compute_persistence_ph5" in __all__
-        assert "compute_persistence_ph6" in __all__
+        assert "compute_persistence_up_to_dim_4" in __all__
+        assert "compute_persistence_up_to_dim_5" in __all__
+        assert "compute_persistence_up_to_dim_6" in __all__
 
 
 class TestEngineDoc:
