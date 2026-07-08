@@ -27,9 +27,9 @@ __all__ = [
     "compute_persistence",
     "compute_persistence_ph0",
     "compute_persistence_ph3",
-    "compute_persistence_ph4",
-    "compute_persistence_ph5",
-    "compute_persistence_ph6",
+    "compute_persistence_up_to_dim_4",
+    "compute_persistence_up_to_dim_5",
+    "compute_persistence_up_to_dim_6",
     "update_persistence",
 ]
 
@@ -44,17 +44,26 @@ _ENGINE_DOC = {
         "Cohomology-based persistence. The default algorithm for small-to-medium datasets.\n    Uses coboundary matrix and reverse-order processing.\n    Typically 30-70% fewer column operations than homology.\n    Recommended for general persistent homology workloads.",
     ),
     PersistenceEngine.PH4: (
-        "PH4 cohomology + aggressive clearing engine",
-        "Cohomology with dimension-cascading clearing and improved memory handling.\n    Recursively clears columns up the chain after each pairing.\n    Up to 50% additional column elimination over basic cohomology.\n    Recommended for higher-dimensional homology, up to dimension 4.",
+        "Dim-cap 4 persistence wrapper",
+        "Capability alias that routes to the same production engine as compute_persistence\n    but clamps max_dim to 4. Provided for clarity when only low-dimensional homology is needed.\n    Identical performance to compute_persistence with max_dim=4.",
     ),
     PersistenceEngine.PH5: (
-        "PH5 unified adaptive engine",
-        "Adaptive engine combining cohomology, approximate mode, and iterative refinement.\n    Automatically selects algorithms based on data characteristics.\n    Use for large datasets (10K-1M points).",
+        "Dim-cap 5 persistence wrapper",
+        "Capability alias that routes to the same production engine as compute_persistence\n    but clamps max_dim to 5. Provided for clarity when intermediate-dimensional\n    homology is needed. Identical performance to compute_persistence with max_dim=5.",
     ),
     PersistenceEngine.PH6: (
-        "PH6 block-sparse speculative engine",
-        "High-performance engine with cache-blocked reduction and speculative execution.\n    Uses L2-blocked matrix layout and adaptive pivoting.\n    Recommended for million-scale datasets and sparse filtrations.",
+        "Dim-cap 6 persistence wrapper",
+        "Capability alias that routes to the same production engine as compute_persistence\n    but clamps max_dim to 6. Provided for clarity when higher-dimensional homology is needed.\n    Identical performance to compute_persistence with max_dim=6.",
     ),
+}
+
+
+_ENGINE_NAMES: dict[PersistenceEngine, str] = {
+    PersistenceEngine.PH0: "compute_persistence_ph0",
+    PersistenceEngine.PH3: "compute_persistence_ph3",
+    PersistenceEngine.PH4: "compute_persistence_up_to_dim_4",
+    PersistenceEngine.PH5: "compute_persistence_up_to_dim_5",
+    PersistenceEngine.PH6: "compute_persistence_up_to_dim_6",
 }
 
 
@@ -90,7 +99,7 @@ def _make_engine_func(engine: PersistenceEngine) -> Callable[..., PersistenceRes
             max_radius_cap=max_radius_cap,
         )
 
-    func.__name__ = f"compute_persistence_{engine.name.lower()}"
+    func.__name__ = _ENGINE_NAMES.get(engine, f"compute_persistence_{engine.name.lower()}")
     func.__qualname__ = func.__name__
     doc_info = _ENGINE_DOC.get(engine, (f"{engine.name} engine", ""))
     desc, details = doc_info
@@ -127,9 +136,9 @@ def _make_engine_func(engine: PersistenceEngine) -> Callable[..., PersistenceRes
 
 compute_persistence_ph0 = _make_engine_func(PersistenceEngine.PH0)
 compute_persistence_ph3 = _make_engine_func(PersistenceEngine.PH3)
-compute_persistence_ph4 = _make_engine_func(PersistenceEngine.PH4)
-compute_persistence_ph5 = _make_engine_func(PersistenceEngine.PH5)
-compute_persistence_ph6 = _make_engine_func(PersistenceEngine.PH6)
+compute_persistence_up_to_dim_4 = _make_engine_func(PersistenceEngine.PH4)
+compute_persistence_up_to_dim_5 = _make_engine_func(PersistenceEngine.PH5)
+compute_persistence_up_to_dim_6 = _make_engine_func(PersistenceEngine.PH6)
 
 
 def _resolve_engine_for_points(

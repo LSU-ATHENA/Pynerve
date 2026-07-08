@@ -11,9 +11,9 @@ from ._persistence_result import _nerve_state
 from .exceptions import BackendRequiredError
 
 _ENGINE_TO_METHOD: dict[PersistenceEngine, str] = {
-    PersistenceEngine.PH4: "compute_persistence_ph4",
-    PersistenceEngine.PH5: "compute_persistence_ph5",
-    PersistenceEngine.PH6: "compute_persistence_ph6",
+    PersistenceEngine.PH4: "compute_persistence_up_to_dim_4",
+    PersistenceEngine.PH5: "compute_persistence_up_to_dim_5",
+    PersistenceEngine.PH6: "compute_persistence_up_to_dim_6",
     PersistenceEngine.PH3: "compute_persistence_cohomology",
 }
 
