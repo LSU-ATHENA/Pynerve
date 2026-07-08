@@ -1,5 +1,5 @@
-site_name: Pynerve
-site_description: Fast TDA library
+site_name: Pynerve 1.0.0
+site_description: Fast topological data analysis library — Linux, macOS, and Windows native support
 repo_url: https://github.com/LSU-ATHENA/Pynerve
 docs_dir: doc
 
