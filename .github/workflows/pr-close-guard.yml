@@ -1,0 +1,40 @@
+# PR Close Guard
+# Only @spinxog is allowed to close pull requests.
+# If anyone else closes a PR, this workflow re-opens it and notifies.
+
+name: pr-close-guard
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  enforce-close-permission:
+    if: github.event.pull_request.merged == false && github.actor != 'spinxog'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check closer identity
+        id: check-closer
+        run: |
+          CLOSER="${{ github.actor }}"
+          if [ "$CLOSER" != "spinxog" ]; then
+            echo "CLOSER_BLOCKED=true" >> $GITHUB_OUTPUT
+            echo "PR #${{ github.event.pull_request.number }} was closed by '$CLOSER'"
+          else
+            echo "CLOSER_BLOCKED=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Re-open PR
+        if: steps.check-closer.outputs.CLOSER_BLOCKED == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUM="${{ github.event.pull_request.number }}"
+          CLOSER="${{ github.actor }}"
+          gh pr reopen "$PR_NUM"
+          gh pr comment "$PR_NUM" --body \
+            "🔒 This PR was automatically re-opened because only @spinxog is authorized to close pull requests. User \`$CLOSER\` attempted to close it."
