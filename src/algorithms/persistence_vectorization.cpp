@@ -2,6 +2,7 @@
 #include "nerve/cpu/arm_simd.hpp"
 #include "nerve/cpu/simd.hpp"
 #include "nerve/cpu/x86_intrinsics.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -10,107 +11,6 @@
 
 namespace nerve::algorithms
 {
-
-namespace
-{
-
-#if defined(__AVX2__) || defined(__AVX512F__)
-inline __m256d simd_exp_pd_avx(__m256d x)
-{
-    const __m256d max_input = _mm256_set1_pd(709.0);
-    const __m256d min_input = _mm256_set1_pd(-709.0);
-    x = _mm256_min_pd(x, max_input);
-    x = _mm256_max_pd(x, min_input);
-
-    const __m256d inv_ln2 = _mm256_set1_pd(1.44269504088896340736);
-
-    __m256d n = _mm256_floor_pd(_mm256_add_pd(_mm256_mul_pd(x, inv_ln2), _mm256_set1_pd(0.5)));
-    __m256d r = _mm256_fnmadd_pd(n, _mm256_set1_pd(0.6931471805599453), x);
-
-    __m256d r2 = _mm256_mul_pd(r, r);
-    __m256d r3 = _mm256_mul_pd(r2, r);
-    __m256d r4 = _mm256_mul_pd(r2, r2);
-    __m256d r5 = _mm256_mul_pd(r3, r2);
-
-    const __m256d c1 = _mm256_set1_pd(1.0);
-    const __m256d c2 = _mm256_set1_pd(1.0 / 2.0);
-    const __m256d c3 = _mm256_set1_pd(1.0 / 6.0);
-    const __m256d c4 = _mm256_set1_pd(1.0 / 24.0);
-    const __m256d c5 = _mm256_set1_pd(1.0 / 120.0);
-
-    __m256d poly = _mm256_fmadd_pd(
-        c5, r5,
-        _mm256_fmadd_pd(
-            c4, r4, _mm256_fmadd_pd(c3, r3, _mm256_fmadd_pd(c2, r2, _mm256_fmadd_pd(c1, r, c1)))));
-
-    alignas(32) double n_arr[4];
-    alignas(32) double p_arr[4];
-    _mm256_store_pd(n_arr, n);
-    _mm256_store_pd(p_arr, poly);
-
-    for (int i = 0; i < 4; ++i)
-    {
-        int64_t ni = static_cast<int64_t>(n_arr[i]);
-        int64_t exp_bits = (ni + 1023) << 52;
-        int64_t bits;
-        std::memcpy(&bits, &p_arr[i], sizeof(double));
-        bits += exp_bits;
-        std::memcpy(&p_arr[i], &bits, sizeof(double));
-    }
-
-    return _mm256_load_pd(p_arr);
-}
-#endif
-
-#if defined(__AVX512F__)
-inline __m512d simd_exp_pd_avx512(__m512d x)
-{
-    const __m512d max_input = _mm512_set1_pd(709.0);
-    const __m512d min_input = _mm512_set1_pd(-709.0);
-    x = _mm512_min_pd(x, max_input);
-    x = _mm512_max_pd(x, min_input);
-
-    const __m512d inv_ln2 = _mm512_set1_pd(1.44269504088896340736);
-
-    __m512d n = _mm512_floor_pd(_mm512_add_pd(_mm512_mul_pd(x, inv_ln2), _mm512_set1_pd(0.5)));
-    __m512d r = _mm512_fnmadd_pd(n, _mm512_set1_pd(0.6931471805599453), x);
-
-    __m512d r2 = _mm512_mul_pd(r, r);
-    __m512d r3 = _mm512_mul_pd(r2, r);
-    __m512d r4 = _mm512_mul_pd(r2, r2);
-    __m512d r5 = _mm512_mul_pd(r3, r2);
-
-    const __m512d c1 = _mm512_set1_pd(1.0);
-    const __m512d c2 = _mm512_set1_pd(1.0 / 2.0);
-    const __m512d c3 = _mm512_set1_pd(1.0 / 6.0);
-    const __m512d c4 = _mm512_set1_pd(1.0 / 24.0);
-    const __m512d c5 = _mm512_set1_pd(1.0 / 120.0);
-
-    __m512d poly = _mm512_fmadd_pd(
-        c5, r5,
-        _mm512_fmadd_pd(
-            c4, r4, _mm512_fmadd_pd(c3, r3, _mm512_fmadd_pd(c2, r2, _mm512_fmadd_pd(c1, r, c1)))));
-
-    alignas(64) double n_arr[8];
-    alignas(64) double p_arr[8];
-    _mm512_store_pd(n_arr, n);
-    _mm512_store_pd(p_arr, poly);
-
-    for (int i = 0; i < 8; ++i)
-    {
-        int64_t ni = static_cast<int64_t>(n_arr[i]);
-        int64_t exp_bits = (ni + 1023) << 52;
-        int64_t bits;
-        std::memcpy(&bits, &p_arr[i], sizeof(double));
-        bits += exp_bits;
-        std::memcpy(&p_arr[i], &bits, sizeof(double));
-    }
-
-    return _mm512_load_pd(p_arr);
-}
-#endif
-
-} // namespace
 
 template <typename T>
 PersistenceLandscape compute_landscape(std::span<const T> diagram, size_t num_pairs, int num_levels,
@@ -299,8 +199,11 @@ PersistenceImage compute_persistence_image(std::span<const T> diagram, size_t nu
 
     result.image =
         std::vector<std::vector<double>>(resolution, std::vector<double>(resolution, 0.0));
-    double sigma_sq2 = 2.0 * sigma * sigma;
-    double neg_inv_sigma_sq2 = -1.0 / sigma_sq2;
+    double neg_inv_sigma_sq2 = -1.0 / (2.0 * sigma * sigma);
+
+    // Batch buffer for y-dimension; sized to max possible window height
+    const size_t max_y_count = static_cast<size_t>(resolution);
+    std::vector<double> exp_args(max_y_count);
 
     for (const auto &[b, d] : finite_pairs)
     {
@@ -313,106 +216,32 @@ PersistenceImage compute_persistence_image(std::span<const T> diagram, size_t nu
         int x1 = std::min(resolution - 1, static_cast<int>(bx + 3 * sigma));
         int y0 = std::max(0, static_cast<int>(py - 3 * sigma));
         int y1 = std::min(resolution - 1, static_cast<int>(py + 3 * sigma));
+        const size_t n_y = static_cast<size_t>(y1 - y0 + 1);
 
-#if defined(NERVE_USE_SIMD) && defined(__AVX512F__)
-        {
-            for (int x = x0; x <= x1; ++x)
-            {
-                double dx = static_cast<double>(x) - bx;
-                __m512d dx2_broadcast = _mm512_set1_pd(dx * dx);
-                __m512d neg_inv_sig = _mm512_set1_pd(neg_inv_sigma_sq2);
-                __m512d py_broadcast = _mm512_set1_pd(py);
-                __m512d y_offsets = _mm512_set_pd(7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0);
-
-                int y = y0;
-                for (; y + 8 <= y1 + 1; y += 8)
-                {
-                    __m512d y_base = _mm512_set1_pd(static_cast<double>(y));
-                    __m512d y_vals = _mm512_add_pd(y_base, y_offsets);
-                    __m512d dy = _mm512_sub_pd(y_vals, py_broadcast);
-                    __m512d dy2 = _mm512_mul_pd(dy, dy);
-                    __m512d dist2 = _mm512_add_pd(dx2_broadcast, dy2);
-                    __m512d exp_arg = _mm512_mul_pd(dist2, neg_inv_sig);
-                    __m512d weight_vec = simd_exp_pd_avx512(exp_arg);
-
-                    alignas(64) double weights[8];
-                    _mm512_store_pd(weights, weight_vec);
-                    for (int k = 0; k < 8; ++k)
-                    {
-                        result.image[static_cast<size_t>(y + k)][static_cast<size_t>(x)] +=
-                            weights[k];
-                    }
-                }
-                for (; y <= y1; ++y)
-                {
-                    double dy = static_cast<double>(y) - py;
-                    double weight = std::exp(-(dx * dx + dy * dy) / sigma_sq2);
-                    result.image[static_cast<size_t>(y)][static_cast<size_t>(x)] += weight;
-                }
-            }
-        }
-#elif defined(NERVE_USE_SIMD) && defined(__AVX2__)
-        {
-            for (int x = x0; x <= x1; ++x)
-            {
-                double dx = static_cast<double>(x) - bx;
-                __m256d dx2_broadcast = _mm256_set1_pd(dx * dx);
-                __m256d neg_inv_sig = _mm256_set1_pd(neg_inv_sigma_sq2);
-                __m256d py_broadcast = _mm256_set1_pd(py);
-                __m256d y_offsets = _mm256_set_pd(3.0, 2.0, 1.0, 0.0);
-
-                int y = y0;
-                for (; y + 4 <= y1 + 1; y += 4)
-                {
-                    __m256d y_base = _mm256_set1_pd(static_cast<double>(y));
-                    __m256d y_vals = _mm256_add_pd(y_base, y_offsets);
-                    __m256d dy = _mm256_sub_pd(y_vals, py_broadcast);
-                    __m256d dy2 = _mm256_mul_pd(dy, dy);
-                    __m256d dist2 = _mm256_add_pd(dx2_broadcast, dy2);
-                    __m256d exp_arg = _mm256_mul_pd(dist2, neg_inv_sig);
-                    __m256d weight_vec = simd_exp_pd_avx(exp_arg);
-
-                    alignas(32) double weights[4];
-                    _mm256_store_pd(weights, weight_vec);
-                    for (int k = 0; k < 4; ++k)
-                    {
-                        result.image[static_cast<size_t>(y + k)][static_cast<size_t>(x)] +=
-                            weights[k];
-                    }
-                }
-                for (; y <= y1; ++y)
-                {
-                    double dy = static_cast<double>(y) - py;
-                    double weight = std::exp(-(dx * dx + dy * dy) / sigma_sq2);
-                    result.image[static_cast<size_t>(y)][static_cast<size_t>(x)] += weight;
-                }
-            }
-        }
-#elif defined(NERVE_USE_SIMD) && (NERVE_HAS_SVE || NERVE_HAS_NEON)
-        {
-            for (int x = x0; x <= x1; ++x)
-            {
-                double dx = static_cast<double>(x) - bx;
-                for (int y = y0; y <= y1; ++y)
-                {
-                    double dy = static_cast<double>(y) - py;
-                    double weight = std::exp(-(dx * dx + dy * dy) / sigma_sq2);
-                    result.image[static_cast<size_t>(y)][static_cast<size_t>(x)] += weight;
-                }
-            }
-        }
-#else
+        // Unified dispatch-table-based implementation:
+        // factor exp(-(dx^2+dy^2)/(2*sigma^2)) = exp(-dx^2/(2*sigma^2)) * exp(-dy^2/(2*sigma^2))
         for (int x = x0; x <= x1; ++x)
         {
             double dx = static_cast<double>(x) - bx;
+            double exp_x = std::exp(dx * dx * neg_inv_sigma_sq2);
+
+            // Fill buffer with -dy^2/(2*sigma^2) for all y
             for (int y = y0; y <= y1; ++y)
             {
                 double dy = static_cast<double>(y) - py;
-                double weight = std::exp(-(dx * dx + dy * dy) / sigma_sq2);
-                result.image[static_cast<size_t>(y)][static_cast<size_t>(x)] += weight;
+                exp_args[static_cast<size_t>(y - y0)] = dy * dy * neg_inv_sigma_sq2;
+            }
+
+            // Batched SIMD.exp via dispatch table (selects AVX-512, AVX2, SSE, NEON, or scalar)
+            nerve::simd::simd_exp(exp_args.data(), n_y);
+
+            // Accumulate: image[y][x] += exp(-dx^2/(2*sigma^2)) * exp(-dy^2/(2*sigma^2))
+            for (size_t k = 0; k < n_y; ++k)
+            {
+                result.image[static_cast<size_t>(y0 + static_cast<int>(k))][static_cast<size_t>(x)] +=
+                    exp_x * exp_args[k];
             }
         }
-#endif
     }
 
     return result;

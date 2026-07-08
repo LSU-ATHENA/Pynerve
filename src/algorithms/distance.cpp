@@ -1,6 +1,8 @@
 #include "nerve/algorithms/distance.hpp"
 #include "nerve/algorithms/distance_c.h"
 #include "nerve/math/constants.hpp"
+#include "nerve/simd/simd_base.hpp"
+#include "nerve/simd/simd_distance.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -125,42 +127,28 @@ template <Numeric T>
 T EuclideanMetric<T>::compute(std::span<const T> a, std::span<const T> b) const
 {
     validate_equal_vectors(a, b);
-    T sum = 0;
     const size_t dim = a.size();
 
-#if defined(NERVE_USE_SIMD) && defined(__AVX512F__)
-    if constexpr (sizeof(T) == 4)
+    if constexpr (std::is_same_v<T, double>)
     {
-        size_t i = 0;
-        __m512 sum_vec = _mm512_setzero_ps();
-
-        for (; i + kSimdWidthFloats <= dim; i += kSimdWidthFloats)
-        {
-            __m512 va = _mm512_loadu_ps(&a[i]);
-            __m512 vb = _mm512_loadu_ps(&b[i]);
-            __m512 diff = _mm512_sub_ps(va, vb);
-            sum_vec = _mm512_fmadd_ps(diff, diff, sum_vec);
-        }
-
-        sum = _mm512_reduce_add_ps(sum_vec);
-
-        for (; i < dim; ++i)
-        {
-            T diff = a[i] - b[i];
-            sum += diff * diff;
-        }
+        return checked_distance_result(nerve::simd::simd_euclidean(a.data(), b.data(), dim),
+                                       "euclidean distance");
+    }
+    else if constexpr (std::is_same_v<T, float>)
+    {
+        return checked_distance_result(static_cast<T>(nerve::simd::simd_euclidean_f32(a.data(), b.data(), dim)),
+                                       "euclidean distance");
     }
     else
-#endif
     {
+        T sum = 0;
         for (size_t i = 0; i < dim; ++i)
         {
             T diff = a[i] - b[i];
             sum += diff * diff;
         }
+        return checked_distance_result(std::sqrt(sum), "euclidean distance");
     }
-
-    return checked_distance_result(std::sqrt(sum), "euclidean distance");
 }
 
 template <Numeric T>
@@ -168,53 +156,27 @@ T EuclideanMetric<T>::compute_simd(std::span<const T> a, std::span<const T> b)
 {
     validate_equal_vectors(a, b);
     const size_t dim = a.size();
-#if defined(NERVE_USE_SIMD) && defined(__AVX512F__)
-    if constexpr (sizeof(T) == sizeof(float))
+
+    if constexpr (std::is_same_v<T, double>)
     {
-        __m512 acc = _mm512_setzero_ps();
-        size_t d = 0;
-        for (; d + kSimdWidthFloats <= dim; d += kSimdWidthFloats)
-        {
-            const __m512 va = _mm512_loadu_ps(a.data() + d);
-            const __m512 vb = _mm512_loadu_ps(b.data() + d);
-            const __m512 diff = _mm512_sub_ps(va, vb);
-            acc = _mm512_fmadd_ps(diff, diff, acc);
-        }
-        T sum_sq = _mm512_reduce_add_ps(acc);
-        for (; d < dim; ++d)
+        return checked_distance_result(nerve::simd::simd_euclidean(a.data(), b.data(), dim),
+                                       "euclidean distance");
+    }
+    else if constexpr (std::is_same_v<T, float>)
+    {
+        return checked_distance_result(static_cast<T>(nerve::simd::simd_euclidean_f32(a.data(), b.data(), dim)),
+                                       "euclidean distance");
+    }
+    else
+    {
+        T sum_sq = nerve::math::Constants<T>::kZero;
+        for (size_t d = 0; d < dim; ++d)
         {
             const T diff = a[d] - b[d];
             sum_sq += diff * diff;
         }
         return checked_distance_result(std::sqrt(sum_sq), "euclidean distance");
     }
-    if constexpr (sizeof(T) == sizeof(double))
-    {
-        __m512d acc = _mm512_setzero_pd();
-        size_t d = 0;
-        for (; d + kSimdWidthDoubles <= dim; d += kSimdWidthDoubles)
-        {
-            const __m512d va = _mm512_loadu_pd(a.data() + d);
-            const __m512d vb = _mm512_loadu_pd(b.data() + d);
-            const __m512d diff = _mm512_sub_pd(va, vb);
-            acc = _mm512_fmadd_pd(diff, diff, acc);
-        }
-        T sum_sq = _mm512_reduce_add_pd(acc);
-        for (; d < dim; ++d)
-        {
-            const T diff = a[d] - b[d];
-            sum_sq += diff * diff;
-        }
-        return checked_distance_result(std::sqrt(sum_sq), "euclidean distance");
-    }
-#endif
-    T sum_sq = nerve::math::Constants<T>::kZero;
-    for (size_t d = 0; d < dim; ++d)
-    {
-        const T diff = a[d] - b[d];
-        sum_sq += diff * diff;
-    }
-    return checked_distance_result(std::sqrt(sum_sq), "euclidean distance");
 }
 
 template <Numeric T>
@@ -249,13 +211,27 @@ template <Numeric T>
 T ManhattanMetric<T>::compute(std::span<const T> a, std::span<const T> b) const
 {
     validate_equal_vectors(a, b);
-    T sum = 0;
     const size_t dim = a.size();
-    for (size_t i = 0; i < dim; ++i)
+
+    if constexpr (std::is_same_v<T, double>)
     {
-        sum += std::abs(a[i] - b[i]);
+        return checked_distance_result(nerve::simd::simd_manhattan(a.data(), b.data(), dim),
+                                       "manhattan distance");
     }
-    return checked_distance_result(sum, "manhattan distance");
+    else if constexpr (std::is_same_v<T, float>)
+    {
+        return checked_distance_result(static_cast<T>(nerve::simd::simd_manhattan_f32(a.data(), b.data(), dim)),
+                                       "manhattan distance");
+    }
+    else
+    {
+        T sum = 0;
+        for (size_t i = 0; i < dim; ++i)
+        {
+            sum += std::abs(a[i] - b[i]);
+        }
+        return checked_distance_result(sum, "manhattan distance");
+    }
 }
 
 template <Numeric T>
@@ -289,7 +265,22 @@ template <Numeric T>
 T CosineMetric<T>::compute(std::span<const T> a, std::span<const T> b) const
 {
     validate_equal_vectors(a, b);
-    return cosine_distance(a.data(), b.data(), a.size());
+    const size_t dim = a.size();
+
+    if constexpr (std::is_same_v<T, double>)
+    {
+        return checked_distance_result(nerve::simd::simd_cosine(a.data(), b.data(), dim),
+                                       "cosine distance");
+    }
+    else if constexpr (std::is_same_v<T, float>)
+    {
+        return checked_distance_result(static_cast<T>(nerve::simd::simd_cosine_f32(a.data(), b.data(), dim)),
+                                       "cosine distance");
+    }
+    else
+    {
+        return cosine_distance(a.data(), b.data(), dim);
+    }
 }
 
 template <Numeric T>
@@ -307,7 +298,9 @@ std::vector<T> CosineMetric<T>::compute_matrix(std::span<const T> points, size_t
     {
         for (size_t j = i + 1; j < n_points; ++j)
         {
-            const T dist = cosine_distance(points.data() + i * dim, points.data() + j * dim, dim);
+            std::span<const T> a(points.data() + i * dim, dim);
+            std::span<const T> b(points.data() + j * dim, dim);
+            const T dist = compute(a, b);
             distances[i * n_points + j] = dist;
             distances[j * n_points + i] = dist;
         }
@@ -324,12 +317,10 @@ std::vector<T> DistanceMatrixComputer<T>::compute(std::span<const T> points, siz
     switch (config_.metric)
     {
         case Config::Metric::EUCLIDEAN:
-#if defined(NERVE_USE_SIMD) && defined(__AVX512F__)
-            if (config_.use_simd && dim >= simd_lane_width<T>())
+            if (config_.use_simd)
             {
                 return compute_euclidean_simd(points, n_points, dim);
             }
-#endif
             if (config_.block_size > 0 && n_points > config_.block_size)
             {
                 return compute_blocked(points, n_points, dim, config_.block_size);
@@ -382,10 +373,10 @@ std::vector<T> DistanceMatrixComputer<T>::compute_pairwise(std::span<const T> se
 #endif
     for (size_t i = 0; i < n_a; ++i)
     {
+        const T* a_row = &set_a[i * dim];
         for (size_t j = 0; j < n_b; ++j)
         {
-            distances[i * n_b + j] = distance_from_matrix_metric(
-                set_a.data() + i * dim, set_b.data() + j * dim, dim, config_.metric);
+            distances[i * n_b + j] = compute_single(a_row, &set_b[j * dim], dim);
         }
     }
     return distances;
@@ -400,10 +391,10 @@ std::vector<T> DistanceMatrixComputer<T>::compute_symmetric(std::span<const T> p
     packed.reserve(checked_upper_triangle_count(n_points, "packed distance matrix"));
     for (size_t i = 0; i < n_points; ++i)
     {
+        const T* a_row = &points[i * dim];
         for (size_t j = i + 1; j < n_points; ++j)
         {
-            packed.push_back(distance_from_matrix_metric(
-                points.data() + i * dim, points.data() + j * dim, dim, config_.metric));
+            packed.push_back(compute_single(a_row, &points[j * dim], dim));
         }
     }
     return packed;
@@ -430,10 +421,10 @@ std::vector<T> DistanceMatrixComputer<T>::compute_chunked(std::span<const T> poi
             const size_t j1 = std::min(n_points, j0 + chunk_size);
             for (size_t i = i0; i < i1; ++i)
             {
+                const T* a_row = &points[i * dim];
                 for (size_t j = std::max(i, j0); j < j1; ++j)
                 {
-                    const T dist = distance_from_matrix_metric(
-                        points.data() + i * dim, points.data() + j * dim, dim, config_.metric);
+                    const T dist = compute_single(a_row, &points[j * dim], dim);
                     distances[i * n_points + j] = dist;
                     distances[j * n_points + i] = dist;
                 }
@@ -458,13 +449,29 @@ std::vector<T> DistanceMatrixComputer<T>::compute_euclidean(std::span<const T> p
     {
         for (size_t j = i; j < n_points; ++j)
         {
-            T sum = 0;
-            for (size_t d = 0; d < dim; ++d)
+            T dist;
+            if constexpr (std::is_same_v<T, double>)
             {
-                T diff = points[i * dim + d] - points[j * dim + d];
-                sum += diff * diff;
+                dist = checked_distance_result(
+                    nerve::simd::simd_euclidean(&points[i * dim], &points[j * dim], dim),
+                    "euclidean distance");
             }
-            T dist = checked_distance_result(std::sqrt(sum), "euclidean distance");
+            else if constexpr (std::is_same_v<T, float>)
+            {
+                dist = checked_distance_result(
+                    static_cast<T>(nerve::simd::simd_euclidean_f32(&points[i * dim], &points[j * dim], dim)),
+                    "euclidean distance");
+            }
+            else
+            {
+                T sum = 0;
+                for (size_t d = 0; d < dim; ++d)
+                {
+                    T diff = points[i * dim + d] - points[j * dim + d];
+                    sum += diff * diff;
+                }
+                dist = checked_distance_result(std::sqrt(sum), "euclidean distance");
+            }
 
             distances[i * n_points + j] = dist;
             if (i != j)
@@ -492,13 +499,29 @@ std::vector<T> DistanceMatrixComputer<T>::compute_manhattan(std::span<const T> p
     {
         for (size_t j = i; j < n_points; ++j)
         {
-            T sum = 0;
-            for (size_t d = 0; d < dim; ++d)
+            T dist;
+            if constexpr (std::is_same_v<T, double>)
             {
-                sum += std::abs(points[i * dim + d] - points[j * dim + d]);
+                dist = checked_distance_result(
+                    nerve::simd::simd_manhattan(&points[i * dim], &points[j * dim], dim),
+                    "manhattan distance");
+            }
+            else if constexpr (std::is_same_v<T, float>)
+            {
+                dist = checked_distance_result(
+                    static_cast<T>(nerve::simd::simd_manhattan_f32(&points[i * dim], &points[j * dim], dim)),
+                    "manhattan distance");
+            }
+            else
+            {
+                T sum = 0;
+                for (size_t d = 0; d < dim; ++d)
+                {
+                    sum += std::abs(points[i * dim + d] - points[j * dim + d]);
+                }
+                dist = checked_distance_result(sum, "manhattan distance");
             }
 
-            const T dist = checked_distance_result(sum, "manhattan distance");
             distances[i * n_points + j] = dist;
             if (i != j)
             {
@@ -508,6 +531,52 @@ std::vector<T> DistanceMatrixComputer<T>::compute_manhattan(std::span<const T> p
     }
 
     return distances;
+}
+
+template <Numeric T>
+T DistanceMatrixComputer<T>::compute_single(const T* a, const T* b, size_t dim) const
+{
+    if constexpr (std::is_same_v<T, double>)
+    {
+        switch (config_.metric)
+        {
+            case Config::Metric::EUCLIDEAN:
+                return checked_distance_result(nerve::simd::simd_euclidean(a, b, dim),
+                                               "euclidean distance");
+            case Config::Metric::MANHATTAN:
+                return checked_distance_result(nerve::simd::simd_manhattan(a, b, dim),
+                                               "manhattan distance");
+            case Config::Metric::COSINE:
+                return checked_distance_result(nerve::simd::simd_cosine(a, b, dim),
+                                               "cosine distance");
+            default:
+                return distance_from_matrix_metric(a, b, dim, config_.metric);
+        }
+    }
+    else if constexpr (std::is_same_v<T, float>)
+    {
+        switch (config_.metric)
+        {
+            case Config::Metric::EUCLIDEAN:
+                return checked_distance_result(
+                    static_cast<T>(nerve::simd::simd_euclidean_f32(a, b, dim)),
+                    "euclidean distance");
+            case Config::Metric::MANHATTAN:
+                return checked_distance_result(
+                    static_cast<T>(nerve::simd::simd_manhattan_f32(a, b, dim)),
+                    "manhattan distance");
+            case Config::Metric::COSINE:
+                return checked_distance_result(
+                    static_cast<T>(nerve::simd::simd_cosine_f32(a, b, dim)),
+                    "cosine distance");
+            default:
+                return distance_from_matrix_metric(a, b, dim, config_.metric);
+        }
+    }
+    else
+    {
+        return distance_from_matrix_metric(a, b, dim, config_.metric);
+    }
 }
 
 #include "detail/distance_c_api_instantiations.inl"

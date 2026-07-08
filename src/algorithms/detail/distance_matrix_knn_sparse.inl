@@ -39,55 +39,16 @@ std::vector<T> DistanceMatrixComputer<T>::compute_blocked(std::span<const T> poi
     return distances;
 }
 
-#if defined(NERVE_USE_SIMD) && defined(__AVX512F__)
 template<Numeric T>
 std::vector<T> DistanceMatrixComputer<T>::compute_euclidean_simd(std::span<const T> points,
                                                                size_t n_points,
                                                                size_t dim) const {
-    validate_flat_matrix(points, n_points, dim, "points");
-    const size_t matrix_size = checked_square_count(n_points, "distance matrix");
-    std::vector<T> distances(matrix_size, nerve::math::Constants<T>::kZero);
-
-    if constexpr (sizeof(T) == sizeof(float)) {
-        #ifdef NERVE_USE_OPENMP
-        #pragma omp parallel for schedule(dynamic) if(config_.use_openmp)
-        #endif
-        for (size_t i = 0; i < n_points; ++i) {
-            for (size_t j = i; j < n_points; ++j) {
-                const float* a = &points[i * dim];
-                const float* b = &points[j * dim];
-
-                __m512 sum_vec = _mm512_setzero_ps();
-                size_t d = 0;
-
-                for (; d + kSimdWidthFloats <= dim; d += kSimdWidthFloats) {
-                    __m512 va = _mm512_loadu_ps(&a[d]);
-                    __m512 vb = _mm512_loadu_ps(&b[d]);
-                    __m512 diff = _mm512_sub_ps(va, vb);
-                    sum_vec = _mm512_fmadd_ps(diff, diff, sum_vec);
-                }
-
-                float sum = _mm512_reduce_add_ps(sum_vec);
-
-                for (; d < dim; ++d) {
-                    float diff = a[d] - b[d];
-                    sum += diff * diff;
-                }
-
-                float dist = checked_distance_result(std::sqrt(sum), "euclidean distance");
-                distances[i * n_points + j] = dist;
-                if (i != j) {
-                    distances[j * n_points + i] = dist;
-                }
-            }
-        }
-    } else {
-        return compute_euclidean(points, n_points, dim);
-    }
-
-    return distances;
+    // Delegate to compute_euclidean which already uses the dispatch table
+    // (simd_euclidean for double, simd_euclidean_f32 for float) via if constexpr,
+    // with a scalar fallback for other types. The dispatch table selects the
+    // optimal SIMD backend at runtime, making the old AVX-512-specific path obsolete.
+    return compute_euclidean(points, n_points, dim);
 }
-#endif
 
 template<Numeric T>
 typename KNNComputer<T>::Result KNNComputer<T>::compute(std::span<const T> points,

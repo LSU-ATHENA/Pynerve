@@ -85,20 +85,63 @@ template<nerve::algorithms::Numeric T>
     typename nerve::algorithms::DistanceMatrixComputer<T>::Config::Metric metric
 ) {
     using Metric = typename nerve::algorithms::DistanceMatrixComputer<T>::Config::Metric;
-    switch (metric) {
-        case Metric::EUCLIDEAN:
-            return euclidean_distance(a, b, dim);
-        case Metric::MANHATTAN:
-            return manhattan_distance(a, b, dim);
-        case Metric::COSINE:
-            return cosine_distance(a, b, dim);
-        case Metric::CHEBYSHEV:
-            return chebyshev_distance(a, b, dim);
-        case Metric::MINKOWSKI:
-        case Metric::CANBERRA:
-        case Metric::BRAYCURTIS:
-        case Metric::CORRELATION:
-            break;
+
+    if constexpr (std::is_same_v<T, double>)
+    {
+        switch (metric)
+        {
+            case Metric::EUCLIDEAN:
+                return checked_distance_result(nerve::simd::simd_euclidean(a, b, dim),
+                                               "euclidean distance");
+            case Metric::MANHATTAN:
+                return checked_distance_result(nerve::simd::simd_manhattan(a, b, dim),
+                                               "manhattan distance");
+            case Metric::COSINE:
+                return checked_distance_result(nerve::simd::simd_cosine(a, b, dim),
+                                               "cosine distance");
+            case Metric::CHEBYSHEV:
+                return chebyshev_distance(a, b, dim);
+            default:
+                break;
+        }
+    }
+    else if constexpr (std::is_same_v<T, float>)
+    {
+        switch (metric)
+        {
+            case Metric::EUCLIDEAN:
+                return checked_distance_result(
+                    static_cast<T>(nerve::simd::simd_euclidean_f32(a, b, dim)),
+                    "euclidean distance");
+            case Metric::MANHATTAN:
+                return checked_distance_result(
+                    static_cast<T>(nerve::simd::simd_manhattan_f32(a, b, dim)),
+                    "manhattan distance");
+            case Metric::COSINE:
+                return checked_distance_result(
+                    static_cast<T>(nerve::simd::simd_cosine_f32(a, b, dim)),
+                    "cosine distance");
+            case Metric::CHEBYSHEV:
+                return chebyshev_distance(a, b, dim);
+            default:
+                break;
+        }
+    }
+    else
+    {
+        switch (metric)
+        {
+            case Metric::EUCLIDEAN:
+                return euclidean_distance(a, b, dim);
+            case Metric::MANHATTAN:
+                return manhattan_distance(a, b, dim);
+            case Metric::COSINE:
+                return cosine_distance(a, b, dim);
+            case Metric::CHEBYSHEV:
+                return chebyshev_distance(a, b, dim);
+            default:
+                break;
+        }
     }
     return euclidean_distance(a, b, dim);
 }
