@@ -6,6 +6,7 @@
 #include <chrono>
 #include <fstream>
 #include <iomanip>
+#include <set>
 #include <nlohmann/json.hpp>
 #include <sstream>
 
@@ -288,7 +289,7 @@ GpuSignature GpuTuningDatabase::detectCurrentGpu(int deviceId)
 #if CUDART_VERSION >= 13000
     {
         int clock_khz = 0;
-        cudaDeviceGetAttribute(&clock_khz, cudaDevAttrClockRate, device_id);
+        cudaDeviceGetAttribute(&clock_khz, cudaDevAttrClockRate, deviceId);
         sig.clockRate = clock_khz;
     }
 #else
@@ -298,17 +299,19 @@ GpuSignature GpuTuningDatabase::detectCurrentGpu(int deviceId)
     sig.name = prop.name;
 
     // Get UUID if available (CUDA 10.2+)
-#if CUDART_VERSION >= 10020
-    cudaUuid_t uuid;
-    err = cudaDeviceGetUuid(&uuid, deviceId);
-    if (err == cudaSuccess)
+#if CUDART_VERSION >= 10020 && CUDART_VERSION < 12000
     {
-        std::stringstream ss;
-        for (int i = 0; i < 16; ++i)
+        cudaUUID_t uuid;
+        err = cudaDeviceGetUuid(&uuid, deviceId);
+        if (err == cudaSuccess)
         {
-            ss << std::hex << std::setw(2) << std::setfill('0') << (unsigned char)uuid.bytes[i];
+            std::stringstream ss;
+            for (int i = 0; i < 16; ++i)
+            {
+                ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(uuid.bytes[i]);
+            }
+            sig.uuid = ss.str();
         }
-        sig.uuid = ss.str();
     }
 #endif
 

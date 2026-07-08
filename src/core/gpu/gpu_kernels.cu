@@ -63,7 +63,7 @@ __global__ void vectorDotKernel(const double *a, const double *b, double *partia
     double sum = 0.0;
     while (i < static_cast<int>(n))
     {
-        sum = ptx::fma_f64(a[i], b[i], sum);
+        sum = fma_f64(a[i], b[i], sum);
         i += gridDim.x * blockDim.x;
     }
     sdata[tid] = sum;
