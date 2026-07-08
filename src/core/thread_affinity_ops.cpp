@@ -7,8 +7,6 @@
 #include <vector>
 
 #ifdef __linux__
-#include <pthread.h>
-#include <sched.h>
 #include <unistd.h>
 #ifdef NERVE_HAS_NUMA
 #include <numa.h>
@@ -16,6 +14,7 @@
 #endif
 
 #include "nerve/core/thread_affinity.hpp"
+#include "nerve/platform.hpp"
 
 namespace nerve::core
 {
@@ -95,10 +94,10 @@ bool CpuTopology::sameNumaAs(int a, int b) const
 void pinCurrentThreadToCore(int cpu_id)
 {
 #ifdef __linux__
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(cpu_id, &cpuset);
-    pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+    nerve::sys::CpuSet cpuset;
+    cpuset.clear();
+    cpuset.set(cpu_id);
+    nerve::sys::thread_set_affinity(nerve::sys::thread_self(), &cpuset);
 #else
     (void)cpu_id;
 #endif
@@ -152,10 +151,10 @@ void pinCurrentThreadToNumaNode(int numa_node)
 void pinThreadToCore(std::thread &t, int cpu_id)
 {
 #ifdef __linux__
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(cpu_id, &cpuset);
-    pthread_setaffinity_np(t.native_handle(), sizeof(cpu_set_t), &cpuset);
+    nerve::sys::CpuSet cpuset;
+    cpuset.clear();
+    cpuset.set(cpu_id);
+    nerve::sys::thread_set_affinity(t.native_handle(), &cpuset);
 #else
     (void)t;
     (void)cpu_id;
@@ -165,7 +164,7 @@ void pinThreadToCore(std::thread &t, int cpu_id)
 int getCurrentCpu()
 {
 #ifdef __linux__
-    return sched_getcpu();
+    return nerve::sys::sched_getcpu();
 #else
     return 0;
 #endif
@@ -176,7 +175,7 @@ int getCurrentNumaNode()
 #ifdef __linux__
 #ifdef NERVE_HAS_NUMA
     if (numa_available() >= 0)
-        return numa_node_of_cpu(sched_getcpu());
+        return nerve::sys::numa_node_of_cpu(nerve::sys::sched_getcpu());
 #endif
     return 0;
 #else
@@ -236,8 +235,8 @@ struct ThreadPool::Impl
                             return;
                         task = std::move(queue.back());
                         queue.pop_back();
+                        active++;
                     }
-                    active++;
                     task(i);
                     active--;
                 }
