@@ -94,4 +94,12 @@ Synchronization:
   - No mutex, no condition variable in the hot path
 ```
 
+### Lock-free Persistence Reducer Accuracy
+
+The lock-free *streaming architecture* described above handles concurrent data ingestion. Pynerve also provides a separate **lock-free persistence reducer** (`reduceMatrixLockfree` in `reduction_lockfree_ops.cpp`) for parallel matrix reduction on multi-core CPUs.
+
+This reducer achieves **0.0000% count-level accuracy** vs the deterministic sequential ground truth -- every run produces the exact same number of persistence pairs. This is possible because the post-pass cascade operates on **shared mutable final state**: after all worker threads join, every column's reduced form is authoritative and deterministic.
+
+At the *pair-value level*, the lock-free reducer is non-deterministic (~1.78% mismatch for dim-2, ~34% for dim-1) -- different runs produce different but topologically valid (birth, death) pairings. This is expected behavior for any parallel persistence reduction (Morozov & Nigmetov 2019). See [Determinism](../../reference/correctness_detail/determinism.md) for details.
+
 [Back to index](index.md)

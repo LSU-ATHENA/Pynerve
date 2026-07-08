@@ -16,11 +16,11 @@ Pynerve issues software prefetch instructions (`_mm_prefetch`) for:
 
 ### Branch prediction hints
 
-Hot loops use `__builtin_expect` (or `[[likely]]`/`[[unlikely]]`) to guide branch prediction:
+Hot loops use `NERVE_LIKELY`/`NERVE_UNLIKELY` (which delegate to `__builtin_expect` on GCC/Clang, and `[[likely]]`/`[[unlikely]]` on MSVC) to guide branch prediction:
 
 ```cpp
 // Example from matrix reduction inner loop
-if (__builtin_expect(pivot < lowest_pivot, 0)) {
+if (NERVE_UNLIKELY(pivot < lowest_pivot)) {
     // Rare: pivot reset
     reset_column();
 }

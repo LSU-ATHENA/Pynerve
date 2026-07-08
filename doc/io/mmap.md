@@ -55,8 +55,8 @@ copied -- it is directly accessed from the OS page cache.
 
 ### Platform support
 
-- Linux: full implementation via `mmap`/`munmap`/`msync`
-- macOS: uses `mmap` (MAP_ANON not needed)
+- Linux: full implementation via `nerve::sys::map`/`nerve::sys::unmap`/`nerve::sys::sync_map`
+- macOS: uses `nerve::sys::map` (MAP_ANON not needed)
 - Other: throws `std::runtime_error`
 
 
@@ -91,8 +91,8 @@ for (size_t i = 0; i < num_pairs; ++i) {
     pairs[i] = {dim, birth, death};
 }
 // OS writes dirty pages to disk asynchronously
-// Call msync for durability:
-msync(mf.data, mf.size, MS_SYNC);
+// Call sync_map for durability:
+nerve::sys::sync_map(mf.data, mf.size);
 ```
 
 ### Python

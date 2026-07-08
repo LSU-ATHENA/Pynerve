@@ -1,6 +1,6 @@
 ## Thread pool
 
-Per-core pinned worker threads using `pthread_setaffinity_np`. Workers are
+Per-core pinned worker threads using `nerve::sys::thread_set_affinity()`. Workers are
 created once and reused across submissions. Work is distributed via a
 lock-free work-stealing queue.
 
@@ -43,7 +43,8 @@ struct WorkerQueue {
 thread_local WorkerQueue local_queue;
 
 void worker_main(int thread_id) {
-    pin_thread_to_core(thread_id);
+    nerve::sys::thread_set_affinity(nerve::sys::thread_self(),
+                                    nerve::sys::CpuSet::full().clear_above(1).set(thread_id));
 
     while (!stop_flag) {
         // Try local queue first
