@@ -1,6 +1,7 @@
 
 #include "nerve/metrics/distances.hpp"
 #include "nerve/metrics/gpu_distances.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -306,11 +307,16 @@ WassersteinDistance::solveTransportSinkhorn(const std::vector<std::vector<double
     }
 
     std::vector<std::vector<double>> kernel(n, std::vector<double>(n, 0.0));
+    const double inv_reg = 1.0 / regularization_;
     for (Size i = 0; i < n; ++i)
     {
         for (Size j = 0; j < n; ++j)
         {
-            kernel[i][j] = std::exp(-cost_matrix[i][j] / regularization_);
+            kernel[i][j] = -cost_matrix[i][j] * inv_reg;
+        }
+        nerve::simd::simd_exp(kernel[i].data(), n);
+        for (Size j = 0; j < n; ++j)
+        {
             if (!std::isfinite(kernel[i][j]))
             {
                 throw std::overflow_error("Sinkhorn kernel value overflowed");

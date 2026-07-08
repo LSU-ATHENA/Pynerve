@@ -1,5 +1,6 @@
 #include "nerve/cpu/x86_intrinsics.hpp"
 #include "nerve/metrics/gpu_distances.hpp"
+#include "nerve/platform.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -225,8 +226,8 @@ AVX512Benchmark benchmarkAVX512(int n1, int n2, int dim, int iterations)
 
 bool isAVX512Available()
 {
-#ifdef __AVX512F__
-    return __builtin_cpu_supports("avx512f");
+#if defined(__AVX512F__) && (defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86))
+    return nerve::cpu::CpuFeatureFlags::detect().has_avx512f;
 #else
     return false;
 #endif

@@ -1,5 +1,6 @@
 #include "nerve/core.hpp"
 #include "nerve/metrics/gpu_distances.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -119,11 +120,16 @@ double sinkhornDistance2D(const std::vector<double> &hist1, const std::vector<do
         return 0.0;
 
     std::vector<std::vector<double>> K(n, std::vector<double>(n));
+    const double inv_eps = 1.0 / config.epsilon;
     for (size_t i = 0; i < n; ++i)
     {
         for (size_t j = 0; j < n; ++j)
         {
-            K[i][j] = std::exp(-cost_matrix[i][j] / config.epsilon);
+            K[i][j] = -cost_matrix[i][j] * inv_eps;
+        }
+        nerve::simd::simd_exp(K[i].data(), n);
+        for (size_t j = 0; j < n; ++j)
+        {
             if (!std::isfinite(K[i][j]))
             {
                 throw std::overflow_error("Sinkhorn kernel value overflowed");
@@ -139,11 +145,7 @@ double sinkhornDistance2D(const std::vector<double> &hist1, const std::vector<do
         std::vector<double> u_prev = u;
         for (size_t i = 0; i < n; ++i)
         {
-            double sum = 0.0;
-            for (size_t j = 0; j < n; ++j)
-            {
-                sum += K[i][j] * v[j];
-            }
+            const double sum = nerve::simd::simd_dot(K[i].data(), v.data(), n);
             u[i] = hist1[i] / (sum + NUMERICAL_STABILITY_EPS);
             if (!std::isfinite(u[i]))
             {
