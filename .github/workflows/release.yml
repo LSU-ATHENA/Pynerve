@@ -4,6 +4,13 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref (branch, tag, or SHA) to build from'
+        required: true
+        default: 'main'
+        type: string
 
 env:
   TWINE_USERNAME: __token__
