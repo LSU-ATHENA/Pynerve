@@ -2,6 +2,7 @@
 #include "nerve/algebra/cellular.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/cohomology/cohomology_rref.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -176,12 +177,7 @@ std::vector<double> multiplyMatrixVector(const std::vector<std::vector<double>> 
     for (Size i = 0; i < matrix.size(); ++i)
     {
         const Size width = std::min(matrix[i].size(), vector.size());
-        double sum = 0.0;
-        for (Size j = 0; j < width; ++j)
-        {
-            sum += matrix[i][j] * vector[j];
-        }
-        output[i] = sum;
+        output[i] = nerve::simd::simd_dot(matrix[i].data(), vector.data(), width);
     }
     return output;
 }

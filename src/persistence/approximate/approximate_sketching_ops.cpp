@@ -106,7 +106,7 @@ SketchingConfig normalizeConfig(const SketchingConfig &input, size_t point_dim)
 }
 } // namespace
 // Main API: Approximate PH using sketching
-SketchingResult computeApproximatePHSketching(const core::BufferView<const double> &points,
+SketchingResult computeApproximatePHSketching(core::BufferView<const double>points,
                                               Size point_dim, const SketchingConfig &config)
 {
     SketchingResult result{};
