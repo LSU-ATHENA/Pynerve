@@ -273,7 +273,7 @@ pip install -e ./python
 | -------- | ------ |
 | Linux    | Supported (primary target) |
 | macOS    | Supported |
-| Windows  | WSL only. Native Windows support is planned for the 1.0.0 release. |
+| Windows  | Supported (native via `nerve::sys` platform abstraction layer - MSVC, Clang-cl) |
 
 
 ## GPU Support
@@ -340,6 +340,7 @@ If Pynerve contributes to published research, please cite:
 ```bibtex
 @software{Pynerve,
   title={Pynerve},
+  version={1.0.0},
   year={2026},
   author={Pradip Debnath},
   url={https://github.com/LSU-ATHENA/Pynerve}
