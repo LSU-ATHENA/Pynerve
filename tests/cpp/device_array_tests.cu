@@ -37,7 +37,7 @@ int main()
         return 0;
     }
 
-    // Test 1: Default construction
+    // Default construction
     {
         nerve::gpu::DeviceArray<float> arr;
         assert(arr.get() == nullptr);
@@ -45,7 +45,7 @@ int main()
         assert(arr.bytes() == 0);
     }
 
-    // Test 2: Allocating constructor
+    // Allocating constructor
     {
         nerve::gpu::DeviceArray<int> arr(100);
         assert(arr.get() != nullptr);
@@ -53,7 +53,7 @@ int main()
         assert(arr.bytes() == 100 * sizeof(int));
     }
 
-    // Test 3: Move construction
+    // Move construction
     {
         nerve::gpu::DeviceArray<double> src(50);
         double *src_ptr = src.get();
@@ -67,7 +67,7 @@ int main()
         assert(src.size() == 0);
     }
 
-    // Test 4: Move assignment
+    // Move assignment
     {
         nerve::gpu::DeviceArray<float> src(25);
         float *src_ptr = src.get();
@@ -83,7 +83,7 @@ int main()
         assert(src.size() == 0);
     }
 
-    // Test 5: Host-to-device and device-to-host transfer
+    // Host-to-device and device-to-host transfer
     {
         const size_t count = 16;
         std::vector<int> host_src(count);
@@ -102,7 +102,7 @@ int main()
         }
     }
 
-    // Test 6: Double transfer round-trip
+    // Double transfer round-trip
     {
         const size_t count = 32;
         std::vector<float> host_src(count);
@@ -134,7 +134,7 @@ int main()
         }
     }
 
-    // Test 7: Large allocation (try 1GB, expect graceful handling)
+    // Large allocation (try 1GB, expect graceful handling)
     {
         const size_t large_bytes = 1024ULL * 1024ULL * 1024ULL; // 1 GB
         const size_t large_count = large_bytes / sizeof(char);
@@ -161,7 +161,7 @@ int main()
         }
     }
 
-    // Test 8: Double-move: verify source is nulled after each move
+    // Double-move: verify source is nulled after each move
     {
         nerve::gpu::DeviceArray<int> a(5);
         int *a_ptr = a.get();
@@ -178,7 +178,7 @@ int main()
         assert(b.size() == 0);
     }
 
-    // Test 9: Self-move-assignment guard
+    // Self-move-assignment guard
     {
         nerve::gpu::DeviceArray<float> arr(10);
         float *orig_ptr = arr.get();
@@ -190,7 +190,7 @@ int main()
         assert(arr.size() == 10);
     }
 
-    // Test 10: Reset
+    // Reset
     {
         nerve::gpu::DeviceArray<double> arr(20);
         assert(arr.get() != nullptr);
@@ -201,7 +201,7 @@ int main()
         assert(arr.size() == 0);
     }
 
-    // Test 11: Transfer with default stream
+    // Transfer with default stream
     {
         const size_t count = 8;
         std::vector<unsigned long long> host_src(count);
@@ -220,7 +220,7 @@ int main()
         }
     }
 
-    // Test 12: Const accessor
+    // Const accessor
     {
         nerve::gpu::DeviceArray<int> arr(5);
         const auto &const_arr = arr;
