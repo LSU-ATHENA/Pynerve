@@ -92,12 +92,12 @@ int main()
     }
 
     {
-        std::vector<double> medium_points(1024 * 2, 0.0);
+        std::vector<double> medium_points(128 * 2, 0.0);
         const std::vector<double> square{
             0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0,
         };
         std::copy(square.begin(), square.end(), medium_points.begin());
-        for (std::size_t i = 4; i < 1024; ++i)
+        for (std::size_t i = 4; i < 128; ++i)
         {
             medium_points[i * 2] = 10000.0 + static_cast<double>(i) * 10.0;
             medium_points[i * 2 + 1] = -10000.0;

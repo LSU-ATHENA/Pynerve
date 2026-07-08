@@ -30,7 +30,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    // Test 1: nerve MPICommunicator  --  construct, allgather, broadcast
+    // nerve MPICommunicator  --  construct, allgather, broadcast
     {
         nerve::distributed::MPICommunicator comm;
         assert(comm.rank() == rank);
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
         assert(rejected_bad_root);
     }
 
-    // Test 2: MPICommunicator move semantics
+    // MPICommunicator move semantics
     {
         nerve::distributed::MPICommunicator comm1;
         int orig_rank = comm1.rank();
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
         assert(comm3.rank() == orig_rank);
     }
 
-    // Test 3: Barrier
+    // Barrier
     {
         nerve::distributed::MPICommunicator comm;
         comm.barrier();
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
         assert(try_barrier.isSuccess());
     }
 
-    // Test 4: Point-to-point communication
+    // Point-to-point communication
     {
         nerve::distributed::MPICommunicator comm;
 
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
         comm.barrier();
     }
 
-    // Test 5: Reduce sum via raw MPI (validation infra)
+    // Reduce sum via raw MPI (validation infra)
     {
         int local_value = rank + 1;
         int global_sum = 0;
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
         assert(global_sum == expected_sum);
     }
 
-    // Test 6: nerve distributed MPICommunicator with non-blocking allgather
+    // nerve distributed MPICommunicator with non-blocking allgather
     {
         nerve::distributed::MPICommunicator comm;
         assert(comm.rank() == rank);
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
         }
     }
 
-    // Test 7: Non-blocking broadcast
+    // Non-blocking broadcast
     {
         nerve::distributed::MPICommunicator comm;
 
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
         assert(broadcast_nb == 77);
     }
 
-    // Test 8: Non-blocking reduce
+    // Non-blocking reduce
     {
         nerve::distributed::MPICommunicator comm;
 
@@ -161,7 +161,7 @@ int main(int argc, char **argv)
         }
     }
 
-    // Test 9: MPIRequest move semantics (nerve)
+    // MPIRequest move semantics (nerve)
     {
         nerve::distributed::MPICommunicator comm;
 
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
         }
     }
 
-    // Test 10: nerve distributed persistence
+    // nerve distributed persistence
     {
         nerve::distributed::MPICommunicator comm;
         nerve::distributed::ShardedBoundaryMatrix matrix(rank, size);
@@ -193,7 +193,7 @@ int main(int argc, char **argv)
         matrix.distributed_reduce();
     }
 
-    // Test 11: DistributedPersistence computation
+    // DistributedPersistence computation
     {
         const std::vector<std::vector<float>> point_clouds = {
             {1.0f, -2.0f, 0.5f},
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
         }
     }
 
-    // Test 12: Error paths
+    // Error paths
     {
         nerve::distributed::MPICommunicator comm;
         nerve::distributed::ShardedBoundaryMatrix matrix(rank, size);
@@ -256,7 +256,7 @@ int main(int argc, char **argv)
         assert(rejected_nonfinite);
     }
 
-    // Test 13: Non-blocking allgather  --  submit many requests, verify all complete
+    // Non-blocking allgather  --  submit many requests, verify all complete
     {
         nerve::distributed::MPICommunicator comm;
 
