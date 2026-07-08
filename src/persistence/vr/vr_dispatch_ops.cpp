@@ -126,7 +126,7 @@ std::vector<double> buildEdgeWeights(const double *points, size_t n, size_t dim,
 }
 } // namespace
 
-std::vector<Pair> computeVrPersistenceDispatch(const core::BufferView<const double> &points,
+std::vector<Pair> computeVrPersistenceDispatch(core::BufferView<const double>points,
                                                Size point_dim, const VRDispatchConfig &config)
 {
     const Size point_count = point_dim == 0 ? 0 : points.size() / point_dim;
@@ -209,7 +209,7 @@ VRDispatchConfig getVrDispatchConfig(size_t num_points, size_t point_dim)
     return config;
 }
 
-VRDispatchBenchmark benchmarkVrDispatch(const core::BufferView<const double> &points,
+VRDispatchBenchmark benchmarkVrDispatch(core::BufferView<const double>points,
                                         Size point_dim, const VRDispatchConfig &config)
 {
     VRDispatchBenchmark result{};

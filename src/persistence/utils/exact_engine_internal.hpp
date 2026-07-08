@@ -18,5 +18,6 @@ Column symmetricDifferenceSorted(const Column &a, const Column &b);
 bool simplexFiltrationOrder(const std::pair<algebra::Simplex, double> &a,
                             const std::pair<algebra::Simplex, double> &b);
 
-} // namespace detail
+} // namespace nerve::persistence::detail
+
 } // namespace nerve::persistence

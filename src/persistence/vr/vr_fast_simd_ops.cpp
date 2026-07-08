@@ -2,6 +2,7 @@
 #include "nerve/persistence/utils/exact_engine_fast.hpp"
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
 #include "nerve/persistence/vr/vr_fast_simd_ops.hpp"
+#include "nerve/platform.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -60,8 +61,8 @@ inline double euclideanDistanceAvx512(const double *p1, const double *p2, size_t
     size_t i = 0;
 
     // Prefetch next cache line
-    __builtin_prefetch(p1 + 32, 0, 3);
-    __builtin_prefetch(p2 + 32, 0, 3);
+    nerve_prefetch_read(p1 + 32, NervePrefetchLevel::L1);
+    nerve_prefetch_read(p2 + 32, NervePrefetchLevel::L1);
 
     // Process 8 doubles at a time with FMA
     for (; i + 8 <= dim; i += 8)
@@ -91,8 +92,8 @@ inline double euclideanDistanceScalar(const double *p1, const double *p2, size_t
 {
     double sum = 0.0;
     // Prefetch next cache line
-    __builtin_prefetch(p1 + 8, 0, 3);
-    __builtin_prefetch(p2 + 8, 0, 3);
+    nerve_prefetch_read(p1 + 8, NervePrefetchLevel::L1);
+    nerve_prefetch_read(p2 + 8, NervePrefetchLevel::L1);
 
     for (size_t i = 0; i < dim; ++i)
     {
@@ -104,11 +105,8 @@ inline double euclideanDistanceScalar(const double *p1, const double *p2, size_t
 
 bool canUseAvx512Distance()
 {
-#if defined(__AVX512F__) && (defined(__x86_64__) || defined(__i386__))
-    static const bool available = []() {
-        __builtin_cpu_init();
-        return __builtin_cpu_supports("avx512f");
-    }();
+#if defined(__AVX512F__) && (defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86))
+    static const bool available = nerve::cpu::CpuFeatureFlags::detect().has_avx512f;
     return available;
 #else
     return false;
@@ -152,7 +150,7 @@ struct SimplexKeyHash
 
 using SimplexSet = std::unordered_set<std::vector<int>, SimplexKeyHash>;
 
-bool isValidFastSimdInput(const core::BufferView<const double> &points, Size point_dim,
+bool isValidFastSimdInput(core::BufferView<const double>points, Size point_dim,
                           const VRConfig &config)
 {
     if (point_dim == 0 || points.empty() || (points.size() % point_dim) != 0)
@@ -385,7 +383,7 @@ private:
 } // namespace
 
 // Public API: Optimized VR for small point sets (< 1K points)
-std::vector<Pair> computeVrPersistenceFastSimd(const core::BufferView<const double> &points,
+std::vector<Pair> computeVrPersistenceFastSimd(core::BufferView<const double>points,
                                                Size point_dim, const VRConfig &config)
 {
     if (!isValidFastSimdInput(points, point_dim, config))

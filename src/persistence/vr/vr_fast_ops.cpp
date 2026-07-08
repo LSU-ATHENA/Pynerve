@@ -75,7 +75,7 @@ double euclideanDistance(const std::vector<double> &points, Size point_dim, Size
     const double distance = std::sqrt(s);
     return std::isfinite(distance) ? distance : std::numeric_limits<double>::infinity();
 }
-bool hasFiniteSafePointCoordinates(const core::BufferView<const double> &points, Size point_dim)
+bool hasFiniteSafePointCoordinates(core::BufferView<const double>points, Size point_dim)
 {
     const long double safe_abs =
         std::sqrt(static_cast<long double>(std::numeric_limits<double>::max()) /
@@ -90,7 +90,7 @@ bool hasFiniteSafePointCoordinates(const core::BufferView<const double> &points,
     }
     return true;
 }
-bool isValidFastVrInput(const core::BufferView<const double> &points, Size point_dim,
+bool isValidFastVrInput(core::BufferView<const double>points, Size point_dim,
                         const VRConfig &config)
 {
     if (point_dim == 0 || points.empty() || (points.size() % point_dim) != 0)
@@ -222,7 +222,7 @@ void enumerateCliquesRec(const std::vector<std::vector<int>> &neighbors,
         current.pop_back();
     }
 }
-std::vector<Pair> computeVrPersistenceExact(const core::BufferView<const double> &points,
+std::vector<Pair> computeVrPersistenceExact(core::BufferView<const double>points,
                                             Size point_dim, const VRConfig &config)
 {
     if (!isValidFastVrInput(points, point_dim, config))
@@ -260,7 +260,7 @@ std::vector<Pair> computeVrPersistenceExact(const core::BufferView<const double>
 }
 } // namespace
 errors::ErrorResult<std::vector<Pair>>
-computeVrPersistenceAdaptiveAcceleration(const core::BufferView<const double> &points,
+computeVrPersistenceAdaptiveAcceleration(core::BufferView<const double>points,
                                          Size point_dim, const VRConfig &config)
 {
     if (!isValidFastVrInput(points, point_dim, config))
@@ -284,7 +284,7 @@ computeVrPersistenceAdaptiveAcceleration(const core::BufferView<const double> &p
         computeVrPersistenceFast(points, point_dim, getOptimalFastvrConfig(num_points, point_dim));
     return errors::ErrorResult<std::vector<Pair>>::success(std::move(pairs));
 }
-std::vector<Pair> computeVrPersistenceFast(const core::BufferView<const double> &points,
+std::vector<Pair> computeVrPersistenceFast(core::BufferView<const double>points,
                                            Size point_dim, const VRConfig &config)
 {
     if (!isValidFastVrInput(points, point_dim, config))
@@ -351,7 +351,7 @@ std::vector<Pair> computeVrPersistenceFast(const core::BufferView<const double> 
 }
 
 errors::ErrorResult<std::vector<Pair>>
-computeVrPersistenceFastResult(const core::BufferView<const double> &points, Size point_dim,
+computeVrPersistenceFastResult(core::BufferView<const double>points, Size point_dim,
                                const VRConfig &config)
 {
     if (!isValidFastVrInput(points, point_dim, config))

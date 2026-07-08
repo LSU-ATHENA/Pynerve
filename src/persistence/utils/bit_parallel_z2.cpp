@@ -1,6 +1,7 @@
 #include "nerve/cpu/x86_intrinsics.hpp"
 #include "nerve/persistence/utils/avx512_optimizer.hpp"
 #include "nerve/persistence/utils/bit_parallel_z2.hpp"
+#include "nerve/platform.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -126,7 +127,7 @@ std::vector<int> bitColumnToSparse(const BitColumn &col)
         uint64_t word = col.words[w];
         while (word != 0)
         {
-            const int bit = __builtin_ctzll(word);
+            const int bit = nerve::bits::ctz64(word);
             const int row = static_cast<int>(w * BITS_PER_WORD + static_cast<size_t>(bit));
             if (row < col.num_rows)
             {
@@ -179,7 +180,7 @@ int findPivotBranchless(const BitColumn &col)
         const uint64_t word = col.words[i];
         const int has_bit = (word != 0);
         const int local_pivot =
-            has_bit ? (i * static_cast<int>(BITS_PER_WORD) + 63 - __builtin_clzll(word)) : -1;
+            has_bit ? (i * static_cast<int>(BITS_PER_WORD) + nerve::bits::fls64(word) - 1) : -1;
 
         const int should_update = (pivot < 0) & has_bit;
         pivot = should_update ? local_pivot : pivot;
@@ -349,7 +350,7 @@ void prefetchColumn(const BitColumn &col, int prefetch_distance)
 {
     for (size_t i = 0; i < col.words.size() && i < static_cast<size_t>(prefetch_distance); ++i)
     {
-        __builtin_prefetch(&col.words[i], 0, 3);
+        nerve_prefetch_read(&col.words[i]);
     }
 }
 

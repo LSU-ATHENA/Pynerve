@@ -133,7 +133,7 @@ SystemCapabilities detectSystemCapabilitiesImpl()
 }
 
 errors::ErrorResult<StagePointsResult>
-stagePointsOnGpu([[maybe_unused]] const core::BufferView<const double> &points,
+stagePointsOnGpu([[maybe_unused]] core::BufferView<const double>points,
                  [[maybe_unused]] std::size_t point_dim, [[maybe_unused]] double max_radius,
                  [[maybe_unused]] std::size_t chunk_elements)
 {

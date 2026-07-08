@@ -1,6 +1,7 @@
 // AVX-512 Optimizer for Persistent Homology
 
 #include "nerve/persistence/utils/avx512_optimizer.hpp"
+#include "nerve/platform.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -37,10 +38,14 @@ constexpr int AVX512_MIN_WORDS = 8;
     return std::isfinite(speedup) && speedup >= 0.0 ? speedup : 1.0;
 }
 
+#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
+static const auto s_cpu_flags = nerve::cpu::CpuFeatureFlags::detect();
+#endif
+
 bool checkAVX512F()
 {
-#if defined(__x86_64__) || defined(__i386__)
-    return __builtin_cpu_supports("avx512f") != 0;
+#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
+    return s_cpu_flags.has_avx512f;
 #else
     return false;
 #endif
@@ -48,8 +53,8 @@ bool checkAVX512F()
 
 bool checkAVX512VL()
 {
-#if defined(__x86_64__) || defined(__i386__)
-    return __builtin_cpu_supports("avx512vl") != 0;
+#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
+    return s_cpu_flags.has_avx512vl;
 #else
     return false;
 #endif
@@ -57,8 +62,8 @@ bool checkAVX512VL()
 
 bool checkAVX512BW()
 {
-#if defined(__x86_64__) || defined(__i386__)
-    return __builtin_cpu_supports("avx512bw") != 0;
+#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
+    return s_cpu_flags.has_avx512bw;
 #else
     return false;
 #endif
@@ -66,8 +71,8 @@ bool checkAVX512BW()
 
 bool checkAVX512DQ()
 {
-#if defined(__x86_64__) || defined(__i386__)
-    return __builtin_cpu_supports("avx512dq") != 0;
+#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
+    return s_cpu_flags.has_avx512dq;
 #else
     return false;
 #endif
@@ -75,8 +80,8 @@ bool checkAVX512DQ()
 
 [[maybe_unused]] bool checkAVX2()
 {
-#if defined(__x86_64__) || defined(__i386__)
-    return __builtin_cpu_supports("avx2") != 0;
+#if defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86)
+    return s_cpu_flags.has_avx2;
 #else
     return false;
 #endif

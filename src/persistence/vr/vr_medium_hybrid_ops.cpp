@@ -46,7 +46,12 @@ void buildDistanceMatrixOptimized(const std::vector<double> &points, size_t poin
 #ifdef NERVE_HAS_CUDA
     if (work.gpu_distance_matrix_ratio > 0.0)
     {
-        if (computeDistanceMatrixGPU(points, point_dim, num_points, flat_matrix))
+        flat_matrix.assign(matrix_size, 0.0);
+        const int n = static_cast<int>(num_points);
+        const int dim = static_cast<int>(point_dim);
+        cudaError_t cuda_status = ::nerve::gpu::tedjoin::launchFp64TensorDistance(
+            points.data(), n, dim, flat_matrix.data(), n);
+        if (cuda_status == cudaSuccess)
         {
             if (flat_matrix.size() == matrix_size)
             {
@@ -114,7 +119,7 @@ void buildRadiusGraph(const std::vector<std::vector<double>> &distance_matrix, d
     }
 }
 
-std::vector<Pair> computeVrPersistenceMediumHybrid(const core::BufferView<const double> &points,
+std::vector<Pair> computeVrPersistenceMediumHybrid(core::BufferView<const double>points,
                                                    Size point_dim, const VRConfig &config)
 {
     if (!hasValidMediumHybridInput(points, point_dim, config))

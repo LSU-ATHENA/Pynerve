@@ -18,7 +18,7 @@ bool computeDistanceMatrixGPU(const std::vector<double> &points, size_t point_di
                               size_t num_points, std::vector<double> &flat_matrix)
 {
     size_t matrix_size = 0;
-    if (!checkedSquareCount(num_points, matrix_size) ||
+    if (!detail::checkedSquareCount(num_points, matrix_size) ||
         matrix_size > std::vector<double>().max_size())
     {
         return false;

@@ -1,4 +1,5 @@
 #include "nerve/persistence/utils/avx512_optimizer.hpp"
+#include "nerve/platform.hpp"
 
 #ifdef __AVX512F__
 #include "nerve/cpu/x86_intrinsics.hpp"
@@ -147,7 +148,7 @@ int findPivotAVX512(const uint64_t *words, size_t num_words)
             if (words[word_idx] != 0)
             {
                 uint64_t word = words[word_idx];
-                int bit_idx = 63 - __builtin_clzll(word);
+                int bit_idx = nerve::bits::fls64(word) - 1;
                 return word_idx * 64 + bit_idx;
             }
         }
@@ -162,9 +163,9 @@ int findPivotAVX512(const uint64_t *words, size_t num_words)
         __mmask8 nonzero_mask = _mm512_test_epi64_mask(v, v);
         if (nonzero_mask != 0)
         {
-            int lane = 31 - __builtin_clz(static_cast<unsigned>(nonzero_mask));
+            int lane = 31 - nerve::bits::clz32(static_cast<std::uint32_t>(nonzero_mask));
             uint64_t word = words[base + static_cast<size_t>(lane)];
-            int bit_idx = 63 - __builtin_clzll(word);
+            int bit_idx = nerve::bits::fls64(word) - 1;
             return static_cast<int>((base + static_cast<size_t>(lane)) * 64 + bit_idx);
         }
         end = base;
@@ -175,7 +176,7 @@ int findPivotAVX512(const uint64_t *words, size_t num_words)
         if (words[word_idx] != 0)
         {
             uint64_t word = words[word_idx];
-            int bit_idx = 63 - __builtin_clzll(word);
+            int bit_idx = nerve::bits::fls64(word) - 1;
             return word_idx * 64 + bit_idx;
         }
     }

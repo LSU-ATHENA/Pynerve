@@ -207,7 +207,7 @@ public:
     }
 
     errors::ErrorResult<std::vector<Pair>>
-    computeVrPersistence(const core::BufferView<const double> &points, Size point_dim,
+    computeVrPersistence(core::BufferView<const double>points, Size point_dim,
                          const VRConfig &config) override
     {
         VRConfig effective = config.getEffectiveConfig();

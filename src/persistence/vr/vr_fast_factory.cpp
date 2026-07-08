@@ -55,7 +55,7 @@ namespace accelerated
 {
 
 errors::ErrorResult<std::vector<Pair>>
-computeVrPersistenceAccelerated(const core::BufferView<const double> &points, Size point_dim,
+computeVrPersistenceAccelerated(core::BufferView<const double>points, Size point_dim,
                                 const VRConfig &config)
 {
     return ::nerve::persistence::accelerated::computeVrPersistenceAccelerated(points, point_dim,
@@ -63,13 +63,13 @@ computeVrPersistenceAccelerated(const core::BufferView<const double> &points, Si
 }
 
 errors::ErrorResult<std::vector<Pair>>
-computeVrPersistenceFast(const core::BufferView<const double> &points, Size point_dim,
+computeVrPersistenceFast(core::BufferView<const double>points, Size point_dim,
                          const VRConfig &config)
 {
     return ::nerve::persistence::accelerated::computeVrPersistenceFast(points, point_dim, config);
 }
 
-VRConfig createOptimalConfig(const core::BufferView<const double> &points, Size point_dim,
+VRConfig createOptimalConfig(core::BufferView<const double>points, Size point_dim,
                              const VRConfig &base_config)
 {
     return ::nerve::persistence::accelerated::createOptimalConfig(points, point_dim, base_config);

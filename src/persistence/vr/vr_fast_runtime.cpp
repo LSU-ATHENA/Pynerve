@@ -76,17 +76,17 @@ GPUAccelerationManager::recommendAccelerationMode(const ProblemCharacteristics &
                                                   const SystemCapabilities &capabilities)
 {
 #ifdef NERVE_HAS_CUDA
-    if (capabilities.cuda_device_count > 0)
+    if (capabilities.cuda_available)
     {
-        size_t estimated_mem = problem.n_points * problem.point_dim * sizeof(double) * 3;
-        size_t gpu_mem = capabilities.total_gpu_memory_bytes;
-        if (estimated_mem < gpu_mem / 2 && problem.n_points >= 1000)
+        size_t estimated_mem = problem.estimated_n_points * problem.point_dim * sizeof(double) * 3;
+        size_t gpu_mem = static_cast<size_t>(capabilities.gpu_info.total_memory);
+        if (estimated_mem < gpu_mem / 2 && problem.estimated_n_points >= 1000)
         {
             return AccelerationMode::GPU_ONLY;
         }
-        if (estimated_mem < gpu_mem * 3 / 4 && problem.n_points >= 500)
+        if (estimated_mem < gpu_mem * 3 / 4 && problem.estimated_n_points >= 500)
         {
-            return AccelerationMode::CPU_GPU_HYBRID;
+            return AccelerationMode::HYBRID_GPU_PREFERRED;
         }
     }
 #endif
