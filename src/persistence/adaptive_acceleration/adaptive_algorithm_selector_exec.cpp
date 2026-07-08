@@ -21,7 +21,7 @@ PersistenceOptions toOptions(const VRConfig &config, PersistenceBackend backend,
     return options;
 }
 
-errors::ErrorResult<std::vector<Pair>> runWithBackend(const core::BufferView<const double> &points,
+errors::ErrorResult<std::vector<Pair>> runWithBackend(core::BufferView<const double>points,
                                                       std::size_t point_dim, const VRConfig &config,
                                                       PersistenceBackend backend,
                                                       PersistenceMode mode)
@@ -38,7 +38,7 @@ errors::ErrorResult<std::vector<Pair>> runWithBackend(const core::BufferView<con
 } // namespace
 
 errors::ErrorResult<std::vector<Pair>> AdaptiveAlgorithmSelector::executeMatrixMultiplicationCpu(
-    const core::BufferView<const double> &points, std::size_t point_dim, const VRConfig &config)
+    core::BufferView<const double>points, std::size_t point_dim, const VRConfig &config)
 {
     return runWithBackend(points, point_dim, config, PersistenceBackend::CPU_ADAPTIVE_ACCELERATION,
                           config.enable_approximation ? PersistenceMode::APPROX
@@ -46,7 +46,7 @@ errors::ErrorResult<std::vector<Pair>> AdaptiveAlgorithmSelector::executeMatrixM
 }
 
 errors::ErrorResult<std::vector<Pair>> AdaptiveAlgorithmSelector::executeSparsifiedReductionCpu(
-    const core::BufferView<const double> &points, std::size_t point_dim, const VRConfig &config)
+    core::BufferView<const double>points, std::size_t point_dim, const VRConfig &config)
 {
     return runWithBackend(points, point_dim, config, PersistenceBackend::CPU_ADAPTIVE_ACCELERATION,
                           config.enable_approximation ? PersistenceMode::APPROX
@@ -54,14 +54,14 @@ errors::ErrorResult<std::vector<Pair>> AdaptiveAlgorithmSelector::executeSparsif
 }
 
 errors::ErrorResult<std::vector<Pair>> AdaptiveAlgorithmSelector::execute_lockfree_multicore_cpu(
-    const core::BufferView<const double> &points, std::size_t point_dim, const VRConfig &config)
+    core::BufferView<const double>points, std::size_t point_dim, const VRConfig &config)
 {
     return runWithBackend(points, point_dim, config, PersistenceBackend::CPU_ADAPTIVE_ACCELERATION,
                           PersistenceMode::EXACT);
 }
 
 errors::ErrorResult<std::vector<Pair>>
-AdaptiveAlgorithmSelector::executeGpuAccelerated(const core::BufferView<const double> &points,
+AdaptiveAlgorithmSelector::executeGpuAccelerated(core::BufferView<const double>points,
                                                  std::size_t point_dim, const VRConfig &config)
 {
     (void)points;
@@ -71,7 +71,7 @@ AdaptiveAlgorithmSelector::executeGpuAccelerated(const core::BufferView<const do
 }
 
 errors::ErrorResult<std::vector<Pair>>
-AdaptiveAlgorithmSelector::executeHybridGpuCpu(const core::BufferView<const double> &points,
+AdaptiveAlgorithmSelector::executeHybridGpuCpu(core::BufferView<const double>points,
                                                std::size_t point_dim, const VRConfig &config)
 {
     (void)points;
@@ -81,7 +81,7 @@ AdaptiveAlgorithmSelector::executeHybridGpuCpu(const core::BufferView<const doub
 }
 
 errors::ErrorResult<std::vector<Pair>>
-AdaptiveAlgorithmSelector::executeStandardCpu(const core::BufferView<const double> &points,
+AdaptiveAlgorithmSelector::executeStandardCpu(core::BufferView<const double>points,
                                               std::size_t point_dim, const VRConfig &config)
 {
     return runWithBackend(points, point_dim, config, PersistenceBackend::CPU_EXACT,

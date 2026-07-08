@@ -124,7 +124,7 @@ ProgressiveRefinementProcessor::create(const ApproximationConfig &config)
 }
 
 errors::ErrorResult<std::vector<Pair>> ProgressiveRefinementProcessor::refineProgressive(
-    const core::BufferView<const double> &points, std::size_t point_dim, const VRConfig &config,
+    core::BufferView<const double>points, std::size_t point_dim, const VRConfig &config,
     std::function<void(const std::vector<Pair> &, std::size_t, double)> callback)
 {
     auto base_processor = ApproximateProcessor::create(config_);

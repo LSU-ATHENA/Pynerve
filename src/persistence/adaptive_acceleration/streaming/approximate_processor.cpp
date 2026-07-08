@@ -48,7 +48,7 @@ bool validPair(const Pair &pair)
            (!finite_death || pair.death >= pair.birth);
 }
 
-errors::ErrorResult<void> validatePointBuffer(const core::BufferView<const double> &points,
+errors::ErrorResult<void> validatePointBuffer(core::BufferView<const double>points,
                                               std::size_t point_dim)
 {
     if (point_dim == 0 || points.empty() || points.size() % point_dim != 0)
@@ -101,7 +101,7 @@ double levelErrorBudget(ApproximationLevel level)
 }
 
 errors::ErrorResult<std::vector<double>>
-downsamplePoints(const core::BufferView<const double> &points, std::size_t point_dim,
+downsamplePoints(core::BufferView<const double>points, std::size_t point_dim,
                  std::size_t stride)
 {
     auto validation = validatePointBuffer(points, point_dim);
@@ -173,7 +173,7 @@ public:
         , stats()
     {}
 
-    errors::ErrorResult<std::vector<Pair>> compute(const core::BufferView<const double> &points,
+    errors::ErrorResult<std::vector<Pair>> compute(core::BufferView<const double>points,
                                                    std::size_t point_dim, ApproximationLevel level,
                                                    const VRConfig &config_override)
     {
@@ -255,7 +255,7 @@ ApproximateProcessor::create(const ApproximationConfig &config)
 }
 
 errors::ErrorResult<std::vector<Pair>>
-ApproximateProcessor::computeApproximate(const core::BufferView<const double> &points,
+ApproximateProcessor::computeApproximate(core::BufferView<const double>points,
                                          std::size_t point_dim, ApproximationLevel level,
                                          const VRConfig &config)
 {
@@ -269,7 +269,7 @@ ApproximateProcessor::computeApproximate(const core::BufferView<const double> &p
 }
 
 errors::ErrorResult<std::vector<Pair>> ApproximateProcessor::computeProgressive(
-    const core::BufferView<const double> &points, std::size_t point_dim, const VRConfig &config,
+    core::BufferView<const double>points, std::size_t point_dim, const VRConfig &config,
     std::function<void(const std::vector<Pair> &, double)> callback)
 {
     const std::vector<ApproximationLevel> schedule = {
@@ -318,28 +318,28 @@ ApproximateProcessor::ApproximateProcessor(const ApproximationConfig &config)
 ApproximateProcessor::~ApproximateProcessor() = default;
 
 errors::ErrorResult<std::vector<Pair>>
-ApproximateProcessor::approximateHighPrecision(const core::BufferView<const double> &points,
+ApproximateProcessor::approximateHighPrecision(core::BufferView<const double>points,
                                                std::size_t point_dim, const VRConfig &config)
 {
     return computeApproximate(points, point_dim, ApproximationLevel::HIGH_PRECISION, config);
 }
 
 errors::ErrorResult<std::vector<Pair>>
-ApproximateProcessor::approximateMediumPrecision(const core::BufferView<const double> &points,
+ApproximateProcessor::approximateMediumPrecision(core::BufferView<const double>points,
                                                  std::size_t point_dim, const VRConfig &config)
 {
     return computeApproximate(points, point_dim, ApproximationLevel::MEDIUM_PRECISION, config);
 }
 
 errors::ErrorResult<std::vector<Pair>>
-ApproximateProcessor::approximateLowPrecision(const core::BufferView<const double> &points,
+ApproximateProcessor::approximateLowPrecision(core::BufferView<const double>points,
                                               std::size_t point_dim, const VRConfig &config)
 {
     return computeApproximate(points, point_dim, ApproximationLevel::LOW_PRECISION, config);
 }
 
 errors::ErrorResult<std::vector<Pair>>
-ApproximateProcessor::approximateVeryFast(const core::BufferView<const double> &points,
+ApproximateProcessor::approximateVeryFast(core::BufferView<const double>points,
                                           std::size_t point_dim, const VRConfig &config)
 {
     return computeApproximate(points, point_dim, ApproximationLevel::VERY_FAST, config);

@@ -23,7 +23,7 @@ CycleVisualizer::create(const RepresentativeConfig &config)
 }
 
 errors::ErrorResult<CycleVisualizationData> CycleVisualizer::generateVisualizationData(
-    const Cycle &cycle, const core::BufferView<const double> &points, std::size_t point_dim)
+    const Cycle &cycle, core::BufferView<const double>points, std::size_t point_dim)
 {
     if (point_dim == 0 || points.empty() || points.size() % point_dim != 0 || !cycle.isValid())
     {
@@ -64,7 +64,7 @@ errors::ErrorResult<CycleVisualizationData> CycleVisualizer::generateVisualizati
 
 errors::ErrorResult<std::vector<CycleVisualizationData>>
 CycleVisualizer::generateVisualizationData(const std::vector<Cycle> &cycles,
-                                           const core::BufferView<const double> &points,
+                                           core::BufferView<const double>points,
                                            std::size_t point_dim)
 {
     std::vector<CycleVisualizationData> all;

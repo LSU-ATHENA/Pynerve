@@ -1,16 +1,12 @@
 
 #include "nerve/persistence/adaptive_acceleration/lockfree_multicore.hpp"
 #include "nerve/runtime/hardware_probe.hpp"
+#include "nerve/platform.hpp"
 
 #include <algorithm>
 #include <chrono>
 #include <limits>
 #include <unordered_map>
-
-#if defined(__linux__)
-#include <pthread.h>
-#include <sched.h>
-#endif
 
 namespace nerve::persistence::adaptive_acceleration
 {
@@ -390,22 +386,10 @@ errors::ErrorResult<std::vector<CPUInfo>> NUMAScheduler::getCpuTopology()
 
 void NUMAScheduler::bindThreadToCpu(std::thread::id /*thread_id*/, std::size_t cpu_id)
 {
-#if defined(__linux__)
-    if (cpu_id >= static_cast<std::size_t>(CPU_SETSIZE))
-    {
-        return;
-    }
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(static_cast<int>(cpu_id), &cpuset);
-    pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
-#else
-    if (cpu_id >= 1)
-    {
-        return;
-    }
-    (void)cpu_id;
-#endif
+    nerve::sys::CpuSet cpuset;
+    cpuset.clear();
+    cpuset.set(static_cast<int>(cpu_id));
+    nerve::sys::thread_set_affinity(nerve::sys::thread_self(), &cpuset);
 }
 
 void NUMAScheduler::setMemoryPolicy(std::size_t node_id)

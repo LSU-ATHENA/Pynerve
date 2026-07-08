@@ -1,6 +1,7 @@
 
 #include "nerve/persistence/adaptive_acceleration/adaptive_acceleration_system_capabilities.hpp"
 #include "nerve/runtime/hardware_probe.hpp"
+#include "nerve/platform.hpp"
 
 #include <algorithm>
 #include <array>
@@ -10,11 +11,6 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
-
-#if defined(__linux__)
-#include <pthread.h>
-#include <sched.h>
-#endif
 
 namespace nerve::persistence::adaptive_acceleration
 {
@@ -250,14 +246,10 @@ NUMAConfig ThreadAffinityManager::current_config_;
 
 void ThreadAffinityManager::setThreadAffinity(std::thread::id /*thread_id*/, std::size_t cpu_id)
 {
-#if defined(__linux__)
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(static_cast<int>(cpu_id), &cpuset);
-    pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
-#else
-    (void)cpu_id;
-#endif
+    nerve::sys::CpuSet cpuset;
+    cpuset.clear();
+    cpuset.set(static_cast<int>(cpu_id));
+    nerve::sys::thread_set_affinity(nerve::sys::thread_self(), &cpuset);
 }
 
 void ThreadAffinityManager::optimizeThreadPlacement(std::size_t num_threads,

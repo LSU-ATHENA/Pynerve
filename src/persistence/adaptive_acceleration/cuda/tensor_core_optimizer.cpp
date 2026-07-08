@@ -2,6 +2,7 @@
 #include "nerve/errors/errors.hpp"
 #include "nerve/persistence/adaptive_acceleration/adaptive_acceleration_system_capabilities.hpp"
 #include "nerve/runtime/hardware_probe.hpp"
+#include "nerve/platform.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -10,8 +11,6 @@
 #include <vector>
 
 #if defined(__linux__)
-#include <pthread.h>
-#include <sched.h>
 #if __has_include(<numaif.h>)
 #include <numaif.h>
 #define NERVE_HAS_NUMA_POLICY 1
@@ -111,20 +110,15 @@ ThreadPlacement buildThreadPlacement(std::size_t requested_threads)
 
 errors::ErrorResult<void> pinCurrentThreadToCpu(std::size_t cpu_id)
 {
-#if defined(__linux__)
-    cpu_set_t set;
-    CPU_ZERO(&set);
-    CPU_SET(static_cast<int>(cpu_id), &set);
-    const int rc = pthread_setaffinity_np(pthread_self(), sizeof(set), &set);
+    nerve::sys::CpuSet set;
+    set.clear();
+    set.set(static_cast<int>(cpu_id));
+    const int rc = nerve::sys::thread_set_affinity(nerve::sys::thread_self(), &set);
     if (rc != 0)
     {
         return errors::ErrorResult<void>::error(errors::ErrorCode::E61_NUMA_AFFINITY_FAIL);
     }
     return errors::ErrorResult<void>::ok();
-#else
-    (void)cpu_id;
-    return errors::ErrorResult<void>::error(errors::ErrorCode::E16_SYSTEM);
-#endif
 }
 
 NumaPolicyResult setNumaMemoryPolicy(std::size_t node_id)
