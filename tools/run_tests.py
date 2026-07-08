@@ -32,6 +32,9 @@ def _labels_for_paths(paths: list[str]) -> list[str]:
         ):
             labels.add("cuda")
 
+        if "nerve_extras" in lower_path or "/nerve_extras" in lower_path:
+            labels.add("nerve_extras")
+
         if "/distributed/" in lower_path or lower_path.startswith("src/distributed/"):
             labels.add("distributed")
         if "autodiff" in lower_path or "torch" in lower_path or "diff" in lower_path:

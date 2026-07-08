@@ -206,7 +206,7 @@ def check_build_install_contract() -> list[Finding]:
         "NERVE_CUDA_REQUIRED_VERSION_MAJOR 12": "CUDA required major version pin",
         "NERVE_CUDA_REQUIRED_VERSION_MINOR 4": "CUDA required minor version pin",
         'NERVE_GPU_BASE_ARCHS "75"': "RTX 20xx/Turing CUDA baseline architecture tier",
-        'NERVE_GPU_OPT_ARCHS "86;89;90"': "RTX 30xx+ optimized CUDA architecture tiers",
+        'NERVE_GPU_OPT_ARCHS "80;86;89;90"': "RTX 30xx+ optimized CUDA architecture tiers (with Volta/Turing)",
         'CMAKE_CUDA_ARCHITECTURES "${NERVE_GPU_BASE_ARCHS};${NERVE_GPU_OPT_ARCHS}"': (
             "CUDA architecture tier wiring"
         ),
@@ -264,6 +264,11 @@ def check_build_install_contract() -> list[Finding]:
         if fragment in root_text:
             findings.append(Finding("build-install-contract", "CMakeLists.txt", description))
 
+    src_groups_text = (
+        SRC_CMAKE_PATH.parent / "cmake" / "source_groups.cmake"
+    ).read_text(encoding="utf-8") if (SRC_CMAKE_PATH.parent / "cmake" / "source_groups.cmake").exists() else ""
+    src_combined = src_text + "\n" + src_groups_text
+
     required_src_fragments = {
         "option(NERVE_ENABLE_CUDA_COMPONENTS": "optional CUDA component source group switch",
         "option(NERVE_ENABLE_EXTENDED_CUDA_COMPONENTS": "optional extended CUDA source group switch",
@@ -285,7 +290,7 @@ def check_build_install_contract() -> list[Finding]:
         "${CMAKE_CURRENT_BINARY_DIR}/include": "build-tree generated include directory",
     }
     for fragment, description in required_src_fragments.items():
-        if fragment not in src_text:
+        if fragment not in src_combined:
             findings.append(
                 Finding("build-install-contract", "src/CMakeLists.txt", f"missing {description}")
             )
@@ -560,7 +565,6 @@ def check_static_analysis_contract() -> list[Finding]:
     return findings
 
 
-
 def check_performance_guard_contract() -> list[Finding]:
     findings: list[Finding] = []
     matrix_text = (TOOLS_ROOT / "test_matrix.py").read_text(encoding="utf-8")
@@ -698,7 +702,8 @@ def check_ci_contract() -> list[Finding]:
         "_labels_for_paths": "path-based changed-module label mapper",
         "--changed-file": "explicit changed-file test selection input",
         'endswith((".cu", ".cuh"))': "CUDA suffix changed-file detection",
-        '"/distributed/"': "nested distributed source detection",            "_available_labels_for_environment": "mixed hardware/non-hardware selection isolation",
+        '"/distributed/"': "nested distributed source detection",
+        "_available_labels_for_environment": "mixed hardware/non-hardware selection isolation",
         "omitting missing accelerator labels": "non-hardware labels continue when accelerators are missing",
         "NERVE_SHARD_INDEX": "environment-driven test shard index",
         "NERVE_SHARD_COUNT": "environment-driven test shard count",
