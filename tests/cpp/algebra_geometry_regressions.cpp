@@ -12,7 +12,7 @@
 namespace
 {
 
-using nerve::algebra::EnhancedSIMDCalculator;
+using nerve::algebra::SIMDCalculator;
 using nerve::algebra::SIMDDistanceCalculator;
 
 constexpr double TOL = 1e-10;
@@ -104,7 +104,7 @@ bool check_batch_euclidean_distances()
 
 bool check_enhanced_compute_matrix()
 {
-    EnhancedSIMDCalculator calc;
+    SIMDCalculator calc;
     double pts[] = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
     auto result = calc.computeDistanceMatrix(pts, 3, 2);
     if (result.isError())
@@ -123,7 +123,7 @@ bool check_enhanced_compute_matrix()
 
 bool check_enhanced_compressed_matrix()
 {
-    EnhancedSIMDCalculator calc;
+    SIMDCalculator calc;
     double pts[] = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0};
     auto result = calc.computeCompressedMatrix(pts, 4, 2);
     if (result.isError())

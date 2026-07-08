@@ -3,6 +3,15 @@
 #include "nerve/persistence/reduction/reduction_lockfree_ops.hpp"
 #include "nerve/persistence/streaming/tile_streaming_ph.hpp"
 #include "nerve/streaming/lock_free_streaming.hpp"
+#include "nerve/errors/errors.hpp"
+#if defined(NERVE_HAS_CUDA)
+#include "nerve/gpu/kernel_launcher.hpp"
+#include "nerve/gpu/persistence_kernels.cuh"
+#include "nerve/gpu/gpu_launch.hpp"
+#include "nerve/algebra/boundary.hpp"
+#include "nerve/persistence/cuda/cuda_edge_extraction.hpp"
+#include "nerve/persistence/cuda/cuda_multi_gpu.hpp"
+#endif
 
 #include <algorithm>
 #include <array>
@@ -141,7 +150,7 @@ int main()
         std::vector<double> filtration(static_cast<std::size_t>(kColumns), 0.0);
 
         const auto pairs = nerve::persistence::reduceMatrixLockfree(
-            boundary, filtration, std::vector<nerve::Dimension>(kColumns, 1), 4);
+            boundary, filtration, nullptr, std::vector<nerve::Dimension>(kColumns, 1), 4);
         assert(pairs.size() <= static_cast<std::size_t>(kColumns));
     }
 

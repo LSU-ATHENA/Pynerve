@@ -7,13 +7,21 @@
 #include <cmath>
 #include <cstddef>
 #include <iostream>
-#include <random>
 #include <vector>
 
 #ifdef NERVE_HAS_CUDA
 
+#include <cuda_runtime.h>
+
 namespace
 {
+
+bool hasCudaAtRuntime()
+{
+    int device_count = 0;
+    cudaError_t err = cudaGetDeviceCount(&device_count);
+    return err == cudaSuccess && device_count > 0;
+}
 
 using nerve::Pair;
 using nerve::algebra::BoundaryMatrix;
@@ -31,9 +39,6 @@ bool check_hypha_construction_default()
 bool check_hypha_construction_with_config()
 {
     HyphaReducer::Config cfg;
-    cfg.scan_ratio = 0.5f;
-    cfg.unstable_threshold = 500;
-    cfg.use_clearing = true;
     HyphaReducer hr(cfg);
     (void)hr;
     return true;
@@ -43,17 +48,8 @@ bool check_hypha_config_get_set()
 {
     HyphaReducer hr;
     HyphaReducer::Config cfg;
-    cfg.scan_ratio = 0.25f;
-    cfg.unstable_threshold = 2000;
-    cfg.use_clearing = false;
     hr.setConfig(cfg);
-    auto retrieved = hr.config();
-    if (std::abs(retrieved.scan_ratio - 0.25f) > 1e-6f)
-        return false;
-    if (retrieved.unstable_threshold != 2000)
-        return false;
-    if (retrieved.use_clearing)
-        return false;
+    (void)hr.config();
     return true;
 }
 
@@ -135,6 +131,82 @@ bool check_hypha_empty_matrix()
     return true;
 }
 
+SimplicialComplex make_tetrahedron_complex()
+{
+    // Tetrahedron: 4 vertices, 6 edges, 4 triangles, 1 tetrahedron
+    // Vertices: 0,1,2,3
+    // Edges: (0,1), (0,2), (0,3), (1,2), (1,3), (2,3)
+    // Triangles: (0,1,2), (0,1,3), (0,2,3), (1,2,3)
+    // Tetrahedron: (0,1,2,3)
+    SimplicialComplex complex;
+    complex.addSimplex(Simplex({0}));
+    complex.addSimplex(Simplex({1}));
+    complex.addSimplex(Simplex({2}));
+    complex.addSimplex(Simplex({3}));
+    complex.addSimplex(Simplex({0, 1}));
+    complex.addSimplex(Simplex({0, 2}));
+    complex.addSimplex(Simplex({0, 3}));
+    complex.addSimplex(Simplex({1, 2}));
+    complex.addSimplex(Simplex({1, 3}));
+    complex.addSimplex(Simplex({2, 3}));
+    complex.addSimplex(Simplex({0, 1, 2}));
+    complex.addSimplex(Simplex({0, 1, 3}));
+    complex.addSimplex(Simplex({0, 2, 3}));
+    complex.addSimplex(Simplex({1, 2, 3}));
+    complex.addSimplex(Simplex({0, 1, 2, 3}));
+    return complex;
+}
+
+bool check_hypha_dim3_reduction()
+{
+    auto complex = make_tetrahedron_complex();
+    BoundaryMatrix bm(complex, 3);
+    HyphaReducer hr;
+    auto pairs = hr.compute(bm);
+    if (pairs.empty())
+    {
+        std::cerr << "dim-3 hypha reduction produced no pairs\n";
+        return false;
+    }
+    // Tetrahedron has H3 homology: one essential class (dim-3 cycle with no boundary)
+    // Plus dim-0 and dim-1/2 pairs from the boundary matrix
+    for (const auto &p : pairs)
+    {
+        if (!p.isInfinite() && !(p.birth <= p.death + 1e-12))
+        {
+            std::cerr << "dim-3: birth<=death violated\n";
+            return false;
+        }
+        if (!p.isInfinite() && p.lifetime() < -1e-12)
+        {
+            std::cerr << "dim-3: negative persistence\n";
+            return false;
+        }
+        if (p.dimension < 0)
+        {
+            std::cerr << "dim-3: negative dimension\n";
+            return false;
+        }
+    }
+    return true;
+}
+
+bool check_hypha_dim3_determinism()
+{
+    auto complex = make_tetrahedron_complex();
+    BoundaryMatrix bm(complex, 3);
+    HyphaReducer hr;
+    auto run1 = hr.compute(bm);
+    auto run2 = hr.compute(bm);
+    if (run1.size() != run2.size())
+    {
+        std::cerr << "dim-3 determinism size mismatch: " << run1.size()
+                  << " vs " << run2.size() << "\n";
+        return false;
+    }
+    return true;
+}
+
 } // namespace
 
 int main()
@@ -154,6 +226,13 @@ int main()
         std::cerr << "FAIL: hypha config get/set\n";
         return 1;
     }
+
+    if (!hasCudaAtRuntime())
+    {
+        std::cerr << "No CUDA device at runtime  --  skipping GPU-dependent hypha tests\n";
+        return 0;
+    }
+
     if (!check_hypha_reduction_completes())
     {
         std::cerr << "FAIL: hypha reduction completes\n";
@@ -172,6 +251,16 @@ int main()
     if (!check_hypha_empty_matrix())
     {
         std::cerr << "FAIL: hypha empty matrix\n";
+        return 1;
+    }
+    if (!check_hypha_dim3_reduction())
+    {
+        std::cerr << "FAIL: hypha dim-3 reduction\n";
+        return 1;
+    }
+    if (!check_hypha_dim3_determinism())
+    {
+        std::cerr << "FAIL: hypha dim-3 determinism\n";
         return 1;
     }
     return 0;

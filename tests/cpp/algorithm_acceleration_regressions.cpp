@@ -15,6 +15,7 @@
 #include "nerve/persistence/approximate/sketching_approximation.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/cuda/cuda_distance_matrix.hpp"
+#include "nerve/persistence/cuda/cuda_error_handling.hpp"
 #include "nerve/persistence/kernels/dimension_specialized_kernels.hpp"
 #include "nerve/persistence/kernels/kernel_dimension_specialized_ops.hpp"
 #include "nerve/persistence/kernels/kernel_h1_ops.hpp"
@@ -496,7 +497,7 @@ int main()
             bool cuda_utils_memory_pressure_checked = false;
             try
             {
-                const double pressure = nerve::persistence::cuda::cuda_utils::getMemoryPressure();
+                const double pressure = nerve::persistence::accelerated::cuda_utils::getMemoryPressure();
                 assert(std::isfinite(pressure));
                 assert(pressure >= 0.0);
                 assert(pressure <= 1.0);
