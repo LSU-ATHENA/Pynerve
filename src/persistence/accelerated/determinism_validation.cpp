@@ -58,7 +58,7 @@ void mergeValidationResults(DeterminismValidationResult &target,
     }
 }
 
-DeterminismValidationResult validateInputDeterminism(const core::BufferView<const double> &points,
+DeterminismValidationResult validateInputDeterminism(core::BufferView<const double>points,
                                                      Size point_dim,
                                                      const core::DeterminismContract &contract)
 {
@@ -216,7 +216,7 @@ validateWorkDistributionConsistency(const std::vector<WorkDistribution> &distrib
     return result;
 }
 
-DeterminismValidationResult comprehensiveValidation(const core::BufferView<const double> &points,
+DeterminismValidationResult comprehensiveValidation(core::BufferView<const double>points,
                                                     Size point_dim,
                                                     const core::DeterminismContract &contract,
                                                     const std::vector<Pair> &diagram,

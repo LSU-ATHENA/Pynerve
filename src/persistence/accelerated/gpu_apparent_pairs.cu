@@ -175,25 +175,4 @@ __global__ __launch_bounds__(GPU_APPARENT_PAIRS_BLOCK_SIZE) void detectApparentP
     }
 }
 
-void GPUApparentPairs::detectApparentPairsKernel(const int *vertex_data, const int *vertex_counts,
-                                                 const int *vertex_offsets,
-                                                 const double *filtration_values,
-                                                 int *apparent_pairs, int n_simplices,
-                                                 int determinism_level)
-{
-    dim3 blocks_per_grid;
-    dim3 threads_per_block;
-
-    // Configure grid and block dimensions
-    threads_per_block = dim3(GPU_APPARENT_PAIRS_BLOCK_SIZE);
-    blocks_per_grid = dim3((n_simplices + threads_per_block.x - 1) / threads_per_block.x);
-
-    // Launch kernel
-    ::nerve::persistence::accelerated::
-        detectApparentPairsKernel<<<blocks_per_grid, threads_per_block>>>(
-            vertex_data, vertex_counts, vertex_offsets, filtration_values, apparent_pairs,
-            n_simplices, determinism_level);
-    GPU_CHECK(cudaPeekAtLastError());
-}
-
 } // namespace nerve::persistence::accelerated

@@ -45,7 +45,7 @@ public:
         : config_(config)
     {}
 
-    errors::ErrorResult<void> extractEdges(const core::BufferView<const double> &distances,
+    errors::ErrorResult<void> extractEdges(core::BufferView<const double>distances,
                                            core::BufferView<Edge> edges, Size n_points,
                                            double max_radius)
     {
@@ -143,12 +143,12 @@ public:
         return errors::ErrorResult<void>::success();
     }
 
-    errors::ErrorResult<void> extractEdgesStreaming(const core::BufferView<const double> &distances,
+    errors::ErrorResult<void> extractEdgesStreaming(core::BufferView<const double>distances,
                                                     core::BufferView<Edge> edges, Size n_points,
                                                     double max_radius, Size /*stream_size*/
     )
     {
-        return extractEdges(distances, std::move(edges), n_points, max_radius);
+        return extractEdges(distances, edges, n_points, max_radius);
     }
 
     errors::ErrorResult<void>
@@ -163,7 +163,7 @@ public:
         }
         for (Size index = 0; index < distances_batch.size(); ++index)
         {
-            auto result = extractEdges(distances_batch[index], std::move(edges_batch[index]),
+            auto result = extractEdges(distances_batch[index], edges_batch[index],
                                        n_points_batch[index], max_radius);
             if (result.isError())
             {
@@ -209,18 +209,18 @@ CUDAEgdeExtractor::create(const EdgeExtractionConfig &config)
 CUDAEgdeExtractor::~CUDAEgdeExtractor() = default;
 
 errors::ErrorResult<void>
-CUDAEgdeExtractor::extractEdges(const core::BufferView<const double> &distances,
+CUDAEgdeExtractor::extractEdges(core::BufferView<const double>distances,
                                 core::BufferView<Edge> edges, Size n_points, double max_radius)
 {
     if (!impl_)
     {
         return errors::ErrorResult<void>::error(errors::ErrorCode::E50_PH_ABORT);
     }
-    return impl_->extractEdges(distances, std::move(edges), n_points, max_radius);
+    return impl_->extractEdges(distances, edges, n_points, max_radius);
 }
 
 errors::ErrorResult<void>
-CUDAEgdeExtractor::extractEdgesStreaming(const core::BufferView<const double> &distances,
+CUDAEgdeExtractor::extractEdgesStreaming(core::BufferView<const double>distances,
                                          core::BufferView<Edge> edges, Size n_points,
                                          double max_radius, Size stream_size)
 {
@@ -228,7 +228,7 @@ CUDAEgdeExtractor::extractEdgesStreaming(const core::BufferView<const double> &d
     {
         return errors::ErrorResult<void>::error(errors::ErrorCode::E50_PH_ABORT);
     }
-    return impl_->extractEdgesStreaming(distances, std::move(edges), n_points, max_radius,
+    return impl_->extractEdgesStreaming(distances, edges, n_points, max_radius,
                                         stream_size);
 }
 
@@ -296,7 +296,7 @@ errors::ErrorResult<void> launchEdgeExtractionKernel(const double *distances, Ed
     {
         return errors::ErrorResult<void>::error(extractor_result.errorCode());
     }
-    return extractor_result.value()->extractEdges(distanceView, std::move(edgeView), n_points,
+    return extractor_result.value()->extractEdges(distanceView, edgeView, n_points,
                                                   max_radius);
 }
 

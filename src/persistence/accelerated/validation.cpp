@@ -147,7 +147,7 @@ ValidationResult validateGpuDeterminism()
     return result;
 }
 
-ValidationResult validateInputDeterminism(const core::BufferView<const double> &points,
+ValidationResult validateInputDeterminism(core::BufferView<const double>points,
                                           const core::DeterminismContract &contract)
 {
     ValidationResult result;
@@ -276,7 +276,7 @@ ValidationResult validateAcceleratedResult(const std::vector<Pair> &accelerated_
 }
 
 ValidationResult validateComprehensive(const std::vector<Pair> &diagram,
-                                       const core::BufferView<const double> &points,
+                                       core::BufferView<const double>points,
                                        size_t point_dim, const VRConfig &config,
                                        const core::DeterminismContract &contract,
                                        const AcceleratedPerformanceStats &stats)

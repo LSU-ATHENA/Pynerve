@@ -165,7 +165,7 @@ class DeterminismValidator
 {
 public:
     static errors::ErrorResult<void>
-    validateInputDeterminism(const core::BufferView<const double> &points,
+    validateInputDeterminism(core::BufferView<const double>points,
                              const core::DeterminismContract &contract)
     {
         if (points.size() == 0)
@@ -245,7 +245,7 @@ std::unique_ptr<DeterministicGPUOperations> createGpuOperations(const Determinis
     return std::make_unique<DeterministicGPUOperations>(context);
 }
 
-errors::ErrorResult<void> validateInputDeterminism(const core::BufferView<const double> &points,
+errors::ErrorResult<void> validateInputDeterminism(core::BufferView<const double>points,
                                                    const core::DeterminismContract &contract)
 {
     return DeterminismValidator::validateInputDeterminism(points, contract);
