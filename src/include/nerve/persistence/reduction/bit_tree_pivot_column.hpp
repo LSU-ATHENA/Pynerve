@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "nerve/platform.hpp"
+
 namespace nerve::persistence
 {
 
@@ -110,7 +112,7 @@ public:
             uint64_t word = data_[w];
             while (word)
             {
-                int bit = __builtin_ctzll(word);
+                int bit = nerve::bits::ctz64(word);
                 result.push_back(static_cast<int>(w * BITS_PER_WORD + static_cast<size_t>(bit)));
                 word &= (word - 1);
             }
@@ -133,7 +135,7 @@ private:
         {
             if (data_[w] != 0)
             {
-                int bit = 63 - __builtin_clzll(data_[w]);
+                int bit = nerve::bits::fls64(data_[w]) - 1;
                 pivot_ = static_cast<int>(w * BITS_PER_WORD + static_cast<size_t>(bit));
                 return;
             }

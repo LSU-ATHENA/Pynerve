@@ -45,7 +45,7 @@ public:
     }
 
     errors::ErrorResult<std::vector<Pair>>
-    computeVrPersistence(const core::BufferView<const double> &points, size_t point_dim,
+    computeVrPersistence(core::BufferView<const double>points, size_t point_dim,
                          const core::DeterminismContract &contract = {})
     {
         if (points.size() == 0 || point_dim == 0 || points.size() % point_dim != 0)
@@ -102,10 +102,10 @@ private:
     {}
 
     errors::ErrorResult<std::vector<Pair>>
-    computeCpuOnly(const core::BufferView<const double> &points, size_t point_dim,
+    computeCpuOnly(core::BufferView<const double>points, size_t point_dim,
                    const core::DeterminismContract &contract);
 
-    bool validateDeterministicInput(const core::BufferView<const double> &points, size_t point_dim,
+    bool validateDeterministicInput(core::BufferView<const double>points, size_t point_dim,
                                     const core::DeterminismContract &contract)
     {
         if (points.size() == 0 || point_dim == 0)

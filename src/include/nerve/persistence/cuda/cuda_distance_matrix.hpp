@@ -90,7 +90,7 @@ public:
     /// @param point_dim Dimensionality of points
     /// @param max_radius Maximum distance threshold
     /// @return ErrorResult indicating success or failure
-    errors::ErrorResult<void> compute(const core::BufferView<const double> &points,
+    errors::ErrorResult<void> compute(core::BufferView<const double>points,
                                       core::BufferView<double> &distances, Size point_dim,
                                       double max_radius);
 
@@ -101,7 +101,7 @@ public:
     /// @param max_radius Maximum distance threshold
     /// @param stream_size Size of streaming chunks
     /// @return ErrorResult indicating success or failure
-    errors::ErrorResult<void> computeStreaming(const core::BufferView<const double> &points,
+    errors::ErrorResult<void> computeStreaming(core::BufferView<const double>points,
                                                core::BufferView<double> &distances, Size point_dim,
                                                double max_radius, Size stream_size);
 

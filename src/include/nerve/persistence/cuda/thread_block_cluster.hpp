@@ -40,7 +40,7 @@ struct AdvancedClusterConfig
     int l2PromotionSize = CLUSTER_L2_CACHE_LINE_SIZE;
     int numPipelineStages = CLUSTER_DEFAULT_PIPELINE_STAGES;
 
-    [[nodiscard]] int totalClusterSize() const
+    [[nodiscard]] __host__ __device__ int totalClusterSize() const
     {
         return clusterSizeX * clusterSizeY * clusterSizeZ;
     }

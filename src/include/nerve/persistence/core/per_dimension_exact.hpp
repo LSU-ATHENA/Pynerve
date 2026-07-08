@@ -5,10 +5,7 @@
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/kernels/kernel_h1_ops.hpp"
 #include "nerve/persistence/kernels/kernel_h2_alpha_ops.hpp"
-#include "nerve/persistence/kernels/kernel_h3_tetrahedra_ops.hpp"
-#include "nerve/persistence/kernels/kernel_h4_chunked_ops.hpp"
 #include "nerve/persistence/kernels/kernel_h5_prefetch_ops.hpp"
-#include "nerve/persistence/kernels/kernel_h6_streaming_ops.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -40,10 +37,7 @@ struct PerDimensionConfig
     // Dimension-specific configs
     h1::H1Config h1;
     h2::H2Config h2;
-    h3::H3Config h3;
-    h4::H4Config h4;
     h5::H5Config h5;
-    h6::H6Config h6;
 };
 
 /**

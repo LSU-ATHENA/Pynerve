@@ -1,47 +1,39 @@
-
 #pragma once
 
-#include "nerve/core.hpp"
-#include "nerve/persistence/core/core_types.hpp"
+#include "nerve/types.hpp"
 
-#include <chrono>
+#include <cstddef>
+#include <string>
+#include <string>
 #include <vector>
 
 namespace nerve::persistence::h3
 {
 
+struct H3Pair
+{
+    Index birth_index = -1;
+    Index death_index = -1;
+    double birth_time = 0.0;
+    double death_time = 0.0;
+};
+
 struct H3Config
 {
     bool use_bit_parallel = false;
     bool use_clear_compress = false;
-    int chunk_size = 16384;
-};
-
-struct H3Pair
-{
-    int birth_index;
-    int death_index;
-    double birth_time;
-    double death_time;
+    std::size_t chunk_size = 16384;
 };
 
 struct H3Result
 {
     std::vector<H3Pair> pairs;
-
-    // Metadata
-    int num_tetrahedra = 0;
-    int num_reductions = 0;
-    bool used_bit_parallel = false;
-    bool used_clear_compress = false;
-    std::string algorithm_used;
-    H3Config config;
-
-    // Timing
-    double enumeration_time_ms = 0.0;
-    double boundary_time_ms = 0.0;
     double computation_time_ms = 0.0;
     double total_time_ms = 0.0;
+    int num_tetrahedra = 0;
+    int num_reductions = 0;
+    H3Config config;
+    std::string algorithm_used;
 };
 
 struct H3SpeedupEstimate
@@ -56,7 +48,8 @@ H3Result computeH3Tetrahedra(const std::vector<std::vector<int>> &simplices,
                              const std::vector<double> &filtration_values,
                              const std::vector<int> &dimensions, const H3Config &config);
 
-H3Config getOptimalH3Config(size_t num_tetrahedra);
-H3SpeedupEstimate estimateH3Speedup(size_t num_tetrahedra);
+H3Config getOptimalH3Config(std::size_t num_tetrahedra);
+
+H3SpeedupEstimate estimateH3Speedup(std::size_t num_tetrahedra);
 
 } // namespace nerve::persistence::h3

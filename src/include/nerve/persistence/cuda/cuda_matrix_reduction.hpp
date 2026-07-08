@@ -7,6 +7,7 @@
 #include <cuda_runtime.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <limits>
 #include <memory>
@@ -152,6 +153,7 @@ struct HybridProcessingConfig
 class CUDAMatrixReduction
 {
 public:
+    CUDAMatrixReduction();
     static errors::ErrorResult<std::unique_ptr<CUDAMatrixReduction>>
     create(const MatrixReductionConfig &config = {});
     ~CUDAMatrixReduction();
@@ -368,5 +370,110 @@ create_streaming_matrix_reduction(Size problem_size, Size n_points, Size point_d
 }
 
 } // namespace factory
+
+class CUDAMatrixReduction::Impl
+{
+public:
+    MatrixReductionConfig config;
+    MatrixReductionStats stats;
+};
+
+inline CUDAMatrixReduction::CUDAMatrixReduction()
+    : impl_(std::make_unique<Impl>())
+{}
+
+inline CUDAMatrixReduction::~CUDAMatrixReduction() = default;
+
+inline errors::ErrorResult<std::unique_ptr<CUDAMatrixReduction>>
+CUDAMatrixReduction::create(const MatrixReductionConfig &config)
+{
+    auto status = config.validate();
+    if (status.isError())
+    {
+        return errors::ErrorResult<std::unique_ptr<CUDAMatrixReduction>>::error(
+            status.errorCode());
+    }
+    auto reduction = std::unique_ptr<CUDAMatrixReduction>(new CUDAMatrixReduction());
+    reduction->impl_->config = config;
+    return errors::ErrorResult<std::unique_ptr<CUDAMatrixReduction>>::success(
+        std::move(reduction));
+}
+
+inline errors::ErrorResult<void>
+CUDAMatrixReduction::compute_reduction(const int *columns, const Size *column_sizes,
+                                        const double *weights, Size n_columns, Size max_dim)
+{
+    if (!columns || !column_sizes || !weights)
+    {
+        return errors::ErrorResult<void>::error(errors::ErrorCode::E51_PH_INPUT,
+                                                "Null pointer arguments");
+    }
+    if (n_columns == 0 || max_dim == 0)
+    {
+        return errors::ErrorResult<void>::ok();
+    }
+
+    const auto t0 = std::chrono::steady_clock::now();
+    auto result = computeMatrixReductionGpu(columns, column_sizes, weights, n_columns, max_dim,
+                                            impl_->config);
+    const auto t1 = std::chrono::steady_clock::now();
+
+    if (result.isOk())
+    {
+        impl_->stats.columns_processed = n_columns;
+        impl_->stats.total_time_ms =
+            std::chrono::duration<double, std::milli>(t1 - t0).count();
+        impl_->stats.gpu_time_ms = impl_->stats.total_time_ms;
+        Size total_entries = 0;
+        for (Size i = 0; i < n_columns; ++i)
+        {
+            total_entries += column_sizes[i];
+        }
+        impl_->stats.peak_memory_bytes =
+            (n_columns * sizeof(int) * 2) + (n_columns * sizeof(Size)) +
+            (n_columns * sizeof(double)) + (total_entries * sizeof(int));
+    }
+    return result;
+}
+
+inline errors::ErrorResult<std::vector<int>>
+CUDAMatrixReduction::compute_apparent_pairs(const int *low_row_to_col, const int *col_pivot,
+                                             const double *weights, Size n_columns, Size max_dim,
+                                             const ApparentPairsConfig &config)
+{
+    auto status = config.validate();
+    if (status.isError())
+    {
+        return errors::ErrorResult<std::vector<int>>::error(status.errorCode());
+    }
+    if (!low_row_to_col || !col_pivot || !weights)
+    {
+        return errors::ErrorResult<std::vector<int>>::error(errors::ErrorCode::E51_PH_INPUT,
+                                                             "Null pointer arguments");
+    }
+
+    const auto t0 = std::chrono::steady_clock::now();
+    auto result =
+        computeApparentPairsGpu(low_row_to_col, col_pivot, weights, n_columns, max_dim, config);
+    const auto t1 = std::chrono::steady_clock::now();
+
+    if (result.isOk())
+    {
+        impl_->stats.pairs_created = result.value().size();
+        impl_->stats.gpu_time_ms =
+            std::chrono::duration<double, std::milli>(t1 - t0).count();
+    }
+    return result;
+}
+
+inline const MatrixReductionStats &CUDAMatrixReduction::get_performance_stats() const
+{
+    return impl_->stats;
+}
+
+inline const MatrixReductionConfig &CUDAMatrixReduction::get_config() const
+{
+    return impl_->config;
+}
 
 } // namespace nerve::persistence::accelerated

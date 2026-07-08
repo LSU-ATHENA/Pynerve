@@ -44,7 +44,7 @@ struct ProblemCharacteristics
 class ProblemAnalyzer
 {
 public:
-    static ProblemCharacteristics analyzeProblem(const core::BufferView<const double> &points,
+    static ProblemCharacteristics analyzeProblem(core::BufferView<const double>points,
                                                  std::size_t point_dim);
 
     static ProblemCharacteristics analyzeMatrix(const SparseMatrix &matrix);
@@ -61,14 +61,14 @@ public:
                              const SystemCapabilities &system);
 
 private:
-    static double computeDensity(const core::BufferView<const double> &points,
+    static double computeDensity(core::BufferView<const double>points,
                                  std::size_t point_dim);
     static std::size_t estimateMaxSimplexSize(std::size_t num_points, std::size_t point_dim,
                                               double max_radius);
     static std::size_t estimateNumColumns(std::size_t num_points, std::size_t max_simplex_size);
     static double estimateSparsityRatio(std::size_t num_points, std::size_t max_simplex_size);
     static bool isHighDimensional(std::size_t point_dim);
-    static bool hasRegularStructure(const core::BufferView<const double> &points);
+    static bool hasRegularStructure(core::BufferView<const double>points);
 };
 
 } // namespace nerve::persistence::adaptive_acceleration

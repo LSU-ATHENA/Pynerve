@@ -7,7 +7,7 @@ namespace nerve::persistence::accelerated
 {
 
 errors::ErrorResult<std::vector<Pair>>
-reduceHybridExact(const core::BufferView<const double> &points, size_t point_dim,
+reduceHybridExact(core::BufferView<const double>points, size_t point_dim,
                   const HeterogeneousFastVR::Config &config,
                   const core::DeterminismContract &contract);
 

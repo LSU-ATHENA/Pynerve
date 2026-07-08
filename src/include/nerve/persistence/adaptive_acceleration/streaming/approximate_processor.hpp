@@ -64,11 +64,11 @@ public:
     ~ApproximateProcessor();
 
     errors::ErrorResult<std::vector<Pair>>
-    computeApproximate(const core::BufferView<const double> &points, std::size_t point_dim,
+    computeApproximate(core::BufferView<const double>points, std::size_t point_dim,
                        ApproximationLevel level, const VRConfig &config);
 
     errors::ErrorResult<std::vector<Pair>>
-    computeProgressive(const core::BufferView<const double> &points, std::size_t point_dim,
+    computeProgressive(core::BufferView<const double>points, std::size_t point_dim,
                        const VRConfig &config,
                        std::function<void(const std::vector<Pair> &, double)> callback);
 
@@ -83,19 +83,19 @@ private:
     ApproximationStats approximation_stats_;
 
     errors::ErrorResult<std::vector<Pair>>
-    approximateHighPrecision(const core::BufferView<const double> &points, std::size_t point_dim,
+    approximateHighPrecision(core::BufferView<const double>points, std::size_t point_dim,
                              const VRConfig &config);
 
     errors::ErrorResult<std::vector<Pair>>
-    approximateMediumPrecision(const core::BufferView<const double> &points, std::size_t point_dim,
+    approximateMediumPrecision(core::BufferView<const double>points, std::size_t point_dim,
                                const VRConfig &config);
 
     errors::ErrorResult<std::vector<Pair>>
-    approximateLowPrecision(const core::BufferView<const double> &points, std::size_t point_dim,
+    approximateLowPrecision(core::BufferView<const double>points, std::size_t point_dim,
                             const VRConfig &config);
 
     errors::ErrorResult<std::vector<Pair>>
-    approximateVeryFast(const core::BufferView<const double> &points, std::size_t point_dim,
+    approximateVeryFast(core::BufferView<const double>points, std::size_t point_dim,
                         const VRConfig &config);
 
     double getApproximationError(ApproximationLevel level);
@@ -112,7 +112,7 @@ public:
     ~ProgressiveRefinementProcessor();
 
     errors::ErrorResult<std::vector<Pair>>
-    refineProgressive(const core::BufferView<const double> &points, std::size_t point_dim,
+    refineProgressive(core::BufferView<const double>points, std::size_t point_dim,
                       const VRConfig &config,
                       std::function<void(const std::vector<Pair> &, std::size_t, double)> callback);
 

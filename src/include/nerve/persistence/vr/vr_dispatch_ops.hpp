@@ -79,13 +79,13 @@ struct VRDispatchBenchmark
  * Actual throughput depends on dataset geometry, dimension, and available
  * CPU resources; benchmark in the target environment.
  */
-std::vector<Pair> computeVrPersistenceDispatch(const core::BufferView<const double> &points,
+std::vector<Pair> computeVrPersistenceDispatch(core::BufferView<const double>points,
                                                Size point_dim, const VRDispatchConfig &config);
 
 /**
  * @brief Benchmark dispatch against standard implementation
  */
-VRDispatchBenchmark benchmarkVrDispatch(const core::BufferView<const double> &points,
+VRDispatchBenchmark benchmarkVrDispatch(core::BufferView<const double>points,
                                         Size point_dim, const VRDispatchConfig &config);
 
 /**

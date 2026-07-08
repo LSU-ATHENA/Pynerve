@@ -2,6 +2,7 @@
 #pragma once
 
 #include "nerve/core.hpp"
+#include "nerve/platform.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -44,7 +45,7 @@ struct BitColumn
                 {
                     throw std::overflow_error("bit column pivot exceeds int range");
                 }
-                pivot = i * 64 + 63 - __builtin_clzll(words[i]);
+                pivot = i * 64 + nerve::bits::fls64(words[i]) - 1;
                 break;
             }
         }
@@ -101,7 +102,7 @@ struct BitColumn
         int non_zero = 0;
         for (uint64_t word : words)
         {
-            non_zero += __builtin_popcountll(word);
+            non_zero += nerve::bits::popcount64(word);
         }
         return static_cast<double>(non_zero) / num_rows;
     }

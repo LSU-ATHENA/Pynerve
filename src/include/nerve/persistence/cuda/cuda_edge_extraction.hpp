@@ -74,10 +74,10 @@ public:
     static errors::ErrorResult<std::unique_ptr<CUDAEgdeExtractor>>
     create(const EdgeExtractionConfig &config = {});
     ~CUDAEgdeExtractor();
-    errors::ErrorResult<void> extractEdges(const core::BufferView<const double> &distances,
+    errors::ErrorResult<void> extractEdges(core::BufferView<const double>distances,
                                            core::BufferView<Edge> edges, Size n_points,
                                            double max_radius);
-    errors::ErrorResult<void> extractEdgesStreaming(const core::BufferView<const double> &distances,
+    errors::ErrorResult<void> extractEdgesStreaming(core::BufferView<const double>distances,
                                                     core::BufferView<Edge> edges, Size n_points,
                                                     double max_radius, Size stream_size);
     errors::ErrorResult<void>
@@ -328,5 +328,6 @@ inline bool shouldEnableEarlyTermination(Size max_edges, bool enable_gpu = true)
 {
     return max_edges > 100000 || (enable_gpu && max_edges > 10000);
 }
-} // namespace utils
+} // namespace nerve::persistence::accelerated::utils
+
 } // namespace nerve::persistence::accelerated

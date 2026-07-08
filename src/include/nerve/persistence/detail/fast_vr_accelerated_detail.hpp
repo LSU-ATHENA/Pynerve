@@ -48,7 +48,7 @@ struct StagePointsResult
 };
 
 errors::ErrorResult<StagePointsResult>
-stagePointsOnGpu(const core::BufferView<const double> &points, std::size_t point_dim,
+stagePointsOnGpu(core::BufferView<const double>points, std::size_t point_dim,
                  double max_radius, std::size_t chunk_elements);
 
 void recordGlobalMetric(const PerformanceMetrics &metric, double memory_usage_mb, bool gpu_used,

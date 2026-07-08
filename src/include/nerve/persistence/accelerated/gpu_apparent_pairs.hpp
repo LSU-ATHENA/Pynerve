@@ -13,6 +13,12 @@
 namespace nerve::persistence::accelerated
 {
 
+// CUDA kernel declaration (must be free function, not class member)
+__global__ void detectApparentPairsKernel(const int *vertex_data, const int *vertex_counts,
+                                          const int *vertex_offsets,
+                                          const double *filtration_values, int *apparentPairs,
+                                          int n_simplices, int determinism_level);
+
 struct SimplexGPU
 {
     std::vector<int> vertices;
@@ -338,12 +344,6 @@ private:
         if (d_apparent_pairs)
             cudaFree(d_apparent_pairs);
     }
-
-    // CUDA kernel declaration
-    static void detectApparentPairsKernel(const int *vertex_data, const int *vertex_counts,
-                                          const int *vertex_offsets,
-                                          const double *filtration_values, int *apparentPairs,
-                                          int n_simplices, int determinism_level);
 
     Config config_;
 };

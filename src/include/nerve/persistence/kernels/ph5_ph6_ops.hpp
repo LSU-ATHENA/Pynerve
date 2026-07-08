@@ -111,7 +111,7 @@ private:
                                                         std::string &error_message);
 
     using EntryPoint = errors::ErrorResult<PersistenceResult> (*)(
-        const core::BufferView<const double> &, Size, const PersistenceOptions &);
+        core::BufferView<const double>, Size, const PersistenceOptions &);
 
     std::optional<ResultType> runCanonical(const PointContainer &points, size_t max_dimension,
                                            EntryPoint entrypoint);
