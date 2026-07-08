@@ -57,24 +57,32 @@ at::Tensor heat_kernel_signature_impl(const at::Tensor &diagram, int64_t num_sam
     auto signature = at::zeros({num_t, num_samples}, work_diagram.options());
 
     auto pers_a = persistence.accessor<double, 1>();
-    auto x_a = x.accessor<double, 1>();
     auto t_a = work_t_values.accessor<double, 1>();
     auto sig_a = signature.accessor<double, 2>();
+
+    // Pre-allocate buffer for batched exp (avoids per-iteration tensor creation)
+    auto g = at::empty({num_samples}, work_diagram.options());
+    auto g_a = g.accessor<double, 1>();
 
     for (int64_t ti = 0; ti < num_t; ++ti)
     {
         double t = t_a[ti];
-        double effective_sigma = sigma * std::sqrt(t);
+        double neg_inv_two_sigma_sq = -1.0 / (2.0 * sigma * sigma * t);
 
         for (int64_t i = 0; i < persistence.size(0); ++i)
         {
             double p = pers_a[i];
 
+            // In-place: g = exp(-(x - p)^2 / (2*sigma^2*t))
+            g.copy_(x);
+            g -= p;
+            g *= g;
+            g *= neg_inv_two_sigma_sq;
+            g.exp_();
+
             for (int64_t j = 0; j < num_samples; ++j)
             {
-                double diff = x_a[j] - p;
-                double g = std::exp(-(diff * diff) / (2.0 * effective_sigma * effective_sigma));
-                sig_a[ti][j] += g;
+                sig_a[ti][j] += g_a[j];
             }
         }
     }

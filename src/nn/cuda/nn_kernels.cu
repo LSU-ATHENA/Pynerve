@@ -142,7 +142,7 @@ __global__ void batchNormKernel_f32(float *data, Size n, float mean, float std_i
 
 __global__ void softmaxKernel_f32(const float *input, float *output, Size n)
 {
-    extern __shared__ float sdata[];
+    extern __shared__ float sdata_f32[];
     int tid = threadIdx.x;
     int lane_id = tid & 31;
     int warp_id = tid >> 5;
@@ -151,15 +151,15 @@ __global__ void softmaxKernel_f32(const float *input, float *output, Size n)
     float local_val = (tid < static_cast<int>(n)) ? input[tid] : -1.0e38f;
     float warp_max = warp_reduce_max_f32(local_val);
     if (lane_id == 0)
-        sdata[warp_id] = warp_max;
+        sdata_f32[warp_id] = warp_max;
     __syncthreads();
 
-    float cross_val = (tid < num_warps) ? sdata[tid] : -1.0e38f;
+    float cross_val = (tid < num_warps) ? sdata_f32[tid] : -1.0e38f;
     float global_max = warp_reduce_max_f32(cross_val);
     if (lane_id == 0 && tid == 0)
-        sdata[0] = global_max;
+        sdata_f32[0] = global_max;
     __syncthreads();
-    global_max = sdata[0];
+    global_max = sdata_f32[0];
 
     float exp_val = 0.0f;
     if (tid < static_cast<int>(n))
@@ -169,15 +169,15 @@ __global__ void softmaxKernel_f32(const float *input, float *output, Size n)
     }
     float warp_sum = warp_reduce_sum_f32(exp_val);
     if (lane_id == 0)
-        sdata[warp_id] = warp_sum;
+        sdata_f32[warp_id] = warp_sum;
     __syncthreads();
 
-    float cross_sum = (tid < num_warps) ? sdata[tid] : 0.0f;
+    float cross_sum = (tid < num_warps) ? sdata_f32[tid] : 0.0f;
     float global_sum = warp_reduce_sum_f32(cross_sum);
     if (lane_id == 0 && tid == 0)
-        sdata[0] = global_sum;
+        sdata_f32[0] = global_sum;
     __syncthreads();
-    global_sum = sdata[0];
+    global_sum = sdata_f32[0];
 
     float inv_sum = rcp_approx_f32(global_sum);
     if (tid < static_cast<int>(n))
@@ -304,7 +304,7 @@ __global__ void batchNormPtxKernel_f32(float *data, Size n, float mean, float st
 
 __global__ void softmaxPtxKernel_f32(const float *input, float *output, Size n)
 {
-    extern __shared__ float sdata[];
+    extern __shared__ float sdata_f32[];
     int tid = threadIdx.x;
     int lane_id = tid & 31;
     int warp_id = tid >> 5;
@@ -313,15 +313,15 @@ __global__ void softmaxPtxKernel_f32(const float *input, float *output, Size n)
     float local_val = (tid < static_cast<int>(n)) ? input[tid] : -1.0e38f;
     float warp_max = warp_reduce_max_f32(local_val);
     if (lane_id == 0)
-        sdata[warp_id] = warp_max;
+        sdata_f32[warp_id] = warp_max;
     __syncthreads();
 
-    float cross_val = (tid < num_warps) ? sdata[tid] : -1.0e38f;
+    float cross_val = (tid < num_warps) ? sdata_f32[tid] : -1.0e38f;
     float global_max = warp_reduce_max_f32(cross_val);
     if (lane_id == 0 && tid == 0)
-        sdata[0] = global_max;
+        sdata_f32[0] = global_max;
     __syncthreads();
-    global_max = sdata[0];
+    global_max = sdata_f32[0];
 
     float exp_val = 0.0f;
     if (tid < static_cast<int>(n))
@@ -331,15 +331,15 @@ __global__ void softmaxPtxKernel_f32(const float *input, float *output, Size n)
     }
     float warp_sum = warp_reduce_sum_f32(exp_val);
     if (lane_id == 0)
-        sdata[warp_id] = warp_sum;
+        sdata_f32[warp_id] = warp_sum;
     __syncthreads();
 
-    float cross_sum = (tid < num_warps) ? sdata[tid] : 0.0f;
+    float cross_sum = (tid < num_warps) ? sdata_f32[tid] : 0.0f;
     float global_sum = warp_reduce_sum_f32(cross_sum);
     if (lane_id == 0 && tid == 0)
-        sdata[0] = global_sum;
+        sdata_f32[0] = global_sum;
     __syncthreads();
-    global_sum = sdata[0];
+    global_sum = sdata_f32[0];
 
     float inv_sum = rcp_approx_f32(global_sum);
     if (tid < static_cast<int>(n))

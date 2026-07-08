@@ -1,5 +1,6 @@
 #include "nerve/math/constants.hpp"
 #include "nerve/nn/diagram_conv.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -99,22 +100,6 @@ int bounded_spread(T sigma, int resolution_h, int resolution_w, const std::strin
         throw_length_error(function_name, "kernel spread exceeds index range");
     }
     return std::min(static_cast<int>(raw), std::max(resolution_h, resolution_w));
-}
-
-template <typename T>
-int gaussian_kernel_size(T sigma, const std::string &function_name)
-{
-    const long double raw = std::ceil(static_cast<long double>(sigma) * 6.0L);
-    if (!std::isfinite(raw) || raw > static_cast<long double>(std::numeric_limits<int>::max()))
-    {
-        throw_length_error(function_name, "kernel size exceeds index range");
-    }
-    int size = std::max(3, static_cast<int>(raw) | 1);
-    if ((size % 2) == 0)
-    {
-        ++size;
-    }
-    return size;
 }
 
 template <typename T>
@@ -231,39 +216,42 @@ std::vector<T> DiagramConv2D<T>::forward(std::span<const T> input, size_t batch_
                     T sum = bias_[static_cast<size_t>(oc)];
                     for (int ic = 0; ic < config_.in_channels; ++ic)
                     {
+                        const size_t ic_s = static_cast<size_t>(ic);
                         for (int ky = 0; ky < config_.kernel_h; ++ky)
                         {
-                            for (int kx = 0; kx < config_.kernel_w; ++kx)
+                            const size_t ky_s = static_cast<size_t>(ky);
+                            const size_t in_y = oy * static_cast<size_t>(config_.stride_h) + ky_s;
+                            // input and kernel are contiguous for consecutive kx
+                            const size_t input_base =
+                                (((b * static_cast<size_t>(config_.in_channels) + ic_s) *
+                                      height +
+                                  in_y) *
+                                     width +
+                                 ox * static_cast<size_t>(config_.stride_w));
+                            const size_t kernel_base =
+                                (((static_cast<size_t>(oc) *
+                                        static_cast<size_t>(config_.in_channels) +
+                                    ic_s) *
+                                       static_cast<size_t>(config_.kernel_h) +
+                                   ky_s) *
+                                      static_cast<size_t>(config_.kernel_w));
+                            const size_t kw = static_cast<size_t>(config_.kernel_w);
+
+                            // Batched dot product via dispatch table
+                            T partial;
+                            if constexpr (std::is_same_v<T, double>)
+                                partial = nerve::simd::simd_dot(&input[input_base],
+                                                                 &kernel_[kernel_base], kw);
+                            else if constexpr (std::is_same_v<T, float>)
+                                partial = nerve::simd::simd_dot_f32(&input[input_base],
+                                                                     &kernel_[kernel_base], kw);
+                            if (!std::isfinite(partial))
                             {
-                                const size_t in_y = oy * static_cast<size_t>(config_.stride_h) +
-                                                    static_cast<size_t>(ky);
-                                const size_t in_x = ox * static_cast<size_t>(config_.stride_w) +
-                                                    static_cast<size_t>(kx);
-                                const size_t input_idx =
-                                    (((b * static_cast<size_t>(config_.in_channels) +
-                                       static_cast<size_t>(ic)) *
-                                          height +
-                                      in_y) *
-                                         width +
-                                     in_x);
-                                const size_t kernel_idx =
-                                    ((((static_cast<size_t>(oc) *
-                                            static_cast<size_t>(config_.in_channels) +
-                                        static_cast<size_t>(ic)) *
-                                           static_cast<size_t>(config_.kernel_h) +
-                                       static_cast<size_t>(ky)) *
-                                          static_cast<size_t>(config_.kernel_w) +
-                                      static_cast<size_t>(kx)));
-                                const T contribution = input[input_idx] * kernel_[kernel_idx];
-                                const T next = sum + contribution;
-                                if (!std::isfinite(contribution) || !std::isfinite(next))
-                                {
-                                    throw_invalid_argument(
-                                        "DiagramConv2D::forward",
-                                        "convolution produced non-finite values");
-                                }
-                                sum = next;
+                                throw_invalid_argument(
+                                    "DiagramConv2D::forward",
+                                    "convolution produced non-finite values");
                             }
+                            sum += partial;
                         }
                     }
                     const size_t out_idx = (((b * static_cast<size_t>(config_.out_channels) +
@@ -365,6 +353,30 @@ std::vector<T> PersistenceImageLayer<T>::forward(std::span<const T> diagram, siz
     }
 
     const T birth_range = max_death - min_birth;
+    // Pre-compute Gaussian kernel once (constant per forward() call)
+    const int spread =
+        bounded_spread(config_.sigma, config_.resolution_h, config_.resolution_w,
+                       "PersistenceImageLayer::forward");
+    const int win = 2 * spread + 1;
+    const size_t kernel_count = static_cast<size_t>(win) * static_cast<size_t>(win);
+    const T inv_two_sigma_sq = T(1) / (T(2) * config_.sigma * config_.sigma);
+    std::vector<T> kernel_vals(kernel_count);
+    for (int dy = -spread; dy <= spread; ++dy)
+    {
+        const T dy_t = static_cast<T>(dy);
+        for (int dx = -spread; dx <= spread; ++dx)
+        {
+            const T dx_t = static_cast<T>(dx);
+            const size_t k_idx = static_cast<size_t>((dy + spread) * win + (dx + spread));
+            kernel_vals[k_idx] = -(dx_t * dx_t + dy_t * dy_t) * inv_two_sigma_sq;
+        }
+    }
+    // Batched SIMD.exp: replaces each element with exp(element)
+    if constexpr (std::is_same_v<T, double>)
+        nerve::simd::simd_exp(kernel_vals.data(), kernel_count);
+    else if constexpr (std::is_same_v<T, float>)
+        nerve::simd::simd_exp_f32(kernel_vals.data(), kernel_count);
+
     for (size_t b = 0; b < batch_size; ++b)
     {
         for (size_t i = 0; i < n_pairs; ++i)
@@ -381,9 +393,6 @@ std::vector<T> PersistenceImageLayer<T>::forward(std::span<const T> diagram, siz
             y = std::clamp(y, 0, config_.resolution_h - 1);
 
             const T weight = compute_weight(persistence);
-            const int spread =
-                bounded_spread(config_.sigma, config_.resolution_h, config_.resolution_w,
-                               "PersistenceImageLayer::forward");
             for (int dy = -spread; dy <= spread; ++dy)
             {
                 for (int dx = -spread; dx <= spread; ++dx)
@@ -395,10 +404,8 @@ std::vector<T> PersistenceImageLayer<T>::forward(std::span<const T> diagram, siz
                     {
                         continue;
                     }
-                    const T dx_t = static_cast<T>(dx);
-                    const T dy_t = static_cast<T>(dy);
-                    const T dist_sq = (dx_t * dx_t + dy_t * dy_t) / (config_.sigma * config_.sigma);
-                    const T gauss = std::exp(-dist_sq / nerve::math::Constants<T>::kTwo);
+                    const size_t k_idx = static_cast<size_t>((dy + spread) * win + (dx + spread));
+                    const T gauss = kernel_vals[k_idx];
                     const size_t idx = (b * config_.resolution_h + static_cast<size_t>(ny)) *
                                            config_.resolution_w +
                                        static_cast<size_t>(nx);
@@ -456,10 +463,29 @@ std::vector<T> PersistenceImageLayer<T>::forward_multi_dim(std::span<const T> di
     }
     const T birth_range = max_death - min_birth;
 
-    const int kernel_size =
-        gaussian_kernel_size(config_.sigma, "PersistenceImageLayer::forward_multi_dim");
-    const auto kernel = gaussian_kernel_2d(config_.sigma, kernel_size);
-    const int radius = kernel_size / 2;
+    // Pre-compute Gaussian kernel once (constant per forward_multi_dim call)
+    const int spread =
+        bounded_spread(config_.sigma, config_.resolution_h, config_.resolution_w,
+                       "PersistenceImageLayer::forward_multi_dim");
+    const int win = 2 * spread + 1;
+    const size_t kernel_count = static_cast<size_t>(win) * static_cast<size_t>(win);
+    const T inv_two_sigma_sq = T(1) / (T(2) * config_.sigma * config_.sigma);
+    std::vector<T> kernel_vals(kernel_count);
+    for (int dy = -spread; dy <= spread; ++dy)
+    {
+        const T dy_t = static_cast<T>(dy);
+        for (int dx = -spread; dx <= spread; ++dx)
+        {
+            const T dx_t = static_cast<T>(dx);
+            const size_t k_idx = static_cast<size_t>((dy + spread) * win + (dx + spread));
+            kernel_vals[k_idx] = -(dx_t * dx_t + dy_t * dy_t) * inv_two_sigma_sq;
+        }
+    }
+    // Batched SIMD.exp: replaces each element with exp(element)
+    if constexpr (std::is_same_v<T, double>)
+        nerve::simd::simd_exp(kernel_vals.data(), kernel_count);
+    else if constexpr (std::is_same_v<T, float>)
+        nerve::simd::simd_exp_f32(kernel_vals.data(), kernel_count);
 
     for (size_t b = 0; b < batch_size; ++b)
     {
@@ -482,25 +508,25 @@ std::vector<T> PersistenceImageLayer<T>::forward_multi_dim(std::span<const T> di
             y = std::clamp(y, 0, config_.resolution_h - 1);
             const T weight = compute_weight(persistence);
 
-            for (int ky = -radius; ky <= radius; ++ky)
+            for (int dy = -spread; dy <= spread; ++dy)
             {
-                for (int kx = -radius; kx <= radius; ++kx)
+                for (int dx = -spread; dx <= spread; ++dx)
                 {
-                    const int ny = y + ky;
-                    const int nx = x + kx;
+                    const int ny = y + dy;
+                    const int nx = x + dx;
                     if (ny < 0 || ny >= config_.resolution_h || nx < 0 ||
                         nx >= config_.resolution_w)
                     {
                         continue;
                     }
-                    const size_t kernel_idx =
-                        static_cast<size_t>((ky + radius) * kernel_size + (kx + radius));
+                    const size_t k_idx = static_cast<size_t>((dy + spread) * win + (dx + spread));
+                    const T gauss = kernel_vals[k_idx];
                     const size_t out_idx = ((((b * n_dims + static_cast<size_t>(dim)) *
                                                   static_cast<size_t>(config_.resolution_h) +
                                               static_cast<size_t>(ny)) *
                                              static_cast<size_t>(config_.resolution_w)) +
                                             static_cast<size_t>(nx));
-                    const T contribution = weight * kernel[kernel_idx];
+                    const T contribution = weight * gauss;
                     const T next = image[out_idx] + contribution;
                     if (!std::isfinite(contribution) || !std::isfinite(next))
                     {
@@ -522,56 +548,5 @@ template class PersistenceImageLayer<float>;
 template class PersistenceImageLayer<double>;
 
 void __nerve_nn_diagram_conv_image_ops_pin() {}
-
-template <typename T>
-std::vector<T> PersistenceImageLayer<T>::gaussian_kernel_2d(T sigma, int size) const
-{
-    if (sigma <= T(0))
-    {
-        throw_invalid_argument("PersistenceImageLayer::gaussian_kernel_2d",
-                               "sigma must be positive");
-    }
-    if (size <= 0)
-    {
-        throw_invalid_argument("PersistenceImageLayer::gaussian_kernel_2d",
-                               "size must be positive");
-    }
-    if ((size % 2) == 0)
-    {
-        ++size;
-    }
-    const size_t kernel_values = checked_vector_size<T>(
-        {static_cast<size_t>(size), static_cast<size_t>(size)},
-        "PersistenceImageLayer::gaussian_kernel_2d", "kernel size overflows");
-    std::vector<T> kernel(kernel_values, T(0));
-    const int center = size / 2;
-    T sum = T(0);
-    const T two_sigma_sq = T(2) * sigma * sigma;
-    for (int y = 0; y < size; ++y)
-    {
-        for (int x = 0; x < size; ++x)
-        {
-            const T dy = static_cast<T>(y - center);
-            const T dx = static_cast<T>(x - center);
-            const T value = std::exp(-(dx * dx + dy * dy) / two_sigma_sq);
-            if (!std::isfinite(value))
-            {
-                throw_invalid_argument("PersistenceImageLayer::gaussian_kernel_2d",
-                                       "kernel contains non-finite values");
-            }
-            kernel[static_cast<size_t>(y) * static_cast<size_t>(size) + static_cast<size_t>(x)] =
-                value;
-            sum += value;
-        }
-    }
-    if (sum > T(0))
-    {
-        for (auto &value : kernel)
-        {
-            value /= sum;
-        }
-    }
-    return kernel;
-}
 
 } // namespace nerve::nn

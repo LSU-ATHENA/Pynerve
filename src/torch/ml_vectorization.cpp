@@ -18,12 +18,6 @@ constexpr T clamp(T value, T min_val, T max_val)
     return std::max(min_val, std::min(value, max_val));
 }
 
-double gaussian_2d(double x, double y, double center_x, double center_y, double sigma)
-{
-    double dx = x - center_x;
-    double dy = y - center_y;
-    return std::exp(-(dx * dx + dy * dy) / (2.0 * sigma * sigma));
-}
 
 bool is_supported_weight_fn(const std::string &weight_fn)
 {
@@ -166,9 +160,13 @@ at::Tensor persistence_image_impl(const at::Tensor &diagram, int64_t resolution_
     auto births_a = births.accessor<double, 1>();
     auto deaths_a = deaths.accessor<double, 1>();
     auto weights_a = weights.accessor<double, 1>();
-    auto x_a = x.accessor<double, 1>();
-    auto y_a = y.accessor<double, 1>();
     auto image_a = image.accessor<double, 2>();
+
+    double neg_inv_two_sigma_sq = -1.0 / (2.0 * sigma * sigma);
+
+    // Pre-allocate buffers for batched exp (avoids per-iteration tensor creation)
+    auto gauss_x = at::empty({resolution_birth}, work_diagram.options());
+    auto gauss_y = at::empty({resolution_death}, work_diagram.options());
 
     for (int64_t i = 0; i < births.size(0); ++i)
     {
@@ -176,12 +174,29 @@ at::Tensor persistence_image_impl(const at::Tensor &diagram, int64_t resolution_
         double d = deaths_a[i];
         double w = weights_a[i];
 
+        // In-place: gauss_x = exp(-(x - b)^2 / (2*sigma^2))
+        gauss_x.copy_(x);
+        gauss_x -= b;
+        gauss_x *= gauss_x;
+        gauss_x *= neg_inv_two_sigma_sq;
+        gauss_x.exp_();
+
+        // In-place: gauss_y = exp(-(y - d)^2 / (2*sigma^2))
+        gauss_y.copy_(y);
+        gauss_y -= d;
+        gauss_y *= gauss_y;
+        gauss_y *= neg_inv_two_sigma_sq;
+        gauss_y.exp_();
+
+        auto gx_a = gauss_x.accessor<double, 1>();
+        auto gy_a = gauss_y.accessor<double, 1>();
+
         for (int64_t yi = 0; yi < resolution_death; ++yi)
         {
+            double gy = gy_a[yi];
             for (int64_t xi = 0; xi < resolution_birth; ++xi)
             {
-                double g = gaussian_2d(x_a[xi], y_a[yi], b, d, sigma);
-                image_a[yi][xi] += g * w;
+                image_a[yi][xi] += w * gy * gx_a[xi];
             }
         }
     }
