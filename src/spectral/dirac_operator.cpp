@@ -1,6 +1,7 @@
 
 #include "nerve/spectral/laplacian.hpp"
 #include "nerve/spectral/symmetric_eigendecomposition.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -253,14 +254,16 @@ DiracOperator::computeMatrixProduct(const std::vector<std::vector<double>> &a,
     const Size m = b.empty() ? 0 : b[0].size();
     const Size p = a.empty() ? 0 : a[0].size();
     std::vector<std::vector<double>> result(n, std::vector<double>(m, 0.0));
+    // Loop-interchanged: for each (i, k), axpy a[i][k] * b[k][:] onto result[i][:]
+    // b[k][j] is contiguous for consecutive j (within row k of b)
+    // result[i][j] is contiguous for consecutive j (within row i of result)
     for (Size i = 0; i < n; ++i)
     {
-        for (Size j = 0; j < m; ++j)
+        for (Size k = 0; k < p; ++k)
         {
-            for (Size k = 0; k < p; ++k)
-            {
-                result[i][j] += a[i][k] * b[k][j];
-            }
+            const double aik = a[i][k];
+            if (aik == 0.0) continue;
+            nerve::simd::simd_axpy(aik, b[k].data(), result[i].data(), m);
         }
     }
     return result;

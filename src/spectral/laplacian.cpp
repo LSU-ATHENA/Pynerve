@@ -3,6 +3,7 @@
 #include "nerve/gpu/gpu_compute.hpp"
 #include "nerve/spectral/laplacian.hpp"
 #include "nerve/spectral/symmetric_eigendecomposition.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -238,9 +239,17 @@ std::vector<std::vector<double>> Laplacian::heatKernel(int dimension, double t) 
     const auto vectors = computeEigendecomposition(laplacian, values);
     const Size n = laplacian.size();
     std::vector<std::vector<double>> heat(n, std::vector<double>(n, 0.0));
-    for (Size i = 0; i < n && i < values.size(); ++i)
+    const Size num_ev = std::min(n, static_cast<Size>(values.size()));
+    // Batched SIMD.exp: fill buffer with -t * eigenvalues, then apply exp once
+    std::vector<double> exp_terms(num_ev);
+    for (Size i = 0; i < num_ev; ++i)
     {
-        const double exp_term = std::exp(-t * values[i]);
+        exp_terms[i] = -t * values[i];
+    }
+    nerve::simd::simd_exp(exp_terms.data(), num_ev);
+    for (Size i = 0; i < num_ev; ++i)
+    {
+        const double exp_term = exp_terms[i];
         for (Size j = 0; j < n; ++j)
         {
             for (Size k = 0; k < n; ++k)
@@ -405,17 +414,17 @@ void Laplacian::computeAllLaplacians()
         if (dim + 1 < count)
         {
             const auto &dp1_indices = indices[dim + 1];
+            const Size dp1_start = dp1_indices.empty() ? 0 : dp1_indices[0];
+            const Size dp1_count = dp1_indices.size();
+            // Contiguous columns: boundary row dot product via SIMD.dot
             for (Size i = 0; i < n; ++i)
             {
                 for (Size j = 0; j < n; ++j)
                 {
-                    double sum = 0.0;
-                    for (const auto col : dp1_indices)
-                    {
-                        sum += boundary_matrix_[d_indices[i]][col] *
-                               boundary_matrix_[d_indices[j]][col];
-                    }
-                    up[i][j] = sum;
+                    up[i][j] = nerve::simd::simd_dot(
+                        &boundary_matrix_[d_indices[i]][dp1_start],
+                        &boundary_matrix_[d_indices[j]][dp1_start],
+                        dp1_count);
                 }
             }
         }
@@ -423,17 +432,18 @@ void Laplacian::computeAllLaplacians()
         if (dim > 0)
         {
             const auto &dm1_indices = indices[dim - 1];
-            for (Size i = 0; i < n; ++i)
+            const Size d_start = d_indices.empty() ? 0 : d_indices[0];
+            // Loop-interchange: for each row, axpy onto down[i][j..]
+            // down[i][j] += B[row][d_i] * B[row][d_j] over rows
+            // B[row][d_j] is contiguous for consecutive d_j (same dimension)
+            for (const auto row : dm1_indices)
             {
-                for (Size j = 0; j < n; ++j)
+                const double *Brow = boundary_matrix_[row].data();
+                for (Size i = 0; i < n; ++i)
                 {
-                    double sum = 0.0;
-                    for (const auto row : dm1_indices)
-                    {
-                        sum += boundary_matrix_[row][d_indices[i]] *
-                               boundary_matrix_[row][d_indices[j]];
-                    }
-                    down[i][j] = sum;
+                    const double bi = Brow[d_indices[i]];
+                    if (bi == 0.0) continue;
+                    nerve::simd::simd_axpy(bi, &Brow[d_start], &down[i][0], n);
                 }
             }
         }

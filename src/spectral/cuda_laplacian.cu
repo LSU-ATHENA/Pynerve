@@ -287,7 +287,7 @@ __global__ __launch_bounds__(256) void computeUpLaplacianTiledKernel(
 
     if (row < n_d && col < n_d)
     {
-        constexpr double kInf = __longlong_as_double(0x7ff0000000000000ULL);
+        const double kInf = __longlong_as_double(0x7ff0000000000000ULL);
         up_laplacian[row * n_d + col] =
             ptx::slct_f64(valid_sum, sum, kInf);
     }
@@ -343,7 +343,7 @@ __global__ __launch_bounds__(LAPLACIAN_BLOCK_SIZE) void computeUpLaplacianPtxKer
         }
     }
 
-    constexpr double kInf = __longlong_as_double(0x7ff0000000000000ULL);
+    const double kInf = __longlong_as_double(0x7ff0000000000000ULL);
     double result = ptx::slct_f64(valid_sum, sum, kInf);
     ptx::st_global_cs_f64(&up_laplacian[i * n_d + j], result);
 }
@@ -394,7 +394,7 @@ __global__ __launch_bounds__(LAPLACIAN_BLOCK_SIZE) void computeDownLaplacianPtxK
         }
     }
 
-    constexpr double kInf = __longlong_as_double(0x7ff0000000000000ULL);
+    const double kInf = __longlong_as_double(0x7ff0000000000000ULL);
     double result = ptx::slct_f64(valid_sum, sum, kInf);
     ptx::st_global_cs_f64(&down_laplacian[i * n_d + j], result);
 }
@@ -440,9 +440,8 @@ __global__ __launch_bounds__(256) void computeUpLaplacianTiledPtxKernel(
         {
             size_t global_row = d_indices[row];
             size_t global_col = d1_indices[tile_offset + threadIdx.x];
-            ptx::cp_async_shared_global(&tile_i[threadIdx.y][threadIdx.x],
-                                        &boundary_matrix[global_row * size + global_col],
-                                        sizeof(double));
+            ptx::cp_async_shared_global<sizeof(double)>(&tile_i[threadIdx.y][threadIdx.x],
+                                        &boundary_matrix[global_row * size + global_col]);
         }
         else
         {
@@ -453,9 +452,8 @@ __global__ __launch_bounds__(256) void computeUpLaplacianTiledPtxKernel(
         {
             size_t global_row = d_indices[col];
             size_t global_col = d1_indices[tile_offset + threadIdx.x];
-            ptx::cp_async_shared_global(&tile_j[threadIdx.y][threadIdx.x],
-                                        &boundary_matrix[global_row * size + global_col],
-                                        sizeof(double));
+            ptx::cp_async_shared_global<sizeof(double)>(&tile_j[threadIdx.y][threadIdx.x],
+                                        &boundary_matrix[global_row * size + global_col]);
         }
         else
         {
@@ -463,7 +461,7 @@ __global__ __launch_bounds__(256) void computeUpLaplacianTiledPtxKernel(
         }
 
         ptx::cp_async_commit_group();
-        ptx::cp_async_wait_group(0);
+        ptx::cp_async_wait_group<0>();
 #else
         if (load_i)
         {
@@ -508,7 +506,7 @@ __global__ __launch_bounds__(256) void computeUpLaplacianTiledPtxKernel(
 
     if (row < n_d && col < n_d)
     {
-        constexpr double kInf = __longlong_as_double(0x7ff0000000000000ULL);
+        const double kInf = __longlong_as_double(0x7ff0000000000000ULL);
         double result = ptx::slct_f64(valid_sum, sum, kInf);
         ptx::st_global_cs_f64(&up_laplacian[row * n_d + col], result);
     }
