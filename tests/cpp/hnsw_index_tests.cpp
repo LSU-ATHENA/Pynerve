@@ -36,7 +36,7 @@ float euclideanSq(const float *a, const float *b, int dim)
 
 int main()
 {
-    // Test 1: Build index from random point cloud and verify k-NN search
+    // Build index from random point cloud and verify k-NN search
     {
         const int dim = 16;
         const size_t n = 200;
@@ -73,7 +73,7 @@ int main()
         assert(results[0].first < n);
     }
 
-    // Test 2: Radius search  --  verify all results within radius
+    // Radius search  --  verify all results within radius
     {
         const int dim = 8;
         const size_t n = 100;
@@ -98,7 +98,7 @@ int main()
         }
     }
 
-    // Test 3: Radius search with zero radius
+    // Radius search with zero radius
     {
         const int dim = 4;
         const size_t n = 10;
@@ -113,7 +113,7 @@ int main()
         assert(results[0].first < n);
     }
 
-    // Test 4: Empty index  --  verify graceful handling
+    // Empty index  --  verify graceful handling
     {
         nerve::algorithms::HNSWIndex<float> empty_index(8);
         assert(empty_index.node_count() == 0);
@@ -126,7 +126,7 @@ int main()
         assert(radius_results.empty());
     }
 
-    // Test 5: Single point index  --  verify returns itself
+    // Single point index  --  verify returns itself
     {
         const int dim = 3;
         const size_t n = 1;
@@ -146,7 +146,7 @@ int main()
         assert(radius_results[0].first == 0);
     }
 
-    // Test 6: Batch search
+    // Batch search
     {
         const int dim = 4;
         const size_t n = 50;
@@ -163,7 +163,7 @@ int main()
         }
     }
 
-    // Test 7: batchSearch with vector of spans
+    // batchSearch with vector of spans
     {
         const int dim = 4;
         const size_t n = 20;
@@ -193,7 +193,7 @@ int main()
         }
     }
 
-    // Test 8: Performance  --  1000 points, 128D
+    // Performance  --  1000 points, 128D
     {
         const int dim = 128;
         const size_t n = 1000;
@@ -213,7 +213,7 @@ int main()
         assert(results[0].first < n);
     }
 
-    // Test 9: Invalid dimensions throw
+    // Invalid dimensions throw
     {
         bool caught = false;
         try
@@ -227,7 +227,7 @@ int main()
         assert(caught);
     }
 
-    // Test 10: Config validation
+    // Config validation
     {
         bool m_caught = false;
         try
@@ -243,7 +243,7 @@ int main()
         assert(m_caught);
     }
 
-    // Test 11: Build on data that's too small for n_points * dim
+    // Build on data that's too small for n_points * dim
     {
         nerve::algorithms::HNSWIndex<float> index(10);
         std::vector<float> too_small(5, 0.0f);

@@ -20,7 +20,7 @@ using nerve::streaming::lockfree::WaitFreeRingBuffer;
 
 int main()
 {
-    // Test 1: MPMC queue push/pop with 2 threads  --  verify FIFO order
+    // MPMC queue push/pop with 2 threads  --  verify FIFO order
     {
         LockFreeMPMCQueue<int> queue(8);
 
@@ -50,7 +50,7 @@ int main()
         consumer.join();
     }
 
-    // Test 2: MPMC stress test  --  4 producers, 4 consumers, 10000 items
+    // MPMC stress test  --  4 producers, 4 consumers, 10000 items
     {
         constexpr int total_items = 10000;
         constexpr int num_producers = 4;
@@ -111,7 +111,7 @@ int main()
         assert(sum_produced.load() == sum_consumed.load());
     }
 
-    // Test 3: WaitFreeRingBuffer write/read  --  verify order and capacity limit
+    // WaitFreeRingBuffer write/read  --  verify order and capacity limit
     {
         WaitFreeRingBuffer<int> buffer(4);
 
@@ -144,7 +144,7 @@ int main()
         assert(!buffer.tryPop().has_value());
     }
 
-    // Test 4: WaitFreeRingBuffer bulk operations
+    // WaitFreeRingBuffer bulk operations
     {
         WaitFreeRingBuffer<int> buffer(16);
 
@@ -160,7 +160,7 @@ int main()
         }
     }
 
-    // Test 5: WaitFreeRingBuffer snapshot
+    // WaitFreeRingBuffer snapshot
     {
         WaitFreeRingBuffer<int> buffer(8);
 
@@ -176,7 +176,7 @@ int main()
         assert(buffer.approximateSize() == 3);
     }
 
-    // Test 6: WaitFreeRingBuffer SPSC stress test
+    // WaitFreeRingBuffer SPSC stress test
     {
         WaitFreeRingBuffer<int> buffer(1024);
         constexpr int count = 5000;
@@ -218,7 +218,7 @@ int main()
         consumer.join();
     }
 
-    // Test 7: LockFreeStreamingWindow
+    // LockFreeStreamingWindow
     {
         LockFreeStreamingWindow<int> window(4);
 
@@ -237,7 +237,7 @@ int main()
         assert(snap2.size() == 4);
     }
 
-    // Test 8: WaitFreeRingBuffer capacity at boundaries
+    // WaitFreeRingBuffer capacity at boundaries
     {
         WaitFreeRingBuffer<int> tiny(1);
         assert(tiny.tryPush(42));
@@ -249,7 +249,7 @@ int main()
         assert(tiny.empty());
     }
 
-    // Test 9: WaitFreeRingBuffer approximateSize
+    // WaitFreeRingBuffer approximateSize
     {
         WaitFreeRingBuffer<int> buffer(64);
         for (int i = 0; i < 30; ++i)
