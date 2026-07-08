@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nerve/errors/errors.hpp"
+#include "nerve/platform.hpp"
 #include "nerve/types.hpp"
 
 #include <algorithm>
@@ -125,7 +126,7 @@ inline void setBit(PackedWord &word, Index bit_index) noexcept
     {
         return -1;
     }
-    return static_cast<Index>(63 - __builtin_clzll(word));
+    return static_cast<Index>(nerve::bits::fls64(word) - 1);
 }
 
 } // namespace nerve::formats

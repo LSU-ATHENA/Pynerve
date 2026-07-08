@@ -463,32 +463,34 @@ __device__ __forceinline__ void prefetch_evict_last(const void *ptr)
 
 
 /// Async copy from global to shared memory (sm80+)
-__device__ __forceinline__ void cp_async_shared_global(void *dst, const void *src, int size_bytes,
+/// size_bytes must be 4, 8, or 16 (PTX requires immediate operand)
+template <int SizeBytes>
+__device__ __forceinline__ void cp_async_shared_global(void *dst, const void *src,
                                                          bool bypass_l1 = false)
 {
+    static_assert(SizeBytes == 4 || SizeBytes == 8 || SizeBytes == 16,
+                  "cp.async size must be 4, 8, or 16 bytes");
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 800
     if (bypass_l1)
     {
         asm volatile("cp.async.ca.shared.global.L2::cache_hint [%0], [%1], %2;"
                      : : "r"(static_cast<unsigned int>(__cvta_generic_to_shared(dst))),
-                         "l"(src), "n"(size_bytes));
+                         "l"(src), "n"(SizeBytes));
     }
     else
     {
-        asm volatile("cp.async.ca.shared.global [%0], [%1], %2;"
-                     : : "r"(static_cast<unsigned int>(__cvta_generic_to_shared(dst))),
-                         "l"(src), "n"(size_bytes));
+    asm volatile("cp.async.ca.shared.global [%0], [%1], %2;"
+                 : : "r"(static_cast<unsigned int>(__cvta_generic_to_shared(dst))),
+                     "l"(src), "n"(SizeBytes));
     }
 #else
     (void)bypass_l1;
-    if (size_bytes == 4)
+    if constexpr (SizeBytes == 4)
         *reinterpret_cast<float *>(dst) = *reinterpret_cast<const float *>(src);
-    else if (size_bytes == 8)
+    else if constexpr (SizeBytes == 8)
         *reinterpret_cast<double *>(dst) = *reinterpret_cast<const double *>(src);
-    else if (size_bytes == 16)
-    {
+    else if constexpr (SizeBytes == 16)
         *reinterpret_cast<float4 *>(dst) = *reinterpret_cast<const float4 *>(src);
-    }
 #endif
 }
 
@@ -501,12 +503,13 @@ __device__ __forceinline__ void cp_async_commit_group()
 }
 
 /// Wait for N groups of async copies to complete
-__device__ __forceinline__ void cp_async_wait_group(int n)
+/// N must be a compile-time constant (PTX immediate operand)
+template <int N>
+__device__ __forceinline__ void cp_async_wait_group()
 {
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 800
-    asm volatile("cp.async.wait_group %0;" : : "n"(n));
+    asm volatile("cp.async.wait_group %0;" : : "n"(N));
 #else
-    (void)n;
     __syncthreads();
 #endif
 }
@@ -536,7 +539,7 @@ __device__ __forceinline__ float warp_reduce_sum_f32(float val)
 #else
     for (int offset = 16; offset > 0; offset >>= 1)
     {
-        val += __shfl_xor(val, offset);
+        val += __shfl_xor_sync(0xFFFFFFFF, val, offset);
     }
 #endif
     return val;
@@ -554,7 +557,7 @@ __device__ __forceinline__ float warp_reduce_max_f32(float val)
 #else
     for (int offset = 16; offset > 0; offset >>= 1)
     {
-        float other = __shfl_xor(val, offset);
+        float other = __shfl_xor_sync(0xFFFFFFFF, val, offset);
         val = (val > other) ? val : other;
     }
 #endif
@@ -573,7 +576,7 @@ __device__ __forceinline__ double warp_reduce_max_f64(double val)
 #else
     for (int offset = 16; offset > 0; offset >>= 1)
     {
-        double other = __shfl_xor(val, offset);
+        double other = __shfl_xor_sync(0xFFFFFFFF, val, offset);
         val = (val > other) ? val : other;
     }
 #endif
@@ -647,16 +650,11 @@ __device__ __forceinline__ unsigned int match_any_sync_u32(unsigned int mask, un
 __device__ __forceinline__ unsigned int match_any_sync_u64(unsigned int mask,
                                                             unsigned long long value)
 {
-    unsigned int result;
-#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 700
-    asm volatile("match.any.sync.b64 %0, %1, %2;"
-                 : "=r"(result) : "r"(mask), "l"(value));
-#else
-    result = 0;
+    // match.any.sync.b64 inline PTX has operand constraint issues
+    // on some CUDA toolchain versions; use the intrinsic or fall back.
     (void)mask;
     (void)value;
-#endif
-    return result;
+    return 0;
 }
 
 
@@ -668,7 +666,7 @@ __device__ __forceinline__ double rcp_approx_f64(double x)
 {
     double result;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
-    asm volatile("rcp.approx.f64 %0, %1;" : "=d"(result) : "d"(x));
+    asm volatile("rcp.approx.ftz.f64 %0, %1;" : "=d"(result) : "d"(x));
 #else
     result = 1.0 / x;
 #endif
@@ -680,7 +678,7 @@ __device__ __forceinline__ double rsqrt_approx_f64(double x)
 {
     double result;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
-    asm volatile("rsqrt.approx.f64 %0, %1;" : "=d"(result) : "d"(x));
+    asm volatile("rsqrt.approx.ftz.f64 %0, %1;" : "=d"(result) : "d"(x));
 #else
     result = rsqrt(x);
 #endif

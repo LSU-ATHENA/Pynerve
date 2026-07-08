@@ -3,7 +3,6 @@
 /// @file persistence_kernels.cuh
 
 #include "nerve/gpu/distance_kernels.hpp"
-#include "nerve/gpu/persistence_memory_pool.cuh"
 
 #include <cuda_runtime.h>
 
@@ -18,6 +17,19 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+namespace nerve::persistence::accelerated
+{
+// Forward declarations -- defined in cuda_matrix_reduction_warp.cu
+cudaError_t reduceMatrixOptimized(const std::uint64_t *boundaryMatrix, std::uint64_t *columns,
+                                  int n_cols, int n_words_per_col, int *pivotColumn,
+                                  std::uint64_t *reduced, cudaStream_t stream);
+cudaError_t extractPivotOfColumn(const std::uint64_t *reduced, int n_cols, int words_per_col,
+                                  int *pivot_of_col, cudaStream_t stream);
+cudaError_t launchBuildPackedFromCSC(std::uint64_t *d_packed, const int *d_col_ptr,
+                                    const int *d_row_indices, int n_cols, int words_per_col,
+                                    cudaStream_t stream);
+} // namespace nerve::persistence::accelerated
 
 namespace nerve::gpu::kernels
 {
@@ -146,39 +158,6 @@ namespace detail
     return true;
 }
 
-[[nodiscard]] inline int pivotOfColumn(const std::vector<std::uint64_t> &columns, int column,
-                                       int words_per_col)
-{
-    const std::size_t base = static_cast<std::size_t>(column) * words_per_col;
-    for (int word = words_per_col - 1; word >= 0; --word)
-    {
-        const std::uint64_t value = columns[base + static_cast<std::size_t>(word)];
-        if (value == 0)
-        {
-            continue;
-        }
-        for (int bit = 63; bit >= 0; --bit)
-        {
-            if ((value & (std::uint64_t{1} << bit)) != 0)
-            {
-                return word * 64 + bit;
-            }
-        }
-    }
-    return -1;
-}
-
-inline void xorColumn(std::vector<std::uint64_t> *columns, int dst, int src, int words_per_col)
-{
-    const std::size_t dst_base = static_cast<std::size_t>(dst) * words_per_col;
-    const std::size_t src_base = static_cast<std::size_t>(src) * words_per_col;
-    for (int word = 0; word < words_per_col; ++word)
-    {
-        (*columns)[dst_base + static_cast<std::size_t>(word)] ^=
-            (*columns)[src_base + static_cast<std::size_t>(word)];
-    }
-}
-
 } // namespace detail
 
 class KernelDispatcher
@@ -271,65 +250,72 @@ public:
             return cudaErrorInvalidValue;
         }
 
-        std::vector<std::uint64_t> columns(total_words);
+        // D2D copy: initialise the working matrix from the boundary input.
+        // Both buffers already reside on the GPU -- no host round-trip.
         cudaError_t status =
-            cudaMemcpyAsync(columns.data(), boundary, total_bytes, cudaMemcpyDeviceToHost, stream);
+            cudaMemcpyAsync(reduced, boundary, total_bytes, cudaMemcpyDeviceToDevice, stream);
         if (status != cudaSuccess)
         {
             last_error_ = cudaGetErrorString(status);
             return status;
         }
+
+        // Allocate pivot-tracking array on device sized by max possible
+        // pivot value (row index), not by column count.  Pivot values
+        // can reach words_per_col*64-1, which may greatly exceed n_cols
+        // for boundary matrices where rows >> cols.
+        // reduceMatrixOptimized initialises it to -1 via cudaMemsetAsync
+        // internally.
+        int max_pivot = words_per_col * 64;
+        int *d_pivot_to_col = nullptr;
+        std::size_t pivot_bytes = 0;
+        if (!detail::checkedProduct(static_cast<std::size_t>(max_pivot), sizeof(int),
+                                    &pivot_bytes))
+        {
+            last_error_ = "pivot table byte size overflows size_t";
+            return cudaErrorInvalidValue;
+        }
+        status = cudaMalloc(&d_pivot_to_col, pivot_bytes);
+        if (status != cudaSuccess)
+        {
+            last_error_ = cudaGetErrorString(status);
+            return status;
+        }
+
+        // GPU reduction: warp-level packed-column reduction with atomic pivot
+        // claiming.  Operates in-place on 'reduced'.
+        status = ::nerve::persistence::accelerated::reduceMatrixOptimized(
+            nullptr, reduced, n_cols, words_per_col, d_pivot_to_col, reduced, stream);
+        if (status != cudaSuccess)
+        {
+            cudaFree(d_pivot_to_col);
+            last_error_ = cudaGetErrorString(status);
+            return status;
+        }
+
+        // If the caller wants per-column pivot values, extract them from the
+        // reduced packed columns on-device (avoids copying the full matrix).
+        if (pivot_table != nullptr)
+        {
+            status = ::nerve::persistence::accelerated::extractPivotOfColumn(
+                reduced, n_cols, words_per_col, pivot_table, stream);
+            if (status != cudaSuccess)
+            {
+                cudaFree(d_pivot_to_col);
+                last_error_ = cudaGetErrorString(status);
+                return status;
+            }
+        }
+
+        cudaFree(d_pivot_to_col);
+
         status = cudaStreamSynchronize(stream);
         if (status != cudaSuccess)
         {
             last_error_ = cudaGetErrorString(status);
             return status;
         }
-
-        std::vector<int> pivots(static_cast<std::size_t>(n_cols), -1);
-        std::unordered_map<int, int> pivot_to_column;
-        pivot_to_column.reserve(static_cast<std::size_t>(n_cols));
-        for (int col = 0; col < n_cols; ++col)
-        {
-            int pivot = detail::pivotOfColumn(columns, col, words_per_col);
-            while (pivot >= 0)
-            {
-                const auto it = pivot_to_column.find(pivot);
-                if (it == pivot_to_column.end())
-                {
-                    pivot_to_column.emplace(pivot, col);
-                    break;
-                }
-                detail::xorColumn(&columns, col, it->second, words_per_col);
-                pivot = detail::pivotOfColumn(columns, col, words_per_col);
-            }
-            pivots[static_cast<std::size_t>(col)] = pivot;
-        }
-
-        status =
-            cudaMemcpyAsync(reduced, columns.data(), total_bytes, cudaMemcpyHostToDevice, stream);
-        if (status != cudaSuccess)
-        {
-            last_error_ = cudaGetErrorString(status);
-            return status;
-        }
-        if (pivot_table != nullptr)
-        {
-            std::size_t pivot_bytes = 0;
-            if (!detail::checkedProduct(pivots.size(), sizeof(int), &pivot_bytes))
-            {
-                last_error_ = "pivot table byte size overflows size_t";
-                return cudaErrorInvalidValue;
-            }
-            status = cudaMemcpyAsync(pivot_table, pivots.data(), pivot_bytes,
-                                     cudaMemcpyHostToDevice, stream);
-            if (status != cudaSuccess)
-            {
-                last_error_ = cudaGetErrorString(status);
-                return status;
-            }
-        }
-        return cudaStreamSynchronize(stream);
+        return cudaSuccess;
     }
 
     [[nodiscard]] std::string getLastError() const { return last_error_; }

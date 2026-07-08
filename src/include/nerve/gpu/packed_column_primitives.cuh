@@ -55,7 +55,8 @@ __device__ __forceinline__ void packed_column_xor(uint64_t *dest, const uint64_t
     case XorStrategy::GlobalAtomics:
         for (int w = lane_id; w < num_words; w += kWarpSize)
         {
-            ptx::atom_xor_global_u64(&dest[w], src[w]);
+            ptx::atom_xor_global_u64(reinterpret_cast<unsigned long long*>(&dest[w]),
+                                 static_cast<unsigned long long>(src[w]));
         }
         __syncwarp();
         break;
@@ -177,18 +178,19 @@ __device__ __forceinline__ bool packed_column_try_claim_pivot_64(uint64_t *pivot
 
     if (lane_id == 0)
     {
-        uint64_t old = pivot_storage[pivot_word_idx];
-        uint64_t assumed;
+        unsigned long long old_val = pivot_storage[pivot_word_idx];
+        unsigned long long assumed_val;
         do
         {
-            if (old & bit_mask)
+            if (old_val & bit_mask)
             {
                 break;
             }
-            assumed = old;
-            old = atomicCAS(&pivot_storage[pivot_word_idx], assumed, assumed | bit_mask);
-        } while (assumed != old);
-        if (!(old & bit_mask))
+            assumed_val = old_val;
+            old_val = atomicCAS(reinterpret_cast<unsigned long long*>(&pivot_storage[pivot_word_idx]),
+                               assumed_val, assumed_val | bit_mask);
+        } while (assumed_val != old_val);
+        if (!(old_val & bit_mask))
         {
             claimed = true;
         }
@@ -393,19 +395,13 @@ __device__ __forceinline__ void async_pipeline_stage_column(const uint64_t *__re
                                                              uint64_t *__restrict__ dst_shared,
                                                              int num_words, int lane_id)
 {
-#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 800
-    for (int w = lane_id; w < num_words; w += kWarpSize)
-    {
-        ptx::cp_async_shared_global(&dst_shared[w], &src_global[w], sizeof(uint64_t), false);
-    }
-    ptx::cp_async_commit_group();
-    ptx::cp_async_wait_group(0);
-#else
+    // Fallback: cp.async requires immediate size operand which fails
+    // with runtime values; use direct copy on all architectures.
     for (int w = lane_id; w < num_words; w += kWarpSize)
     {
         dst_shared[w] = src_global[w];
     }
-#endif
+    __syncwarp();
 }
 
 __device__ __forceinline__ void async_pipeline_stage_and_xor(uint64_t *__restrict__ dest_global,
