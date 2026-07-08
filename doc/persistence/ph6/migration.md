@@ -14,7 +14,7 @@ Enable experimental logging to track which algorithms were used:
 config = PH5PH6Config()
 config.structured_logging = True
 
-result = pynerve.compute_persistence_ph6(points, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_6(points, max_dim=2)
 engine = PH5PH6Engine(config)
 metrics = engine.getComputationMetrics()
 

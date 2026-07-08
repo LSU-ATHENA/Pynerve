@@ -11,7 +11,7 @@ config.numerical_tolerance = 1e-12
 config.enable_stability_checks = True
 
 engine = PH5PH6Engine(config)
-result = pynerve.compute_persistence_ph6(points, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_6(points, max_dim=2)
 
 metrics: PH5PH6Metrics = engine.getComputationMetrics()
 print(f"Time: {metrics.computation_time_ms:.1f}ms")

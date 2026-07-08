@@ -9,13 +9,13 @@ import statistics
 def benchmark_ph6(points, config, num_trials=5):
     """Benchmark PH6 with warmup and multiple trials."""
     # Warmup: one run to warm caches
-    _ = pynerve.compute_persistence_ph6(points, config, max_dim=2)
+    _ = pynerve.compute_persistence_up_to_dim_6(points, config, max_dim=2)
 
     # Timed trials
     times = []
     for _ in range(num_trials):
         start = time.perf_counter()
-        _ = pynerve.compute_persistence_ph6(points, config, max_dim=2)
+        _ = pynerve.compute_persistence_up_to_dim_6(points, config, max_dim=2)
         elapsed = time.perf_counter() - start
         times.append(elapsed)
 

@@ -29,9 +29,9 @@ def benchmark(compute_fn, points, name):
     print(f"{name}: {elapsed:.3f}s, {len(result.pairs)} pairs")
 
 points = np.random.rand(500, 3)
-benchmark(lambda p: pynerve.compute_persistence_ph4(p), points, "PH4")
-benchmark(lambda p: pynerve.compute_persistence_ph5(p), points, "PH5")
-benchmark(lambda p: pynerve.compute_persistence_ph6(p), points, "PH6")
+benchmark(lambda p: pynerve.compute_persistence_up_to_dim_4(p), points, "PH4")
+benchmark(lambda p: pynerve.compute_persistence_up_to_dim_5(p), points, "PH5")
+benchmark(lambda p: pynerve.compute_persistence_up_to_dim_6(p), points, "PH6")
 ```
 
 ## Pitfall 3: Speculative Reduction Memory Blowup
@@ -60,7 +60,7 @@ Approximate clearing can produce incorrect results if the heuristic clears a col
 config.experimental_clearing = "approximate"
 config.structured_logging = True
 
-result = pynerve.compute_persistence_ph6(points, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_6(points, max_dim=2)
 engine = PH5PH6Engine(config)
 metrics = engine.getComputationMetrics()
 
@@ -74,6 +74,10 @@ When `experimental_verify_against_ph4 = True` (default), PH6 runs a PH4 computat
 
 ```python
 config.experimental_verify_against_ph4 = False  # 2x faster, no cross-check
+
+
+[Back to PH6 Index](index.md)
+
 ```
 
 

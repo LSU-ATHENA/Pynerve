@@ -11,7 +11,7 @@ config.experimental_adaptive_pivoting = True
 config.experimental_block_size = 4096
 config.experimental_verify_against_ph4 = False
 
-result = pynerve.compute_persistence_ph6(points, max_dim=2, max_radius=0.5)
+result = pynerve.compute_persistence_up_to_dim_6(points, max_dim=2, max_radius=0.5)
 ```
 
 ## Example: Maximum Correctness (Validation)
@@ -27,7 +27,7 @@ config.experimental_verify_against_ph4 = True  # cross-check
 config.enable_checksum_validation = True
 config.require_bitwise_reproducibility = True
 
-result = pynerve.compute_persistence_ph6(points, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_6(points, max_dim=2)
 ```
 
 ## Example: Memory-Constrained
@@ -42,7 +42,7 @@ config.experimental_block_size = 2048  # smaller blocks = less peak memory
 config.experimental_verify_against_ph4 = False  # no redundant copy
 
 opts = PersistenceOptions()
-result = pynerve.compute_persistence_ph6(points, opts, max_dim=2)
+result = pynerve.compute_persistence_up_to_dim_6(points, opts, max_dim=2)
 ```
 
 
