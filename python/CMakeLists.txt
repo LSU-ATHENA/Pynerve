@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    project(NervePython VERSION 0.9.7 LANGUAGES CXX)
+    project(NervePython VERSION 1.0.0 LANGUAGES CXX)
     option(BUILD_PYTHON "Build Python bindings" ON)
     if(NOT BUILD_PYTHON)
         message(FATAL_ERROR "The standalone Nerve Python package build requires BUILD_PYTHON=ON")
@@ -97,6 +97,22 @@ set(PYTHON_API_SOURCES
 
 # Create Python extension module with correct name
 pybind11_add_module(pynerve_internal ${PYTHON_API_SOURCES})
+
+pybind11_add_module(nerve_extras
+    bindings/nerve_extras_bindings.cpp
+)
+
+target_link_libraries(nerve_extras PRIVATE pybind11::headers nerve_core Python::NumPy)
+target_include_directories(nerve_extras PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/bindings
+    ${NERVE_SRC_ROOT}/include
+)
+target_compile_features(nerve_extras PRIVATE cxx_std_20)
+set_target_properties(nerve_extras PROPERTIES
+    OUTPUT_NAME nerve_extras
+    SUFFIX ${PYTHON_MODULE_EXTENSION}
+    LIBRARY_OUTPUT_DIRECTORY "${NERVE_PYTHON_BUILD_ROOT}"
+)
 
 pybind11_add_module(algorithms_bindings
     bindings/nerve_algorithms_bindings.cpp
@@ -206,7 +222,7 @@ set(NERVE_BINDING_SMOKE_COMMAND
 )
 add_custom_target(pynerve_python_binding_smoke
     COMMAND ${NERVE_BINDING_SMOKE_COMMAND}
-    DEPENDS pynerve_internal algorithms_bindings
+    DEPENDS pynerve_internal algorithms_bindings nerve_extras
     WORKING_DIRECTORY ${NERVE_SOURCE_ROOT}
     COMMENT "Smoke-testing Python extension modules"
 )
@@ -268,6 +284,10 @@ install(TARGETS pynerve_internal
     COMPONENT python
 )
 install(TARGETS algorithms_bindings
+    DESTINATION .
+    COMPONENT python
+)
+install(TARGETS nerve_extras
     DESTINATION .
     COMPONENT python
 )
