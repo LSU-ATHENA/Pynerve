@@ -65,6 +65,7 @@ struct SpectralDecomposition
     double orthogonality_error;
     double residual_norm;
     double condition_number;
+    std::vector<double> eigenvalues;
 };
 class PersistentLaplacianSolver
 {
@@ -233,8 +234,7 @@ private:
     mutable PerformanceStats performance_stats_;
     void updatePerformanceStats(bool used_gpu, double computation_time_ms);
 };
-} // namespace spectral
-} // namespace nerve
+} // namespace nerve::spectral
 
 #else
 namespace nerve
@@ -294,6 +294,7 @@ struct SpectralDecomposition
     double orthogonality_error = 0.0;
     double residual_norm = 0.0;
     double condition_number = 0.0;
+    std::vector<double> eigenvalues;
 };
 
 class PersistentLaplacianSolver;
@@ -301,6 +302,7 @@ class PersistentLaplacianSolverGPU;
 class SpectralFeatureExtractor;
 class SpectralAnomalyDetector;
 class SpectralStackManager;
-} // namespace spectral
-} // namespace nerve
+} // namespace nerve::spectral
 #endif
+
+} // namespace nerve

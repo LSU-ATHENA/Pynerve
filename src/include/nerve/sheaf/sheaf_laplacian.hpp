@@ -10,6 +10,12 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+namespace nerve::algebra
+{
+struct Simplex;
+} // namespace nerve::algebra
+
 #if HAS_EIGEN && __has_include(<Eigen/Sparse>) && __has_include(<Eigen/Dense>)
 #include <Eigen/Dense>
 #include <Eigen/Sparse>

@@ -18,6 +18,7 @@ struct AutoencoderBenchmark
     double gpu_roundtrip_ms;
     double speedup_encode;
     double speedup_decode;
+    double speedup_fused;
     int input_dim;
     int latent_dim;
     int batch_size;

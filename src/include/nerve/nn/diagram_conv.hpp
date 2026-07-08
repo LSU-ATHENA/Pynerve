@@ -124,7 +124,6 @@ public:
 private:
     Config config_;
 
-    [[nodiscard]] std::vector<T> gaussian_kernel_2d(T sigma, int size) const;
     [[nodiscard]] T compute_weight(T persistence) const
     {
         switch (config_.weight)
