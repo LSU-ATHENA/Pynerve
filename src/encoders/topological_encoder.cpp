@@ -2,6 +2,7 @@
 #include "nerve/encoders/encoders.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 #include "nerve/persistence/utils/exact_engine.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -328,6 +329,8 @@ std::vector<double> TopologicalEncoder::computePersistenceImage(const Diagram &d
     const double birth_span = std::max(max_birth - min_birth, 1.0);
     const double persistence_span = std::max(max_persistence, 1.0);
     const double two_sigma_sq = 2.0 * sigma * sigma;
+    // Pre-allocate batch buffer for SIMD exp
+    std::vector<double> exp_args(resolution);
     for (const auto &pair : pairs)
     {
         if (!hasFiniteLifetime(pair))
@@ -339,14 +342,24 @@ std::vector<double> TopologicalEncoder::computePersistenceImage(const Diagram &d
         {
             const double py =
                 persistence_span * (static_cast<double>(y) + 0.5) / static_cast<double>(resolution);
+            const double dp = (py - persistence) / persistence_span;
+            // exp_dp is constant across all x for this (pair, y) row
+            const double exp_dp = std::exp(-(dp * dp) / two_sigma_sq);
+
+            // Compute -db*db / two_sigma_sq for all x and batch the exp
             for (Size x = 0; x < resolution; ++x)
             {
                 const double bx = min_birth + birth_span * (static_cast<double>(x) + 0.5) /
                                                   static_cast<double>(resolution);
                 const double db = (bx - pair.birth) / birth_span;
-                const double dp = (py - persistence) / persistence_span;
-                image[y * resolution + x] +=
-                    persistence * std::exp(-(db * db + dp * dp) / two_sigma_sq);
+                exp_args[x] = -(db * db) / two_sigma_sq;
+            }
+            nerve::simd::simd_exp(exp_args.data(), resolution);
+
+            // Accumulate: image += persistence * exp_dp * exp(-db^2 / two_sigma_sq)
+            for (Size x = 0; x < resolution; ++x)
+            {
+                image[y * resolution + x] += persistence * exp_dp * exp_args[x];
             }
         }
     }

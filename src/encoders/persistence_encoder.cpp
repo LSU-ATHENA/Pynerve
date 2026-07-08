@@ -1,5 +1,6 @@
 #include "nerve/encoders/encoders.hpp"
 #include "nerve/persistence/utils/exact_engine.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -363,6 +364,9 @@ std::vector<double> PersistenceEncoder::computePersistenceImages(const Diagram &
     const double birth_span = std::max(max_birth - min_birth, 1.0);
     const double persistence_span = std::max(max_lifetime, 1.0);
     const double two_sigma_sq = 2.0 * sigma * sigma;
+    const double inv_res = 1.0 / static_cast<double>(resolution);
+    // Pre-allocate batch buffer for the x-loop; reuse across all (pair, y) rows
+    std::vector<double> exp_args(resolution);
     for (const auto &pair : diagram.getPairs())
     {
         if (!finitePair(pair))
@@ -370,18 +374,26 @@ std::vector<double> PersistenceEncoder::computePersistenceImages(const Diagram &
             continue;
         }
         const double lifetime = pairLifetime(pair);
+        // db(x) = (min_birth - pair.birth) / birth_span + (x + 0.5) / resolution
+        const double db_base = (min_birth - pair.birth) / birth_span;
         for (Size y = 0; y < resolution; ++y)
         {
             const double py =
-                persistence_span * (static_cast<double>(y) + 0.5) / static_cast<double>(resolution);
+                persistence_span * (static_cast<double>(y) + 0.5) * inv_res;
+            const double dp = (py - lifetime) / persistence_span;
+            const double exp_dp = std::exp(-(dp * dp) / two_sigma_sq);
+            // Fill buffer with -db^2 / two_sigma_sq for all x
             for (Size x = 0; x < resolution; ++x)
             {
-                const double bx = min_birth + birth_span * (static_cast<double>(x) + 0.5) /
-                                                  static_cast<double>(resolution);
-                const double db = (bx - pair.birth) / birth_span;
-                const double dp = (py - lifetime) / persistence_span;
-                image[y * resolution + x] +=
-                    lifetime * std::exp(-(db * db + dp * dp) / two_sigma_sq);
+                const double db = db_base + (static_cast<double>(x) + 0.5) * inv_res;
+                exp_args[x] = -(db * db) / two_sigma_sq;
+            }
+            // Batched SIMD exp: replaces each element with exp(element)
+            nerve::simd::simd_exp(exp_args.data(), resolution);
+            // Accumulate: image += lifetime * exp(-dp^2 / two_sigma_sq) * exp(-db^2 / two_sigma_sq)
+            for (Size x = 0; x < resolution; ++x)
+            {
+                image[y * resolution + x] += lifetime * exp_dp * exp_args[x];
             }
         }
     }

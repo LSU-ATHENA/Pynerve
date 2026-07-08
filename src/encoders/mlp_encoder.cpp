@@ -1,6 +1,7 @@
 
 #include "nerve/encoders/encoders.hpp"
 #include "nerve/persistence/core/core_types.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -265,32 +266,26 @@ Tensor MLPEncoder::applyLinear(const Tensor &input, const LinearLayer &layer) co
     validateFiniteSafe(layer.bias.data(), "MLP linear bias contains a non-finite value");
     const Size output_count =
         checkedVectorCount({batch_size, output_dim}, "MLP linear output size overflow");
-    std::vector<double> outputData(output_count, 0.0);
+    std::vector<double> outputData(output_count);
     for (Size b = 0; b < batch_size; ++b)
     {
+        double *out_row = &outputData[b * output_dim];
+        const double *in_row = &input.data()[b * input_dim];
+
+        // y = A * x  (A is output_dim x input_dim, row-major)
+        nerve::simd::simd_gemv(1.0, layer.weights.data().data(), in_row,
+                                0.0, out_row,
+                                output_dim, input_dim);
+        // y += bias
+        nerve::simd::simd_add(out_row, layer.bias.data().data(), output_dim);
+
+        // Check finiteness of output
         for (Size o = 0; o < output_dim; ++o)
         {
-            double sum = 0.0;
-            for (Size i = 0; i < input_dim; ++i)
-            {
-                Size input_idx = b * input_dim + i;
-                Size weight_idx = i * output_dim + o;
-                const double contribution =
-                    input.data()[input_idx] * layer.weights.data()[weight_idx];
-                const double next = sum + contribution;
-                if (!std::isfinite(contribution) || !std::isfinite(next))
-                {
-                    throw std::overflow_error("MLP linear layer produced a non-finite value");
-                }
-                sum = next;
-            }
-            Size output_idx = b * output_dim + o;
-            const double value = sum + layer.bias.data()[o];
-            if (!std::isfinite(value))
+            if (!std::isfinite(out_row[o]))
             {
                 throw std::overflow_error("MLP linear layer produced a non-finite value");
             }
-            outputData[output_idx] = value;
         }
     }
     return Tensor(outputData, {batch_size, output_dim});

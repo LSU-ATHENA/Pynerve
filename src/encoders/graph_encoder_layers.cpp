@@ -1,4 +1,5 @@
 #include "nerve/encoders/encoders.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -103,15 +104,10 @@ Tensor GraphEncoder::applyGcn(const Tensor &features, const Tensor &adjacency,
     std::vector<double> output(output_count, 0.0);
     for (Size row = 0; row < n; ++row)
     {
-        double degree = 1.0;
-        for (Size nbr = 0; nbr < n; ++nbr)
+        double degree = 1.0 + nerve::simd::simd_reduce_sum(&adjacency.data()[row * n], n);
+        if (!std::isfinite(degree))
         {
-            const double next_degree = degree + adjacency.data()[row * n + nbr];
-            if (!std::isfinite(next_degree))
-            {
-                throw std::overflow_error("GCN degree accumulation overflow");
-            }
-            degree = next_degree;
+            throw std::overflow_error("GCN degree accumulation overflow");
         }
         if (degree <= 0.0)
         {
@@ -124,28 +120,32 @@ Tensor GraphEncoder::applyGcn(const Tensor &features, const Tensor &adjacency,
             {
                 continue;
             }
-            for (Size out = 0; out < layer.output_dim; ++out)
+            // Loop-swap: in outer, out inner - weights are contiguous for consecutive out
+            double* out_row = &output[row * layer.output_dim];
+            const Size out_dim = layer.output_dim;
+            for (Size in = 0; in < usable_dim; ++in)
             {
-                const Size output_idx = row * layer.output_dim + out;
-                for (Size in = 0; in < usable_dim; ++in)
+                const double scale = weight * features.data()[nbr * feature_shape[1] + in];
+                nerve::simd::simd_axpy(scale, &layer.weights.data()[in * out_dim], out_row, out_dim);
+            }
+            // Check finiteness of the partial result for this neighbor
+            for (Size o = 0; o < out_dim; ++o)
+            {
+                if (!std::isfinite(out_row[o]))
                 {
-                    const double contribution = weight *
-                                                features.data()[nbr * feature_shape[1] + in] *
-                                                layer.weights.data()[in * layer.output_dim + out];
-                    const double next = output[output_idx] + contribution;
-                    if (!std::isfinite(contribution) || !std::isfinite(next))
-                    {
-                        throw std::overflow_error("GCN layer produced a non-finite value");
-                    }
-                    output[output_idx] = next;
+                    throw std::overflow_error("GCN layer produced a non-finite value");
                 }
+            }
+            // Add bias/degree (preserving original per-nbr bias semantics)
+            for (Size out = 0; out < out_dim; ++out)
+            {
                 const double bias = layer.bias.data()[out] / degree;
-                const double next = output[output_idx] + bias;
+                const double next = out_row[out] + bias;
                 if (!std::isfinite(bias) || !std::isfinite(next))
                 {
                     throw std::overflow_error("GCN layer produced a non-finite value");
                 }
-                output[output_idx] = next;
+                out_row[out] = next;
             }
         }
     }
@@ -193,31 +193,33 @@ Tensor GraphEncoder::applyGlobalPooling(const Tensor &features) const
                        "graph pooling input contains a non-finite or unsafe value");
     std::vector<double> pooled(
         dim, global_pooling_type_ == "max" ? -std::numeric_limits<double>::infinity() : 0.0);
-    for (Size row = 0; row < n; ++row)
+    if (global_pooling_type_ == "max")
     {
-        for (Size col = 0; col < dim; ++col)
+        for (Size row = 0; row < n; ++row)
         {
-            const double value = features.data()[row * dim + col];
-            if (global_pooling_type_ == "max")
-            {
-                pooled[col] = std::max(pooled[col], value);
-            }
-            else
-            {
-                const double next = pooled[col] + value;
-                if (!std::isfinite(next))
-                {
-                    throw std::overflow_error("graph pooling produced a non-finite value");
-                }
-                pooled[col] = next;
-            }
+            nerve::simd::simd_max(pooled.data(), &features.data()[row * dim], dim);
         }
     }
-    if (global_pooling_type_ == "mean")
+    else
     {
-        for (double &value : pooled)
+        for (Size row = 0; row < n; ++row)
         {
-            value /= static_cast<double>(n);
+            nerve::simd::simd_add(pooled.data(), &features.data()[row * dim], dim);
+        }
+        // Check finiteness after each row's accumulation
+        for (Size col = 0; col < dim; ++col)
+        {
+            if (!std::isfinite(pooled[col]))
+            {
+                throw std::overflow_error("graph pooling produced a non-finite value");
+            }
+        }
+        if (global_pooling_type_ == "mean")
+        {
+            for (double &value : pooled)
+            {
+                value /= static_cast<double>(n);
+            }
         }
     }
     return tensorFromLayerFeatures(std::move(pooled), output_size_);

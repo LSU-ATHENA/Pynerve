@@ -1,6 +1,7 @@
 
 #include "nerve/encoders/encoders.hpp"
 #include "nerve/persistence/core/core_types.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -298,21 +299,21 @@ Tensor CNNEncoder::applyConvolution(const Tensor &input, const ConvLayer &layer)
                     {
                         for (Size kh = 0; kh < kernel_h; ++kh)
                         {
-                            for (Size kw = 0; kw < kernel_w; ++kw)
                             {
-                                Size input_idx =
-                                    ((b * in_channels + ic) * height + oh + kh) * width + ow + kw;
-                                Size weight_idx =
-                                    ((ic * out_channels + oc) * kernel_h + kh) * kernel_w + kw;
-                                const double contribution =
-                                    input.data()[input_idx] * layer.weights.data()[weight_idx];
-                                const double next = sum + contribution;
-                                if (!std::isfinite(contribution) || !std::isfinite(next))
+                                Size input_base =
+                                    ((b * in_channels + ic) * height + oh + kh) * width + ow;
+                                Size weight_base =
+                                    ((ic * out_channels + oc) * kernel_h + kh) * kernel_w;
+                                const double partial = nerve::simd::simd_dot(
+                                    &input.data()[input_base],
+                                    &layer.weights.data()[weight_base],
+                                    kernel_w);
+                                if (!std::isfinite(partial))
                                 {
                                     throw std::overflow_error(
                                         "CNN convolution produced a non-finite value");
                                 }
-                                sum = next;
+                                sum += partial;
                             }
                         }
                     }
@@ -359,40 +360,44 @@ Tensor CNNEncoder::applyPooling(const Tensor &input, const PoolingLayer &layer) 
             {
                 for (Size ow = 0; ow < out_width; ++ow)
                 {
-                    double pooled =
-                        layer.pool_type == "max" ? -std::numeric_limits<double>::max() : 0.0;
-                    Size pooled_count = 0;
-                    for (Size ph = 0; ph < pool_size; ++ph)
+                    // Pooling window: pool_size x pool_size contiguous rows
+                    // Each row of pool_size elements is contiguous in memory (width dimension)
+                    if (layer.pool_type == "max")
                     {
-                        for (Size pw = 0; pw < pool_size; ++pw)
+                        double pooled = -std::numeric_limits<double>::max();
+                        for (Size ph = 0; ph < pool_size; ++ph)
                         {
                             Size h = oh * pool_size + ph;
-                            Size w = ow * pool_size + pw;
-                            if (h < height && w < width)
-                            {
-                                Size input_idx = ((b * channels + c) * height + h) * width + w;
-                                if (layer.pool_type == "max")
-                                {
-                                    pooled = std::max(pooled, input.data()[input_idx]);
-                                }
-                                else
-                                {
-                                    const double next = pooled + input.data()[input_idx];
-                                    if (!std::isfinite(next))
-                                    {
-                                        throw std::overflow_error(
-                                            "CNN pooling produced a non-finite value");
-                                    }
-                                    pooled = next;
-                                    ++pooled_count;
-                                }
-                            }
+                            Size base = ((b * channels + c) * height + h) * width + ow * pool_size;
+                            double row_max =
+                                nerve::simd::simd_reduce_max(&input.data()[base], pool_size);
+                            if (row_max > pooled) pooled = row_max;
                         }
+                        Size output_idx =
+                            ((b * channels + c) * out_height + oh) * out_width + ow;
+                        outputData[output_idx] = pooled;
                     }
-                    Size output_idx = ((b * channels + c) * out_height + oh) * out_width + ow;
-                    outputData[output_idx] = layer.pool_type == "avg" && pooled_count > 0
-                                                 ? pooled / static_cast<double>(pooled_count)
-                                                 : pooled;
+                    else
+                    {
+                        double pooled = 0.0;
+                        for (Size ph = 0; ph < pool_size; ++ph)
+                        {
+                            Size h = oh * pool_size + ph;
+                            Size base = ((b * channels + c) * height + h) * width + ow * pool_size;
+                            double row_sum =
+                                nerve::simd::simd_reduce_sum(&input.data()[base], pool_size);
+                            if (!std::isfinite(row_sum))
+                            {
+                                throw std::overflow_error(
+                                    "CNN pooling produced a non-finite value");
+                            }
+                            pooled += row_sum;
+                        }
+                        Size output_idx =
+                            ((b * channels + c) * out_height + oh) * out_width + ow;
+                        outputData[output_idx] =
+                            pooled / static_cast<double>(pool_size * pool_size);
+                    }
                 }
             }
         }
