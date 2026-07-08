@@ -1,5 +1,6 @@
 
 #include "nerve/persistence/memory/numa_memory_optimizer.hpp"
+#include "nerve/platform.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -96,7 +97,7 @@ void tryHugePageAdvice(void *ptr, size_t size)
     {
         return;
     }
-    (void)madvise(ptr, size, MADV_HUGEPAGE);
+    (void)nerve::sys::advise(ptr, size, nerve::sys::MAP_ADV_HUGEPAGE);
 }
 #endif
 
@@ -297,12 +298,12 @@ void prefetchMemory(void *addr, size_t len)
         return;
     }
 #if ENABLE_NUMA
-    (void)madvise(addr, len, MADV_WILLNEED);
+    (void)nerve::sys::advise(addr, len, nerve::sys::MAP_ADV_WILLNEED);
 #endif
     auto *bytes = static_cast<const char *>(addr);
     for (size_t offset = 0; offset < len; offset += kPrefetchPageSize)
     {
-        __builtin_prefetch(bytes + offset, 0, 3);
+        nerve_prefetch_read(bytes + offset, NervePrefetchLevel::L1);
     }
 }
 

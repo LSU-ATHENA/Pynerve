@@ -1,5 +1,6 @@
 #include "nerve/persistence/core/roaring_bitmap.hpp"
 #include "nerve/persistence/core/roaring_bitmap_internal.hpp"
+#include "nerve/platform.hpp"
 
 namespace nerve::persistence::roaring
 {
@@ -88,7 +89,7 @@ int HybridColumn::computePivot() const
         {
             if (dense_data_[i] != 0)
             {
-                int bit = 63 - __builtin_clzll(dense_data_[i]);
+                int bit = nerve::bits::fls64(dense_data_[i]) - 1;
                 return i * 64 + bit;
             }
         }
@@ -146,7 +147,7 @@ double HybridColumn::sparsity() const
         int set_bits = 0;
         for (uint64_t word : dense_data_)
         {
-            set_bits += __builtin_popcountll(word);
+            set_bits += nerve::bits::popcount64(word);
         }
         return 1.0 - (static_cast<double>(set_bits) / total_bits);
     }

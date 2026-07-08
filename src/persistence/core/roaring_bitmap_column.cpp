@@ -1,6 +1,7 @@
 #include "memory/safe_memory_pool.hpp"
 #include "nerve/persistence/core/roaring_bitmap.hpp"
 #include "nerve/persistence/core/roaring_bitmap_internal.hpp"
+#include "nerve/platform.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -61,7 +62,7 @@ RoaringColumn RoaringColumn::fromBitVector(const std::vector<uint64_t> &words)
         while (word != 0)
         {
             uint64_t lsb = word & -word;
-            uint64_t bit_idx = __builtin_ctzll(word);
+            uint64_t bit_idx = static_cast<uint64_t>(nerve::bits::ctz64(word));
             uint16_t low_bits = base_low_bits + bit_idx;
 
             // Add to container
