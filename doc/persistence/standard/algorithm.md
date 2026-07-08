@@ -156,4 +156,17 @@ The reduced matrix R satisfies:
 
 Theorem (Zomorodian-Carlsson 2005): The pairing produced by standard reduction is the persistence pairing. The algorithm is correct for any field of coefficients.
 
+### Parallel Reducer Variants
+
+Pynerve implements two parallel persistence reducers that trade determinism for throughput:
+
+| Reducer | Source | Parallelism Model | Count Accuracy vs Seq | Pair-Value Determinism |
+|---------|--------|--------------------|-----------------------|------------------------|
+| **Lockfree** | `reduction_lockfree_ops.cpp` | CPU multi-threaded, work-stealing queues, atomic CAS pivot claiming | **0.0000%** | Non-deterministic (algorithm noise) |
+| **HyphaReducer (GPU)** | `reduction_hypha_ops.cpp` | GPU warp-level, grid-stride loop, atomic CAS pivot claiming | **~0.22%** residual | Non-deterministic (snapshot effect) |
+
+Both parallel reducers produce **valid persistence diagrams** -- the (birth, death, dim) pairs are topologically correct for the filtration -- but the specific pairings differ from the sequential algorithm's output and may differ across runs. This is a known property of parallel persistence reduction (Morozov & Nigmetov 2019): racing pivot claims produce different but valid pairings.
+
+The lockfree reducer achieves perfect count-level accuracy because its post-pass works on **shared mutable final state** (all workers join before the cascade). The GPU reducer has a ~0.22% count-level residual because `d_reduced` contains **mid-reduction snapshots** captured while other warps were still racing, making the cascade non-deterministic. See [GPU Determinism](../reference/correctness_detail/gpu_determinism.md) for details.
+
 <- [Standard Reduction Overview](index.md)

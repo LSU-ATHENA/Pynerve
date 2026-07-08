@@ -51,11 +51,11 @@ int find_pivot_avx2(const uint64_t* bits, size_t words) {
     // Scan from the last word backward
     for (size_t i = words; i > 0; --i) {
         if (bits[i-1] != 0) {
-            return (i-1) * 64 + __builtin_clzll(bits[i-1]);
+            return (i-1) * 64 + nerve::bits::clz64(bits[i-1]);
         }
     }
     return -1;  // empty column
 }
 ```
 
-Using `__builtin_clzll` (count leading zeros) on each 64-bit word gives the bit position in O(1) per word. Combined with backward scanning, pivot finding is O(words) on average and O(1) for columns with pivots in the upper portion.
+Using `nerve::bits::clz64` (count leading zeros) on each 64-bit word gives the bit position in O(1) per word. Combined with backward scanning, pivot finding is O(words) on average and O(1) for columns with pivots in the upper portion.
