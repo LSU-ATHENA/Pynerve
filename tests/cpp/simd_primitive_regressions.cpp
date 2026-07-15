@@ -1752,9 +1752,7 @@ bool test_scale_f32()
             for (std::size_t i = 0; i < n; ++i)
             {
                 if (std::abs(data_simd[i] - data_ref[i]) >
-                    1e-5f *
-                        std::max(1.0f,
-                                 std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
+                    1e-5f * std::max(1.0f, std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
                 {
                     std::cerr << "  FAIL scale_f32 at n=" << n << " alpha=" << alpha << " i=" << i
                               << " simd=" << data_simd[i] << " ref=" << data_ref[i] << "\n";
@@ -1789,8 +1787,7 @@ bool test_axpy_f32()
             for (std::size_t i = 0; i < n; ++i)
             {
                 if (std::abs(y_simd[i] - y_ref[i]) >
-                    1e-5f *
-                        std::max(1.0f, std::max(std::abs(y_simd[i]), std::abs(y_ref[i]))))
+                    1e-5f * std::max(1.0f, std::max(std::abs(y_simd[i]), std::abs(y_ref[i]))))
                 {
                     std::cerr << "  FAIL axpy_f32 at n=" << n << " alpha=" << alpha << " i=" << i
                               << " simd=" << y_simd[i] << " ref=" << y_ref[i] << "\n";
@@ -1863,9 +1860,7 @@ bool test_abs_f32()
         for (std::size_t i = 0; i < n; ++i)
         {
             if (std::abs(data_simd[i] - data_ref[i]) >
-                1e-5f *
-                    std::max(1.0f,
-                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
+                1e-5f * std::max(1.0f, std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL abs_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
@@ -1893,9 +1888,7 @@ bool test_relu_f32()
         for (std::size_t i = 0; i < n; ++i)
         {
             if (std::abs(data_simd[i] - data_ref[i]) >
-                1e-5f *
-                    std::max(1.0f,
-                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
+                1e-5f * std::max(1.0f, std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL relu_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
@@ -1990,9 +1983,7 @@ bool test_clamp_f32()
             for (std::size_t i = 0; i < n; ++i)
             {
                 if (std::abs(copy_simd[i] - copy_ref[i]) >
-                    1e-5f *
-                        std::max(1.0f,
-                                 std::max(std::abs(copy_simd[i]), std::abs(copy_ref[i]))))
+                    1e-5f * std::max(1.0f, std::max(std::abs(copy_simd[i]), std::abs(copy_ref[i]))))
                 {
                     std::cerr << "  FAIL clamp_f32 at n=" << n << " lo=" << lo << " hi=" << hi
                               << " i=" << i << " simd=" << copy_simd[i] << " ref=" << copy_ref[i]
@@ -2027,8 +2018,7 @@ bool test_gemv_f32()
         for (std::size_t i = 0; i < m; ++i)
         {
             if (std::abs(y_simd[i] - y_ref[i]) >
-                1e-5f *
-                    std::max(1.0f, std::max(std::abs(y_simd[i]), std::abs(y_ref[i]))))
+                1e-5f * std::max(1.0f, std::max(std::abs(y_simd[i]), std::abs(y_ref[i]))))
             {
                 std::cerr << "  FAIL gemv_f32 at m=" << m << " n=" << n << " i=" << i
                           << " simd=" << y_simd[i] << " ref=" << y_ref[i] << "\n";
@@ -2170,8 +2160,7 @@ bool test_fmad_f32()
         for (std::size_t i = 0; i < n; ++i)
         {
             if (std::abs(c_simd[i] - c_ref[i]) >
-                1e-5f *
-                    std::max(1.0f, std::max(std::abs(c_simd[i]), std::abs(c_ref[i]))))
+                1e-5f * std::max(1.0f, std::max(std::abs(c_simd[i]), std::abs(c_ref[i]))))
             {
                 std::cerr << "  FAIL fmad_f32 at n=" << n << " i=" << i << " simd=" << c_simd[i]
                           << " ref=" << c_ref[i] << "\n";
@@ -2221,9 +2210,7 @@ bool test_neg_f32()
         for (std::size_t i = 0; i < n; ++i)
         {
             if (std::abs(data_simd[i] - data_ref[i]) >
-                1e-5f *
-                    std::max(1.0f,
-                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
+                1e-5f * std::max(1.0f, std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL neg_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
@@ -2251,9 +2238,7 @@ bool test_sqrt_f32()
         for (std::size_t i = 0; i < n; ++i)
         {
             if (std::abs(data_simd[i] - data_ref[i]) >
-                1e-5f *
-                    std::max(1.0f,
-                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
+                1e-5f * std::max(1.0f, std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL sqrt_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
@@ -2309,9 +2294,7 @@ bool test_log_f32()
         for (std::size_t i = 0; i < n; ++i)
         {
             if (std::abs(data_simd[i] - data_ref[i]) >
-                1e-5f *
-                    std::max(1.0f,
-                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
+                1e-5f * std::max(1.0f, std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL log_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
@@ -2339,9 +2322,7 @@ bool test_sigmoid_f32()
         for (std::size_t i = 0; i < n; ++i)
         {
             if (std::abs(data_simd[i] - data_ref[i]) >
-                1e-5f *
-                    std::max(1.0f,
-                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
+                1e-5f * std::max(1.0f, std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL sigmoid_f32 at n=" << n << " i=" << i
                           << " simd=" << data_simd[i] << " ref=" << data_ref[i] << "\n";
@@ -2369,9 +2350,7 @@ bool test_tanh_f32()
         for (std::size_t i = 0; i < n; ++i)
         {
             if (std::abs(data_simd[i] - data_ref[i]) >
-                1e-5f *
-                    std::max(1.0f,
-                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
+                1e-5f * std::max(1.0f, std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL tanh_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
@@ -3288,9 +3267,15 @@ bool test_zero_size_f16()
 {
     // All primitives should handle n=0 gracefully.
     // Buffers sized to 4 to accommodate gemv_f16/ger_f16 calls with m=3.
-    nerve::simd::half dummy_a[4] = {nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f)};
-    nerve::simd::half dummy_b[4] = {nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f)};
-    nerve::simd::half dummy_c[4] = {nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f)};
+    nerve::simd::half dummy_a[4] = {
+        nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f),
+        nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f)};
+    nerve::simd::half dummy_b[4] = {
+        nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f),
+        nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f)};
+    nerve::simd::half dummy_c[4] = {
+        nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f),
+        nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f)};
     std::uint8_t dummy_quant[4] = {0, 0, 0, 0};
     nerve::simd::simd_add_f16(dummy_a, dummy_b, 0);
     nerve::simd::simd_sub_f16(dummy_a, dummy_b, 0);
@@ -3453,10 +3438,7 @@ struct TestCase
     bool (*fn)();
 };
 
-#define TEST(x)                                                                                    \
-    {                                                                                              \
-        #x, x                                                                                      \
-    }
+#define TEST(x) {#x, x}
 
 int main()
 {
