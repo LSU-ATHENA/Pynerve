@@ -68,7 +68,7 @@ if HAS_CUDA:
                     gaussian = math.exp(-dist_sq / 2.0)
                     cuda.atomic.add(image, (px, py), pers * gaussian)
 
-    def _jit_persistence_image_gpu(  # type: ignore[assignment]
+    def _jit_persistence_image_gpu(  # pyright: ignore[reportRedeclaration]
         pairs: np.ndarray, resolution: int = 64, sigma: float = 0.1
     ) -> np.ndarray:
         """Compute a persistence image with the Numba CUDA backend."""
