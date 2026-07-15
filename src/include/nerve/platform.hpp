@@ -76,7 +76,13 @@ enum class NervePrefetchLevel
 inline void nerve_prefetch_read(const void *ptr, NervePrefetchLevel level = NervePrefetchLevel::L1)
 {
 #if NERVE_COMPILER_GNU_LIKE
-    __builtin_prefetch(ptr, 0, static_cast<int>(level));
+    switch (level)
+    {
+        case NervePrefetchLevel::L1:  __builtin_prefetch(ptr, 0, 3); break;
+        case NervePrefetchLevel::L2:  __builtin_prefetch(ptr, 0, 2); break;
+        case NervePrefetchLevel::L3:  __builtin_prefetch(ptr, 0, 1); break;
+        case NervePrefetchLevel::RAM: __builtin_prefetch(ptr, 0, 0); break;
+    }
 #elif defined(_MSC_VER) && defined(__AVX__)
     // MSVC on x86 with AVX
     switch (level)
@@ -105,7 +111,13 @@ inline void nerve_prefetch_read(const void *ptr, NervePrefetchLevel level = Nerv
 inline void nerve_prefetch_write(const void *ptr, NervePrefetchLevel level = NervePrefetchLevel::L1)
 {
 #if NERVE_COMPILER_GNU_LIKE
-    __builtin_prefetch(ptr, 1, static_cast<int>(level));
+    switch (level)
+    {
+        case NervePrefetchLevel::L1:  __builtin_prefetch(ptr, 1, 3); break;
+        case NervePrefetchLevel::L2:  __builtin_prefetch(ptr, 1, 2); break;
+        case NervePrefetchLevel::L3:  __builtin_prefetch(ptr, 1, 1); break;
+        case NervePrefetchLevel::RAM: __builtin_prefetch(ptr, 1, 0); break;
+    }
 #else
     (void)ptr;
     (void)level;
