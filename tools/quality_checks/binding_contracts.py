@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from .common import *  # noqa: F403
 from .common import (
-    _check_torch_operator_schema_text,
     _pybind_module_defs,
 )  # noqa: F401
 
