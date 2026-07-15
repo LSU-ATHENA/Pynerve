@@ -70,7 +70,7 @@ jobs:
       - run: python tools/test_matrix.py --label cpu --output build/test-matrix-cpu.json
       - run: python -m pytest tests/python/ --cov=python/pynerve --cov-branch --cov-report=term-missing
         continue-on-error: true
-      - run: python -m coverage report --fail-under=0 || echo "coverage report (non-blocking)"
+      - run: python -m coverage report --fail-under=80
 
   simd-modes:
     runs-on: ubuntu-24.04
@@ -173,6 +173,7 @@ jobs:
           cache: pip
       - uses: hendrikmuhs/ccache-action@v1.2
       - run: sudo apt-get update || true && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev valgrind
+      - run: python -m pip install -U pip pytest
       - name: Configure (Debug, ${{ matrix.simd }})
         run: |
           cmake -S . -B build -G Ninja \
@@ -241,6 +242,7 @@ jobs:
           cache: pip
       - uses: hendrikmuhs/ccache-action@v1.2
       - run: sudo apt-get update || true && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
+      - run: python -m pip install -U pip pytest
       - name: Configure (Debug, ASan, ${{ matrix.simd }})
         run: |
           cmake -S . -B build -G Ninja \
