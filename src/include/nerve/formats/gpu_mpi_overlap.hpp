@@ -92,6 +92,6 @@ private:
     void ensurePinnedCapacity(Size required_words);
 };
 
-} // namespace nerve::formats::mpi
-
 #endif // NERVE_HAS_CUDA && NERVE_HAS_MPI
+
+} // namespace nerve::formats::mpi
