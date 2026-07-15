@@ -5,7 +5,7 @@ PTX optimisations applied where Numba exposes them:
   - cuda.atomic.add with relaxed scope for persistence image accumulation
   - Precomputed scale factors for fast base-2 Gaussian operations.
 """
-# pyright: reportRedeclaration=false, reportGeneralTypeIssues=false
+# pyright: reportRedeclaration=false
 
 from __future__ import annotations
 
