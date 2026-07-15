@@ -3248,7 +3248,6 @@ bool test_zero_size_f16()
     nerve::simd::half dummy_b[4] = {nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f)};
     nerve::simd::half dummy_c[4] = {nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f)};
     std::uint8_t dummy_quant[4] = {0, 0, 0, 0};
-    std::uint8_t dummy_quant[] = {0};
     nerve::simd::simd_add_f16(dummy_a, dummy_b, 0);
     nerve::simd::simd_sub_f16(dummy_a, dummy_b, 0);
     nerve::simd::simd_mul_f16(dummy_a, dummy_b, 0);
