@@ -15,7 +15,7 @@
 namespace nerve::persistence
 {
 
-std::vector<Pair> computeVrPersistenceCohomology(core::BufferView<const double>points,
+std::vector<Pair> computeVrPersistenceCohomology(core::BufferView<const double> points,
                                                  Size point_dim, const VRConfig &config)
 {
     const Size n = point_dim == 0 ? 0 : points.size() / point_dim;

@@ -12,7 +12,6 @@
 namespace
 {
 
-
 constexpr double kTol = 1e-10;
 
 bool check_pca_compress_roundtrip()

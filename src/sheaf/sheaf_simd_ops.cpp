@@ -1,5 +1,5 @@
-#include "nerve/simd/simd_base.hpp"
 #include "nerve/sheaf/sheaf_learning.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <cmath>
 #include <cstring>
@@ -44,9 +44,8 @@ void computeSheafLaplacianDiagSimd(const T *restriction_maps, const T *coboundar
         T sum = T{0};
         if constexpr (std::is_same_v<T, double>)
         {
-            sum = static_cast<T>(nerve::simd::simd_norm2(
-                reinterpret_cast<const double *>(R),
-                max_stalk_dim * max_stalk_dim));
+            sum = static_cast<T>(nerve::simd::simd_norm2(reinterpret_cast<const double *>(R),
+                                                         max_stalk_dim * max_stalk_dim));
             // norm2 returns sqrt(sum(R^2)), so square it back
             sum = sum * sum;
         }
@@ -59,12 +58,13 @@ void computeSheafLaplacianDiagSimd(const T *restriction_maps, const T *coboundar
     }
 }
 
-template void computeSheafRestrictionSimd<float>(const float *, const float *, std::size_t, std::size_t, float *);
-template void computeSheafRestrictionSimd<double>(const double *, const double *, std::size_t, std::size_t,
-                                                  double *);
-template void computeSheafLaplacianDiagSimd<float>(const float *, const float *, std::size_t, std::size_t,
-                                                   float *);
-template void computeSheafLaplacianDiagSimd<double>(const double *, const double *, std::size_t, std::size_t,
-                                                    double *);
+template void computeSheafRestrictionSimd<float>(const float *, const float *, std::size_t,
+                                                 std::size_t, float *);
+template void computeSheafRestrictionSimd<double>(const double *, const double *, std::size_t,
+                                                  std::size_t, double *);
+template void computeSheafLaplacianDiagSimd<float>(const float *, const float *, std::size_t,
+                                                   std::size_t, float *);
+template void computeSheafLaplacianDiagSimd<double>(const double *, const double *, std::size_t,
+                                                    std::size_t, double *);
 
 } // namespace nerve::sheaf

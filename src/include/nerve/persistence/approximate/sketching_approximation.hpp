@@ -100,8 +100,8 @@ struct ApproximationAccuracy
  * @param config Sketching configuration
  * @return Approximate H0 persistence pairs with accuracy estimates
  */
-SketchingResult computeApproximatePHSketching(core::BufferView<const double>points,
-                                              Size point_dim, const SketchingConfig &config);
+SketchingResult computeApproximatePHSketching(core::BufferView<const double> points, Size point_dim,
+                                              const SketchingConfig &config);
 
 /**
  * @brief Get optimal sketching configuration

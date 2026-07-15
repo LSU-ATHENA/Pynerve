@@ -234,7 +234,7 @@ private:
     mutable PerformanceStats performance_stats_;
     void updatePerformanceStats(bool used_gpu, double computation_time_ms);
 };
-} // namespace nerve::spectral
+} // namespace spectral
 
 #else
 namespace nerve
@@ -302,7 +302,7 @@ class PersistentLaplacianSolverGPU;
 class SpectralFeatureExtractor;
 class SpectralAnomalyDetector;
 class SpectralStackManager;
-} // namespace nerve::spectral
+} // namespace spectral
 #endif
 
 } // namespace nerve

@@ -390,18 +390,16 @@ CUDAMatrixReduction::create(const MatrixReductionConfig &config)
     auto status = config.validate();
     if (status.isError())
     {
-        return errors::ErrorResult<std::unique_ptr<CUDAMatrixReduction>>::error(
-            status.errorCode());
+        return errors::ErrorResult<std::unique_ptr<CUDAMatrixReduction>>::error(status.errorCode());
     }
     auto reduction = std::unique_ptr<CUDAMatrixReduction>(new CUDAMatrixReduction());
     reduction->impl_->config = config;
-    return errors::ErrorResult<std::unique_ptr<CUDAMatrixReduction>>::success(
-        std::move(reduction));
+    return errors::ErrorResult<std::unique_ptr<CUDAMatrixReduction>>::success(std::move(reduction));
 }
 
 inline errors::ErrorResult<void>
 CUDAMatrixReduction::compute_reduction(const int *columns, const Size *column_sizes,
-                                        const double *weights, Size n_columns, Size max_dim)
+                                       const double *weights, Size n_columns, Size max_dim)
 {
     if (!columns || !column_sizes || !weights)
     {
@@ -421,25 +419,24 @@ CUDAMatrixReduction::compute_reduction(const int *columns, const Size *column_si
     if (result.isOk())
     {
         impl_->stats.columns_processed = n_columns;
-        impl_->stats.total_time_ms =
-            std::chrono::duration<double, std::milli>(t1 - t0).count();
+        impl_->stats.total_time_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
         impl_->stats.gpu_time_ms = impl_->stats.total_time_ms;
         Size total_entries = 0;
         for (Size i = 0; i < n_columns; ++i)
         {
             total_entries += column_sizes[i];
         }
-        impl_->stats.peak_memory_bytes =
-            (n_columns * sizeof(int) * 2) + (n_columns * sizeof(Size)) +
-            (n_columns * sizeof(double)) + (total_entries * sizeof(int));
+        impl_->stats.peak_memory_bytes = (n_columns * sizeof(int) * 2) +
+                                         (n_columns * sizeof(Size)) + (n_columns * sizeof(double)) +
+                                         (total_entries * sizeof(int));
     }
     return result;
 }
 
 inline errors::ErrorResult<std::vector<int>>
 CUDAMatrixReduction::compute_apparent_pairs(const int *low_row_to_col, const int *col_pivot,
-                                             const double *weights, Size n_columns, Size max_dim,
-                                             const ApparentPairsConfig &config)
+                                            const double *weights, Size n_columns, Size max_dim,
+                                            const ApparentPairsConfig &config)
 {
     auto status = config.validate();
     if (status.isError())
@@ -449,7 +446,7 @@ CUDAMatrixReduction::compute_apparent_pairs(const int *low_row_to_col, const int
     if (!low_row_to_col || !col_pivot || !weights)
     {
         return errors::ErrorResult<std::vector<int>>::error(errors::ErrorCode::E51_PH_INPUT,
-                                                             "Null pointer arguments");
+                                                            "Null pointer arguments");
     }
 
     const auto t0 = std::chrono::steady_clock::now();
@@ -460,8 +457,7 @@ CUDAMatrixReduction::compute_apparent_pairs(const int *low_row_to_col, const int
     if (result.isOk())
     {
         impl_->stats.pairs_created = result.value().size();
-        impl_->stats.gpu_time_ms =
-            std::chrono::duration<double, std::milli>(t1 - t0).count();
+        impl_->stats.gpu_time_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
     }
     return result;
 }

@@ -102,9 +102,9 @@ public:
                                                  const SystemCapabilities &system,
                                                  const PerformanceRequirements &requirements);
 
-    errors::ErrorResult<std::vector<Pair>>
-    executeAdaptive(core::BufferView<const double>points, std::size_t point_dim,
-                    const VRConfig &config);
+    errors::ErrorResult<std::vector<Pair>> executeAdaptive(core::BufferView<const double> points,
+                                                           std::size_t point_dim,
+                                                           const VRConfig &config);
 
     const AdaptiveStats &getPerformanceStats() const;
 
@@ -112,28 +112,28 @@ private:
     explicit AdaptiveAlgorithmSelector(const AdaptiveConfig &config);
 
     errors::ErrorResult<std::vector<Pair>>
-    executeMatrixMultiplicationCpu(core::BufferView<const double>points,
-                                   std::size_t point_dim, const VRConfig &config);
+    executeMatrixMultiplicationCpu(core::BufferView<const double> points, std::size_t point_dim,
+                                   const VRConfig &config);
 
     errors::ErrorResult<std::vector<Pair>>
-    executeSparsifiedReductionCpu(core::BufferView<const double>points,
-                                  std::size_t point_dim, const VRConfig &config);
+    executeSparsifiedReductionCpu(core::BufferView<const double> points, std::size_t point_dim,
+                                  const VRConfig &config);
 
     errors::ErrorResult<std::vector<Pair>>
-    execute_lockfree_multicore_cpu(core::BufferView<const double>points,
-                                   std::size_t point_dim, const VRConfig &config);
+    execute_lockfree_multicore_cpu(core::BufferView<const double> points, std::size_t point_dim,
+                                   const VRConfig &config);
 
     errors::ErrorResult<std::vector<Pair>>
-    executeGpuAccelerated(core::BufferView<const double>points, std::size_t point_dim,
+    executeGpuAccelerated(core::BufferView<const double> points, std::size_t point_dim,
                           const VRConfig &config);
 
     errors::ErrorResult<std::vector<Pair>>
-    executeHybridGpuCpu(core::BufferView<const double>points, std::size_t point_dim,
+    executeHybridGpuCpu(core::BufferView<const double> points, std::size_t point_dim,
                         const VRConfig &config);
 
-    errors::ErrorResult<std::vector<Pair>>
-    executeStandardCpu(core::BufferView<const double>points, std::size_t point_dim,
-                       const VRConfig &config);
+    errors::ErrorResult<std::vector<Pair>> executeStandardCpu(core::BufferView<const double> points,
+                                                              std::size_t point_dim,
+                                                              const VRConfig &config);
 
     class Impl;
     std::unique_ptr<Impl> impl_;

@@ -119,7 +119,7 @@ void buildRadiusGraph(const std::vector<std::vector<double>> &distance_matrix, d
     }
 }
 
-std::vector<Pair> computeVrPersistenceMediumHybrid(core::BufferView<const double>points,
+std::vector<Pair> computeVrPersistenceMediumHybrid(core::BufferView<const double> points,
                                                    Size point_dim, const VRConfig &config)
 {
     if (!hasValidMediumHybridInput(points, point_dim, config))

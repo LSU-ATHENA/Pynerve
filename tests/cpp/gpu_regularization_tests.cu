@@ -5,7 +5,8 @@ int main()
 {
     if (!has_gpu())
     {
-        std::cerr << "No CUDA device available -- skipping GPU regularization kernel coverage tests\n";
+        std::cerr
+            << "No CUDA device available -- skipping GPU regularization kernel coverage tests\n";
         return 0;
     }
 

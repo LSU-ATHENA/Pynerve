@@ -93,8 +93,8 @@ bool check_distance_matrix_computer_euclidean()
 
     if (mat.size() != 9)
         return false;
-    return std::abs(mat[1] - 3.0) < kTol && std::abs(mat[2] - 4.0) < kTol
-        && std::abs(mat[5] - 5.0) < kTol;
+    return std::abs(mat[1] - 3.0) < kTol && std::abs(mat[2] - 4.0) < kTol &&
+           std::abs(mat[5] - 5.0) < kTol;
 }
 
 bool check_distance_matrix_computer_symmetric()
@@ -161,8 +161,8 @@ bool check_knn_computer_brute_force()
     // The KNN results for point 0 should include point 1 at index 0
     if (result.indices[0] != 1)
     {
-        std::cerr << "Expected point 0's nearest neighbor to be point 1, got "
-                  << result.indices[0] << "\n";
+        std::cerr << "Expected point 0's nearest neighbor to be point 1, got " << result.indices[0]
+                  << "\n";
         return false;
     }
     return true;
@@ -454,7 +454,8 @@ bool check_persistence_landscape()
 bool check_persistence_image()
 {
     std::vector<double> diagram = {0.0, 0.5, 1.0, 2.0};
-    auto image = nerve::algorithms::compute_persistence_image<double>(std::span(diagram), 2, 32, 0.1);
+    auto image =
+        nerve::algorithms::compute_persistence_image<double>(std::span(diagram), 2, 32, 0.1);
 
     if (image.resolution != 32)
         return false;
@@ -478,8 +479,8 @@ bool check_vectorized_sqrt()
     auto span = std::span<float>(data);
     nerve::algorithms::vectorized_sqrt<float>(span);
 
-    return std::abs(data[0] - 2.0f) < 1e-6f && std::abs(data[1] - 3.0f) < 1e-6f
-        && std::abs(data[2] - 4.0f) < 1e-6f && std::abs(data[3] - 5.0f) < 1e-6f;
+    return std::abs(data[0] - 2.0f) < 1e-6f && std::abs(data[1] - 3.0f) < 1e-6f &&
+           std::abs(data[2] - 4.0f) < 1e-6f && std::abs(data[3] - 5.0f) < 1e-6f;
 }
 
 bool check_vectorized_sum()
@@ -552,8 +553,7 @@ int main()
     run("mapper_filter_eccentricity", check_mapper_filter_eccentricity());
     run("mapper_filter_density", check_mapper_filter_density());
     run("mapper_custom_filter", check_mapper_custom_filter());
-    run("mapper_clustering_connected_components",
-        check_mapper_clustering_connected_components());
+    run("mapper_clustering_connected_components", check_mapper_clustering_connected_components());
     run("mapper_cover_1d", check_mapper_cover_1d());
     run("mapper_algorithm_basic", check_mapper_algorithm_basic());
 

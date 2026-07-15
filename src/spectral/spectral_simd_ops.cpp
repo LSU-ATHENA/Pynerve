@@ -1,5 +1,5 @@
-#include "nerve/simd/simd_base.hpp"
 #include "nerve/core/spectral.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <cmath>
 #include <cstring>
@@ -15,7 +15,8 @@ void matVecMulSimd(const double *mat, const double *vec, std::size_t n, double *
     nerve::simd::simd_gemv(1.0, mat, vec, 0.0, result, n, n);
 }
 
-void matMatMulSimd(const double *A, const double *B, std::size_t m, std::size_t n, std::size_t k, double *C)
+void matMatMulSimd(const double *A, const double *B, std::size_t m, std::size_t n, std::size_t k,
+                   double *C)
 {
     // C += A * B  (A is m x n, B is n x k, C is m x k)
     // Use gemv for each row of A

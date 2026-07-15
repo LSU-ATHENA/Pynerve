@@ -1,5 +1,6 @@
-#include "nerve/simd/simd_base.hpp"
 #include "nerve/platform.hpp"
+#include "nerve/simd/simd_base.hpp"
+
 #include <cstdlib>
 #include <cstring>
 
@@ -108,11 +109,16 @@ SimdArch detect_simd_arch()
 #elif defined(NERVE_SIMD_FORCE_SVE)
     return SimdArch::SVE;
 #else
-    if (cpu_has_avx512f())    return SimdArch::AVX512;
-    if (cpu_has_avx2())       return SimdArch::AVX2;
-    if (cpu_has_sse41())      return SimdArch::SSE41;
-    if (cpu_has_neon())       return SimdArch::NEON;
-    if (cpu_has_sve())        return SimdArch::SVE;
+    if (cpu_has_avx512f())
+        return SimdArch::AVX512;
+    if (cpu_has_avx2())
+        return SimdArch::AVX2;
+    if (cpu_has_sse41())
+        return SimdArch::SSE41;
+    if (cpu_has_neon())
+        return SimdArch::NEON;
+    if (cpu_has_sve())
+        return SimdArch::SVE;
     return SimdArch::SCALAR;
 #endif
 }
@@ -121,20 +127,28 @@ const char *simd_arch_name(SimdArch arch)
 {
     switch (arch)
     {
-    case SimdArch::SCALAR: return "scalar";
-    case SimdArch::SSE41:  return "SSE4.1";
-    case SimdArch::AVX2:   return "AVX2";
-    case SimdArch::AVX512: return "AVX-512";
-    case SimdArch::NEON:   return "NEON";
-    case SimdArch::SVE:    return "SVE";
-    default:               return "unknown";
+        case SimdArch::SCALAR:
+            return "scalar";
+        case SimdArch::SSE41:
+            return "SSE4.1";
+        case SimdArch::AVX2:
+            return "AVX2";
+        case SimdArch::AVX512:
+            return "AVX-512";
+        case SimdArch::NEON:
+            return "NEON";
+        case SimdArch::SVE:
+            return "SVE";
+        default:
+            return "unknown";
     }
 }
 
 void simd_init()
 {
     static bool initialized = false;
-    if (initialized) return;
+    if (initialized)
+        return;
     initialized = true;
 
     SimdArch arch = detect_simd_arch();
@@ -142,38 +156,38 @@ void simd_init()
     switch (arch)
     {
 #if defined(__AVX512F__)
-    case SimdArch::AVX512:
-        if (cpu_has_avx512f())
-        {
-            nerve_simd_assign_avx512(&SIMD);
-            break;
-        }
-        // Fall through if runtime check fails despite compile-time support
+        case SimdArch::AVX512:
+            if (cpu_has_avx512f())
+            {
+                nerve_simd_assign_avx512(&SIMD);
+                break;
+            }
+            // Fall through if runtime check fails despite compile-time support
 #endif
 #if defined(__AVX2__)
-    case SimdArch::AVX2:
-        nerve_simd_assign_avx2(&SIMD);
-        break;
+        case SimdArch::AVX2:
+            nerve_simd_assign_avx2(&SIMD);
+            break;
 #endif
 #if defined(__SSE4_1__)
-    case SimdArch::SSE41:
-        nerve_simd_assign_sse(&SIMD);
-        break;
+        case SimdArch::SSE41:
+            nerve_simd_assign_sse(&SIMD);
+            break;
 #endif
 #if defined(NERVE_HAS_NEON) || defined(__ARM_NEON) || defined(__ARM_NEON__)
-    case SimdArch::NEON:
-        nerve_simd_assign_neon(&SIMD);
-        break;
+        case SimdArch::NEON:
+            nerve_simd_assign_neon(&SIMD);
+            break;
 #endif
 #if defined(NERVE_HAS_SVE) || defined(__ARM_FEATURE_SVE)
-    case SimdArch::SVE:
-        nerve_simd_assign_sve(&SIMD);
-        break;
+        case SimdArch::SVE:
+            nerve_simd_assign_sve(&SIMD);
+            break;
 #endif
-    default:
-    case SimdArch::SCALAR:
-        nerve_simd_assign_scalar(&SIMD);
-        break;
+        default:
+        case SimdArch::SCALAR:
+            nerve_simd_assign_scalar(&SIMD);
+            break;
     }
 }
 

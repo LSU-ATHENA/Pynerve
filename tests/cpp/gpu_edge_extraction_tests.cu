@@ -4,7 +4,8 @@ int main()
 {
     if (!has_gpu())
     {
-        std::cerr << "No CUDA device available -- skipping GPU edge extraction kernel coverage tests\n";
+        std::cerr
+            << "No CUDA device available -- skipping GPU edge extraction kernel coverage tests\n";
         return 0;
     }
     // Edge extraction: basic kernel determinism
@@ -165,9 +166,8 @@ int main()
         cudaMemset(d_count, 0, sizeof(Size));
         cudaMemset(d_degree, 0, n * sizeof(Size));
 
-        cuda_kernels::extractEdgesFilteredKernel(d_dist, d_edges, d_count, n, max_radius,
-                                                 max_edges, min_edge_weight, max_degree,
-                                                 d_degree);
+        cuda_kernels::extractEdgesFilteredKernel(d_dist, d_edges, d_count, n, max_radius, max_edges,
+                                                 min_edge_weight, max_degree, d_degree);
         assert(check_cuda(cudaDeviceSynchronize(), "cudaDeviceSynchronize"));
 
         Size edge_count = 0;
@@ -202,8 +202,8 @@ int main()
         cudaMemcpy(d_dist, h_dist, mat_size * sizeof(double), cudaMemcpyHostToDevice);
         cudaMemset(d_count, 0, sizeof(Size));
 
-        cuda_kernels::extractEdgesSortedKernel(d_dist, d_edges, d_count, n, max_radius,
-                                               max_edges, true);
+        cuda_kernels::extractEdgesSortedKernel(d_dist, d_edges, d_count, n, max_radius, max_edges,
+                                               true);
         assert(check_cuda(cudaDeviceSynchronize(), "cudaDeviceSynchronize"));
 
         Size edge_count = 0;
@@ -212,8 +212,7 @@ int main()
 
         // Verify edges are sorted by weight
         std::vector<Edge> sorted_edges(edge_count);
-        cudaMemcpy(sorted_edges.data(), d_edges, edge_count * sizeof(Edge),
-                   cudaMemcpyDeviceToHost);
+        cudaMemcpy(sorted_edges.data(), d_edges, edge_count * sizeof(Edge), cudaMemcpyDeviceToHost);
         for (Size i = 1; i < edge_count; ++i)
             assert(sorted_edges[i - 1].w <= sorted_edges[i].w);
 
@@ -362,7 +361,8 @@ int main()
         cudaFree(d_count);
         cudaFree(d_stop);
 
-        std::cout << "PASSED: edge extraction early termination K4 correctness (6 edges, no stop)\n";
+        std::cout
+            << "PASSED: edge extraction early termination K4 correctness (6 edges, no stop)\n";
     }
 
     // Edge extraction: early termination kernel truncation at max_edges
@@ -481,9 +481,8 @@ int main()
         cudaMemset(d_count, 0, sizeof(Size));
         cudaMemset(d_degree, 0, n * sizeof(Size));
 
-        cuda_kernels::extractEdgesFilteredKernel(d_dist, d_edges, d_count, n, max_radius,
-                                                 max_edges, min_edge_weight, max_degree,
-                                                 d_degree);
+        cuda_kernels::extractEdgesFilteredKernel(d_dist, d_edges, d_count, n, max_radius, max_edges,
+                                                 min_edge_weight, max_degree, d_degree);
         assert(check_cuda(cudaDeviceSynchronize(), "cudaDeviceSynchronize"));
 
         Size edge_count = 0;
@@ -525,8 +524,8 @@ int main()
         cudaMemcpy(d_dist, h_dist, mat_size * sizeof(double), cudaMemcpyHostToDevice);
         cudaMemset(d_count, 0, sizeof(Size));
 
-        cuda_kernels::extractEdgesSortedKernel(d_dist, d_edges, d_count, n, max_radius,
-                                               max_edges, true);
+        cuda_kernels::extractEdgesSortedKernel(d_dist, d_edges, d_count, n, max_radius, max_edges,
+                                               true);
         assert(check_cuda(cudaDeviceSynchronize(), "cudaDeviceSynchronize"));
 
         Size edge_count = 0;
@@ -588,5 +587,3 @@ int main()
 
     return 0;
 }
-
-

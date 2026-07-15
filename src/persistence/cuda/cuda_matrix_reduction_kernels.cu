@@ -1,6 +1,6 @@
-#include "nerve/persistence/cuda/cuda_matrix_reduction.hpp"
 #include "nerve/gpu/gpu_ptx_ops.cuh"
 #include "nerve/gpu/packed_column_primitives.cuh"
+#include "nerve/persistence/cuda/cuda_matrix_reduction.hpp"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -203,7 +203,7 @@ __device__ __forceinline__ void xor_column_inplace(uint64_t *dst, const uint64_t
 }
 
 __device__ __forceinline__ bool atomically_claim_row(uint64_t *low_row_storage, int pivot_row,
-                                                       Size num_storage_words)
+                                                     Size num_storage_words)
 {
     int word_idx = pivot_row / static_cast<int>(BITS_PER_WORD);
     int bit_idx = pivot_row % static_cast<int>(BITS_PER_WORD);
@@ -223,24 +223,23 @@ __device__ __forceinline__ bool atomically_claim_row(uint64_t *low_row_storage, 
             return false;
         }
         assumed = old;
-        old = atomicCAS(reinterpret_cast<unsigned long long*>(&low_row_storage[word_idx]),
-                       assumed, assumed | bit_mask);
+        old = atomicCAS(reinterpret_cast<unsigned long long *>(&low_row_storage[word_idx]), assumed,
+                        assumed | bit_mask);
     } while (assumed != old);
     return true;
 }
 
-__device__ __forceinline__ void warp_column_xor_global(uint64_t *dest, const uint64_t *src,
-                                                        Size nw)
+__device__ __forceinline__ void warp_column_xor_global(uint64_t *dest, const uint64_t *src, Size nw)
 {
     packed_column_xor_atomic_hw(dest, src, static_cast<int>(nw), threadIdx.x & 31);
 }
 
 __global__ void __launch_bounds__(256)
     matrixReductionAcceleratedKernel_Ptx(const uint64_t *__restrict__ columns,
-                                          const Size *__restrict__ column_sizes,
-                                          uint64_t *__restrict__ low_row_storage,
-                                          int *__restrict__ col_pivot, Size n_columns,
-                                          Size num_words, Size max_dim)
+                                         const Size *__restrict__ column_sizes,
+                                         uint64_t *__restrict__ low_row_storage,
+                                         int *__restrict__ col_pivot, Size n_columns,
+                                         Size num_words, Size max_dim)
 {
     Size global_idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -319,11 +318,10 @@ __global__ void __launch_bounds__(256)
 
 __global__ void __launch_bounds__(256)
     matrixReductionStreamingKernel_Ptx(const uint64_t *__restrict__ columns,
-                                        const Size *__restrict__ column_sizes,
-                                        uint64_t *__restrict__ low_row_storage,
-                                        int *__restrict__ col_pivot, Size n_columns,
-                                        Size num_words, Size max_dim, Size chunk_size,
-                                        Size chunk_offset)
+                                       const Size *__restrict__ column_sizes,
+                                       uint64_t *__restrict__ low_row_storage,
+                                       int *__restrict__ col_pivot, Size n_columns, Size num_words,
+                                       Size max_dim, Size chunk_size, Size chunk_offset)
 {
     Size global_idx = chunk_offset + blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -347,7 +345,7 @@ __global__ void __launch_bounds__(256)
     Size shmem_offset = threadIdx.x * MAX_COLUMN_WORDS;
 
     async_pipeline_stage_column(col_base, &s_columns[shmem_offset], static_cast<int>(nw),
-                                         threadIdx.x & 31);
+                                threadIdx.x & 31);
 
     uint64_t col_words[MAX_COLUMN_WORDS];
 #pragma unroll
@@ -415,15 +413,11 @@ __global__ void __launch_bounds__(256)
     }
 }
 
-__global__ void __launch_bounds__(256)
-    computeApparentPairsKernel_Ptx(const uint64_t *__restrict__ low_row_storage,
-                                    const int *__restrict__ col_pivot,
-                                    const double *__restrict__ weights, Size n_columns,
-                                    Size num_storage_words,
-                                    int *__restrict__ pair_count, int *__restrict__ pair_values,
-                                    Size max_pairs, bool use_optimization,
-                                    float *__restrict__ out_weight_f32,
-                                    double *__restrict__ out_weight_f64)
+__global__ void __launch_bounds__(256) computeApparentPairsKernel_Ptx(
+    const uint64_t *__restrict__ low_row_storage, const int *__restrict__ col_pivot,
+    const double *__restrict__ weights, Size n_columns, Size num_storage_words,
+    int *__restrict__ pair_count, int *__restrict__ pair_values, Size max_pairs,
+    bool use_optimization, float *__restrict__ out_weight_f32, double *__restrict__ out_weight_f64)
 {
     (void)low_row_storage;
     (void)num_storage_words;
@@ -467,10 +461,10 @@ __global__ void __launch_bounds__(256)
 
 __global__ void __launch_bounds__(256)
     hybridMatrixReductionKernel_Ptx(const uint64_t *__restrict__ columns,
-                                     const Size *__restrict__ column_sizes,
-                                     uint64_t *__restrict__ low_row_storage,
-                                     int *__restrict__ col_pivot, Size n_columns, Size num_words,
-                                     Size max_dim, Size gpu_columns)
+                                    const Size *__restrict__ column_sizes,
+                                    uint64_t *__restrict__ low_row_storage,
+                                    int *__restrict__ col_pivot, Size n_columns, Size num_words,
+                                    Size max_dim, Size gpu_columns)
 {
     Size global_idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -576,10 +570,9 @@ __host__ bool should_use_ptx_variant()
 }
 
 __host__ void launch_ptx_dispatched(const uint64_t *d_columns, const Size *d_column_sizes,
-                                     const double *d_weights, uint64_t *d_low_row_storage,
-                                     int *d_col_pivot, Size n_columns, Size num_words,
-                                     Size max_dim, const MatrixReductionConfig &config,
-                                     cudaStream_t stream)
+                                    const double *d_weights, uint64_t *d_low_row_storage,
+                                    int *d_col_pivot, Size n_columns, Size num_words, Size max_dim,
+                                    const MatrixReductionConfig &config, cudaStream_t stream)
 {
     Size block_size = BLOCK_SIZE;
     Size grid_size = (n_columns + block_size - 1) / block_size;
@@ -618,9 +611,9 @@ __host__ void launch_ptx_dispatched(const uint64_t *d_columns, const Size *d_col
 }
 
 __host__ void launch_reduction_dispatched(const int *d_columns, const Size *d_column_sizes,
-                                           const double *d_weights, int *d_low_row_to_col,
-                                           int *d_col_pivot, Size n_columns, Size max_dim,
-                                           const MatrixReductionConfig &config, cudaStream_t stream)
+                                          const double *d_weights, int *d_low_row_to_col,
+                                          int *d_col_pivot, Size n_columns, Size max_dim,
+                                          const MatrixReductionConfig &config, cudaStream_t stream)
 {
     Size block_size = BLOCK_SIZE;
     Size grid_size = (n_columns + block_size - 1) / block_size;
@@ -646,14 +639,14 @@ __host__ void launch_reduction_dispatched(const int *d_columns, const Size *d_co
         grid_size = (gpu_cols + block_size - 1) / block_size;
 
         hybridMatrixReductionKernel<<<grid_size, block_size, 0, stream>>>(
-            d_columns, d_column_sizes, d_weights, d_low_row_to_col, d_col_pivot, n_columns,
-            max_dim, gpu_cols, config.enable_clearing);
+            d_columns, d_column_sizes, d_weights, d_low_row_to_col, d_col_pivot, n_columns, max_dim,
+            gpu_cols, config.enable_clearing);
     }
     else
     {
         matrixReductionAcceleratedKernel<<<grid_size, block_size, 0, stream>>>(
-            d_columns, d_column_sizes, d_weights, d_low_row_to_col, d_col_pivot, n_columns,
-            max_dim, config.enable_clearing);
+            d_columns, d_column_sizes, d_weights, d_low_row_to_col, d_col_pivot, n_columns, max_dim,
+            config.enable_clearing);
     }
 }
 

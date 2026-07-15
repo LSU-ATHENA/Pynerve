@@ -26,7 +26,6 @@ using nerve::persistence::ExactPersistenceResult;
 using nerve::persistence::IncrementalExactZ2;
 using namespace nerve::test;
 
-
 bool check_exact_empty_input()
 {
     SimplicialComplex complex;

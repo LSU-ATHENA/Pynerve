@@ -1,9 +1,9 @@
 
 #include "nerve/errors/errors.hpp"
 #include "nerve/gpu/gpu_compute.hpp"
+#include "nerve/simd/simd_base.hpp"
 #include "nerve/spectral/laplacian.hpp"
 #include "nerve/spectral/symmetric_eigendecomposition.hpp"
-#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -421,10 +421,9 @@ void Laplacian::computeAllLaplacians()
             {
                 for (Size j = 0; j < n; ++j)
                 {
-                    up[i][j] = nerve::simd::simd_dot(
-                        &boundary_matrix_[d_indices[i]][dp1_start],
-                        &boundary_matrix_[d_indices[j]][dp1_start],
-                        dp1_count);
+                    up[i][j] = nerve::simd::simd_dot(&boundary_matrix_[d_indices[i]][dp1_start],
+                                                     &boundary_matrix_[d_indices[j]][dp1_start],
+                                                     dp1_count);
                 }
             }
         }
@@ -442,7 +441,8 @@ void Laplacian::computeAllLaplacians()
                 for (Size i = 0; i < n; ++i)
                 {
                     const double bi = Brow[d_indices[i]];
-                    if (bi == 0.0) continue;
+                    if (bi == 0.0)
+                        continue;
                     nerve::simd::simd_axpy(bi, &Brow[d_start], &down[i][0], n);
                 }
             }

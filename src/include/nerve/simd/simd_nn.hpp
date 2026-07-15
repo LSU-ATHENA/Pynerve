@@ -16,7 +16,8 @@ inline void simd_batchnorm(double *data, std::size_t n, double mean, double std_
 // Softmax: data[i] = exp(data[i] - max) / sum(exp(data - max))
 inline void simd_softmax(double *data, std::size_t n)
 {
-    if (n == 0) return;
+    if (n == 0)
+        return;
     double mx = simd_reduce_max(data, n);
     for (std::size_t i = 0; i < n; ++i)
         data[i] = std::exp(data[i] - mx);
@@ -35,7 +36,8 @@ inline void simd_batchnorm_f16(half *data, std::size_t n, float mean, float std_
 
 inline void simd_softmax_f16(half *data, std::size_t n)
 {
-    if (n == 0) return;
+    if (n == 0)
+        return;
     float mx = simd_reduce_max_f16(data, n);
     for (std::size_t i = 0; i < n; ++i)
         data[i] = float_to_half(std::exp(half_to_float(data[i]) - mx));

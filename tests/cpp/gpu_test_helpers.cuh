@@ -69,10 +69,9 @@ inline bool run_distance_matrix_config(const double *h_points, int n, int dim, d
     }
     cudaMemcpy(d_points, h_points, points_bytes, cudaMemcpyHostToDevice);
 
-    auto result = cuda_host::launchDistanceMatrixKernel(d_points, d_distances,
-                                                        static_cast<Size>(n),
-                                                        static_cast<Size>(dim),
-                                                        max_radius, config, 0, 0);
+    auto result =
+        cuda_host::launchDistanceMatrixKernel(d_points, d_distances, static_cast<Size>(n),
+                                              static_cast<Size>(dim), max_radius, config, 0, 0);
     if (result.isError())
     {
         cudaFree(d_points);
@@ -88,8 +87,7 @@ inline bool run_distance_matrix_config(const double *h_points, int n, int dim, d
 
 // Fill a 4-point symmetric distance matrix with 6 edge weights.
 // Edges are (0,1), (0,2), (0,3), (1,2), (1,3), (2,3).
-inline void fill_k4_distance_matrix(double *h_dist, int n,
-                                    double w01, double w02, double w03,
+inline void fill_k4_distance_matrix(double *h_dist, int n, double w01, double w02, double w03,
                                     double w12, double w13, double w23)
 {
     h_dist[0 * n + 1] = h_dist[1 * n + 0] = w01;
@@ -101,10 +99,9 @@ inline void fill_k4_distance_matrix(double *h_dist, int n,
 }
 
 // Fill a 5-point symmetric distance matrix with 10 edge weights.
-inline void fill_k5_distance_matrix(double *h_dist, int n,
-                                    double w01, double w02, double w03, double w04,
-                                    double w12, double w13, double w14,
-                                    double w23, double w24, double w34)
+inline void fill_k5_distance_matrix(double *h_dist, int n, double w01, double w02, double w03,
+                                    double w04, double w12, double w13, double w14, double w23,
+                                    double w24, double w34)
 {
     h_dist[0 * n + 1] = h_dist[1 * n + 0] = w01;
     h_dist[0 * n + 2] = h_dist[2 * n + 0] = w02;
@@ -120,8 +117,7 @@ inline void fill_k5_distance_matrix(double *h_dist, int n,
 
 // Fill a 3-point symmetric distance matrix with 3 edge weights.
 // Edges are (0,1), (0,2), (1,2).
-inline void fill_k3_distance_matrix(double *h_dist, int n,
-                                    double w01, double w02, double w12)
+inline void fill_k3_distance_matrix(double *h_dist, int n, double w01, double w02, double w12)
 {
     h_dist[0 * n + 1] = h_dist[1 * n + 0] = w01;
     h_dist[0 * n + 2] = h_dist[2 * n + 0] = w02;
@@ -130,12 +126,10 @@ inline void fill_k3_distance_matrix(double *h_dist, int n,
 
 // Fill a 6-point symmetric distance matrix with 15 edge weights.
 // Edges are (0,1..5), (1,2..5), (2,3..5), (3,4..5), (4,5).
-inline void fill_k6_distance_matrix(double *h_dist, int n,
-                                    double w01, double w02, double w03, double w04, double w05,
-                                    double w12, double w13, double w14, double w15,
-                                    double w23, double w24, double w25,
-                                    double w34, double w35,
-                                    double w45)
+inline void fill_k6_distance_matrix(double *h_dist, int n, double w01, double w02, double w03,
+                                    double w04, double w05, double w12, double w13, double w14,
+                                    double w15, double w23, double w24, double w25, double w34,
+                                    double w35, double w45)
 {
     h_dist[0 * n + 1] = h_dist[1 * n + 0] = w01;
     h_dist[0 * n + 2] = h_dist[2 * n + 0] = w02;

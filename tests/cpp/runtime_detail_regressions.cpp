@@ -10,7 +10,6 @@
 namespace
 {
 
-
 constexpr double kTol = 1e-10;
 
 bool check_hardware_snapshot_collection()

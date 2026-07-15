@@ -23,7 +23,6 @@ using nerve::serialization::VersionNegotiationResult;
 using nerve::serialization::VersionNegotiator;
 using namespace nerve::test;
 
-
 bool check_schema_version_construction()
 {
     SchemaVersion v(1, 2, 3);

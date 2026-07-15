@@ -67,7 +67,6 @@ bool does_not_throw(Fn fn)
     return true;
 }
 
-
 // Invariant: birth < death for all finite pairs
 
 bool check_birth_less_than_death_invariant()

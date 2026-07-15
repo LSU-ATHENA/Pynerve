@@ -56,8 +56,8 @@ int main()
             assert(node.vertex_id >= 0 && node.vertex_id < 3);
         }
 
-        std::cout << "PASS: constructReebGraph produced " << nodes.size()
-                  << " nodes, " << arcs.size() << " arcs" << std::endl;
+        std::cout << "PASS: constructReebGraph produced " << nodes.size() << " nodes, "
+                  << arcs.size() << " arcs" << std::endl;
     }
 
     // Test 2: computeMergeTree (split tree, ascending)
@@ -75,13 +75,13 @@ int main()
         for (const auto &arc : tree)
         {
             float diff = std::fabs(f_vals[static_cast<std::size_t>(arc.to_node)] -
-                                    f_vals[static_cast<std::size_t>(arc.from_node)]);
+                                   f_vals[static_cast<std::size_t>(arc.from_node)]);
             assert(std::fabs(arc.persistence - diff) < 1e-4f);
             assert(arc.persistence >= 0.0f);
         }
 
-        std::cout << "PASS: computeMergeTree (split) produced " << tree.size()
-                  << " arcs" << std::endl;
+        std::cout << "PASS: computeMergeTree (split) produced " << tree.size() << " arcs"
+                  << std::endl;
     }
 
     // Test 3: computeMergeTree (join tree, descending)
@@ -98,8 +98,8 @@ int main()
             assert(arc.persistence >= 0.0f);
         }
 
-        std::cout << "PASS: computeMergeTree (join) produced " << tree.size()
-                  << " arcs" << std::endl;
+        std::cout << "PASS: computeMergeTree (join) produced " << tree.size() << " arcs"
+                  << std::endl;
     }
 
     // Test 4: simplifyReebGraph removes low-persistence arcs

@@ -378,8 +378,7 @@ std::vector<double> PersistenceEncoder::computePersistenceImages(const Diagram &
         const double db_base = (min_birth - pair.birth) / birth_span;
         for (Size y = 0; y < resolution; ++y)
         {
-            const double py =
-                persistence_span * (static_cast<double>(y) + 0.5) * inv_res;
+            const double py = persistence_span * (static_cast<double>(y) + 0.5) * inv_res;
             const double dp = (py - lifetime) / persistence_span;
             const double exp_dp = std::exp(-(dp * dp) / two_sigma_sq);
             // Fill buffer with -db^2 / two_sigma_sq for all x

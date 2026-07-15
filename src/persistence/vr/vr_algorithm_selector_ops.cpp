@@ -241,8 +241,8 @@ size_t estimateMemoryUsage(size_t num_points, size_t point_dim, double max_radiu
 }
 
 // Main API: Auto-selected optimal VR algorithm
-std::vector<Pair> computeVrPersistenceAuto(core::BufferView<const double>points,
-                                           Size point_dim, const VRConfig &base_config)
+std::vector<Pair> computeVrPersistenceAuto(core::BufferView<const double> points, Size point_dim,
+                                           const VRConfig &base_config)
 {
     if (point_dim == 0 || points.size() == 0 || (points.size() % point_dim) != 0)
     {
@@ -282,7 +282,7 @@ std::vector<Pair> computeVrPersistenceAuto(core::BufferView<const double>points,
 }
 
 // Explicit algorithm selection API
-std::vector<Pair> computeVrPersistenceWithAlgorithm(core::BufferView<const double>points,
+std::vector<Pair> computeVrPersistenceWithAlgorithm(core::BufferView<const double> points,
                                                     Size point_dim, const VRConfig &config,
                                                     VRAlgorithm algorithm)
 {
@@ -381,7 +381,7 @@ AlgorithmRecommendation recommendAlgorithm(size_t num_points, size_t point_dim, 
 }
 
 // Benchmark and compare all algorithms
-std::vector<AlgorithmBenchmark> benchmarkAllAlgorithms(core::BufferView<const double>points,
+std::vector<AlgorithmBenchmark> benchmarkAllAlgorithms(core::BufferView<const double> points,
                                                        Size point_dim, const VRConfig &config)
 {
     std::vector<AlgorithmBenchmark> results;

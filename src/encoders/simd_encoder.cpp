@@ -1,5 +1,5 @@
-#include "nerve/simd/simd_base.hpp"
 #include "nerve/encoders/simd_encoder.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>

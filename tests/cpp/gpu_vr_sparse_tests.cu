@@ -12,22 +12,18 @@
 namespace
 {
 
+using nerve::filtration::vr::sparse::gpu::benchmarkSparseGPU;
+using nerve::filtration::vr::sparse::gpu::buildSparseVRGPU;
+using nerve::filtration::vr::sparse::gpu::cuSPARSEVR;
 using nerve::filtration::vr::sparse::gpu::Point;
 using nerve::filtration::vr::sparse::gpu::SparseVRComplex;
-using nerve::filtration::vr::sparse::gpu::buildSparseVRGPU;
-using nerve::filtration::vr::sparse::gpu::benchmarkSparseGPU;
-using nerve::filtration::vr::sparse::gpu::cuSPARSEVR;
 
 // 4 points forming a tetrahedron edge-length 1 with center at origin
 // Actually use a simple 4-point set: (0,0,0), (1,0,0), (0,1,0), (0,0,1)
 bool test_build_sparse_vr_basic()
 {
     std::vector<Point> points = {
-        {0.0f, 0.0f, 0.0f},
-        {1.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f}
-    };
+        {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
 
     // Threshold = 1.0: edges of length <= 1.0
     // Expected edges: (0,1), (0,2), (0,3) -- all distance 1.0
@@ -50,8 +46,8 @@ bool test_build_sparse_vr_basic()
     // Row ptr: [0, 3, 3, 3, 3]
     if (complex.h_row_ptr.size() != 5)
     {
-        std::cerr << "buildSparseVRGPU: expected row_ptr size 5, got "
-                  << complex.h_row_ptr.size() << "\n";
+        std::cerr << "buildSparseVRGPU: expected row_ptr size 5, got " << complex.h_row_ptr.size()
+                  << "\n";
         return false;
     }
 
@@ -68,8 +64,8 @@ bool test_build_sparse_vr_basic()
     {
         if (std::abs(complex.h_data[i] - 1.0f) > 1e-5f)
         {
-            std::cerr << "buildSparseVRGPU: edge " << i << " distance = "
-                      << complex.h_data[i] << " (expected 1.0)\n";
+            std::cerr << "buildSparseVRGPU: edge " << i << " distance = " << complex.h_data[i]
+                      << " (expected 1.0)\n";
             return false;
         }
     }
@@ -77,9 +73,8 @@ bool test_build_sparse_vr_basic()
     // Verify vertex 0 has 3 edges: to {1,2,3}
     if (complex.h_row_ptr[0] != 0 || complex.h_row_ptr[1] != 3)
     {
-        std::cerr << "buildSparseVRGPU: vertex 0 row_ptr = ["
-                  << complex.h_row_ptr[0] << ", " << complex.h_row_ptr[1]
-                  << "] (expected [0, 3])\n";
+        std::cerr << "buildSparseVRGPU: vertex 0 row_ptr = [" << complex.h_row_ptr[0] << ", "
+                  << complex.h_row_ptr[1] << "] (expected [0, 3])\n";
         return false;
     }
 
@@ -90,11 +85,7 @@ bool test_build_sparse_vr_basic()
 bool test_build_sparse_vr_all_edges()
 {
     std::vector<Point> points = {
-        {0.0f, 0.0f, 0.0f},
-        {1.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f}
-    };
+        {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
 
     // Threshold = 2.0: all 6 edges should be found (sqrt(2) ~= 1.414 < 2.0)
     SparseVRComplex complex = buildSparseVRGPU(points, 2.0f);
@@ -128,8 +119,8 @@ bool test_build_sparse_vr_all_edges()
     {
         if (!std::isfinite(complex.h_data[i]) || complex.h_data[i] <= 0.0f)
         {
-            std::cerr << "buildSparseVRGPU: invalid distance at edge " << i
-                      << ": " << complex.h_data[i] << "\n";
+            std::cerr << "buildSparseVRGPU: invalid distance at edge " << i << ": "
+                      << complex.h_data[i] << "\n";
             return false;
         }
     }
@@ -141,8 +132,7 @@ bool test_build_sparse_vr_all_edges()
 bool test_build_sparse_vr_zero_threshold()
 {
     std::vector<Point> points = {
-        {0.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 0.0f}  // identical point!
+        {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} // identical point!
     };
 
     // Threshold = 0.0: only edges with distance <= 0
@@ -161,8 +151,8 @@ bool test_build_sparse_vr_zero_threshold()
     // The edge distance should be ~0.0
     if (std::abs(complex.h_data[0]) > 1e-5f)
     {
-        std::cerr << "buildSparseVRGPU zero_threshold: edge distance = "
-                  << complex.h_data[0] << " (expected ~0)\n";
+        std::cerr << "buildSparseVRGPU zero_threshold: edge distance = " << complex.h_data[0]
+                  << " (expected ~0)\n";
         return false;
     }
 
@@ -225,11 +215,7 @@ bool test_benchmark_sparse_gpu()
 bool test_cusparse_spmv()
 {
     std::vector<Point> points = {
-        {0.0f, 0.0f, 0.0f},
-        {1.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f}
-    };
+        {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
 
     SparseVRComplex complex = buildSparseVRGPU(points, 2.0f);
     complex.allocateGPU();

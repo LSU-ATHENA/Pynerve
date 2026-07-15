@@ -115,7 +115,7 @@ Size MmapIoEngine::read(int fd, void *buffer, Size offset, Size size, IoFlags fl
             Size map_size = std::min(static_cast<Size>(kMmapChunkSize),
                                      size - total + ((offset + total) - aligned_off));
             void *mapped = nerve::sys::map(nullptr, map_size, nerve::sys::MAP_PROT_READ,
-                                            nerve::sys::MAP_FLAG_PRIVATE, fd, aligned_off);
+                                           nerve::sys::MAP_FLAG_PRIVATE, fd, aligned_off);
             if (mapped == nerve::sys::kMapFailed)
             {
                 return preadFull(fd, static_cast<uint8_t *>(buffer) + total, size - total,

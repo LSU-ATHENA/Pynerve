@@ -1,6 +1,6 @@
 
-#include "nerve/persistence/cuda/cuda_matrix_reduction.hpp"
 #include "nerve/gpu/packed_column_primitives.cuh"
+#include "nerve/persistence/cuda/cuda_matrix_reduction.hpp"
 
 #include <cooperative_groups.h>
 #include <cuda_runtime.h>
@@ -28,8 +28,7 @@ struct WarpBitset
     __device__ __forceinline__ void add(const WarpBitset &other, cg::thread_block_tile<32> &warp)
     {
         int lane = warp.thread_rank();
-        packed_column_xor(data, other.data, numWords, lane,
-                                   XorStrategy::DirectXor);
+        packed_column_xor(data, other.data, numWords, lane, XorStrategy::DirectXor);
     }
     __device__ __forceinline__ int getLowestOne(cg::thread_block_tile<32> &warp)
     {
@@ -54,8 +53,8 @@ struct WarpBitset
 // - colIdx   if we own it (or successfully claimed it)
 // - other index (> 0)  if another column owns it (caller should XOR)
 // Never returns -1 (use owner == colIdx as the claim-success check).
-__device__ __forceinline__ int claimPivotSlot(int *__restrict__ pivotColumn,
-                                               int pivot, int colIdx, int lane)
+__device__ __forceinline__ int claimPivotSlot(int *__restrict__ pivotColumn, int pivot, int colIdx,
+                                              int lane)
 {
     int owner = -1;
     if (lane == 0)
@@ -92,8 +91,9 @@ __device__ __forceinline__ int claimPivotSlot(int *__restrict__ pivotColumn,
 }
 
 __global__ void reduceMatrixKernelOptimized(const uint64_t *__restrict__ boundaryMatrix,
-                                uint64_t *__restrict__ columns, int n_cols, int n_words_per_col,
-                                int *__restrict__ pivotColumn, uint64_t *__restrict__ reduced)
+                                            uint64_t *__restrict__ columns, int n_cols,
+                                            int n_words_per_col, int *__restrict__ pivotColumn,
+                                            uint64_t *__restrict__ reduced)
 {
     int warpsPerBlock = blockDim.x / 32;
     int warpId = threadIdx.x / 32;
@@ -101,8 +101,7 @@ __global__ void reduceMatrixKernelOptimized(const uint64_t *__restrict__ boundar
 
     // Grid-stride loop: each warp processes multiple columns so that the
     // kernel covers all columns regardless of the block count.
-    for (int colIdx = blockIdx.x * warpsPerBlock + warpId;
-         colIdx < n_cols;
+    for (int colIdx = blockIdx.x * warpsPerBlock + warpId; colIdx < n_cols;
          colIdx += gridDim.x * warpsPerBlock)
     {
         uint64_t *myCol = &columns[colIdx * n_words_per_col];
@@ -121,20 +120,17 @@ __global__ void reduceMatrixKernelOptimized(const uint64_t *__restrict__ boundar
         //     from CSC because h_reduced[i] is all zeros
         for (int iter = 0; iter < MAX_ITERATIONS; ++iter)
         {
-            int pivot =
-                packed_column_find_msb_warp(myCol, n_words_per_col, lane);
+            int pivot = packed_column_find_msb_warp(myCol, n_words_per_col, lane);
             if (pivot < 0)
                 break;
 
-            int owner =
-                claimPivotSlot(pivotColumn, pivot, colIdx, lane);
+            int owner = claimPivotSlot(pivotColumn, pivot, colIdx, lane);
 
             if (owner == colIdx)
             {
                 break;
             }
-            const uint64_t *otherCol =
-                &columns[static_cast<std::size_t>(owner) * n_words_per_col];
+            const uint64_t *otherCol = &columns[static_cast<std::size_t>(owner) * n_words_per_col];
             for (int i = lane; i < n_words_per_col; i += 32)
             {
                 myCol[i] ^= otherCol[i];
@@ -174,8 +170,7 @@ __global__ void __launch_bounds__(256)
                 if (pivot < 0)
                     break;
 
-                int owner =
-                    claimPivotSlot(matrixPivots, pivot, colIdx, lane);
+                int owner = claimPivotSlot(matrixPivots, pivot, colIdx, lane);
 
                 if (owner == colIdx)
                 {
@@ -297,8 +292,7 @@ cudaError_t reduceMatrixOptimized(const uint64_t *boundaryMatrix, uint64_t *colu
 {
     if (n_cols == 0)
         return cudaSuccess;
-    cudaMemsetAsync(pivotColumn, 0xFF,
-                    static_cast<std::size_t>(n_words_per_col) * 64 * sizeof(int),
+    cudaMemsetAsync(pivotColumn, 0xFF, static_cast<std::size_t>(n_words_per_col) * 64 * sizeof(int),
                     stream);
     int warpsPerBlock = 8;
     int threadsPerBlock = warpsPerBlock * 32;
@@ -346,14 +340,13 @@ __global__ void buildPackedSubmatrixKernel(const int *__restrict__ col_ptr,
             int row = row_indices[i];
             int word = row / 64;
             int bit = row % 64;
-            atomicOr(reinterpret_cast<unsigned long long *>(&col_out[word]),
-                     1ULL << bit);
+            atomicOr(reinterpret_cast<unsigned long long *>(&col_out[word]), 1ULL << bit);
         }
     }
 }
 
 __global__ void extractPivotOfColumnKernel(const uint64_t *__restrict__ reduced, int n_cols,
-                                            int words_per_col, int *__restrict__ pivot_of_col)
+                                           int words_per_col, int *__restrict__ pivot_of_col)
 {
     int col = blockIdx.x * blockDim.x + threadIdx.x;
     if (col >= n_cols)
@@ -374,8 +367,8 @@ __global__ void extractPivotOfColumnKernel(const uint64_t *__restrict__ reduced,
 }
 
 cudaError_t launchBuildPackedFromCSC(uint64_t *d_packed, const int *d_col_ptr,
-                                    const int *d_row_indices, int n_cols, int words_per_col,
-                                    cudaStream_t stream)
+                                     const int *d_row_indices, int n_cols, int words_per_col,
+                                     cudaStream_t stream)
 {
     if (n_cols == 0)
         return cudaSuccess;
@@ -397,7 +390,7 @@ cudaError_t launchBuildPackedFromCSC(uint64_t *d_packed, const int *d_col_ptr,
 }
 
 cudaError_t extractPivotOfColumn(const uint64_t *reduced, int n_cols, int words_per_col,
-                                  int *pivot_of_col, cudaStream_t stream)
+                                 int *pivot_of_col, cudaStream_t stream)
 {
     if (n_cols == 0)
         return cudaSuccess;
@@ -405,8 +398,8 @@ cudaError_t extractPivotOfColumn(const uint64_t *reduced, int n_cols, int words_
     int blockSize = 256;
     int numBlocks = (n_cols + blockSize - 1) / blockSize;
 
-    extractPivotOfColumnKernel<<<numBlocks, blockSize, 0, stream>>>(
-        reduced, n_cols, words_per_col, pivot_of_col);
+    extractPivotOfColumnKernel<<<numBlocks, blockSize, 0, stream>>>(reduced, n_cols, words_per_col,
+                                                                    pivot_of_col);
 
     return cudaGetLastError();
 }

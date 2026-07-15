@@ -30,7 +30,8 @@ int main()
         std::vector<nerve::Size> shape = {3, 3};
         auto result = nerve::filtration::computeSuperlevelFiltration(scalar_field, shape, 8);
         assert(result.size() > 0);
-        std::cout << "PASSED: computeSuperlevelFiltration (3x3, " << result.size() << " simplices)\n";
+        std::cout << "PASSED: computeSuperlevelFiltration (3x3, " << result.size()
+                  << " simplices)\n";
     }
 
     // Filtration: computeAdaptiveFiltration
@@ -42,7 +43,8 @@ int main()
         auto result = nerve::filtration::computeAdaptiveFiltration(scalar_field, shape);
         assert(!result.isError());
         assert(result.value().size() > 0);
-        std::cout << "PASSED: computeAdaptiveFiltration (3x3, " << result.value().size() << " simplices)\n";
+        std::cout << "PASSED: computeAdaptiveFiltration (3x3, " << result.value().size()
+                  << " simplices)\n";
     }
 
     // Filtration: findCriticalPoints2d
@@ -76,8 +78,8 @@ int main()
         auto maxima = ls.findMaxima(scalar_field);
         assert(minima.size() > 0);
         assert(maxima.size() > 0);
-        std::cout << "PASSED: LevelSet findMinima/Maxima (3x3, "
-                  << minima.size() << " minima, " << maxima.size() << " maxima)\n";
+        std::cout << "PASSED: LevelSet findMinima/Maxima (3x3, " << minima.size() << " minima, "
+                  << maxima.size() << " maxima)\n";
     }
 
     return 0;

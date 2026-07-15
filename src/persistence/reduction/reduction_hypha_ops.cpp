@@ -65,8 +65,8 @@ struct HyphaReducer::GpuPool
                 cudaFree(d_pivot_table);
                 d_pivot_table = nullptr;
             }
-            cudaError_t st = cudaMalloc(&d_pivot_table,
-                            static_cast<std::size_t>(n_cols) * sizeof(int));
+            cudaError_t st =
+                cudaMalloc(&d_pivot_table, static_cast<std::size_t>(n_cols) * sizeof(int));
             if (st != cudaSuccess)
             {
                 d_pivot_table = nullptr;
@@ -104,12 +104,12 @@ namespace nerve::persistence
 
 HyphaReducer::~HyphaReducer() = default;
 
-std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
-    const int *col_ptr, const int *row_indices, int nnz, int n_cols, int n_rows,
-    const std::vector<double> &col_filtration_values,
-    const std::vector<double> &row_filtration_values,
-    const std::vector<Dimension> &dimensions,
-    HyphaPhaseTimings *timings)
+std::vector<Pair>
+HyphaReducer::gpuSubmatrixReduction(const int *col_ptr, const int *row_indices, int nnz, int n_cols,
+                                    int n_rows, const std::vector<double> &col_filtration_values,
+                                    const std::vector<double> &row_filtration_values,
+                                    const std::vector<Dimension> &dimensions,
+                                    HyphaPhaseTimings *timings)
 {
     if (n_cols == 0 || n_rows == 0)
     {
@@ -153,7 +153,7 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
         return {};
     }
     st = cudaMemcpyAsync(d_col_ptr, col_ptr, col_ptr_bytes, cudaMemcpyHostToDevice,
-                          gpu_pool_->stream);
+                         gpu_pool_->stream);
     if (st != cudaSuccess)
     {
         std::fprintf(stderr, "gpuSubmatrixReduction: CSC upload failed: %s\n",
@@ -163,7 +163,7 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
         return {};
     }
     st = cudaMemcpyAsync(d_row_indices, row_indices, row_bytes, cudaMemcpyHostToDevice,
-                          gpu_pool_->stream);
+                         gpu_pool_->stream);
     if (st != cudaSuccess)
     {
         std::fprintf(stderr, "gpuSubmatrixReduction: row_indices upload failed: %s\n",
@@ -186,8 +186,7 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
     // GPU kernel: build packed columns directly from CSC on device.
     // Eliminates the 7.6ms CPU bit-loop and 3.9ms H2D copy of packed data.
     st = ::nerve::persistence::accelerated::launchBuildPackedFromCSC(
-        gpu_pool_->d_boundary, d_col_ptr, d_row_indices, n_cols, words_per_col,
-        gpu_pool_->stream);
+        gpu_pool_->d_boundary, d_col_ptr, d_row_indices, n_cols, words_per_col, gpu_pool_->stream);
 
     // Free CSC upload buffers -- the pack kernel only reads from them.
     // NOTE: cudaFree is synchronous (blocks until all queued work completes),
@@ -208,8 +207,8 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
     auto t_reduce_start = std::chrono::high_resolution_clock::now();
     nerve::gpu::kernels::KernelDispatcher dispatcher;
     st = dispatcher.computeMatrixReduction(gpu_pool_->d_boundary, gpu_pool_->d_reduced, n_cols,
-                                            words_per_col, gpu_pool_->d_pivot_table,
-                                            gpu_pool_->stream);
+                                           words_per_col, gpu_pool_->d_pivot_table,
+                                           gpu_pool_->stream);
 
     if (st != cudaSuccess)
     {
@@ -225,10 +224,10 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
     std::size_t pivot_bytes = static_cast<std::size_t>(n_cols) * sizeof(int);
     std::vector<int> h_pivots(static_cast<std::size_t>(n_cols));
     st = cudaMemcpyAsync(h_pivots.data(), gpu_pool_->d_pivot_table, pivot_bytes,
-                          cudaMemcpyDeviceToHost, gpu_pool_->stream);
+                         cudaMemcpyDeviceToHost, gpu_pool_->stream);
     std::vector<std::uint64_t> h_reduced(total_words);
     st = cudaMemcpyAsync(h_reduced.data(), gpu_pool_->d_reduced, total_bytes,
-                          cudaMemcpyDeviceToHost, gpu_pool_->stream);
+                         cudaMemcpyDeviceToHost, gpu_pool_->stream);
     st = cudaStreamSynchronize(gpu_pool_->stream);
 
     if (st != cudaSuccess)
@@ -281,8 +280,7 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
     };
 
     std::vector<int> earliest_owner(static_cast<std::size_t>(n_rows), -1);
-    std::vector<std::uint64_t> col_scratch(
-        static_cast<std::size_t>(words_per_col));
+    std::vector<std::uint64_t> col_scratch(static_cast<std::size_t>(words_per_col));
 
     for (int i = 0; i < n_cols; ++i)
     {
@@ -300,8 +298,8 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
             }
             // Pivot claimed by an earlier column -> invalidated.
             // Start from h_reduced[i] (preserves GPU's partial work).
-            std::copy_n(&h_reduced[static_cast<std::size_t>(i) * words_per_col],
-                        words_per_col, col_scratch.begin());
+            std::copy_n(&h_reduced[static_cast<std::size_t>(i) * words_per_col], words_per_col,
+                        col_scratch.begin());
         }
         else
         {
@@ -310,7 +308,7 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
             int col_start = col_ptr[i];
             int col_end = col_ptr[i + 1];
             if (col_start >= col_end)
-                continue;   // genuinely empty
+                continue; // genuinely empty
             std::fill(col_scratch.begin(), col_scratch.end(), 0);
             for (int ri = col_start; ri < col_end; ++ri)
             {
@@ -338,8 +336,7 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
                 earliest_owner[npu] = i;
                 h_pivots[static_cast<std::size_t>(i)] = new_pivot;
                 // Write back corrected form so later columns benefit.
-                std::uint64_t *h_col = &h_reduced[
-                    static_cast<std::size_t>(i) * words_per_col];
+                std::uint64_t *h_col = &h_reduced[static_cast<std::size_t>(i) * words_per_col];
                 for (int w = 0; w < words_per_col; ++w)
                     h_col[w] = col_scratch[static_cast<std::size_t>(w)];
                 claimed = true;
@@ -352,8 +349,8 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
             }
 
             // XOR with the survivor's reduced form (from h_reduced).
-            const std::uint64_t *claim_col = &h_reduced[
-                static_cast<std::size_t>(claiming) * words_per_col];
+            const std::uint64_t *claim_col =
+                &h_reduced[static_cast<std::size_t>(claiming) * words_per_col];
             for (int w = 0; w < words_per_col; ++w)
                 col_scratch[static_cast<std::size_t>(w)] ^= claim_col[w];
 
@@ -370,8 +367,7 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
     for (int i = 0; i < n_cols; ++i)
     {
         int pivot = h_pivots[static_cast<std::size_t>(i)];
-        if (pivot >= 0 &&
-            static_cast<std::size_t>(pivot) < col_filtration_values.size() &&
+        if (pivot >= 0 && static_cast<std::size_t>(pivot) < col_filtration_values.size() &&
             static_cast<std::size_t>(i) < col_filtration_values.size())
         {
             Pair pair{};
@@ -399,7 +395,7 @@ std::vector<Pair> HyphaReducer::gpuSubmatrixReduction(
 }
 
 std::vector<Pair> HyphaReducer::compute(const algebra::BoundaryMatrix &matrix,
-                                          HyphaPhaseTimings *timings)
+                                        HyphaPhaseTimings *timings)
 {
     auto t_start = std::chrono::high_resolution_clock::now();
     Size n_cols = matrix.cols();
@@ -432,8 +428,7 @@ std::vector<Pair> HyphaReducer::compute(const algebra::BoundaryMatrix &matrix,
     {
         Size col = static_cast<Size>(col_idx);
         filtration_values.push_back(matrix.getFiltrationValue(col));
-        dimensions.push_back(
-            static_cast<Dimension>(matrix.getColSimplexDimension(col)));
+        dimensions.push_back(static_cast<Dimension>(matrix.getColSimplexDimension(col)));
     }
     auto t_sub_end = std::chrono::high_resolution_clock::now();
 
@@ -446,10 +441,9 @@ std::vector<Pair> HyphaReducer::compute(const algebra::BoundaryMatrix &matrix,
     for (Size row = 0; row < n_rows; ++row)
         row_filtration_values.push_back(matrix.getRowFiltrationValue(row));
 
-    auto pairs = gpuSubmatrixReduction(col_ptr.data(), row_indices.data(), nnz,
-                                       n_cols_int, static_cast<int>(n_rows),
-                                       filtration_values, row_filtration_values,
-                                       dimensions, timings);
+    auto pairs = gpuSubmatrixReduction(col_ptr.data(), row_indices.data(), nnz, n_cols_int,
+                                       static_cast<int>(n_rows), filtration_values,
+                                       row_filtration_values, dimensions, timings);
     auto t_reduce_end = std::chrono::high_resolution_clock::now();
 
     auto t_end = std::chrono::high_resolution_clock::now();
@@ -462,11 +456,10 @@ std::vector<Pair> HyphaReducer::compute(const algebra::BoundaryMatrix &matrix,
         timings->submatrix_build_ms = ms(t_sub_end - t_sub_start).count();
         // gpu_pack_ms, gpu_reduction_ms, gpu_download_ms are filled by
         // gpuSubmatrixReduction when timings is non-null.
-        timings->overhead_ms =
-            ms(t_end - t_start).count() - timings->csc_build_ms -
-            timings->clearing_ms - timings->submatrix_build_ms -
-            timings->gpu_pack_ms -
-            timings->gpu_reduction_ms - timings->gpu_download_ms;
+        timings->overhead_ms = ms(t_end - t_start).count() - timings->csc_build_ms -
+                               timings->clearing_ms - timings->submatrix_build_ms -
+                               timings->gpu_pack_ms - timings->gpu_reduction_ms -
+                               timings->gpu_download_ms;
     }
 
     return pairs;

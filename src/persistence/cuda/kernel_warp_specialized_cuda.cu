@@ -5,9 +5,9 @@
 // - iterative pivot-driven column reduction.
 
 #include "nerve/gpu/gpu_error.hpp"
-#include "nerve/persistence/cuda/cuda_warp_specialized_kernels.hpp"
 #include "nerve/gpu/gpu_ptx_ops.cuh"
 #include "nerve/gpu/packed_column_primitives.cuh"
+#include "nerve/persistence/cuda/cuda_warp_specialized_kernels.hpp"
 
 #include <cuda_fp16.h>
 #include <cuda_runtime.h>
@@ -91,7 +91,7 @@ __device__ inline T warpSumReduce(T value)
  * Delegates to the unified packed_column_primitives.
  */
 __device__ inline int findHighestPivotWarp(const uint64_t *__restrict__ column_words, int num_words,
-                                            int lane_id)
+                                           int lane_id)
 {
     return packed_column_find_msb_warp(column_words, num_words, lane_id);
 }
@@ -111,9 +111,8 @@ __global__ void __launch_bounds__(256)
     }
 
     const int words_to_process = clampWordCount(col_sizes[col_idx], num_words);
-    packed_column_xor(columns_a + col_idx * num_words,
-                               columns_b + col_idx * num_words,
-                               words_to_process, lane_id, XorStrategy::DirectXor);
+    packed_column_xor(columns_a + col_idx * num_words, columns_b + col_idx * num_words,
+                      words_to_process, lane_id, XorStrategy::DirectXor);
 }
 
 __global__ void __launch_bounds__(256)
@@ -231,9 +230,8 @@ __global__ void __launch_bounds__(256)
 
     uint64_t *const target_column = columns + col_idx * num_words;
     const int iteration_limit = max(1, num_words * 4);
-    int pivot = packed_column_reduce_iterative(
-        target_column, columns, pivot_to_col, num_words, num_columns, col_idx, lane_id,
-        iteration_limit);
+    int pivot = packed_column_reduce_iterative(target_column, columns, pivot_to_col, num_words,
+                                               num_columns, col_idx, lane_id, iteration_limit);
 
     if (lane_id == 0)
     {
@@ -286,8 +284,8 @@ __global__ void __launch_bounds__(256)
         }
 
         async_pipeline_stage_and_xor(target_column,
-                                      columns + static_cast<size_t>(source_col) * num_words,
-                                      warp_buf, num_words, lane_id);
+                                     columns + static_cast<size_t>(source_col) * num_words,
+                                     warp_buf, num_words, lane_id);
         pivot = packed_column_find_msb_warp(target_column, num_words, lane_id);
     }
 

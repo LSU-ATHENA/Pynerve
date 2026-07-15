@@ -6,8 +6,8 @@ namespace nerve::persistence::accelerated
 {
 
 errors::ErrorResult<std::vector<Pair>>
-NerveVRInterface::computeVrPersistenceNerve(core::BufferView<const double>points,
-                                            size_t point_dim, const core::DeterminismContract &)
+NerveVRInterface::computeVrPersistenceNerve(core::BufferView<const double> points, size_t point_dim,
+                                            const core::DeterminismContract &)
 {
     try
     {

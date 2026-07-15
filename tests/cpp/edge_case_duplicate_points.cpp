@@ -21,7 +21,6 @@ using namespace nerve::test;
 
 constexpr double kTol = 1e-10;
 
-
 bool check_all_points_identical()
 {
     const std::vector<double> pts = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};

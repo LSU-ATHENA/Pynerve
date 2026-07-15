@@ -14,7 +14,6 @@
 namespace
 {
 
-
 #ifdef NERVE_HAS_TORCH
 
 using at::Tensor;

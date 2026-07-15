@@ -35,7 +35,8 @@ int main()
         assert(nnz >= 0);
         double ratio = matrix.sparsityRatio();
         assert(ratio >= 0.0 && ratio <= 1.0);
-        std::cout << "PASSED: algebra BoundaryMatrix sparsity (nnz=" << nnz << ", ratio=" << ratio << ")\n";
+        std::cout << "PASSED: algebra BoundaryMatrix sparsity (nnz=" << nnz << ", ratio=" << ratio
+                  << ")\n";
     }
 
     return 0;

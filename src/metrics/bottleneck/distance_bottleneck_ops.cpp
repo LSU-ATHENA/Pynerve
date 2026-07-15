@@ -115,8 +115,8 @@ private:
         const KDNode &node = nodes_[node_idx];
 
         const double dx = std::abs(static_cast<double>(node.birth) - birth);
-        const double dy = infSafeDeathDiff(static_cast<double>(node.death),
-                                           static_cast<double>(death));
+        const double dy =
+            infSafeDeathDiff(static_cast<double>(node.death), static_cast<double>(death));
         const double dist = std::max(dx, dy);
         if (dist < best_dist)
         {
@@ -150,8 +150,8 @@ private:
         const KDNode &node = nodes_[node_idx];
 
         const double dx = std::abs(static_cast<double>(node.birth) - birth);
-        const double dy = infSafeDeathDiff(static_cast<double>(node.death),
-                                           static_cast<double>(death));
+        const double dy =
+            infSafeDeathDiff(static_cast<double>(node.death), static_cast<double>(death));
         const double dist = std::max(dx, dy);
         if (dist <= radius)
         {
@@ -271,10 +271,9 @@ static double bottleneckFinitePoints(const std::vector<std::pair<float, float>> 
     const auto [first, last] = std::ranges::unique(candidates);
     candidates.erase(first, last);
 
-    candidates.erase(
-        std::remove_if(candidates.begin(), candidates.end(),
-                       [](double c) { return !std::isfinite(c); }),
-        candidates.end());
+    candidates.erase(std::remove_if(candidates.begin(), candidates.end(),
+                                    [](double c) { return !std::isfinite(c); }),
+                     candidates.end());
 
     if (candidates.empty())
     {
@@ -343,14 +342,16 @@ double adaptiveBottleneckDistance(const std::vector<std::pair<float, float>> &di
     if (!essential1.empty())
     {
         std::vector<float> births1, births2;
-        for (const auto &p : essential1) births1.push_back(p.first);
-        for (const auto &p : essential2) births2.push_back(p.first);
+        for (const auto &p : essential1)
+            births1.push_back(p.first);
+        for (const auto &p : essential2)
+            births2.push_back(p.first);
         std::sort(births1.begin(), births1.end());
         std::sort(births2.begin(), births2.end());
         for (size_t i = 0; i < births1.size(); ++i)
         {
-            essential_cost = std::max(essential_cost,
-                static_cast<double>(std::abs(births1[i] - births2[i])));
+            essential_cost =
+                std::max(essential_cost, static_cast<double>(std::abs(births1[i] - births2[i])));
         }
     }
 

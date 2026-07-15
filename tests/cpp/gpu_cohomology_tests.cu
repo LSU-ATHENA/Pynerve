@@ -1,5 +1,5 @@
-#include "nerve/persistence/cohomology/gpu_cohomology.hpp"
 #include "nerve/core_types.hpp"
+#include "nerve/persistence/cohomology/gpu_cohomology.hpp"
 #include "nerve/types.hpp"
 
 #include <cuda_runtime.h>
@@ -29,13 +29,13 @@ std::vector<SimplexGPU> build_triangle_filtration()
 {
     // Sorted by filtration value, ties by dimension
     return {
-        SimplexGPU{{0}, 1, 0.0, 0, 0, -1, -1},          // v0
-        SimplexGPU{{1}, 1, 0.0, 0, 1, -1, -1},          // v1
-        SimplexGPU{{2}, 1, 0.0, 0, 2, -1, -1},          // v2
-        SimplexGPU{{0, 1}, 2, 1.0, 1, 3, -1, -1},       // e01
-        SimplexGPU{{0, 2}, 2, 1.5, 1, 4, -1, -1},       // e02
-        SimplexGPU{{1, 2}, 2, 2.0, 1, 5, -1, -1},       // e12
-        SimplexGPU{{0, 1, 2}, 3, 3.0, 2, 6, -1, -1},    // t012
+        SimplexGPU{{0}, 1, 0.0, 0, 0, -1, -1},       // v0
+        SimplexGPU{{1}, 1, 0.0, 0, 1, -1, -1},       // v1
+        SimplexGPU{{2}, 1, 0.0, 0, 2, -1, -1},       // v2
+        SimplexGPU{{0, 1}, 2, 1.0, 1, 3, -1, -1},    // e01
+        SimplexGPU{{0, 2}, 2, 1.5, 1, 4, -1, -1},    // e02
+        SimplexGPU{{1, 2}, 2, 2.0, 1, 5, -1, -1},    // e12
+        SimplexGPU{{0, 1, 2}, 3, 3.0, 2, 6, -1, -1}, // t012
     };
 }
 
@@ -44,16 +44,11 @@ std::vector<SimplexGPU> build_triangle_filtration()
 std::vector<SimplexGPU> build_square_filtration()
 {
     return {
-        SimplexGPU{{0}, 1, 0.0, 0, 0, -1, -1},
-        SimplexGPU{{1}, 1, 0.0, 0, 1, -1, -1},
-        SimplexGPU{{2}, 1, 0.0, 0, 2, -1, -1},
-        SimplexGPU{{3}, 1, 0.0, 0, 3, -1, -1},
-        SimplexGPU{{0, 1}, 2, 1.0, 1, 4, -1, -1},
-        SimplexGPU{{0, 2}, 2, 1.0, 1, 5, -1, -1},
-        SimplexGPU{{1, 3}, 2, 1.0, 1, 6, -1, -1},
-        SimplexGPU{{2, 3}, 2, 1.0, 1, 7, -1, -1},
-        SimplexGPU{{0, 3}, 2, 1.414, 1, 8, -1, -1},
-        SimplexGPU{{0, 1, 3}, 3, 2.0, 2, 9, -1, -1},
+        SimplexGPU{{0}, 1, 0.0, 0, 0, -1, -1},        SimplexGPU{{1}, 1, 0.0, 0, 1, -1, -1},
+        SimplexGPU{{2}, 1, 0.0, 0, 2, -1, -1},        SimplexGPU{{3}, 1, 0.0, 0, 3, -1, -1},
+        SimplexGPU{{0, 1}, 2, 1.0, 1, 4, -1, -1},     SimplexGPU{{0, 2}, 2, 1.0, 1, 5, -1, -1},
+        SimplexGPU{{1, 3}, 2, 1.0, 1, 6, -1, -1},     SimplexGPU{{2, 3}, 2, 1.0, 1, 7, -1, -1},
+        SimplexGPU{{0, 3}, 2, 1.414, 1, 8, -1, -1},   SimplexGPU{{0, 1, 3}, 3, 2.0, 2, 9, -1, -1},
         SimplexGPU{{0, 2, 3}, 3, 2.0, 2, 10, -1, -1},
     };
 }
@@ -149,8 +144,10 @@ int main()
             assert(std::isfinite(p.birth));
             assert(std::isfinite(p.death));
             assert(p.birth < p.death);
-            if (p.dimension == 0) ++h0_pairs;
-            if (p.dimension == 1) ++h1_pairs;
+            if (p.dimension == 0)
+                ++h0_pairs;
+            if (p.dimension == 1)
+                ++h1_pairs;
         }
 
         assert(h0_pairs >= 2); // Triangle: 3 vertices -> 2 H0 deaths
@@ -188,9 +185,11 @@ int main()
         {
             assert(std::isfinite(p.birth));
             assert(std::isfinite(p.death));
-            if (p.dimension == 0) has_h0 = true;
+            if (p.dimension == 0)
+                has_h0 = true;
         }
-        if (!has_h0) assert(false && "Expected an H0 pair");
+        if (!has_h0)
+            assert(false && "Expected an H0 pair");
     }
 
     // Empty filtration is rejected
@@ -226,8 +225,8 @@ int main()
     // Invalid initialize args are rejected
     {
         GPUCohomologyComputer computer;
-        assert(!computer.initialize(0, 2));        // zero simplices
-        assert(!computer.initialize(8, 999));       // dim exceeds MAX_DIM_GPU_COHOMOLOGY
+        assert(!computer.initialize(0, 2));   // zero simplices
+        assert(!computer.initialize(8, 999)); // dim exceeds MAX_DIM_GPU_COHOMOLOGY
     }
 
     // Disconnected vertices
@@ -293,13 +292,17 @@ int main()
             assert(std::isfinite(p.birth));
             if (!std::isfinite(p.death))
             {
-                if (p.dimension == 0) ++h0_essential;
-                if (p.dimension == 1) ++h1_essential;
+                if (p.dimension == 0)
+                    ++h0_essential;
+                if (p.dimension == 1)
+                    ++h1_essential;
                 continue;
             }
             assert(p.birth < p.death);
-            if (p.dimension == 0) ++h0_finite;
-            if (p.dimension == 1) ++h1_finite;
+            if (p.dimension == 0)
+                ++h0_finite;
+            if (p.dimension == 1)
+                ++h1_finite;
         }
 
         // Square (4 verts): 3 finite H0 deaths, 1 essential H0 (connected component)
@@ -329,12 +332,15 @@ int main()
             assert(std::isfinite(p.birth));
             if (!std::isfinite(p.death))
             {
-                if (p.dimension == 0) ++h0_essential;
-                if (p.dimension == 2) ++h2_essential;
+                if (p.dimension == 0)
+                    ++h0_essential;
+                if (p.dimension == 2)
+                    ++h2_essential;
             }
             else
             {
-                if (p.dimension == 1) ++h1_finite;
+                if (p.dimension == 1)
+                    ++h1_finite;
             }
         }
 
@@ -361,12 +367,15 @@ int main()
             assert(std::isfinite(p.birth));
             if (!std::isfinite(p.death))
             {
-                if (p.dimension == 0) ++h0_essential;
-                if (p.dimension == 2) ++h2_essential;
+                if (p.dimension == 0)
+                    ++h0_essential;
+                if (p.dimension == 2)
+                    ++h2_essential;
             }
             else
             {
-                if (p.dimension == 2) ++h2_finite;
+                if (p.dimension == 2)
+                    ++h2_finite;
             }
         }
 
@@ -449,12 +458,13 @@ int main()
 
         // KPI: clearing ratio = 3/7 ~= 43%
         int cleared_count = 0;
-        for (bool c : cleared) if (c) ++cleared_count;
+        for (bool c : cleared)
+            if (c)
+                ++cleared_count;
         assert(cleared_count == 3);
         if (cleared_count < 2)
         {
-            std::cerr << "FAIL: triangle clearing ratio too low: "
-                      << cleared_count << "/7\n";
+            std::cerr << "FAIL: triangle clearing ratio too low: " << cleared_count << "/7\n";
             return 1;
         }
     }
@@ -513,12 +523,13 @@ int main()
 
         // KPI: 5 of 11 columns cleared = 45% clearing ratio
         int cleared_count = 0;
-        for (bool c : cleared) if (c) ++cleared_count;
+        for (bool c : cleared)
+            if (c)
+                ++cleared_count;
         assert(cleared_count == 5);
         if (cleared_count < 3)
         {
-            std::cerr << "FAIL: square clearing ratio too low: "
-                      << cleared_count << "/11\n";
+            std::cerr << "FAIL: square clearing ratio too low: " << cleared_count << "/11\n";
             return 1;
         }
     }
@@ -549,12 +560,14 @@ int main()
         // At least some of the 12 edges (6-17) are cleared
         int edges_cleared = 0;
         for (int i = 6; i < 18; ++i)
-            if (cleared[static_cast<std::size_t>(i)]) ++edges_cleared;
+            if (cleared[static_cast<std::size_t>(i)])
+                ++edges_cleared;
 
         // At least some of the 8 triangles (18-25) are cleared
         int tri_cleared = 0;
         for (int i = 18; i < 26; ++i)
-            if (cleared[static_cast<std::size_t>(i)]) ++tri_cleared;
+            if (cleared[static_cast<std::size_t>(i)])
+                ++tri_cleared;
 
         if (edges_cleared < 1 || tri_cleared < 1)
         {
@@ -613,7 +626,9 @@ int main()
             assert(computer.getClearedStates(cleared));
 
             int cleared_count = 0;
-            for (bool c : cleared) if (c) ++cleared_count;
+            for (bool c : cleared)
+                if (c)
+                    ++cleared_count;
             cases[case_count++] = {"triangle", 7, cleared_count,
                                    static_cast<double>(cleared_count) / 7.0};
         }
@@ -630,7 +645,9 @@ int main()
             assert(computer.getClearedStates(cleared));
 
             int cleared_count = 0;
-            for (bool c : cleared) if (c) ++cleared_count;
+            for (bool c : cleared)
+                if (c)
+                    ++cleared_count;
             cases[case_count++] = {"square", 11, cleared_count,
                                    static_cast<double>(cleared_count) / 11.0};
         }
@@ -647,7 +664,9 @@ int main()
             assert(computer.getClearedStates(cleared));
 
             int cleared_count = 0;
-            for (bool c : cleared) if (c) ++cleared_count;
+            for (bool c : cleared)
+                if (c)
+                    ++cleared_count;
             cases[case_count++] = {"tetrahedron", 15, cleared_count,
                                    static_cast<double>(cleared_count) / 15.0};
         }
@@ -664,7 +683,9 @@ int main()
             assert(computer.getClearedStates(cleared));
 
             int cleared_count = 0;
-            for (bool c : cleared) if (c) ++cleared_count;
+            for (bool c : cleared)
+                if (c)
+                    ++cleared_count;
             cases[case_count++] = {"octahedron", 26, cleared_count,
                                    static_cast<double>(cleared_count) / 26.0};
         }
@@ -677,16 +698,14 @@ int main()
             // All clearing ratios should be in (0, 1.0)
             if (cases[i].ratio <= 0.0 || cases[i].ratio >= 1.0)
             {
-                std::cerr << "FAIL: " << cases[i].name
-                          << " clearing ratio " << cases[i].ratio
+                std::cerr << "FAIL: " << cases[i].name << " clearing ratio " << cases[i].ratio
                           << " out of range (0,1.0)\n";
                 return 1;
             }
             // Every non-trivial complex must clear at least 1 column
             if (cases[i].cleared_columns < 1)
             {
-                std::cerr << "FAIL: " << cases[i].name
-                          << " cleared 0 columns\n";
+                std::cerr << "FAIL: " << cases[i].name << " cleared 0 columns\n";
                 return 1;
             }
         }
@@ -696,8 +715,7 @@ int main()
         if (cases[1].cleared_columns < cases[0].cleared_columns)
         {
             std::cerr << "FAIL: square (" << cases[1].cleared_columns
-                      << ") cleared fewer than triangle ("
-                      << cases[0].cleared_columns << ")\n";
+                      << ") cleared fewer than triangle (" << cases[0].cleared_columns << ")\n";
             return 1;
         }
     }
@@ -726,8 +744,10 @@ int main()
                 assert(std::isfinite(p.birth));
                 if (!std::isfinite(p.death))
                 {
-                    if (p.dimension == 0) ++h0_essential;
-                    if (p.dimension == 2) ++h2_essential;
+                    if (p.dimension == 0)
+                        ++h0_essential;
+                    if (p.dimension == 2)
+                        ++h2_essential;
                 }
             }
             assert(h0_essential == 1);
@@ -751,12 +771,10 @@ int main()
                         pairs[i].death != ref_pairs[i].death ||
                         pairs[i].dimension != ref_pairs[i].dimension)
                     {
-                        std::cerr << "FAIL: octahedron determinism run " << run
-                                  << " pair " << i
+                        std::cerr << "FAIL: octahedron determinism run " << run << " pair " << i
                                   << " (" << pairs[i].birth << ", " << pairs[i].death
-                                  << ", dim=" << pairs[i].dimension
-                                  << ") != ref (" << ref_pairs[i].birth
-                                  << ", " << ref_pairs[i].death
+                                  << ", dim=" << pairs[i].dimension << ") != ref ("
+                                  << ref_pairs[i].birth << ", " << ref_pairs[i].death
                                   << ", dim=" << ref_pairs[i].dimension << ")\n";
                         return 1;
                     }
@@ -782,13 +800,16 @@ int main()
                 assert(cleared.size() == 26);
 
                 int cleared_count = 0;
-                for (bool c : cleared) if (c) ++cleared_count;
+                for (bool c : cleared)
+                    if (c)
+                        ++cleared_count;
 
                 if (run == 0)
                 {
                     if (cleared_count < 1)
                     {
-                        std::cerr << "FAIL: determinism run 0 cleared " << cleared_count << " columns\n";
+                        std::cerr << "FAIL: determinism run 0 cleared " << cleared_count
+                                  << " columns\n";
                         return 1;
                     }
                     ref_cleared.assign(cleared.begin(), cleared.end());
@@ -800,8 +821,7 @@ int main()
                     {
                         if ((cleared[i] ? 1 : 0) != ref_cleared[i])
                         {
-                            std::cerr << "FAIL: determinism run " << run
-                                      << " simplex " << i
+                            std::cerr << "FAIL: determinism run " << run << " simplex " << i
                                       << " cleared=" << cleared[i]
                                       << " but ref=" << (ref_cleared[i] != 0) << "\n";
                             return 1;

@@ -20,11 +20,10 @@ inline nerve::core::BufferView<const double> view_of(const std::vector<double> &
 
 inline std::vector<nerve::Pair> canonical(std::vector<nerve::Pair> pairs)
 {
-    std::sort(pairs.begin(), pairs.end(),
-              [](const nerve::Pair &a, const nerve::Pair &b) {
-                  return std::tuple(a.dimension, a.birth, a.death) <
-                         std::tuple(b.dimension, b.birth, b.death);
-              });
+    std::sort(pairs.begin(), pairs.end(), [](const nerve::Pair &a, const nerve::Pair &b) {
+        return std::tuple(a.dimension, a.birth, a.death) <
+               std::tuple(b.dimension, b.birth, b.death);
+    });
     return pairs;
 }
 

@@ -26,7 +26,7 @@ namespace nerve::persistence
  * @param config VR computation configuration
  * @return Vector of persistence pairs
  */
-std::vector<Pair> computeVrPersistenceMediumHybrid(core::BufferView<const double>points,
+std::vector<Pair> computeVrPersistenceMediumHybrid(core::BufferView<const double> points,
                                                    Size point_dim, const VRConfig &config);
 
 /**

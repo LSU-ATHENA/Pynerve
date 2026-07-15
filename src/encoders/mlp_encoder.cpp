@@ -273,9 +273,8 @@ Tensor MLPEncoder::applyLinear(const Tensor &input, const LinearLayer &layer) co
         const double *in_row = &input.data()[b * input_dim];
 
         // y = A * x  (A is output_dim x input_dim, row-major)
-        nerve::simd::simd_gemv(1.0, layer.weights.data().data(), in_row,
-                                0.0, out_row,
-                                output_dim, input_dim);
+        nerve::simd::simd_gemv(1.0, layer.weights.data().data(), in_row, 0.0, out_row, output_dim,
+                               input_dim);
         // y += bias
         nerve::simd::simd_add(out_row, layer.bias.data().data(), output_dim);
 

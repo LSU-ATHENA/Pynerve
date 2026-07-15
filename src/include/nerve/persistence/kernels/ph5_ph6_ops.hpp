@@ -110,8 +110,8 @@ private:
     static std::optional<FlattenedPoints> flattenPoints(const PointContainer &points,
                                                         std::string &error_message);
 
-    using EntryPoint = errors::ErrorResult<PersistenceResult> (*)(
-        core::BufferView<const double>, Size, const PersistenceOptions &);
+    using EntryPoint = errors::ErrorResult<PersistenceResult> (*)(core::BufferView<const double>,
+                                                                  Size, const PersistenceOptions &);
 
     std::optional<ResultType> runCanonical(const PointContainer &points, size_t max_dimension,
                                            EntryPoint entrypoint);

@@ -1,6 +1,6 @@
 
-#include "nerve/sheaf/sheaf_laplacian.hpp"
 #include "nerve/algebra/simplex.hpp"
+#include "nerve/sheaf/sheaf_laplacian.hpp"
 #include "nerve/types.hpp"
 #include "sheaf_laplacian_detail.hpp"
 

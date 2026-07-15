@@ -93,10 +93,11 @@ __device__ int blockReduceMin(int val, int *shmem)
     return val;
 }
 
-__global__ __launch_bounds__(256)
-    void gpuComputePivotsKernel(const int *__restrict__ col_data, const int *__restrict__ col_indices,
-                           const int *__restrict__ col_starts, int *__restrict__ pivots,
-                           int n_columns, int max_height)
+__global__ __launch_bounds__(256) void gpuComputePivotsKernel(const int *__restrict__ col_data,
+                                                              const int *__restrict__ col_indices,
+                                                              const int *__restrict__ col_starts,
+                                                              int *__restrict__ pivots,
+                                                              int n_columns, int max_height)
 {
     const int col = blockIdx.x;
     if (col >= n_columns)
@@ -126,11 +127,9 @@ __global__ __launch_bounds__(256)
     }
 }
 
-__global__ __launch_bounds__(256)
-    void gpuComputePivotsCohomologyKernel(const int *__restrict__ col_data,
-                                          const int *__restrict__ col_indices,
-                                          const int *__restrict__ col_starts, int *__restrict__ pivots,
-                                     int n_columns, int max_height)
+__global__ __launch_bounds__(256) void gpuComputePivotsCohomologyKernel(
+    const int *__restrict__ col_data, const int *__restrict__ col_indices,
+    const int *__restrict__ col_starts, int *__restrict__ pivots, int n_columns, int max_height)
 {
     const int col = blockIdx.x;
     if (col >= n_columns)
@@ -160,10 +159,11 @@ __global__ __launch_bounds__(256)
     }
 }
 
-__global__ __launch_bounds__(256)
-    void gpuAssignPivotOwnersKernel(const int *__restrict__ pivots, int *__restrict__ low_to_col,
-                               int *__restrict__ conflict_src, char *__restrict__ has_conflict,
-                               int n_columns)
+__global__ __launch_bounds__(256) void gpuAssignPivotOwnersKernel(const int *__restrict__ pivots,
+                                                                  int *__restrict__ low_to_col,
+                                                                  int *__restrict__ conflict_src,
+                                                                  char *__restrict__ has_conflict,
+                                                                  int n_columns)
 {
     const int col = blockIdx.x * blockDim.x + threadIdx.x;
     if (col >= n_columns)
@@ -191,10 +191,12 @@ __global__ __launch_bounds__(256)
     has_conflict[col] = 1;
 }
 
-__global__ __launch_bounds__(256)
-    void gpuAddColumnsKernel(int *__restrict__ col_data, int *__restrict__ col_indices,
-                        const int *__restrict__ col_starts, const int *__restrict__ conflict_src,
-                        const char *__restrict__ has_conflict, int n_columns, int max_height)
+__global__ __launch_bounds__(256) void gpuAddColumnsKernel(int *__restrict__ col_data,
+                                                           int *__restrict__ col_indices,
+                                                           const int *__restrict__ col_starts,
+                                                           const int *__restrict__ conflict_src,
+                                                           const char *__restrict__ has_conflict,
+                                                           int n_columns, int max_height)
 {
     const int dst_col = blockIdx.x;
     if (dst_col >= n_columns)
@@ -262,11 +264,10 @@ __global__ __launch_bounds__(256)
     }
 }
 
-__global__ __launch_bounds__(256)
-    void gpuResolveConflictsKernel(int *__restrict__ col_data, int *__restrict__ col_indices,
-                              const int *__restrict__ col_starts, int *__restrict__ pivots,
-                              int *__restrict__ low_to_col, int *__restrict__ changed,
-                              int n_columns, int max_height, int max_passes)
+__global__ __launch_bounds__(256) void gpuResolveConflictsKernel(
+    int *__restrict__ col_data, int *__restrict__ col_indices, const int *__restrict__ col_starts,
+    int *__restrict__ pivots, int *__restrict__ low_to_col, int *__restrict__ changed,
+    int n_columns, int max_height, int max_passes)
 {
     const int col = blockIdx.x;
     if (col >= n_columns)
@@ -390,11 +391,10 @@ __global__ __launch_bounds__(256)
     }
 }
 
-__global__ __launch_bounds__(256)
-    void gpuCohomologyReductionKernel(int *__restrict__ cob_data, int *__restrict__ cob_indices,
-                                 const int *__restrict__ cob_starts, int *__restrict__ pivots,
-                                 int *__restrict__ low_to_col, int *__restrict__ changed,
-                                 int n_cochains, int max_height, int max_passes)
+__global__ __launch_bounds__(256) void gpuCohomologyReductionKernel(
+    int *__restrict__ cob_data, int *__restrict__ cob_indices, const int *__restrict__ cob_starts,
+    int *__restrict__ pivots, int *__restrict__ low_to_col, int *__restrict__ changed,
+    int n_cochains, int max_height, int max_passes)
 {
     const int cochain_idx = blockIdx.x;
     if (cochain_idx >= n_cochains)
@@ -524,10 +524,12 @@ __global__ __launch_bounds__(256)
     }
 }
 
-__global__ __launch_bounds__(256)
-    void gpuClearingKernel(const int *__restrict__ pivots, const int *__restrict__ low_to_col,
-                      int *__restrict__ col_data, int *__restrict__ col_indices,
-                      const int *__restrict__ col_starts, int n_columns, int max_height)
+__global__ __launch_bounds__(256) void gpuClearingKernel(const int *__restrict__ pivots,
+                                                         const int *__restrict__ low_to_col,
+                                                         int *__restrict__ col_data,
+                                                         int *__restrict__ col_indices,
+                                                         const int *__restrict__ col_starts,
+                                                         int n_columns, int max_height)
 {
     const int col = blockIdx.x * blockDim.x + threadIdx.x;
     if (col >= n_columns)
@@ -557,9 +559,11 @@ __global__ __launch_bounds__(256)
     }
 }
 
-__global__ __launch_bounds__(256)
-    void gpuExtractPairsKernel(const int *__restrict__ pivots, const int *__restrict__ low_to_col,
-                          int2 *__restrict__ pairs, int *__restrict__ pair_count, int n_columns)
+__global__ __launch_bounds__(256) void gpuExtractPairsKernel(const int *__restrict__ pivots,
+                                                             const int *__restrict__ low_to_col,
+                                                             int2 *__restrict__ pairs,
+                                                             int *__restrict__ pair_count,
+                                                             int n_columns)
 {
     const int col = blockIdx.x * blockDim.x + threadIdx.x;
     if (col >= n_columns)
@@ -583,8 +587,8 @@ __global__ __launch_bounds__(256)
     pairs[idx] = make_int2(pivot, col);
 }
 
-__global__ __launch_bounds__(256)
-    void gpuCheckConvergenceKernel(int *__restrict__ changed, int *__restrict__ iteration_flag)
+__global__ __launch_bounds__(256) void gpuCheckConvergenceKernel(int *__restrict__ changed,
+                                                                 int *__restrict__ iteration_flag)
 {
     if (blockIdx.x != 0 || threadIdx.x != 0)
     {

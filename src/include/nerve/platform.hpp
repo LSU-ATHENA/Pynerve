@@ -9,8 +9,8 @@
 #include <type_traits>
 
 #if NERVE_COMPILER_MSVC
-#include <intrin.h>
 #include <immintrin.h>
+#include <intrin.h>
 #endif
 
 #if NERVE_HAS_X86_INTRINSICS && (NERVE_COMPILER_GNU_LIKE || defined(__AVX__))
@@ -20,45 +20,45 @@
 // Compiler detection
 
 #if defined(__GNUC__) || defined(__clang__)
-    #define NERVE_COMPILER_GNU_LIKE 1
+#define NERVE_COMPILER_GNU_LIKE 1
 #else
-    #define NERVE_COMPILER_GNU_LIKE 0
+#define NERVE_COMPILER_GNU_LIKE 0
 #endif
 
 #if defined(_MSC_VER)
-    #define NERVE_COMPILER_MSVC 1
+#define NERVE_COMPILER_MSVC 1
 #else
-    #define NERVE_COMPILER_MSVC 0
+#define NERVE_COMPILER_MSVC 0
 #endif
 
 // Platform detection
 
 #if defined(_WIN32) || defined(_WIN64)
-    #define NERVE_PLATFORM_WINDOWS 1
+#define NERVE_PLATFORM_WINDOWS 1
 #else
-    #define NERVE_PLATFORM_WINDOWS 0
+#define NERVE_PLATFORM_WINDOWS 0
 #endif
 
 #if defined(__linux__)
-    #define NERVE_PLATFORM_LINUX 1
+#define NERVE_PLATFORM_LINUX 1
 #else
-    #define NERVE_PLATFORM_LINUX 0
+#define NERVE_PLATFORM_LINUX 0
 #endif
 
 #if defined(__APPLE__)
-    #define NERVE_PLATFORM_APPLE 1
+#define NERVE_PLATFORM_APPLE 1
 #else
-    #define NERVE_PLATFORM_APPLE 0
+#define NERVE_PLATFORM_APPLE 0
 #endif
 
 // Likely / Unlikely hints
 
 #if NERVE_COMPILER_GNU_LIKE
-    #define NERVE_LIKELY(x)     __builtin_expect(!!(x), 1)
-    #define NERVE_UNLIKELY(x)   __builtin_expect(!!(x), 0)
+#define NERVE_LIKELY(x) __builtin_expect(!!(x), 1)
+#define NERVE_UNLIKELY(x) __builtin_expect(!!(x), 0)
 #else
-    #define NERVE_LIKELY(x)     (x)
-    #define NERVE_UNLIKELY(x)   (x)
+#define NERVE_LIKELY(x) (x)
+#define NERVE_UNLIKELY(x) (x)
 #endif
 
 // Prefetch
@@ -78,10 +78,18 @@ inline void nerve_prefetch_read(const void *ptr, NervePrefetchLevel level = Nerv
 #if NERVE_COMPILER_GNU_LIKE
     switch (level)
     {
-        case NervePrefetchLevel::L1:  __builtin_prefetch(ptr, 0, 3); break;
-        case NervePrefetchLevel::L2:  __builtin_prefetch(ptr, 0, 2); break;
-        case NervePrefetchLevel::L3:  __builtin_prefetch(ptr, 0, 1); break;
-        case NervePrefetchLevel::RAM: __builtin_prefetch(ptr, 0, 0); break;
+        case NervePrefetchLevel::L1:
+            __builtin_prefetch(ptr, 0, 3);
+            break;
+        case NervePrefetchLevel::L2:
+            __builtin_prefetch(ptr, 0, 2);
+            break;
+        case NervePrefetchLevel::L3:
+            __builtin_prefetch(ptr, 0, 1);
+            break;
+        case NervePrefetchLevel::RAM:
+            __builtin_prefetch(ptr, 0, 0);
+            break;
     }
 #elif defined(_MSC_VER) && defined(__AVX__)
     // MSVC on x86 with AVX
@@ -113,10 +121,18 @@ inline void nerve_prefetch_write(const void *ptr, NervePrefetchLevel level = Ner
 #if NERVE_COMPILER_GNU_LIKE
     switch (level)
     {
-        case NervePrefetchLevel::L1:  __builtin_prefetch(ptr, 1, 3); break;
-        case NervePrefetchLevel::L2:  __builtin_prefetch(ptr, 1, 2); break;
-        case NervePrefetchLevel::L3:  __builtin_prefetch(ptr, 1, 1); break;
-        case NervePrefetchLevel::RAM: __builtin_prefetch(ptr, 1, 0); break;
+        case NervePrefetchLevel::L1:
+            __builtin_prefetch(ptr, 1, 3);
+            break;
+        case NervePrefetchLevel::L2:
+            __builtin_prefetch(ptr, 1, 2);
+            break;
+        case NervePrefetchLevel::L3:
+            __builtin_prefetch(ptr, 1, 1);
+            break;
+        case NervePrefetchLevel::RAM:
+            __builtin_prefetch(ptr, 1, 0);
+            break;
     }
 #else
     (void)ptr;
@@ -143,7 +159,8 @@ inline int clz64(std::uint64_t x)
     // Portable fallback (rarely used)
     int n = 0;
     for (int i = 63; i >= 0; --i)
-        if ((x >> static_cast<unsigned>(i)) & 1U) return 63 - i;
+        if ((x >> static_cast<unsigned>(i)) & 1U)
+            return 63 - i;
     return 64;
 #endif
 }
@@ -160,9 +177,14 @@ inline int ctz64(std::uint64_t x)
     return static_cast<int>(index);
 #else
     // Portable fallback
-    if (x == 0) return 64;
+    if (x == 0)
+        return 64;
     int n = 0;
-    while ((x & 1U) == 0) { ++n; x >>= 1; }
+    while ((x & 1U) == 0)
+    {
+        ++n;
+        x >>= 1;
+    }
     return n;
 #endif
 }
@@ -177,9 +199,14 @@ inline int ctz32(std::uint32_t x)
     _BitScanForward(&index, x);
     return static_cast<int>(index);
 #else
-    if (x == 0) return 32;
+    if (x == 0)
+        return 32;
     int n = 0;
-    while ((x & 1U) == 0) { ++n; x >>= 1; }
+    while ((x & 1U) == 0)
+    {
+        ++n;
+        x >>= 1;
+    }
     return n;
 #endif
 }
@@ -196,7 +223,8 @@ inline int clz32(std::uint32_t x)
 #else
     int n = 0;
     for (int i = 31; i >= 0; --i)
-        if ((x >> static_cast<unsigned>(i)) & 1U) return 31 - i;
+        if ((x >> static_cast<unsigned>(i)) & 1U)
+            return 31 - i;
     return 32;
 #endif
 }
@@ -211,7 +239,11 @@ inline int popcount64(std::uint64_t x)
     return static_cast<int>(__popcnt64(x));
 #else
     int count = 0;
-    while (x) { count += static_cast<int>(x & 1U); x >>= 1; }
+    while (x)
+    {
+        count += static_cast<int>(x & 1U);
+        x >>= 1;
+    }
     return count;
 #endif
 }
@@ -225,7 +257,11 @@ inline int popcount32(std::uint32_t x)
     return static_cast<int>(__popcnt(x));
 #else
     int count = 0;
-    while (x) { count += static_cast<int>(x & 1U); x >>= 1; }
+    while (x)
+    {
+        count += static_cast<int>(x & 1U);
+        x >>= 1;
+    }
     return count;
 #endif
 }
@@ -233,14 +269,16 @@ inline int popcount32(std::uint32_t x)
 // Find last set bit (1-indexed). Returns 0 for x == 0.
 inline int fls64(std::uint64_t x)
 {
-    if (x == 0) return 0;
+    if (x == 0)
+        return 0;
     return 64 - clz64(x);
 }
 
 // Find first set bit (1-indexed). Returns 0 for x == 0.
 inline int ffs64(std::uint64_t x)
 {
-    if (x == 0) return 0;
+    if (x == 0)
+        return 0;
     return ctz64(x) + 1;
 }
 
@@ -256,21 +294,21 @@ namespace nerve::cpu
 struct CpuFeatureFlags
 {
     // Leaf 1: ECX
-    bool has_sse3      : 1 = false;
-    bool has_ssse3     : 1 = false;
-    bool has_sse41     : 1 = false;
-    bool has_sse42     : 1 = false;
-    bool has_aes       : 1 = false;
-    bool has_avx       : 1 = false;
-    bool has_fma       : 1 = false;
+    bool has_sse3 : 1 = false;
+    bool has_ssse3 : 1 = false;
+    bool has_sse41 : 1 = false;
+    bool has_sse42 : 1 = false;
+    bool has_aes : 1 = false;
+    bool has_avx : 1 = false;
+    bool has_fma : 1 = false;
     // Leaf 7 (sub-leaf 0): EBX
-    bool has_bmi1      : 1 = false;
-    bool has_bmi2      : 1 = false;
-    bool has_avx2      : 1 = false;
-    bool has_avx512f   : 1 = false;
-    bool has_avx512dq  : 1 = false;
-    bool has_avx512bw  : 1 = false;
-    bool has_avx512vl  : 1 = false;
+    bool has_bmi1 : 1 = false;
+    bool has_bmi2 : 1 = false;
+    bool has_avx2 : 1 = false;
+    bool has_avx512f : 1 = false;
+    bool has_avx512dq : 1 = false;
+    bool has_avx512bw : 1 = false;
+    bool has_avx512vl : 1 = false;
 
     static CpuFeatureFlags detect() noexcept;
 };
@@ -282,11 +320,9 @@ inline void cpuid(int info[4], int function_id, int subfunction_id = 0) noexcept
 {
 #if NERVE_COMPILER_GNU_LIKE && (defined(__x86_64__) || defined(__i386__))
     // GCC/Clang: inline assembly avoids header dependency issues
-    __asm__(
-        "cpuid\n\t"
-        : "=a"(info[0]), "=b"(info[1]), "=c"(info[2]), "=d"(info[3])
-        : "a"(function_id), "c"(subfunction_id)
-    );
+    __asm__("cpuid\n\t"
+            : "=a"(info[0]), "=b"(info[1]), "=c"(info[2]), "=d"(info[3])
+            : "a"(function_id), "c"(subfunction_id));
 #elif NERVE_COMPILER_MSVC && (defined(_M_X64) || defined(_M_IX86))
     __cpuidex(info, function_id, subfunction_id);
 #else
@@ -304,23 +340,23 @@ inline CpuFeatureFlags CpuFeatureFlags::detect() noexcept
 
     // Leaf 1: basic feature flags
     cpuid(info, 1);
-    flags.has_sse3   = (info[2] >> 0)  & 1;  // ECX bit 0
-    flags.has_ssse3  = (info[2] >> 9)  & 1;  // ECX bit 9
-    flags.has_sse41  = (info[2] >> 19) & 1;  // ECX bit 19
-    flags.has_sse42  = (info[2] >> 20) & 1;  // ECX bit 20
-    flags.has_aes    = (info[2] >> 25) & 1;  // ECX bit 25
-    flags.has_avx    = (info[2] >> 28) & 1;  // ECX bit 28
-    flags.has_fma    = (info[2] >> 12) & 1;  // ECX bit 12
+    flags.has_sse3 = (info[2] >> 0) & 1;   // ECX bit 0
+    flags.has_ssse3 = (info[2] >> 9) & 1;  // ECX bit 9
+    flags.has_sse41 = (info[2] >> 19) & 1; // ECX bit 19
+    flags.has_sse42 = (info[2] >> 20) & 1; // ECX bit 20
+    flags.has_aes = (info[2] >> 25) & 1;   // ECX bit 25
+    flags.has_avx = (info[2] >> 28) & 1;   // ECX bit 28
+    flags.has_fma = (info[2] >> 12) & 1;   // ECX bit 12
 
     // Leaf 7 (sub-leaf 0): extended feature flags
     cpuid(info, 7, 0);
-    flags.has_bmi1     = (info[1] >> 3)  & 1;  // EBX bit 3
-    flags.has_bmi2     = (info[1] >> 8)  & 1;  // EBX bit 8
-    flags.has_avx2     = (info[1] >> 5)  & 1;  // EBX bit 5
-    flags.has_avx512f  = (info[1] >> 16) & 1;  // EBX bit 16
-    flags.has_avx512dq = (info[1] >> 17) & 1;  // EBX bit 17
-    flags.has_avx512bw = (info[1] >> 30) & 1;  // EBX bit 30
-    flags.has_avx512vl = (info[1] >> 31) & 1;  // EBX bit 31
+    flags.has_bmi1 = (info[1] >> 3) & 1;      // EBX bit 3
+    flags.has_bmi2 = (info[1] >> 8) & 1;      // EBX bit 8
+    flags.has_avx2 = (info[1] >> 5) & 1;      // EBX bit 5
+    flags.has_avx512f = (info[1] >> 16) & 1;  // EBX bit 16
+    flags.has_avx512dq = (info[1] >> 17) & 1; // EBX bit 17
+    flags.has_avx512bw = (info[1] >> 30) & 1; // EBX bit 30
+    flags.has_avx512vl = (info[1] >> 31) & 1; // EBX bit 31
 #else
     (void)flags;
 #endif
@@ -350,11 +386,11 @@ inline void nerve_memory_fence()
 // Attribute wrappers
 
 #if NERVE_COMPILER_GNU_LIKE
-    #define NERVE_NOINLINE      __attribute__((noinline))
+#define NERVE_NOINLINE __attribute__((noinline))
 #elif NERVE_COMPILER_MSVC
-    #define NERVE_NOINLINE      __declspec(noinline)
+#define NERVE_NOINLINE __declspec(noinline)
 #else
-    #define NERVE_NOINLINE
+#define NERVE_NOINLINE
 #endif
 
 // Platform-specific includes for system call wrappers
@@ -367,22 +403,22 @@ inline void nerve_memory_fence()
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include <io.h> // _get_osfhandle
 #include <windows.h>
-#include <io.h>       // _get_osfhandle
 #elif NERVE_PLATFORM_LINUX
-#include <sys/mman.h>  // mmap, munmap, madvise, mprotect
-#include <unistd.h>    // sysconf, _SC_PAGESIZE
-#include <pthread.h>   // pthread_t, pthread_self, pthread_setaffinity_np
-#include <sched.h>     // CPU_ZERO, CPU_SET, cpu_set_t, sched_getcpu
+#include <pthread.h>  // pthread_t, pthread_self, pthread_setaffinity_np
+#include <sched.h>    // CPU_ZERO, CPU_SET, cpu_set_t, sched_getcpu
+#include <sys/mman.h> // mmap, munmap, madvise, mprotect
+#include <unistd.h>   // sysconf, _SC_PAGESIZE
 #ifdef NERVE_HAS_NUMA
-#include <numa.h>      // numa_node_of_cpu
+#include <numa.h> // numa_node_of_cpu
 #endif
 #else
 // macOS / other POSIX
-#include <sys/mman.h>
-#include <unistd.h>
 #include <pthread.h>
 #include <sched.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #endif
 
 // POSIX-to-Windows system call wrappers
@@ -431,30 +467,30 @@ inline size_t allocation_granularity() noexcept
 // Plain enum (not enum class) so callers can use bitwise OR naturally.
 enum MapProt : int
 {
-    MAP_PROT_NONE  = 0,
-    MAP_PROT_READ  = 1,       // = PROT_READ
-    MAP_PROT_WRITE = 2,       // = PROT_WRITE
-    MAP_PROT_RW    = MAP_PROT_READ | MAP_PROT_WRITE,
+    MAP_PROT_NONE = 0,
+    MAP_PROT_READ = 1,  // = PROT_READ
+    MAP_PROT_WRITE = 2, // = PROT_WRITE
+    MAP_PROT_RW = MAP_PROT_READ | MAP_PROT_WRITE,
 };
 
 // Mapping flags (combinations of POSIX MAP_*).
 enum MapFlags : int
 {
-    MAP_FLAG_NONE      = 0,
-    MAP_FLAG_SHARED    = 1 << 0,  // MAP_SHARED
-    MAP_FLAG_PRIVATE   = 1 << 1,  // MAP_PRIVATE
-    MAP_FLAG_ANONYMOUS = 1 << 2,  // MAP_ANONYMOUS
-    MAP_FLAG_HUGETLB   = 1 << 3,  // MAP_HUGETLB (best-effort on Windows)
+    MAP_FLAG_NONE = 0,
+    MAP_FLAG_SHARED = 1 << 0,    // MAP_SHARED
+    MAP_FLAG_PRIVATE = 1 << 1,   // MAP_PRIVATE
+    MAP_FLAG_ANONYMOUS = 1 << 2, // MAP_ANONYMOUS
+    MAP_FLAG_HUGETLB = 1 << 3,   // MAP_HUGETLB (best-effort on Windows)
 };
 
 // Advice values (match POSIX MADV_*).
 enum MapAdvice : int
 {
-    MAP_ADV_NORMAL    = 0,  // MADV_NORMAL
-    MAP_ADV_RANDOM    = 1,  // MADV_RANDOM
+    MAP_ADV_NORMAL = 0,     // MADV_NORMAL
+    MAP_ADV_RANDOM = 1,     // MADV_RANDOM
     MAP_ADV_SEQUENTIAL = 2, // MADV_SEQUENTIAL
-    MAP_ADV_WILLNEED  = 3,  // MADV_WILLNEED
-    MAP_ADV_HUGEPAGE  = 14, // MADV_HUGEPAGE (Linux 2.6.38+)
+    MAP_ADV_WILLNEED = 3,   // MADV_WILLNEED
+    MAP_ADV_HUGEPAGE = 14,  // MADV_HUGEPAGE (Linux 2.6.38+)
 };
 
 /// Sentinel returned by map() on failure (equivalent to MAP_FAILED).
@@ -512,19 +548,24 @@ inline void *map(void *addr, size_t length, int prot, int flags, int fd = -1,
 #else
     // POSIX: translate enums to native constants
     int posix_flags = 0;
-    if (flags & MAP_FLAG_SHARED)    posix_flags |= MAP_SHARED;
-    if (flags & MAP_FLAG_PRIVATE)   posix_flags |= MAP_PRIVATE;
-    if (flags & MAP_FLAG_ANONYMOUS) posix_flags |= MAP_ANONYMOUS;
+    if (flags & MAP_FLAG_SHARED)
+        posix_flags |= MAP_SHARED;
+    if (flags & MAP_FLAG_PRIVATE)
+        posix_flags |= MAP_PRIVATE;
+    if (flags & MAP_FLAG_ANONYMOUS)
+        posix_flags |= MAP_ANONYMOUS;
 #if defined(MAP_HUGETLB)
-    if (flags & MAP_FLAG_HUGETLB)   posix_flags |= MAP_HUGETLB;
+    if (flags & MAP_FLAG_HUGETLB)
+        posix_flags |= MAP_HUGETLB;
 #endif
 
     int posix_prot = 0;
-    if (prot & MAP_PROT_READ)  posix_prot |= PROT_READ;
-    if (prot & MAP_PROT_WRITE) posix_prot |= PROT_WRITE;
+    if (prot & MAP_PROT_READ)
+        posix_prot |= PROT_READ;
+    if (prot & MAP_PROT_WRITE)
+        posix_prot |= PROT_WRITE;
 
-    void *result = ::mmap(addr, length, posix_prot, posix_flags, fd,
-                          static_cast<off_t>(offset));
+    void *result = ::mmap(addr, length, posix_prot, posix_flags, fd, static_cast<off_t>(offset));
     return (result == MAP_FAILED) ? kMapFailed : result;
 #endif
 }
@@ -575,14 +616,25 @@ inline int advise(void *addr, size_t length, int advice) noexcept
     int posix_advice;
     switch (advice)
     {
-    case MAP_ADV_NORMAL:     posix_advice = MADV_NORMAL;     break;
-    case MAP_ADV_RANDOM:     posix_advice = MADV_RANDOM;     break;
-    case MAP_ADV_SEQUENTIAL: posix_advice = MADV_SEQUENTIAL; break;
-    case MAP_ADV_WILLNEED:   posix_advice = MADV_WILLNEED;   break;
+        case MAP_ADV_NORMAL:
+            posix_advice = MADV_NORMAL;
+            break;
+        case MAP_ADV_RANDOM:
+            posix_advice = MADV_RANDOM;
+            break;
+        case MAP_ADV_SEQUENTIAL:
+            posix_advice = MADV_SEQUENTIAL;
+            break;
+        case MAP_ADV_WILLNEED:
+            posix_advice = MADV_WILLNEED;
+            break;
 #if defined(MADV_HUGEPAGE)
-    case MAP_ADV_HUGEPAGE:   posix_advice = MADV_HUGEPAGE;   break;
+        case MAP_ADV_HUGEPAGE:
+            posix_advice = MADV_HUGEPAGE;
+            break;
 #endif
-    default:                 return 0;
+        default:
+            return 0;
     }
     return ::madvise(addr, length, posix_advice);
 #endif
@@ -596,12 +648,13 @@ inline int advise(void *addr, size_t length, int advice) noexcept
 struct CpuSet
 {
     static constexpr int kMaxCpus = 1024;
-    unsigned long bits[(kMaxCpus + (sizeof(unsigned long) * 8 - 1)) /
-                       (sizeof(unsigned long) * 8)]{};
+    unsigned long
+        bits[(kMaxCpus + (sizeof(unsigned long) * 8 - 1)) / (sizeof(unsigned long) * 8)]{};
 
     void clear() noexcept
     {
-        for (auto &b : bits) b = 0UL;
+        for (auto &b : bits)
+            b = 0UL;
     }
 
     void set(int cpu) noexcept
@@ -638,7 +691,7 @@ struct CpuSet
 
 /// Portable thread handle type.
 #if NERVE_PLATFORM_WINDOWS
-using ThreadHandle = void *;  // HANDLE (opaque)
+using ThreadHandle = void *; // HANDLE (opaque)
 #else
 using ThreadHandle = pthread_t;
 #endif
@@ -647,7 +700,7 @@ using ThreadHandle = pthread_t;
 inline ThreadHandle thread_self() noexcept
 {
 #if NERVE_PLATFORM_WINDOWS
-    return GetCurrentThread();  // pseudo-handle (no need to close)
+    return GetCurrentThread(); // pseudo-handle (no need to close)
 #else
     return ::pthread_self();
 #endif

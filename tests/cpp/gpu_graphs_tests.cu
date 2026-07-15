@@ -1,9 +1,9 @@
 #include "gpu_test_helpers.cuh"
-#include "nerve/graphs/gpu_graphs.hpp"
 #include "nerve/graphs/gpu_gnn.hpp"
+#include "nerve/graphs/gpu_graphs.hpp"
 
-#include <vector>
 #include <utility>
+#include <vector>
 
 int main()
 {
@@ -156,7 +156,8 @@ int main()
     // Graphs: ParallelGraphFiltration computeFiltration
     {
         std::vector<std::vector<int>> adj = {{1, 2}, {0, 2}, {0, 1, 3}, {2}};
-        auto filtration = nerve::graphs::parallel::ParallelGraphFiltration::computeFiltration(adj, 1);
+        auto filtration =
+            nerve::graphs::parallel::ParallelGraphFiltration::computeFiltration(adj, 1);
         assert(filtration.size() == 4);
         assert(filtration[0] >= 0.0f);
         std::cout << "PASSED: ParallelGraphFiltration (4 vertices)\n";

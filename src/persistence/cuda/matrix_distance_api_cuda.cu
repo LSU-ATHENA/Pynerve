@@ -19,7 +19,7 @@ namespace
 
 constexpr double kNeutralSpeedup = 1.0;
 
-errors::ErrorResult<void> validateDistanceArguments(core::BufferView<const double>points,
+errors::ErrorResult<void> validateDistanceArguments(core::BufferView<const double> points,
                                                     const core::BufferView<double> &distances,
                                                     Size point_dim, double max_radius)
 {
@@ -209,7 +209,7 @@ CUDADistanceMatrix::create(const CUDADistanceMatrixConfig &config)
     return errors::ErrorResult<std::unique_ptr<CUDADistanceMatrix>>::ok(std::move(instance));
 }
 
-errors::ErrorResult<void> CUDADistanceMatrix::compute(core::BufferView<const double>points,
+errors::ErrorResult<void> CUDADistanceMatrix::compute(core::BufferView<const double> points,
                                                       core::BufferView<double> &distances,
                                                       Size point_dim, double max_radius)
 {
@@ -282,7 +282,7 @@ errors::ErrorResult<void> CUDADistanceMatrix::compute(core::BufferView<const dou
 }
 
 errors::ErrorResult<void>
-CUDADistanceMatrix::computeStreaming(core::BufferView<const double>points,
+CUDADistanceMatrix::computeStreaming(core::BufferView<const double> points,
                                      core::BufferView<double> &distances, Size point_dim,
                                      double max_radius, Size stream_size)
 {

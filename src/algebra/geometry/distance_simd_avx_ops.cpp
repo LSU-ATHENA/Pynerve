@@ -1,6 +1,6 @@
+#include "nerve/algebra/simd_distance_avx.hpp"
 #include "nerve/simd/simd_base.hpp"
 #include "nerve/simd/simd_distance.hpp"
-#include "nerve/algebra/simd_distance_avx.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -34,8 +34,7 @@ bool vectorCapacityExceeded(std::size_t count)
 
 bool valuesAreFinite(const double *values, std::size_t count)
 {
-    return std::all_of(values, values + count,
-                       [](double value) { return std::isfinite(value); });
+    return std::all_of(values, values + count, [](double value) { return std::isfinite(value); });
 }
 
 double checkedDistanceResult(double value)
@@ -47,8 +46,8 @@ double checkedDistanceResult(double value)
 
 errors::ErrorResult<std::vector<double>> distanceOverflowError(const std::overflow_error &error)
 {
-    return errors::ErrorResult<std::vector<double>>::error(
-        errors::ErrorCode::E20_NUM_NAN, error.what());
+    return errors::ErrorResult<std::vector<double>>::error(errors::ErrorCode::E20_NUM_NAN,
+                                                           error.what());
 }
 } // anonymous namespace
 
@@ -58,9 +57,10 @@ SIMDCalculator::SIMDCalculator()
     nerve::simd::simd_init();
 }
 
-errors::ErrorResult<std::vector<double>> SIMDCalculator::batchEuclideanDistances(
-    const double *query_point, const double *target_points, std::size_t num_targets, std::size_t dimension,
-    const core::DeterminismContract &contract)
+errors::ErrorResult<std::vector<double>>
+SIMDCalculator::batchEuclideanDistances(const double *query_point, const double *target_points,
+                                        std::size_t num_targets, std::size_t dimension,
+                                        const core::DeterminismContract &contract)
 {
     if (!query_point || !target_points || dimension == 0)
     {
@@ -94,7 +94,8 @@ errors::ErrorResult<std::vector<double>> SIMDCalculator::batchEuclideanDistances
             std::size_t offset = batch * batch_size;
             for (int i = 0; i < 4; ++i)
             {
-                const double *t = target_points + (offset + static_cast<std::size_t>(i)) * dimension;
+                const double *t =
+                    target_points + (offset + static_cast<std::size_t>(i)) * dimension;
                 results[offset + static_cast<std::size_t>(i)] =
                     nerve::simd::simd_euclidean(query_point, t, dimension);
             }
@@ -102,8 +103,7 @@ errors::ErrorResult<std::vector<double>> SIMDCalculator::batchEuclideanDistances
         for (std::size_t i = num_batches * batch_size; i < num_targets; ++i)
         {
             const double *target = target_points + i * dimension;
-            results[i] =
-                nerve::simd::simd_euclidean(query_point, target, dimension);
+            results[i] = nerve::simd::simd_euclidean(query_point, target, dimension);
         }
     }
     catch (const std::overflow_error &error)
@@ -116,11 +116,10 @@ errors::ErrorResult<std::vector<double>> SIMDCalculator::batchEuclideanDistances
 
 errors::ErrorResult<std::vector<double>>
 SIMDCalculator::computeDistanceMatrix(const double *points, std::size_t num_points,
-                                              std::size_t dimension,
-                                              const core::DeterminismContract &contract)
+                                      std::size_t dimension,
+                                      const core::DeterminismContract &contract)
 {
-    if (!points || num_points == 0 || dimension == 0 ||
-        squareSizeOverflows(num_points) ||
+    if (!points || num_points == 0 || dimension == 0 || squareSizeOverflows(num_points) ||
         elementCountOverflows(num_points, dimension))
     {
         return errors::ErrorResult<std::vector<double>>::error(
@@ -147,8 +146,7 @@ SIMDCalculator::computeDistanceMatrix(const double *points, std::size_t num_poin
             for (std::size_t j = i + 1; j < num_points; ++j)
             {
                 const double *pj = points + j * dimension;
-                double dist = nerve::simd::simd_euclidean(
-                    pi, pj, dimension);
+                double dist = nerve::simd::simd_euclidean(pi, pj, dimension);
                 distanceMatrix[i * num_points + j] = dist;
                 distanceMatrix[j * num_points + i] = dist;
             }
@@ -164,11 +162,10 @@ SIMDCalculator::computeDistanceMatrix(const double *points, std::size_t num_poin
 
 errors::ErrorResult<std::vector<double>>
 SIMDCalculator::computeCompressedMatrix(const double *points, std::size_t num_points,
-                                                std::size_t dimension,
-                                                const core::DeterminismContract &contract)
+                                        std::size_t dimension,
+                                        const core::DeterminismContract &contract)
 {
-    if (!points || num_points == 0 || dimension == 0 ||
-        pairCountOverflows(num_points) ||
+    if (!points || num_points == 0 || dimension == 0 || pairCountOverflows(num_points) ||
         elementCountOverflows(num_points, dimension))
     {
         return errors::ErrorResult<std::vector<double>>::error(
@@ -194,8 +191,7 @@ SIMDCalculator::computeCompressedMatrix(const double *points, std::size_t num_po
             for (std::size_t j = i + 1; j < num_points; ++j)
             {
                 const double *pj = points + j * dimension;
-                compressedMatrix[index++] = nerve::simd::simd_euclidean(
-                    pi, pj, dimension);
+                compressedMatrix[index++] = nerve::simd::simd_euclidean(pi, pj, dimension);
             }
         }
     }

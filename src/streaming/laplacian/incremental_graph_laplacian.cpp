@@ -1,5 +1,5 @@
-#include "nerve/streaming/streaming_laplacian.hpp"
 #include "nerve/simd/simd_base.hpp"
+#include "nerve/streaming/streaming_laplacian.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -175,8 +175,10 @@ LaplacianSpectrum IncrementalGraphLaplacian::computeSpectrum() const
         {
             result.eigenvalues = spec.eigenvalues;
             result.trace = std::accumulate(state_.diagonal.begin(), state_.diagonal.end(), 0.0);
-            double fn_sq = nerve::simd::simd_dot(state_.diagonal.data(), state_.diagonal.data(), state_.matrix_size)
-                         + nerve::simd::simd_dot(state_.values.data(), state_.values.data(), state_.values.size());
+            double fn_sq = nerve::simd::simd_dot(state_.diagonal.data(), state_.diagonal.data(),
+                                                 state_.matrix_size) +
+                           nerve::simd::simd_dot(state_.values.data(), state_.values.data(),
+                                                 state_.values.size());
             result.frobenius_norm = std::sqrt(fn_sq);
             result.rank = 0;
             for (double ev : result.eigenvalues)
@@ -191,8 +193,9 @@ LaplacianSpectrum IncrementalGraphLaplacian::computeSpectrum() const
     result.eigenvalues = lanczosIteration(state_, k, config_.eigenvalue_tolerance);
     std::sort(result.eigenvalues.begin(), result.eigenvalues.end());
     result.trace = std::accumulate(state_.diagonal.begin(), state_.diagonal.end(), 0.0);
-    double fn_sq = nerve::simd::simd_dot(state_.diagonal.data(), state_.diagonal.data(), state_.matrix_size)
-                 + nerve::simd::simd_dot(state_.values.data(), state_.values.data(), state_.values.size());
+    double fn_sq =
+        nerve::simd::simd_dot(state_.diagonal.data(), state_.diagonal.data(), state_.matrix_size) +
+        nerve::simd::simd_dot(state_.values.data(), state_.values.data(), state_.values.size());
     result.frobenius_norm = std::sqrt(fn_sq);
     result.rank = 0;
     for (double ev : result.eigenvalues)

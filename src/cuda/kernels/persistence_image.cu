@@ -44,10 +44,9 @@ __device__ __forceinline__ T device_min(T a, T b)
 // Original kernels (fallback for sm < 80)
 
 template <typename T>
-__global__ __launch_bounds__(256)
-    void persistence_image_pixel_kernel(const T *__restrict__ births, const T *__restrict__ deaths,
-                                   int n_pairs, int resolution, T sigma, T *__restrict__ image,
-                                   T x_min, T x_max, T y_min, T y_max)
+__global__ __launch_bounds__(256) void persistence_image_pixel_kernel(
+    const T *__restrict__ births, const T *__restrict__ deaths, int n_pairs, int resolution,
+    T sigma, T *__restrict__ image, T x_min, T x_max, T y_min, T y_max)
 {
     int px = blockIdx.x * blockDim.x + threadIdx.x;
     int py = blockIdx.y * blockDim.y + threadIdx.y;
@@ -86,10 +85,9 @@ __global__ __launch_bounds__(256)
 }
 
 template <typename T>
-__global__ __launch_bounds__(256)
-    void persistence_image_pair_kernel(const T *__restrict__ births, const T *__restrict__ deaths,
-                                  int n_pairs, int resolution, T sigma, T *__restrict__ image,
-                                  T x_min, T x_max, T y_min, T y_max)
+__global__ __launch_bounds__(256) void persistence_image_pair_kernel(
+    const T *__restrict__ births, const T *__restrict__ deaths, int n_pairs, int resolution,
+    T sigma, T *__restrict__ image, T x_min, T x_max, T y_min, T y_max)
 {
     __shared__ T shared_image[1024];
 
@@ -138,11 +136,9 @@ __global__ __launch_bounds__(256)
 
 // PTX-optimized kernels (sm80+)
 
-__global__ __launch_bounds__(256)
-    void persistence_image_pixel_ptx_kernel(const float *__restrict__ births,
-                                       const float *__restrict__ deaths, int n_pairs,
-                                       int resolution, float sigma, float *__restrict__ image,
-                                       float x_min, float x_max, float y_min, float y_max)
+__global__ __launch_bounds__(256) void persistence_image_pixel_ptx_kernel(
+    const float *__restrict__ births, const float *__restrict__ deaths, int n_pairs, int resolution,
+    float sigma, float *__restrict__ image, float x_min, float x_max, float y_min, float y_max)
 {
     using namespace nerve::gpu::ptx;
 
@@ -189,11 +185,9 @@ __global__ __launch_bounds__(256)
     atomicAdd(&image[py * resolution + px], weight_sum);
 }
 
-__global__ __launch_bounds__(256)
-    void persistence_image_pair_ptx_kernel(const float *__restrict__ births,
-                                      const float *__restrict__ deaths, int n_pairs,
-                                      int resolution, float sigma, float *__restrict__ image,
-                                      float x_min, float x_max, float y_min, float y_max)
+__global__ __launch_bounds__(256) void persistence_image_pair_ptx_kernel(
+    const float *__restrict__ births, const float *__restrict__ deaths, int n_pairs, int resolution,
+    float sigma, float *__restrict__ image, float x_min, float x_max, float y_min, float y_max)
 {
     using namespace nerve::gpu::ptx;
 
@@ -232,14 +226,10 @@ __global__ __launch_bounds__(256)
     float sigma_term_x = 3.0f * sigma * static_cast<float>(resolution) / x_range;
     float sigma_term_y = 3.0f * sigma * static_cast<float>(resolution) / y_range;
 
-    int x0 = static_cast<int>(
-        hwmax_f32(0.0f, bx - sigma_term_x));
-    int x1 = static_cast<int>(
-        hwmin_f32(static_cast<float>(resolution - 1), bx + sigma_term_x));
-    int y0 = static_cast<int>(
-        hwmax_f32(0.0f, py_val - sigma_term_y));
-    int y1 = static_cast<int>(
-        hwmin_f32(static_cast<float>(resolution - 1), py_val + sigma_term_y));
+    int x0 = static_cast<int>(hwmax_f32(0.0f, bx - sigma_term_x));
+    int x1 = static_cast<int>(hwmin_f32(static_cast<float>(resolution - 1), bx + sigma_term_x));
+    int y0 = static_cast<int>(hwmax_f32(0.0f, py_val - sigma_term_y));
+    int y1 = static_cast<int>(hwmin_f32(static_cast<float>(resolution - 1), py_val + sigma_term_y));
 
     float precomputed_scale = precompute_gaussian_scale(sigma);
     float inv_res = 1.0f / static_cast<float>(resolution);
@@ -267,10 +257,8 @@ __global__ __launch_bounds__(256)
                 int x = tx + lx;
                 int lid = ly * kLocalTile + lx;
 
-                float pixel_x =
-                    fma_f32(static_cast<float>(x) + 0.5f, x_range * inv_res, x_min);
-                float pixel_y =
-                    fma_f32(static_cast<float>(y) + 0.5f, y_range * inv_res, y_min);
+                float pixel_x = fma_f32(static_cast<float>(x) + 0.5f, x_range * inv_res, x_min);
+                float pixel_y = fma_f32(static_cast<float>(y) + 0.5f, y_range * inv_res, y_min);
 
                 float dx = pixel_x - birth;
                 float dy = pixel_y - persistence;

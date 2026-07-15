@@ -1,8 +1,8 @@
 
 #include "nerve/errors/errors.hpp"
 #include "nerve/persistence/adaptive_acceleration/adaptive_acceleration_system_capabilities.hpp"
-#include "nerve/runtime/hardware_probe.hpp"
 #include "nerve/platform.hpp"
+#include "nerve/runtime/hardware_probe.hpp"
 
 #include <algorithm>
 #include <cstddef>

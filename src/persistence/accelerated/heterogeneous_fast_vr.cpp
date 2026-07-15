@@ -8,7 +8,7 @@ namespace nerve::persistence::accelerated
 {
 
 errors::ErrorResult<std::vector<Pair>>
-HeterogeneousFastVR::computeCpuOnly(core::BufferView<const double>points, size_t point_dim,
+HeterogeneousFastVR::computeCpuOnly(core::BufferView<const double> points, size_t point_dim,
                                     const core::DeterminismContract &contract)
 {
     auto start_time = std::chrono::high_resolution_clock::now();

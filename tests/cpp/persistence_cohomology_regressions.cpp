@@ -24,7 +24,6 @@ using nerve::persistence::Pair;
 using nerve::persistence::PersistentCohomologyComputer;
 using namespace nerve::test;
 
-
 bool check_persistent_cohomology_computer_constructs()
 {
     PersistentCohomologyComputer computer;

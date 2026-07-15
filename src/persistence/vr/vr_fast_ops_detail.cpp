@@ -53,7 +53,7 @@ int64_t binom_idx_3(int a, int b, int c)
 
 } // anonymous namespace
 
-static std::vector<Pair> computeVrPersistenceImplicit(core::BufferView<const double>points,
+static std::vector<Pair> computeVrPersistenceImplicit(core::BufferView<const double> points,
                                                       Size point_dim, const VRConfig &config)
 {
     const int n = static_cast<int>(points.size() / point_dim);

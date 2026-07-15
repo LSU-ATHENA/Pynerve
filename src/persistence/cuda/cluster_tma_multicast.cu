@@ -95,7 +95,8 @@ __global__ void NERVE_CLUSTER_DIMS(8, 1, 1) __launch_bounds__(256)
                 uint32_t value;
                 asm volatile("mapa.sync.aligned.b32 %0, [%1], %2;"
                              : "=r"(value)
-                             : "r"(static_cast<unsigned int>(targetAddr + d * sizeof(float))), "r"(sourceBlockA));
+                             : "r"(static_cast<unsigned int>(targetAddr + d * sizeof(float))),
+                               "r"(sourceBlockA));
                 pointA[d] = __uint_as_float(value);
             }
         }
@@ -124,7 +125,8 @@ __global__ void NERVE_CLUSTER_DIMS(8, 1, 1) __launch_bounds__(256)
                     uint32_t value;
                     asm volatile("mapa.sync.aligned.b32 %0, [%1], %2;"
                                  : "=r"(value)
-                                 : "r"(static_cast<unsigned int>(targetAddr + d * sizeof(float))), "r"(sourceBlockB));
+                                 : "r"(static_cast<unsigned int>(targetAddr + d * sizeof(float))),
+                                   "r"(sourceBlockB));
                     pointB[d] = __uint_as_float(value);
                 }
             }

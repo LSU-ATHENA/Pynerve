@@ -105,7 +105,8 @@ inline double euclideanDistanceScalar(const double *p1, const double *p2, size_t
 
 bool canUseAvx512Distance()
 {
-#if defined(__AVX512F__) && (defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86))
+#if defined(__AVX512F__) &&                                                                        \
+    (defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86))
     static const bool available = nerve::cpu::CpuFeatureFlags::detect().has_avx512f;
     return available;
 #else
@@ -150,7 +151,7 @@ struct SimplexKeyHash
 
 using SimplexSet = std::unordered_set<std::vector<int>, SimplexKeyHash>;
 
-bool isValidFastSimdInput(core::BufferView<const double>points, Size point_dim,
+bool isValidFastSimdInput(core::BufferView<const double> points, Size point_dim,
                           const VRConfig &config)
 {
     if (point_dim == 0 || points.empty() || (points.size() % point_dim) != 0)
@@ -383,7 +384,7 @@ private:
 } // namespace
 
 // Public API: Optimized VR for small point sets (< 1K points)
-std::vector<Pair> computeVrPersistenceFastSimd(core::BufferView<const double>points,
+std::vector<Pair> computeVrPersistenceFastSimd(core::BufferView<const double> points,
                                                Size point_dim, const VRConfig &config)
 {
     if (!isValidFastSimdInput(points, point_dim, config))
@@ -442,7 +443,8 @@ std::vector<Pair> computeVrPersistenceFastSimd(core::BufferView<const double>poi
     for (const auto &[k32, dist] : edge_weights)
     {
         int a = (int)(k32 >> 16), b = (int)(k32 & 0xFFFF);
-        if (a > b) std::swap(a, b);
+        if (a > b)
+            std::swap(a, b);
         ew64[((std::uint64_t)(std::uint32_t)a << 32) | (std::uint32_t)b] = dist;
     }
     auto exact = computeExactCohomologyZ2Fast((int)num_points, (int)config.max_dim,
@@ -451,8 +453,10 @@ std::vector<Pair> computeVrPersistenceFastSimd(core::BufferView<const double>poi
     std::vector<Pair> pairs;
     pairs.reserve(diagram.size());
     for (const auto &pair : diagram)
-        if (pair.dimension <= (Dimension)config.max_dim) pairs.push_back(pair);
-    std::ranges::sort(pairs, {}, [](const Pair &p) { return std::tuple(p.dimension, p.birth, p.death); });
+        if (pair.dimension <= (Dimension)config.max_dim)
+            pairs.push_back(pair);
+    std::ranges::sort(pairs, {},
+                      [](const Pair &p) { return std::tuple(p.dimension, p.birth, p.death); });
     return pairs;
 }
 

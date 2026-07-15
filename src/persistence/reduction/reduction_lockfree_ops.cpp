@@ -237,8 +237,7 @@ void reductionWorker(int thread_id, int num_threads, const std::vector<std::vect
                      std::deque<WorkStealingQueue<int>> &work_queues,
                      std::vector<std::atomic<int>> &pivot_to_column,
                      std::atomic<int> &completed_columns, int total_columns,
-                     std::atomic<size_t> *add_calls_out,
-                     std::atomic<size_t> *apparent_pairs_out)
+                     std::atomic<size_t> *add_calls_out, std::atomic<size_t> *apparent_pairs_out)
 {
     auto &my_queue = work_queues[thread_id];
     int column_idx;
@@ -286,8 +285,7 @@ void reductionWorker(int thread_id, int num_threads, const std::vector<std::vect
                 // Try to claim with our (lower) index.
                 int expected = current;
                 if (pivot_to_column[target_pivot].compare_exchange_strong(
-                        expected, index,
-                        std::memory_order_release, std::memory_order_relaxed))
+                        expected, index, std::memory_order_release, std::memory_order_relaxed))
                 {
                     // Successfully claimed.
                     break;
@@ -356,17 +354,15 @@ std::vector<Pair> reduceMatrixLockfree(const std::vector<std::vector<int>> &boun
                                        const std::vector<Dimension> &simplex_dimensions,
                                        int num_threads)
 {
-    return reduceMatrixLockfreeProfiled(boundary_matrix, filtration_values,
-                                        row_filtration_values, simplex_dimensions,
-                                        num_threads, nullptr);
+    return reduceMatrixLockfreeProfiled(boundary_matrix, filtration_values, row_filtration_values,
+                                        simplex_dimensions, num_threads, nullptr);
 }
 
-std::vector<Pair> reduceMatrixLockfreeProfiled(
-    const std::vector<std::vector<int>> &boundary_matrix,
-    const std::vector<double> &filtration_values,
-    const std::vector<double> *row_filtration_values,
-    const std::vector<Dimension> &simplex_dimensions, int num_threads,
-    LockfreeProfile *profile)
+std::vector<Pair> reduceMatrixLockfreeProfiled(const std::vector<std::vector<int>> &boundary_matrix,
+                                               const std::vector<double> &filtration_values,
+                                               const std::vector<double> *row_filtration_values,
+                                               const std::vector<Dimension> &simplex_dimensions,
+                                               int num_threads, LockfreeProfile *profile)
 {
     if (boundary_matrix.size() > static_cast<size_t>(std::numeric_limits<int>::max()))
     {
@@ -530,11 +526,10 @@ std::vector<Pair> reduceMatrixLockfreeProfiled(
     {
         std::vector<int> pivot_map(static_cast<size_t>(n_rows), -1);
         for (int r = 0; r < n_rows; ++r)
-            pivot_map[static_cast<size_t>(r)] =
-                pivot_to_column[static_cast<size_t>(r)].load();
+            pivot_map[static_cast<size_t>(r)] = pivot_to_column[static_cast<size_t>(r)].load();
 
         auto xor_vectors = [](const std::vector<int> &a,
-                               const std::vector<int> &b) -> std::vector<int> {
+                              const std::vector<int> &b) -> std::vector<int> {
             std::vector<int> result;
             result.reserve(a.size() + b.size());
             size_t i = 0, j = 0;
@@ -591,8 +586,7 @@ std::vector<Pair> reduceMatrixLockfreeProfiled(
                         // Unclaimed -- column i keeps this pivot.
                         pivot_map[mpu] = i;
                         columns[static_cast<size_t>(i)].pivot = msb;
-                        columns[static_cast<size_t>(i)].indices =
-                            std::move(col_copy);
+                        columns[static_cast<size_t>(i)].indices = std::move(col_copy);
                         claimed = true;
                         ++re_reduced;
                         break;
@@ -605,9 +599,8 @@ std::vector<Pair> reduceMatrixLockfreeProfiled(
                     }
 
                     // XOR with the survivor's reduced form.
-                    col_copy = xor_vectors(
-                        col_copy,
-                        columns[static_cast<size_t>(msb_owner)].indices);
+                    col_copy =
+                        xor_vectors(col_copy, columns[static_cast<size_t>(msb_owner)].indices);
                 }
 
                 if (!claimed)
@@ -659,8 +652,8 @@ std::vector<Pair> reduceMatrixLockfreeProfiled(
     if (profile)
     {
         using ms = std::chrono::duration<double, std::milli>;
-        profile->column_init_ms = ms(t_init_end - t_init_start).count() +
-                                        ms(t_nrows_end - t_init_end).count();
+        profile->column_init_ms =
+            ms(t_init_end - t_init_start).count() + ms(t_nrows_end - t_init_end).count();
         profile->coboundary_build_ms = ms(t_co_end - t_co_start).count();
         profile->atomics_init_ms = ms(t_atom_end - t_atom_start).count();
         profile->queue_setup_ms = ms(t_q_end - t_q_start).count();

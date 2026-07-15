@@ -5,12 +5,12 @@
 //
 // Label: persistence;reduction;gpu;cuda;generated;contracts
 
+#include "hypha_test_helpers.hpp"
 #include "nerve/algebra/boundary.hpp"
 #include "nerve/algebra/complex.hpp"
 #include "nerve/algebra/simplex.hpp"
 #include "nerve/persistence/reduction/reduction_hypha_ops.hpp"
 #include "nerve/persistence/reduction/reduction_lockfree_ops.hpp"
-#include "hypha_test_helpers.hpp"
 
 #include <cuda_runtime.h>
 
@@ -41,13 +41,13 @@ bool has_gpu()
 
 struct TrialConfig
 {
-    int n_points;       // number of random points
-    float threshold;    // VR threshold radius
-    unsigned seed;      // RNG seed
-    int dim;            // homology dimension (0, 1, 2, 3)
-    int n_dims;         // point cloud dimension (2, 3, 4)
-    bool duplicate;     // inject duplicate points?
-    bool collinear;     // inject collinear points?
+    int n_points;    // number of random points
+    float threshold; // VR threshold radius
+    unsigned seed;   // RNG seed
+    int dim;         // homology dimension (0, 1, 2, 3)
+    int n_dims;      // point cloud dimension (2, 3, 4)
+    bool duplicate;  // inject duplicate points?
+    bool collinear;  // inject collinear points?
 };
 
 struct TrialResult
@@ -65,13 +65,10 @@ struct TrialResult
     int n_rows = 0;
 };
 
-
-
 // Random n-D point cloud generator
 
-std::vector<std::vector<float>> generate_cloud(int n_points, int n_dims,
-                                                unsigned seed, bool duplicate,
-                                                bool collinear)
+std::vector<std::vector<float>> generate_cloud(int n_points, int n_dims, unsigned seed,
+                                               bool duplicate, bool collinear)
 {
     std::mt19937 rng(seed);
     std::uniform_real_distribution<float> dist(0.0f, 1.0f);
@@ -107,8 +104,7 @@ std::vector<std::vector<float>> generate_cloud(int n_points, int n_dims,
 TrialResult run_trial(const TrialConfig &cfg)
 {
     TrialResult result;
-    auto points = generate_cloud(cfg.n_points, cfg.n_dims, cfg.seed,
-                                 cfg.duplicate, cfg.collinear);
+    auto points = generate_cloud(cfg.n_points, cfg.n_dims, cfg.seed, cfg.duplicate, cfg.collinear);
     auto complex = nerve::test::hypha::build_vr_complex(points, cfg.threshold);
     // For dim-3, extend the VR complex with tetrahedra (edge-to-triangle adjacency)
     if (cfg.dim == 3)
@@ -143,8 +139,8 @@ TrialResult run_trial(const TrialConfig &cfg)
     auto lf_filtration = std::vector<double>();
     auto lf_row_filtration = std::vector<double>();
     auto lf_dims = std::vector<nerve::Dimension>();
-    nerve::test::hypha::to_lockfree_format(bm, lf_boundary, lf_filtration,
-                                            lf_row_filtration, lf_dims);
+    nerve::test::hypha::to_lockfree_format(bm, lf_boundary, lf_filtration, lf_row_filtration,
+                                           lf_dims);
     {
         auto t0 = clock::now();
         auto pairs = nerve::persistence::reduceMatrixLockfree(
@@ -159,8 +155,7 @@ TrialResult run_trial(const TrialConfig &cfg)
     {
         auto t0 = clock::now();
         auto seq_pairs = nerve::test::hypha::reduce_sequential_fast(
-            lf_boundary, lf_filtration, lf_row_filtration, lf_dims,
-            static_cast<int>(bm.rows()));
+            lf_boundary, lf_filtration, lf_row_filtration, lf_dims, static_cast<int>(bm.rows()));
         auto t1 = clock::now();
         result.seq_pairs = static_cast<int>(seq_pairs.size());
         result.seq_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
@@ -281,10 +276,8 @@ int main()
     std::printf("=== GPU Generated Reduction Contracts ===\n");
     std::printf("Configurations: %zu\n\n", configs.size());
 
-    std::printf("  %-5s | %3s | %3s | Dup | Col | %5s | %5s | %5s | %6s | %6s | %6s | %8s\n",
-                "Pts", "Dim", "ND", "", "",
-                "Trials", "GvSMis", "LvSMis", "GvLMis",
-                "GPUm", "LFm", "Seqm");
+    std::printf("  %-5s | %3s | %3s | Dup | Col | %5s | %5s | %5s | %6s | %6s | %6s | %8s\n", "Pts",
+                "Dim", "ND", "", "", "Trials", "GvSMis", "LvSMis", "GvLMis", "GPUm", "LFm", "Seqm");
 
     for (const auto &cfg : configs)
     {
@@ -297,8 +290,8 @@ int main()
         for (int s = 0; s < cfg.seeds; ++s)
         {
             unsigned seed = static_cast<unsigned>(1000 + s * 7919); // prime steps
-            TrialConfig tc{cfg.n_points, cfg.threshold, seed,
-                           cfg.dim, cfg.n_dims, cfg.duplicate, cfg.collinear};
+            TrialConfig tc{cfg.n_points, cfg.threshold, seed,         cfg.dim,
+                           cfg.n_dims,   cfg.duplicate, cfg.collinear};
             auto trial = run_trial(tc);
 
             if (!trial.count_match_gpu_seq)
@@ -324,15 +317,11 @@ int main()
         double avg_lf_ms = stats.total_lf_ms / std::max(stats.trials, 1);
         double avg_seq_ms = stats.total_seq_ms / std::max(stats.trials, 1);
 
-        std::printf("  %5d | %3d | %3d |  %c  |  %c  | %5d | %5d | %5d | %5d | %6.1f | %6.1f | %8.2f\n",
-                    cfg.n_points, cfg.dim, cfg.n_dims,
-                    cfg.duplicate ? 'Y' : 'N',
-                    cfg.collinear ? 'Y' : 'N',
-                    cfg.seeds,
-                    stats.gpu_seq_mismatches,
-                    stats.lf_seq_mismatches,
-                    stats.gpu_lf_mismatches,
-                    avg_gpu_ms, avg_lf_ms, avg_seq_ms);
+        std::printf(
+            "  %5d | %3d | %3d |  %c  |  %c  | %5d | %5d | %5d | %5d | %6.1f | %6.1f | %8.2f\n",
+            cfg.n_points, cfg.dim, cfg.n_dims, cfg.duplicate ? 'Y' : 'N', cfg.collinear ? 'Y' : 'N',
+            cfg.seeds, stats.gpu_seq_mismatches, stats.lf_seq_mismatches, stats.gpu_lf_mismatches,
+            avg_gpu_ms, avg_lf_ms, avg_seq_ms);
 
         all_stats.push_back(stats);
         total_trials += stats.trials;
@@ -344,22 +333,21 @@ int main()
     }
 
     // Grand total
-    double gpu_seq_rate = total_seq_pairs_all > 0
-        ? 100.0 * static_cast<double>(total_gpu_delta_abs) / total_seq_pairs_all
-        : 0.0;
+    double gpu_seq_rate =
+        total_seq_pairs_all > 0
+            ? 100.0 * static_cast<double>(total_gpu_delta_abs) / total_seq_pairs_all
+            : 0.0;
     double lf_seq_rate = total_seq_pairs_all > 0
-        ? 100.0 * static_cast<double>(total_lf_delta_abs) / total_seq_pairs_all
-        : 0.0;
+                             ? 100.0 * static_cast<double>(total_lf_delta_abs) / total_seq_pairs_all
+                             : 0.0;
 
     std::printf("\n");
     std::printf("=== Generated Test Summary ===\n");
     std::printf("  Total trial configurations: %zu\n", configs.size());
     std::printf("  Total trials: %d\n", total_trials);
     std::printf("  Total sequential pairs: %lld\n", total_seq_pairs_all);
-    std::printf("  GPU count mismatches vs seq: %d / %d\n",
-                total_gpu_seq_mismatches, total_trials);
-    std::printf("  LF count mismatches vs seq:  %d / %d\n",
-                total_lf_seq_mismatches, total_trials);
+    std::printf("  GPU count mismatches vs seq: %d / %d\n", total_gpu_seq_mismatches, total_trials);
+    std::printf("  LF count mismatches vs seq:  %d / %d\n", total_lf_seq_mismatches, total_trials);
     std::printf("  GPU-vs-Seq count error rate: %.4f%%\n", gpu_seq_rate);
     std::printf("  LF-vs-Seq  count error rate: %.4f%%\n", lf_seq_rate);
     std::printf("\n");
@@ -367,8 +355,8 @@ int main()
     // PASS/FAIL criteria
     bool acceptable = (gpu_seq_rate < 1.0 && lf_seq_rate < 1.0);
     std::printf("%s\n", acceptable
-        ? "PASS: GPU and LF count error within 1% of sequential ground truth."
-        : "FAIL: count-level error exceeds 1% tolerance.");
+                            ? "PASS: GPU and LF count error within 1% of sequential ground truth."
+                            : "FAIL: count-level error exceeds 1% tolerance.");
     return acceptable ? 0 : 1;
 }
 

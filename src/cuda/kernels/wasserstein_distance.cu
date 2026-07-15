@@ -85,10 +85,9 @@ __device__ __forceinline__ T linf_distance(T x1, T y1, T x2, T y2)
 }
 
 template <typename T>
-__global__ __launch_bounds__(256)
-    void build_cost_matrix_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
-                             const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2, T p,
-                             T *__restrict__ cost, int cost_ld)
+__global__ __launch_bounds__(256) void build_cost_matrix_kernel(
+    const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1, const T *__restrict__ d2_x,
+    const T *__restrict__ d2_y, int n2, T p, T *__restrict__ cost, int cost_ld)
 {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -101,10 +100,9 @@ __global__ __launch_bounds__(256)
 
 // Fast Sinkhorn kernel using ex2.approx for exp(-lambda * dist)
 template <typename T>
-__global__ __launch_bounds__(256)
-    void build_sinkhorn_kernel_matrix(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
-                                  const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
-                                  T lambda, T *__restrict__ K, int ld)
+__global__ __launch_bounds__(256) void build_sinkhorn_kernel_matrix(
+    const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1, const T *__restrict__ d2_x,
+    const T *__restrict__ d2_y, int n2, T lambda, T *__restrict__ K, int ld)
 {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -117,9 +115,10 @@ __global__ __launch_bounds__(256)
 
 // Row-scale with fast reciprocal
 template <typename T>
-__global__ __launch_bounds__(256)
-    void sinkhorn_row_scale_kernel(T *__restrict__ K, T *__restrict__ u, const T *__restrict__ v,
-                               int n_rows, int n_cols, int ld, T lambda)
+__global__
+    __launch_bounds__(256) void sinkhorn_row_scale_kernel(T *__restrict__ K, T *__restrict__ u,
+                                                          const T *__restrict__ v, int n_rows,
+                                                          int n_cols, int ld, T lambda)
 {
     int row = blockIdx.x * blockDim.x + threadIdx.x;
     if (row >= n_rows)
@@ -148,10 +147,9 @@ __global__ __launch_bounds__(256)
 }
 
 template <typename T>
-__global__ __launch_bounds__(256)
-    void sinkhorn_col_scale_kernel(T *__restrict__ K, const T *__restrict__ u, T *__restrict__ v,
-                               int n_rows, int n_cols, int ld, T lambda,
-                               const T *__restrict__ target_marginals)
+__global__ __launch_bounds__(256) void sinkhorn_col_scale_kernel(
+    T *__restrict__ K, const T *__restrict__ u, T *__restrict__ v, int n_rows, int n_cols, int ld,
+    T lambda, const T *__restrict__ target_marginals)
 {
     int col = blockIdx.x * blockDim.x + threadIdx.x;
     if (col >= n_cols)
@@ -182,10 +180,9 @@ __global__ __launch_bounds__(256)
 
 // Sinkhorn cost with warp reduction + shared memory accumulation
 template <typename T>
-__global__ __launch_bounds__(256)
-    void sinkhorn_cost_kernel(const T *__restrict__ K, const T *__restrict__ u, const T *__restrict__ v,
-                          const T *__restrict__ cost, T *__restrict__ total_cost, int n_rows,
-                          int n_cols, int cost_ld)
+__global__ __launch_bounds__(256) void sinkhorn_cost_kernel(
+    const T *__restrict__ K, const T *__restrict__ u, const T *__restrict__ v,
+    const T *__restrict__ cost, T *__restrict__ total_cost, int n_rows, int n_cols, int cost_ld)
 {
     __shared__ T sdata[32];
 
@@ -208,7 +205,8 @@ __global__ __launch_bounds__(256)
             local_sum += __shfl_xor_sync(0xFFFFFFFF, local_sum, offset);
     }
 
-    if (lane == 0) sdata[warp] = local_sum;
+    if (lane == 0)
+        sdata[warp] = local_sum;
     __syncthreads();
 
     if (warp == 0)
@@ -221,15 +219,15 @@ __global__ __launch_bounds__(256)
             for (int offset = 16; offset > 0; offset >>= 1)
                 block_sum += __shfl_xor_sync(0xFFFFFFFF, block_sum, offset);
         }
-        if (lane == 0) atomicAdd(total_cost, block_sum);
+        if (lane == 0)
+            atomicAdd(total_cost, block_sum);
     }
 }
 
 template <typename T>
-__global__ __launch_bounds__(256)
-    void auction_init_bids_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
-                              const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2, T p,
-                              T *__restrict__ cost, int cost_ld)
+__global__ __launch_bounds__(256) void auction_init_bids_kernel(
+    const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1, const T *__restrict__ d2_x,
+    const T *__restrict__ d2_y, int n2, T p, T *__restrict__ cost, int cost_ld)
 {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -242,10 +240,9 @@ __global__ __launch_bounds__(256)
 
 // Auction bidding with warp reduction for best and second-best
 template <typename T>
-__global__ __launch_bounds__(256)
-    void auction_bidding_kernel(const T *__restrict__ cost, int n_rows, int n_cols, int cost_ld,
-                            T *__restrict__ prices, int *__restrict__ assignments,
-                            int *__restrict__ converged, T epsilon)
+__global__ __launch_bounds__(256) void auction_bidding_kernel(
+    const T *__restrict__ cost, int n_rows, int n_cols, int cost_ld, T *__restrict__ prices,
+    int *__restrict__ assignments, int *__restrict__ converged, T epsilon)
 {
     __shared__ T sbest_vals[32];
     __shared__ int sbest_cols[32];
@@ -298,10 +295,11 @@ __global__ __launch_bounds__(256)
 }
 
 template <typename T>
-__global__ __launch_bounds__(256)
-    void auction_assign_kernel(int *__restrict__ assignments, const T *__restrict__ prices,
-                           const T *__restrict__ cost, int n_rows, int n_cols, int cost_ld,
-                           T *__restrict__ final_assignments)
+__global__ __launch_bounds__(256) void auction_assign_kernel(int *__restrict__ assignments,
+                                                             const T *__restrict__ prices,
+                                                             const T *__restrict__ cost, int n_rows,
+                                                             int n_cols, int cost_ld,
+                                                             T *__restrict__ final_assignments)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= n_rows)
@@ -326,9 +324,9 @@ __global__ __launch_bounds__(256)
 } // namespace
 
 void compute_sinkhorn_distance_gpu(const std::vector<nerve::math::Point2D> &d1,
-                                    const std::vector<nerve::math::Point2D> &d2, double p,
-                                    double epsilon_reg, int max_iterations,
-                                    std::function<void(double)> callback)
+                                   const std::vector<nerve::math::Point2D> &d2, double p,
+                                   double epsilon_reg, int max_iterations,
+                                   std::function<void(double)> callback)
 {
     if (d1.empty() || d2.empty())
     {
@@ -386,7 +384,7 @@ void compute_sinkhorn_distance_gpu(const std::vector<nerve::math::Point2D> &d1,
     if (launch_err != cudaSuccess)
     {
         throw std::runtime_error("Kernel launch failed: " +
-                                  std::string(cudaGetErrorString(launch_err)));
+                                 std::string(cudaGetErrorString(launch_err)));
     }
 
     float lambda = 1.0f / static_cast<float>(epsilon_reg);
@@ -397,7 +395,7 @@ void compute_sinkhorn_distance_gpu(const std::vector<nerve::math::Point2D> &d1,
     if (launch_err != cudaSuccess)
     {
         throw std::runtime_error("Kernel launch failed: " +
-                                  std::string(cudaGetErrorString(launch_err)));
+                                 std::string(cudaGetErrorString(launch_err)));
     }
 
     std::vector<float> h_marginals(n2, 1.0f / static_cast<float>(n2));
@@ -415,7 +413,7 @@ void compute_sinkhorn_distance_gpu(const std::vector<nerve::math::Point2D> &d1,
         if (launch_err != cudaSuccess)
         {
             throw std::runtime_error("Kernel launch failed: " +
-                                      std::string(cudaGetErrorString(launch_err)));
+                                     std::string(cudaGetErrorString(launch_err)));
         }
 
         sinkhorn_col_scale_kernel<float><<<grid_cols, kSinkhornBlock>>>(
@@ -425,7 +423,7 @@ void compute_sinkhorn_distance_gpu(const std::vector<nerve::math::Point2D> &d1,
         if (launch_err != cudaSuccess)
         {
             throw std::runtime_error("Kernel launch failed: " +
-                                      std::string(cudaGetErrorString(launch_err)));
+                                     std::string(cudaGetErrorString(launch_err)));
         }
     }
 
@@ -436,7 +434,7 @@ void compute_sinkhorn_distance_gpu(const std::vector<nerve::math::Point2D> &d1,
     if (launch_err != cudaSuccess)
     {
         throw std::runtime_error("Kernel launch failed: " +
-                                  std::string(cudaGetErrorString(launch_err)));
+                                 std::string(cudaGetErrorString(launch_err)));
     }
 
     float h_total_cost = 0.0f;
@@ -448,8 +446,8 @@ void compute_sinkhorn_distance_gpu(const std::vector<nerve::math::Point2D> &d1,
 }
 
 void compute_auction_distance_gpu(const std::vector<nerve::math::Point2D> &d1,
-                                   const std::vector<nerve::math::Point2D> &d2, double p,
-                                   std::function<void(double)> callback)
+                                  const std::vector<nerve::math::Point2D> &d2, double p,
+                                  std::function<void(double)> callback)
 {
     if (d1.empty() || d2.empty())
     {
@@ -503,7 +501,7 @@ void compute_auction_distance_gpu(const std::vector<nerve::math::Point2D> &d1,
     if (launch_err != cudaSuccess)
     {
         throw std::runtime_error("Kernel launch failed: " +
-                                  std::string(cudaGetErrorString(launch_err)));
+                                 std::string(cudaGetErrorString(launch_err)));
     }
 
     int grid_n1 = (n1 + kBlockSize - 1) / kBlockSize;
@@ -515,15 +513,15 @@ void compute_auction_distance_gpu(const std::vector<nerve::math::Point2D> &d1,
         int h_one = 1;
         cudaMemcpy(d_converged.get(), &h_one, sizeof(int), cudaMemcpyHostToDevice);
 
-        auction_bidding_kernel<float><<<grid_n1, kBlockSize>>>(
-            d_cost.get(), n1, n2, cost_ld, d_prices.get(), d_assignments.get(),
-            d_converged.get(), epsilon_auction);
+        auction_bidding_kernel<float><<<grid_n1, kBlockSize>>>(d_cost.get(), n1, n2, cost_ld,
+                                                               d_prices.get(), d_assignments.get(),
+                                                               d_converged.get(), epsilon_auction);
         cudaDeviceSynchronize();
         launch_err = cudaGetLastError();
         if (launch_err != cudaSuccess)
         {
             throw std::runtime_error("Kernel launch failed: " +
-                                      std::string(cudaGetErrorString(launch_err)));
+                                     std::string(cudaGetErrorString(launch_err)));
         }
 
         int h_converged = 0;

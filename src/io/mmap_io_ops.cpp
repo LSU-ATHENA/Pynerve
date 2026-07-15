@@ -84,7 +84,7 @@ MmapFile mmapReadFile(const std::string &path)
         return result;
     }
     result.data = nerve::sys::map(nullptr, result.size, nerve::sys::MAP_PROT_READ,
-                                     nerve::sys::MAP_FLAG_PRIVATE, result.fd, 0);
+                                  nerve::sys::MAP_FLAG_PRIVATE, result.fd, 0);
     if (result.data == nerve::sys::kMapFailed)
     {
         close(result.fd);
@@ -115,7 +115,7 @@ MmapFile mmapWriteFile(const std::string &path, Size file_size)
                                  ")");
     }
     result.data = nerve::sys::map(nullptr, file_size, nerve::sys::MAP_PROT_RW,
-                                     nerve::sys::MAP_FLAG_SHARED, result.fd, 0);
+                                  nerve::sys::MAP_FLAG_SHARED, result.fd, 0);
     if (result.data == nerve::sys::kMapFailed)
     {
         close(result.fd);

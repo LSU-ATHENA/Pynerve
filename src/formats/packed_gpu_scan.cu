@@ -20,7 +20,8 @@ int gridFor(Size items)
 {
     if (items == 0)
         return 0;
-    const Size blocks = (items + static_cast<Size>(kScanBlockSize) - 1) / static_cast<Size>(kScanBlockSize);
+    const Size blocks =
+        (items + static_cast<Size>(kScanBlockSize) - 1) / static_cast<Size>(kScanBlockSize);
     return static_cast<int>(blocks);
 }
 
@@ -63,15 +64,13 @@ void freeGpuBuffers(PackedGpuScanBuffers &b)
     b = PackedGpuScanBuffers{};
 }
 
-__global__ __launch_bounds__(kScanBlockSize)
-void packedScanKernel(const PackedWord *__restrict__ columns,
-                      const Size *__restrict__ column_sizes,
-                      Index *__restrict__ pivot_candidates,
-                      int *__restrict__ zero_addition,
-                      int *__restrict__ stable_columns,
-                      Size n_columns, Size n_words)
+__global__ __launch_bounds__(kScanBlockSize) void packedScanKernel(
+    const PackedWord *__restrict__ columns, const Size *__restrict__ column_sizes,
+    Index *__restrict__ pivot_candidates, int *__restrict__ zero_addition,
+    int *__restrict__ stable_columns, Size n_columns, Size n_words)
 {
-    Size col = static_cast<Size>(blockIdx.x) * static_cast<Size>(blockDim.x) + static_cast<Size>(threadIdx.x);
+    Size col = static_cast<Size>(blockIdx.x) * static_cast<Size>(blockDim.x) +
+               static_cast<Size>(threadIdx.x);
     if (col >= n_columns)
         return;
 
@@ -131,15 +130,13 @@ void packedScanKernel(const PackedWord *__restrict__ columns,
     }
 }
 
-__global__ __launch_bounds__(kScanBlockSize)
-void packedPivotClaimKernel(const Index *__restrict__ pivot_candidates,
-                            int *__restrict__ low_to_col, Size n_columns,
-                            Index *__restrict__ stable_list,
-                            Index *__restrict__ unstable_list,
-                            Size *__restrict__ stable_count,
-                            Size *__restrict__ unstable_count)
+__global__ __launch_bounds__(kScanBlockSize) void packedPivotClaimKernel(
+    const Index *__restrict__ pivot_candidates, int *__restrict__ low_to_col, Size n_columns,
+    Index *__restrict__ stable_list, Index *__restrict__ unstable_list,
+    Size *__restrict__ stable_count, Size *__restrict__ unstable_count)
 {
-    Size col = static_cast<Size>(blockIdx.x) * static_cast<Size>(blockDim.x) + static_cast<Size>(threadIdx.x);
+    Size col = static_cast<Size>(blockIdx.x) * static_cast<Size>(blockDim.x) +
+               static_cast<Size>(threadIdx.x);
     if (col >= n_columns)
         return;
 
@@ -166,15 +163,13 @@ void packedPivotClaimKernel(const Index *__restrict__ pivot_candidates,
     }
 }
 
-__global__ __launch_bounds__(kScanBlockSize)
-void packedLeftmostOneKernel(const PackedWord *__restrict__ columns,
-                             const Size *__restrict__ column_sizes,
-                             const Index *__restrict__ stable_list,
-                             Size stable_count,
-                             Index *__restrict__ leftmost_column_by_row,
-                             Size n_rows, Size n_words)
+__global__ __launch_bounds__(kScanBlockSize) void packedLeftmostOneKernel(
+    const PackedWord *__restrict__ columns, const Size *__restrict__ column_sizes,
+    const Index *__restrict__ stable_list, Size stable_count,
+    Index *__restrict__ leftmost_column_by_row, Size n_rows, Size n_words)
 {
-    Size idx = static_cast<Size>(blockIdx.x) * static_cast<Size>(blockDim.x) + static_cast<Size>(threadIdx.x);
+    Size idx = static_cast<Size>(blockIdx.x) * static_cast<Size>(blockDim.x) +
+               static_cast<Size>(threadIdx.x);
     if (idx >= stable_count)
         return;
 
@@ -193,7 +188,8 @@ void packedLeftmostOneKernel(const PackedWord *__restrict__ columns,
         int msb = nerve::gpu::ptx::find_msb_u64(word);
         if (msb >= 0)
         {
-            Index global_row = static_cast<Index>(w) * static_cast<Index>(kBitsPerPackedWord) + static_cast<Index>(msb);
+            Index global_row = static_cast<Index>(w) * static_cast<Index>(kBitsPerPackedWord) +
+                               static_cast<Index>(msb);
             if (global_row >= 0 && static_cast<Size>(global_row) < n_rows)
             {
                 Index expected = -1;
@@ -205,8 +201,8 @@ void packedLeftmostOneKernel(const PackedWord *__restrict__ columns,
 
 } // namespace
 
-errors::ErrorResult<GpuScanResult>
-launchPackedScan(const GpuPackedLayout &layout, void *stream_handle, int device_id)
+errors::ErrorResult<GpuScanResult> launchPackedScan(const GpuPackedLayout &layout,
+                                                    void *stream_handle, int device_id)
 {
     GpuScanResult result;
     if (layout.num_columns == 0)
@@ -289,16 +285,14 @@ launchPackedScan(const GpuPackedLayout &layout, void *stream_handle, int device_
     }
 
     packedScanKernel<<<grid, kScanBlockSize, 0, stream>>>(
-        buf.d_columns, buf.d_column_sizes,
-        buf.d_pivot_candidates, buf.d_zero_addition, buf.d_stable_columns,
-        n_cols, n_words);
+        buf.d_columns, buf.d_column_sizes, buf.d_pivot_candidates, buf.d_zero_addition,
+        buf.d_stable_columns, n_cols, n_words);
     err = cudaPeekAtLastError();
     if (err != cudaSuccess)
         goto cleanup;
 
     packedPivotClaimKernel<<<grid, kScanBlockSize, 0, stream>>>(
-        buf.d_pivot_candidates, buf.d_low_to_col, n_cols,
-        buf.d_stable_list, buf.d_unstable_list,
+        buf.d_pivot_candidates, buf.d_low_to_col, n_cols, buf.d_stable_list, buf.d_unstable_list,
         buf.d_stable_count, buf.d_unstable_count);
     err = cudaPeekAtLastError();
     if (err != cudaSuccess)
@@ -315,8 +309,8 @@ launchPackedScan(const GpuPackedLayout &layout, void *stream_handle, int device_
     if (stable_count > 0 && stable_count <= n_cols)
     {
         result.stable_columns.resize(stable_count);
-        cudaMemcpy(result.stable_columns.data(), buf.d_stable_list,
-                   stable_count * sizeof(Index), cudaMemcpyDeviceToHost);
+        cudaMemcpy(result.stable_columns.data(), buf.d_stable_list, stable_count * sizeof(Index),
+                   cudaMemcpyDeviceToHost);
     }
     if (unstable_count > 0 && unstable_count <= n_cols)
     {
@@ -339,12 +333,11 @@ launchPackedScan(const GpuPackedLayout &layout, void *stream_handle, int device_
                 if (lmr_grid > 0)
                 {
                     packedLeftmostOneKernel<<<lmr_grid, kScanBlockSize, 0, stream>>>(
-                        buf.d_columns, buf.d_column_sizes,
-                        buf.d_stable_list, stable_count,
+                        buf.d_columns, buf.d_column_sizes, buf.d_stable_list, stable_count,
                         d_leftmost, n_rows, n_words);
                     cudaStreamSynchronize(stream);
-                    cudaMemcpy(result.leftmost_column_by_row.data(), d_leftmost,
-                               lmr_bytes, cudaMemcpyDeviceToHost);
+                    cudaMemcpy(result.leftmost_column_by_row.data(), d_leftmost, lmr_bytes,
+                               cudaMemcpyDeviceToHost);
                 }
                 cudaFree(d_leftmost);
             }

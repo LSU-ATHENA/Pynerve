@@ -3,8 +3,8 @@
 /// Comprehensive inline PTX helpers for Pynerve GPU kernels.
 /// Targets sm80+ (Ampere) with fallbacks for older architectures.
 
-#include <cuda_runtime.h>
 #include <cuda_fp16.h>
+#include <cuda_runtime.h>
 
 #include <cstdint>
 
@@ -44,8 +44,14 @@ __device__ __forceinline__ int find_msb_u32(unsigned int val)
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
     asm volatile("bfind.u32 %0, %1;" : "=r"(result) : "r"(val));
 #else
-    if (val == 0) { result = -1; }
-    else { result = 31 - __clz(val); }
+    if (val == 0)
+    {
+        result = -1;
+    }
+    else
+    {
+        result = 31 - __clz(val);
+    }
 #endif
     return result;
 }
@@ -57,8 +63,14 @@ __device__ __forceinline__ int find_msb_u64(unsigned long long val)
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
     asm volatile("bfind.u64 %0, %1;" : "=r"(result) : "l"(val));
 #else
-    if (val == 0) { result = -1; }
-    else { result = 63 - __clzll(val); }
+    if (val == 0)
+    {
+        result = -1;
+    }
+    else
+    {
+        result = 63 - __clzll(val);
+    }
 #endif
     return result;
 }
@@ -70,8 +82,14 @@ __device__ __forceinline__ unsigned int bfe_u32(unsigned int val, int pos, int w
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
     asm volatile("bfe.u32 %0, %1, %2, %3;" : "=r"(result) : "r"(val), "r"(pos), "r"(width));
 #else
-    if (pos < 0 || width <= 0) { result = 0; }
-    else { result = (val >> pos) & ((1u << width) - 1u); }
+    if (pos < 0 || width <= 0)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = (val >> pos) & ((1u << width) - 1u);
+    }
 #endif
     return result;
 }
@@ -83,9 +101,18 @@ __device__ __forceinline__ unsigned int bmsk_u32(int width, int pos)
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 900
     asm volatile("bmsk.b32 %0, %1, %2;" : "=r"(result) : "r"(width), "r"(pos));
 #else
-    if (width <= 0 || pos < 0 || pos >= 32) { result = 0u; }
-    else if (width >= 32 - pos) { result = 0xFFFFFFFFu << pos; }
-    else { result = ((1u << width) - 1u) << pos; }
+    if (width <= 0 || pos < 0 || pos >= 32)
+    {
+        result = 0u;
+    }
+    else if (width >= 32 - pos)
+    {
+        result = 0xFFFFFFFFu << pos;
+    }
+    else
+    {
+        result = ((1u << width) - 1u) << pos;
+    }
 #endif
     return result;
 }
@@ -102,9 +129,7 @@ __device__ __forceinline__ int szext_s8(int val)
     return result;
 }
 
-
 // Fused Multiply-Add (single instruction)
-
 
 __device__ __forceinline__ float fma_f32(float a, float b, float c)
 {
@@ -128,9 +153,7 @@ __device__ __forceinline__ double fma_f64(double a, double b, double c)
     return result;
 }
 
-
 // Fast Math Approximations
-
 
 /// Fast base-2 exponent: result = 2^x (approximate, ~0.5% error)
 __device__ __forceinline__ float ex2_approx_f32(float x)
@@ -180,7 +203,6 @@ __device__ __forceinline__ float lg2_approx_f32(float x)
     return result;
 }
 
-
 // Fast expf using ex2: exp(x) = 2^(x / ln(2)) = ex2(x * 1.44269504f)
 // ~4x faster than expf with <1% relative error
 
@@ -188,7 +210,6 @@ __device__ __forceinline__ float fast_exp_f32(float x)
 {
     return ex2_approx_f32(x * 1.44269504f);
 }
-
 
 // Fast Gaussian: exp(-x^2/(2*sigma^2)) using ex2
 // = exp(-x^2 / (2*sigma^2)) = 2^(-x^2 / (2*sigma^2*ln(2)))
@@ -207,7 +228,6 @@ __device__ __forceinline__ float precompute_gaussian_scale(float sigma)
     return -0.72134752f / (sigma * sigma);
 }
 
-
 // Fast Sigmoid: 1/(1+exp(-x)) using ex2
 // exp(-x) = 2^(-x/ln(2)) = ex2(-x * 1.44269504f)
 __device__ __forceinline__ float fast_sigmoid_f32(float x)
@@ -216,9 +236,7 @@ __device__ __forceinline__ float fast_sigmoid_f32(float x)
     return rcp_approx_f32(1.0f + exp_neg_x);
 }
 
-
 // Direct Hardware Instructions
-
 
 /// Hardware max: single instruction, no branch
 __device__ __forceinline__ float hwmax_f32(float a, float b)
@@ -274,7 +292,8 @@ __device__ __forceinline__ float slct_f32(bool cond, float a, float b)
     float result;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
     asm volatile("{.reg .pred p; setp.ne.u32 p, %1, 0; selp.f32 %0, %2, %3, p;}"
-                 : "=f"(result) : "r"(static_cast<unsigned int>(cond)), "f"(a), "f"(b));
+                 : "=f"(result)
+                 : "r"(static_cast<unsigned int>(cond)), "f"(a), "f"(b));
 #else
     result = cond ? a : b;
 #endif
@@ -287,7 +306,8 @@ __device__ __forceinline__ double slct_f64(bool cond, double a, double b)
     double result;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
     asm volatile("{.reg .pred p; setp.ne.u32 p, %1, 0; selp.f64 %0, %2, %3, p;}"
-                 : "=d"(result) : "r"(static_cast<unsigned int>(cond)), "d"(a), "d"(b));
+                 : "=d"(result)
+                 : "r"(static_cast<unsigned int>(cond)), "d"(a), "d"(b));
 #else
     result = cond ? a : b;
 #endif
@@ -300,7 +320,8 @@ __device__ __forceinline__ unsigned int slct_u32(bool cond, unsigned int a, unsi
     unsigned int result;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
     asm volatile("{.reg .pred p; setp.ne.u32 p, %1, 0; selp.u32 %0, %2, %3, p;}"
-                 : "=r"(result) : "r"(static_cast<unsigned int>(cond)), "r"(a), "r"(b));
+                 : "=r"(result)
+                 : "r"(static_cast<unsigned int>(cond)), "r"(a), "r"(b));
 #else
     result = cond ? a : b;
 #endif
@@ -313,24 +334,25 @@ __device__ __forceinline__ int slct_s32(bool cond, int a, int b)
     int result;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
     asm volatile("{.reg .pred p; setp.ne.u32 p, %1, 0; selp.s32 %0, %2, %3, p;}"
-                 : "=r"(result) : "r"(static_cast<unsigned int>(cond)), "r"(a), "r"(b));
+                 : "=r"(result)
+                 : "r"(static_cast<unsigned int>(cond)), "r"(a), "r"(b));
 #else
     result = cond ? a : b;
 #endif
     return result;
 }
 
-
 // LOP3: Ternary logic operation (sm50+)
 // Replaces multi-instruction patterns like (A ^ B) & ~C
 
 __device__ __forceinline__ unsigned int lop3_lut(unsigned int a, unsigned int b, unsigned int c,
-                                                  unsigned int imm_lut)
+                                                 unsigned int imm_lut)
 {
     unsigned int result;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 500
     asm volatile("lop3.b32 %0, %1, %2, %3, %4;"
-                 : "=r"(result) : "r"(a), "r"(b), "r"(c), "r"(imm_lut));
+                 : "=r"(result)
+                 : "r"(a), "r"(b), "r"(c), "r"(imm_lut));
 #else
     result = 0;
 #endif
@@ -350,9 +372,7 @@ __device__ __forceinline__ unsigned int xor_and_c(unsigned int a, unsigned int b
     return lop3_lut(a, b, c, 0x28u);
 }
 
-
 // Memory Operations
-
 
 /// Streaming store: store to global, bypass L1, streaming through L2
 __device__ __forceinline__ void st_global_cs_f32(float *ptr, float value)
@@ -458,15 +478,13 @@ __device__ __forceinline__ void prefetch_evict_last(const void *ptr)
 #endif
 }
 
-
 // Async Copy (sm80+)
-
 
 /// Async copy from global to shared memory (sm80+)
 /// size_bytes must be 4, 8, or 16 (PTX requires immediate operand)
 template <int SizeBytes>
 __device__ __forceinline__ void cp_async_shared_global(void *dst, const void *src,
-                                                         bool bypass_l1 = false)
+                                                       bool bypass_l1 = false)
 {
     static_assert(SizeBytes == 4 || SizeBytes == 8 || SizeBytes == 16,
                   "cp.async size must be 4, 8, or 16 bytes");
@@ -474,14 +492,16 @@ __device__ __forceinline__ void cp_async_shared_global(void *dst, const void *sr
     if (bypass_l1)
     {
         asm volatile("cp.async.ca.shared.global.L2::cache_hint [%0], [%1], %2;"
-                     : : "r"(static_cast<unsigned int>(__cvta_generic_to_shared(dst))),
-                         "l"(src), "n"(SizeBytes));
+                     :
+                     : "r"(static_cast<unsigned int>(__cvta_generic_to_shared(dst))), "l"(src),
+                       "n"(SizeBytes));
     }
     else
     {
-    asm volatile("cp.async.ca.shared.global [%0], [%1], %2;"
-                 : : "r"(static_cast<unsigned int>(__cvta_generic_to_shared(dst))),
-                     "l"(src), "n"(SizeBytes));
+        asm volatile("cp.async.ca.shared.global [%0], [%1], %2;"
+                     :
+                     : "r"(static_cast<unsigned int>(__cvta_generic_to_shared(dst))), "l"(src),
+                       "n"(SizeBytes));
     }
 #else
     (void)bypass_l1;
@@ -524,9 +544,7 @@ __device__ __forceinline__ void cp_async_wait_all()
 #endif
 }
 
-
 // Warp-Level Primitives
-
 
 /// Warp butterfly reduction: sum across warp
 __device__ __forceinline__ float warp_reduce_sum_f32(float val)
@@ -584,13 +602,12 @@ __device__ __forceinline__ double warp_reduce_max_f64(double val)
 }
 
 /// Warp-level atomic OR on global memory (replaces atomicCAS loops)
-__device__ __forceinline__ unsigned long long warp_atomic_or_global_u64(
-    unsigned long long *addr, unsigned long long val)
+__device__ __forceinline__ unsigned long long warp_atomic_or_global_u64(unsigned long long *addr,
+                                                                        unsigned long long val)
 {
     unsigned long long old;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
-    asm volatile("atom.global.or.b64 %0, [%1], %2;"
-                 : "=l"(old) : "l"(addr), "l"(val) : "memory");
+    asm volatile("atom.global.or.b64 %0, [%1], %2;" : "=l"(old) : "l"(addr), "l"(val) : "memory");
 #else
     old = atomicOr(addr, val);
 #endif
@@ -602,8 +619,7 @@ __device__ __forceinline__ unsigned int atom_xor_global_u32(unsigned int *addr, 
 {
     unsigned int old;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
-    asm volatile("atom.global.xor.b32 %0, [%1], %2;"
-                 : "=r"(old) : "l"(addr), "r"(val) : "memory");
+    asm volatile("atom.global.xor.b32 %0, [%1], %2;" : "=r"(old) : "l"(addr), "r"(val) : "memory");
 #else
     old = atomicXor(addr, val);
 #endif
@@ -611,18 +627,18 @@ __device__ __forceinline__ unsigned int atom_xor_global_u32(unsigned int *addr, 
 }
 
 /// Atomic XOR on 64-bit global
-__device__ __forceinline__ unsigned long long atom_xor_global_u64(
-    unsigned long long *addr, unsigned long long val)
+__device__ __forceinline__ unsigned long long atom_xor_global_u64(unsigned long long *addr,
+                                                                  unsigned long long val)
 {
     unsigned long long old;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 200
-    asm volatile("atom.global.xor.b64 %0, [%1], %2;"
-                 : "=l"(old) : "l"(addr), "l"(val) : "memory");
+    asm volatile("atom.global.xor.b64 %0, [%1], %2;" : "=l"(old) : "l"(addr), "l"(val) : "memory");
 #else
     // fallback: 64-bit atomicXor not available in old CUDA, use CAS loop
     old = *addr;
     unsigned long long assumed;
-    do {
+    do
+    {
         assumed = old;
         old = atomicCAS(addr, assumed, assumed ^ val);
     } while (assumed != old);
@@ -630,15 +646,13 @@ __device__ __forceinline__ unsigned long long atom_xor_global_u64(
     return old;
 }
 
-
 // Match Any (sm70+): cooperative warp-level search
 
 __device__ __forceinline__ unsigned int match_any_sync_u32(unsigned int mask, unsigned int value)
 {
     unsigned int result;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 700
-    asm volatile("match.any.sync.b32 %0, %1, %2;"
-                 : "=r"(result) : "r"(mask), "r"(value));
+    asm volatile("match.any.sync.b32 %0, %1, %2;" : "=r"(result) : "r"(mask), "r"(value));
 #else
     result = 0;
     (void)mask;
@@ -648,7 +662,7 @@ __device__ __forceinline__ unsigned int match_any_sync_u32(unsigned int mask, un
 }
 
 __device__ __forceinline__ unsigned int match_any_sync_u64(unsigned int mask,
-                                                            unsigned long long value)
+                                                           unsigned long long value)
 {
     // match.any.sync.b64 inline PTX has operand constraint issues
     // on some CUDA toolchain versions; use the intrinsic or fall back.
@@ -657,9 +671,7 @@ __device__ __forceinline__ unsigned int match_any_sync_u64(unsigned int mask,
     return 0;
 }
 
-
 // Double Float (fp64) Fast Arithmetic
-
 
 /// Fast reciprocal for double (f64)
 __device__ __forceinline__ double rcp_approx_f64(double x)
@@ -685,9 +697,7 @@ __device__ __forceinline__ double rsqrt_approx_f64(double x)
     return result;
 }
 
-
 // Hopper-Specific (sm90+): TMA and Cluster Operations
-
 
 /// Get cluster rank (sm90+)
 __device__ __forceinline__ unsigned int cluster_rank()
@@ -731,20 +741,17 @@ __device__ __forceinline__ void cluster_barrier_wait()
 
 /// Multicast load: load from one SM and broadcast to cluster (sm90+)
 __device__ __forceinline__ void multicast_load_b32(unsigned int &dst, const unsigned int *addr,
-                                                     unsigned int cluster_mask)
+                                                   unsigned int cluster_mask)
 {
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 900
-    asm volatile("mapa.sync.aligned.b32 %0, [%1], %2;"
-                 : "=r"(dst) : "l"(addr), "r"(cluster_mask));
+    asm volatile("mapa.sync.aligned.b32 %0, [%1], %2;" : "=r"(dst) : "l"(addr), "r"(cluster_mask));
 #else
     dst = *addr;
     (void)cluster_mask;
 #endif
 }
 
-
 // Tensor Core WMMA Helpers (sm70+)
-
 
 /// Check if the GPU supports Tensor Cores (sm70+)
 __host__ __device__ __forceinline__ bool has_tensor_cores(int compute_capability)
@@ -806,9 +813,7 @@ __host__ __device__ __forceinline__ bool supports_evict_policy(int compute_capab
     return compute_capability >= 90;
 }
 
-
 // Accumulation Helpers Using FMA
-
 
 /// Accumulate squared difference using FMA: sum += diff*diff
 __device__ __forceinline__ bool fma_accumulate_sq_f32(float diff, float &sum)

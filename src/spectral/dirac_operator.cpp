@@ -1,7 +1,7 @@
 
+#include "nerve/simd/simd_base.hpp"
 #include "nerve/spectral/laplacian.hpp"
 #include "nerve/spectral/symmetric_eigendecomposition.hpp"
-#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -262,7 +262,8 @@ DiracOperator::computeMatrixProduct(const std::vector<std::vector<double>> &a,
         for (Size k = 0; k < p; ++k)
         {
             const double aik = a[i][k];
-            if (aik == 0.0) continue;
+            if (aik == 0.0)
+                continue;
             nerve::simd::simd_axpy(aik, b[k].data(), result[i].data(), m);
         }
     }

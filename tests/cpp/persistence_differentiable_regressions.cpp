@@ -24,7 +24,6 @@ using nerve::persistence::OptimizationResult;
 using nerve::persistence::OptimizationTarget;
 using namespace nerve::test;
 
-
 std::vector<nerve::Pair> canonical(std::vector<nerve::Pair> pairs)
 {
     std::sort(pairs.begin(), pairs.end(), [](const nerve::Pair &a, const nerve::Pair &b) {

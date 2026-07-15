@@ -47,9 +47,9 @@ struct StagePointsResult
     KernelDiagnosticsCounters kernel_diagnostics;
 };
 
-errors::ErrorResult<StagePointsResult>
-stagePointsOnGpu(core::BufferView<const double>points, std::size_t point_dim,
-                 double max_radius, std::size_t chunk_elements);
+errors::ErrorResult<StagePointsResult> stagePointsOnGpu(core::BufferView<const double> points,
+                                                        std::size_t point_dim, double max_radius,
+                                                        std::size_t chunk_elements);
 
 void recordGlobalMetric(const PerformanceMetrics &metric, double memory_usage_mb, bool gpu_used,
                         bool hybrid_used);

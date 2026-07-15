@@ -226,7 +226,8 @@ AVX512Benchmark benchmarkAVX512(int n1, int n2, int dim, int iterations)
 
 bool isAVX512Available()
 {
-#if defined(__AVX512F__) && (defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86))
+#if defined(__AVX512F__) &&                                                                        \
+    (defined(__x86_64__) || defined(__i386__) || defined(_M_X64) || defined(_M_IX86))
     return nerve::cpu::CpuFeatureFlags::detect().has_avx512f;
 #else
     return false;

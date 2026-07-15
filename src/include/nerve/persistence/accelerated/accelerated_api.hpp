@@ -55,7 +55,7 @@ createOptimalVrEngine(size_t n_points = 0, size_t point_dim = 0)
 } // namespace factory
 namespace utils
 {
-inline errors::ErrorResult<void> validateVrInput(core::BufferView<const double>points,
+inline errors::ErrorResult<void> validateVrInput(core::BufferView<const double> points,
                                                  size_t point_dim,
                                                  const core::DeterminismContract &contract)
 {

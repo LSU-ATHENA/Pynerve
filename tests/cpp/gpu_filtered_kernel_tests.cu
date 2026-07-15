@@ -36,9 +36,8 @@ int main()
         cudaMemset(d_count, 0, sizeof(Size));
         cudaMemset(d_degree, 0, n * sizeof(Size));
 
-        cuda_kernels::extractEdgesFilteredKernel(d_dist, d_edges, d_count, n, max_radius,
-                                                 max_edges, min_edge_weight, max_degree,
-                                                 d_degree);
+        cuda_kernels::extractEdgesFilteredKernel(d_dist, d_edges, d_count, n, max_radius, max_edges,
+                                                 min_edge_weight, max_degree, d_degree);
         assert(check_cuda(cudaDeviceSynchronize(), "cudaDeviceSynchronize"));
 
         Size edge_count = 0;
@@ -73,8 +72,8 @@ int main()
         cudaFree(d_count);
         cudaFree(d_degree);
 
-        std::cout << "PASSED: edge extraction max_degree enforcement (K5, cap=2, "
-                  << edge_count << " edges, all degrees <= 2)\n";
+        std::cout << "PASSED: edge extraction max_degree enforcement (K5, cap=2, " << edge_count
+                  << " edges, all degrees <= 2)\n";
     }
 
     // Edge extraction: max_degree enforcement (K5, degree cap at 1)
@@ -103,9 +102,8 @@ int main()
         cudaMemset(d_count, 0, sizeof(Size));
         cudaMemset(d_degree, 0, n * sizeof(Size));
 
-        cuda_kernels::extractEdgesFilteredKernel(d_dist, d_edges, d_count, n, max_radius,
-                                                 max_edges, min_edge_weight, max_degree,
-                                                 d_degree);
+        cuda_kernels::extractEdgesFilteredKernel(d_dist, d_edges, d_count, n, max_radius, max_edges,
+                                                 min_edge_weight, max_degree, d_degree);
         assert(check_cuda(cudaDeviceSynchronize(), "cudaDeviceSynchronize"));
 
         Size edge_count = 0;
@@ -139,8 +137,8 @@ int main()
         cudaFree(d_count);
         cudaFree(d_degree);
 
-        std::cout << "PASSED: edge extraction max_degree enforcement (K5, cap=1, "
-                  << edge_count << " edges, all degrees <= 1)\n";
+        std::cout << "PASSED: edge extraction max_degree enforcement (K5, cap=1, " << edge_count
+                  << " edges, all degrees <= 1)\n";
     }
 
     // Edge extraction: max_degree enforcement stress test (n=64, 50+ repeated runs)
@@ -214,8 +212,8 @@ int main()
         cudaFree(d_count);
         cudaFree(d_degree);
 
-        std::cout << "PASSED: edge extraction max_degree stress (n=64, cap=8, "
-                  << num_runs << " runs, all degrees <= 8)\n";
+        std::cout << "PASSED: edge extraction max_degree stress (n=64, cap=8, " << num_runs
+                  << " runs, all degrees <= 8)\n";
     }
 
     // Edge extraction: max_degree enforcement stress test (n=64, tighter cap=4)
@@ -289,8 +287,8 @@ int main()
         cudaFree(d_count);
         cudaFree(d_degree);
 
-        std::cout << "PASSED: edge extraction max_degree stress (n=64, cap=4, "
-                  << num_runs << " runs, all degrees <= 4)\n";
+        std::cout << "PASSED: edge extraction max_degree stress (n=64, cap=4, " << num_runs
+                  << " runs, all degrees <= 4)\n";
     }
 
     // Edge extraction: max_degree enforcement stress test (n=64, absolute limit cap=2)
@@ -364,8 +362,8 @@ int main()
         cudaFree(d_count);
         cudaFree(d_degree);
 
-        std::cout << "PASSED: edge extraction max_degree stress (n=64, cap=2, "
-                  << num_runs << " runs, all degrees <= 2)\n";
+        std::cout << "PASSED: edge extraction max_degree stress (n=64, cap=2, " << num_runs
+                  << " runs, all degrees <= 2)\n";
     }
 
     // Edge extraction: max_degree enforcement stress test (n=32, tighter cap=4)
@@ -439,8 +437,8 @@ int main()
         cudaFree(d_count);
         cudaFree(d_degree);
 
-        std::cout << "PASSED: edge extraction max_degree stress (n=32, cap=4, "
-                  << num_runs << " runs, all degrees <= 4)\n";
+        std::cout << "PASSED: edge extraction max_degree stress (n=32, cap=4, " << num_runs
+                  << " runs, all degrees <= 4)\n";
     }
 
     // Edge extraction: max_degree enforcement stress test (n=32, extremely tight cap=2)
@@ -514,8 +512,8 @@ int main()
         cudaFree(d_count);
         cudaFree(d_degree);
 
-        std::cout << "PASSED: edge extraction max_degree stress (n=32, cap=2, "
-                  << num_runs << " runs, all degrees <= 2)\n";
+        std::cout << "PASSED: edge extraction max_degree stress (n=32, cap=2, " << num_runs
+                  << " runs, all degrees <= 2)\n";
     }
 
     // Edge extraction: combined min_edge_weight + max_degree filtering (K5)
@@ -528,11 +526,10 @@ int main()
         // Edges below 0.5: (0,1)=0.1, (0,2)=0.2, (3,4)=0.3 -- rejected by min_weight.
         // Edges >= 0.5: (0,3)=0.6, (0,4)=0.7, (1,2)=0.5, (1,3)=0.9,
         //              (1,4)=0.8, (2,3)=1.0, (2,4)=1.2 -- candidates for extraction.
-        fill_k5_distance_matrix(h_dist, n,
-                                0.1, 0.2, 0.6, 0.7,  // row 0 edges
-                                0.5, 0.9, 0.8,         // row 1 edges
-                                1.0, 1.2,               // row 2 edges
-                                0.3);                   // row 3 edge (3,4)
+        fill_k5_distance_matrix(h_dist, n, 0.1, 0.2, 0.6, 0.7, // row 0 edges
+                                0.5, 0.9, 0.8,                 // row 1 edges
+                                1.0, 1.2,                      // row 2 edges
+                                0.3);                          // row 3 edge (3,4)
 
         constexpr Size max_edges = 20;
         constexpr double max_radius = 10.0;
@@ -551,9 +548,8 @@ int main()
         cudaMemset(d_count, 0, sizeof(Size));
         cudaMemset(d_degree, 0, n * sizeof(Size));
 
-        cuda_kernels::extractEdgesFilteredKernel(d_dist, d_edges, d_count, n, max_radius,
-                                                 max_edges, min_edge_weight, max_degree,
-                                                 d_degree);
+        cuda_kernels::extractEdgesFilteredKernel(d_dist, d_edges, d_count, n, max_radius, max_edges,
+                                                 min_edge_weight, max_degree, d_degree);
         assert(check_cuda(cudaDeviceSynchronize(), "cudaDeviceSynchronize"));
 
         Size edge_count = 0;
@@ -587,8 +583,8 @@ int main()
         cudaFree(d_count);
         cudaFree(d_degree);
 
-        std::cout << "PASSED: edge extraction combined min_weight + max_degree (K5, "
-                  << edge_count << " edges, weight >= 0.5, degrees <= 2)\n";
+        std::cout << "PASSED: edge extraction combined min_weight + max_degree (K5, " << edge_count
+                  << " edges, weight >= 0.5, degrees <= 2)\n";
     }
 
     // Edge extraction: combined min_edge_weight + max_degree stress (n=32, repeated runs)
@@ -916,7 +912,6 @@ int main()
         std::cout << "PASSED: edge extraction combined min_weight + max_degree stress (n=64, "
                   << "cap=2, " << num_runs << " runs, weight >= 0.5, degrees <= 2)\n";
     }
-
 
     return 0;
 }

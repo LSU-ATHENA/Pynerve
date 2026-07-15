@@ -21,7 +21,6 @@ using nerve::persistence::Pair;
 using nerve::persistence::VRAlgorithmSelection;
 using namespace nerve::test;
 
-
 bool pairs_equal(const Pair &a, const Pair &b)
 {
     if (a.dimension != b.dimension)

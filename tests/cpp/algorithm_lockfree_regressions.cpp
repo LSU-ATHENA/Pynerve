@@ -1,14 +1,14 @@
 #include "nerve/core_types.hpp"
+#include "nerve/errors/errors.hpp"
 #include "nerve/persistence/reduction/reduction_lock_free_structures.hpp"
 #include "nerve/persistence/reduction/reduction_lockfree_ops.hpp"
 #include "nerve/persistence/streaming/tile_streaming_ph.hpp"
 #include "nerve/streaming/lock_free_streaming.hpp"
-#include "nerve/errors/errors.hpp"
 #if defined(NERVE_HAS_CUDA)
+#include "nerve/algebra/boundary.hpp"
+#include "nerve/gpu/gpu_launch.hpp"
 #include "nerve/gpu/kernel_launcher.hpp"
 #include "nerve/gpu/persistence_kernels.cuh"
-#include "nerve/gpu/gpu_launch.hpp"
-#include "nerve/algebra/boundary.hpp"
 #include "nerve/persistence/cuda/cuda_edge_extraction.hpp"
 #include "nerve/persistence/cuda/cuda_multi_gpu.hpp"
 #endif

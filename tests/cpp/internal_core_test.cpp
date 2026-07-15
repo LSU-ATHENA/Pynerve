@@ -14,7 +14,6 @@
 namespace
 {
 
-
 constexpr double TOL = 1e-12;
 
 bool check_simd_memcpy_basic()

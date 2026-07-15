@@ -46,9 +46,8 @@ int main()
         constexpr size_t mat_size = static_cast<size_t>(n) * static_cast<size_t>(n);
         double h_dist[mat_size] = {};
         // K4 with one NaN edge: (0,1)=NaN, others finite
-        fill_k4_distance_matrix(h_dist, n,
-                                std::numeric_limits<double>::quiet_NaN(),
-                                2.0, 3.0, 4.0, 5.0, 6.0);
+        fill_k4_distance_matrix(h_dist, n, std::numeric_limits<double>::quiet_NaN(), 2.0, 3.0, 4.0,
+                                5.0, 6.0);
 
         constexpr Size max_edges = 20;
         constexpr double max_radius = 10.0;
@@ -78,8 +77,7 @@ int main()
             assert(std::isfinite(edges[i].w));
         // No edge (0,1) should be present
         for (Size i = 0; i < edge_count; ++i)
-            assert(!((edges[i].u == 0 && edges[i].v == 1) ||
-                     (edges[i].u == 1 && edges[i].v == 0)));
+            assert(!((edges[i].u == 0 && edges[i].v == 1) || (edges[i].u == 1 && edges[i].v == 0)));
 
         cudaFree(d_dist);
         cudaFree(d_edges);
@@ -94,11 +92,8 @@ int main()
         constexpr size_t mat_size = static_cast<size_t>(n) * static_cast<size_t>(n);
         double h_dist[mat_size] = {};
         // K4 with two Inf edges: (0,2)=inf, (1,3)=inf
-        fill_k4_distance_matrix(h_dist, n, 1.0,
-                                std::numeric_limits<double>::infinity(),
-                                3.0, 4.0,
-                                std::numeric_limits<double>::infinity(),
-                                6.0);
+        fill_k4_distance_matrix(h_dist, n, 1.0, std::numeric_limits<double>::infinity(), 3.0, 4.0,
+                                std::numeric_limits<double>::infinity(), 6.0);
 
         constexpr Size max_edges = 20;
         constexpr double max_radius = 10.0;
@@ -129,10 +124,8 @@ int main()
         // Explicitly verify Inf edges (0,2) and (1,3) are absent
         for (Size i = 0; i < edge_count; ++i)
         {
-            assert(!((edges[i].u == 0 && edges[i].v == 2) ||
-                     (edges[i].u == 2 && edges[i].v == 0)));
-            assert(!((edges[i].u == 1 && edges[i].v == 3) ||
-                     (edges[i].u == 3 && edges[i].v == 1)));
+            assert(!((edges[i].u == 0 && edges[i].v == 2) || (edges[i].u == 2 && edges[i].v == 0)));
+            assert(!((edges[i].u == 1 && edges[i].v == 3) || (edges[i].u == 3 && edges[i].v == 1)));
         }
 
         cudaFree(d_dist);
@@ -195,12 +188,8 @@ int main()
         //        (2,3)=1.0, (2,4)=1.1, (2,5)=1.2
         //        (3,4)=1.3, (3,5)=1.4
         //        (4,5)=1.5
-        fill_k6_distance_matrix(h_dist, n,
-                                0.1, 0.2, 0.3, 0.4, 0.5,
-                                0.6, 0.7, 0.8, 0.9,
-                                1.0, 1.1, 1.2,
-                                1.3, 1.4,
-                                1.5);
+        fill_k6_distance_matrix(h_dist, n, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1,
+                                1.2, 1.3, 1.4, 1.5);
 
         constexpr Size max_edges = 30;
         constexpr double max_radius = 10.0;

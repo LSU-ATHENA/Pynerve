@@ -1,8 +1,8 @@
+#include "nerve/gpu/gpu_ptx_ops.cuh"
+
 #include <cuda_runtime.h>
 
 #include <cmath>
-
-#include "nerve/gpu/gpu_ptx_ops.cuh"
 
 namespace nerve::nn::cuda
 {

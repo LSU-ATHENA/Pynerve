@@ -20,7 +20,6 @@ int main()
 namespace
 {
 
-
 constexpr double kTol = 1e-10;
 
 #ifdef NERVE_HAS_MPI

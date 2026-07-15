@@ -26,7 +26,6 @@ using nerve::persistence::Pair;
 using nerve::persistence::accelerated::GPUAccelerationManager;
 using namespace nerve::test;
 
-
 bool check_system_capability_detection()
 {
     auto caps = GPUAccelerationManager::detectSystemCapabilities();

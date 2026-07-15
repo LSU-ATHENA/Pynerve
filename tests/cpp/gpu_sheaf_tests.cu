@@ -14,8 +14,8 @@ int main()
         auto hw = nerve::sheaf::detectSheafHardware();
         assert(hw.has_gpu);
         assert(hw.num_cores > 0);
-        std::cout << "PASSED: detectSheafHardware (gpu=" << hw.has_gpu
-                  << " cores=" << hw.num_cores << " avx512=" << hw.has_avx512 << ")\n";
+        std::cout << "PASSED: detectSheafHardware (gpu=" << hw.has_gpu << " cores=" << hw.num_cores
+                  << " avx512=" << hw.has_avx512 << ")\n";
     }
 
     // Sheaf: benchmarkSheafGPU (GPU code path)

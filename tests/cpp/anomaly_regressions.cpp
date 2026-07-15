@@ -11,7 +11,6 @@
 namespace
 {
 
-
 constexpr double kTol = 1e-10;
 
 bool check_betti_change_detector_basic()

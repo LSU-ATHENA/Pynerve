@@ -28,8 +28,8 @@ inline double simd_manhattan(const double *a, const double *b, std::size_t dim)
         const std::size_t block = remaining < 8 ? remaining : 8;
         double buf[8];
         std::memcpy(buf, a + i, block * sizeof(double));
-        SIMD.sub(buf, b + i, block);        // buf = a - b
-        SIMD.abs(buf, block);                // buf = |a - b|
+        SIMD.sub(buf, b + i, block); // buf = a - b
+        SIMD.abs(buf, block);        // buf = |a - b|
         sum += SIMD.reduce_sum(buf, block);
         i += block;
     }
@@ -43,10 +43,13 @@ inline double simd_cosine(const double *a, const double *b, std::size_t dim)
     double dot_val = SIMD.dot(a, b, dim);
     double na = SIMD.norm2(a, dim);
     double nb = SIMD.norm2(b, dim);
-    if (na == 0.0 || nb == 0.0) return 1.0;
+    if (na == 0.0 || nb == 0.0)
+        return 1.0;
     double cos_sim = dot_val / (na * nb);
-    if (cos_sim < -1.0) cos_sim = -1.0;
-    if (cos_sim > 1.0) cos_sim = 1.0;
+    if (cos_sim < -1.0)
+        cos_sim = -1.0;
+    if (cos_sim > 1.0)
+        cos_sim = 1.0;
     return 1.0 - cos_sim;
 }
 
@@ -65,8 +68,8 @@ inline float simd_manhattan_f32(const float *a, const float *b, std::size_t n)
         const std::size_t block = remaining < 16 ? remaining : 16;
         float buf[16];
         std::memcpy(buf, a + i, block * sizeof(float));
-        SIMD.sub_f32(buf, b + i, block);       // buf = a - b
-        SIMD.abs_f32(buf, block);               // buf = |a - b|
+        SIMD.sub_f32(buf, b + i, block); // buf = a - b
+        SIMD.abs_f32(buf, block);        // buf = |a - b|
         sum += SIMD.reduce_sum_f32(buf, block);
         i += block;
     }
@@ -97,10 +100,13 @@ inline float simd_cosine_f16(const half *a, const half *b, std::size_t dim)
     float dot_val = SIMD.dot_f16(a, b, dim);
     float na = SIMD.norm2_f16(a, dim);
     float nb = SIMD.norm2_f16(b, dim);
-    if (na == 0.0f || nb == 0.0f) return 1.0f;
+    if (na == 0.0f || nb == 0.0f)
+        return 1.0f;
     float cos_sim = dot_val / (na * nb);
-    if (cos_sim < -1.0f) cos_sim = -1.0f;
-    if (cos_sim > 1.0f)  cos_sim = 1.0f;
+    if (cos_sim < -1.0f)
+        cos_sim = -1.0f;
+    if (cos_sim > 1.0f)
+        cos_sim = 1.0f;
     return 1.0f - cos_sim;
 }
 

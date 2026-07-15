@@ -238,7 +238,8 @@ PersistenceImage compute_persistence_image(std::span<const T> diagram, size_t nu
             // Accumulate: image[y][x] += exp(-dx^2/(2*sigma^2)) * exp(-dy^2/(2*sigma^2))
             for (size_t k = 0; k < n_y; ++k)
             {
-                result.image[static_cast<size_t>(y0 + static_cast<int>(k))][static_cast<size_t>(x)] +=
+                result
+                    .image[static_cast<size_t>(y0 + static_cast<int>(k))][static_cast<size_t>(x)] +=
                     exp_x * exp_args[k];
             }
         }

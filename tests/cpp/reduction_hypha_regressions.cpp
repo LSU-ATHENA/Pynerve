@@ -200,8 +200,8 @@ bool check_hypha_dim3_determinism()
     auto run2 = hr.compute(bm);
     if (run1.size() != run2.size())
     {
-        std::cerr << "dim-3 determinism size mismatch: " << run1.size()
-                  << " vs " << run2.size() << "\n";
+        std::cerr << "dim-3 determinism size mismatch: " << run1.size() << " vs " << run2.size()
+                  << "\n";
         return false;
     }
     return true;

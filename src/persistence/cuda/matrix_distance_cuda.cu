@@ -1,6 +1,6 @@
+#include "nerve/gpu/gpu_ptx_ops.cuh"
 #include "nerve/persistence/cuda/cuda_distance_matrix.hpp"
 #include "nerve/persistence/cuda/cuda_error_handling.hpp"
-#include "nerve/gpu/gpu_ptx_ops.cuh"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>

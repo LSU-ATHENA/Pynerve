@@ -1,5 +1,5 @@
-#include "nerve/simd/simd_base.hpp"
 #include "nerve/filtration/simd_filtration.hpp"
+#include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -7,7 +7,8 @@
 namespace nerve::filtration
 {
 
-void simdBatchFilterValues(double *values, std::size_t n, std::size_t start_dim, std::size_t end_dim, double threshold)
+void simdBatchFilterValues(double *values, std::size_t n, std::size_t start_dim,
+                           std::size_t end_dim, double threshold)
 {
     (void)start_dim;
     (void)end_dim;
@@ -22,8 +23,7 @@ void simdBatchFilterValues(double *values, std::size_t n, std::size_t start_dim,
 
 void simdSortPairsByBirth(Pair *pairs, std::size_t n)
 {
-    std::sort(pairs, pairs + n,
-              [](const Pair &a, const Pair &b) { return a.birth < b.birth; });
+    std::sort(pairs, pairs + n, [](const Pair &a, const Pair &b) { return a.birth < b.birth; });
 }
 
 } // namespace nerve::filtration

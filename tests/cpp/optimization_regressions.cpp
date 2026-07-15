@@ -21,7 +21,6 @@ using nerve::optimization::ParameterSweepEngine;
 using nerve::optimization::SweepConfig;
 using namespace nerve::test;
 
-
 bool check_parameter_construction()
 {
     Parameter param;

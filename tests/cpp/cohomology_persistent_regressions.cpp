@@ -30,7 +30,6 @@ using nerve::persistence::Pair;
 using nerve::persistence::PersistentCohomologyComputer;
 using namespace nerve::test;
 
-
 CellularComplex make_triangle_complex()
 {
     CellularComplex complex;

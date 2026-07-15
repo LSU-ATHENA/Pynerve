@@ -71,8 +71,8 @@ struct AlgorithmBenchmark
  * @param base_config VR configuration (may be modified based on selection)
  * @return Vector of persistence pairs
  */
-std::vector<Pair> computeVrPersistenceAuto(core::BufferView<const double>points,
-                                           Size point_dim, const VRConfig &base_config);
+std::vector<Pair> computeVrPersistenceAuto(core::BufferView<const double> points, Size point_dim,
+                                           const VRConfig &base_config);
 
 /**
  * @brief Execute specific VR algorithm
@@ -86,7 +86,7 @@ std::vector<Pair> computeVrPersistenceAuto(core::BufferView<const double>points,
  * @param algorithm Specific algorithm to use
  * @return Vector of persistence pairs
  */
-std::vector<Pair> computeVrPersistenceWithAlgorithm(core::BufferView<const double>points,
+std::vector<Pair> computeVrPersistenceWithAlgorithm(core::BufferView<const double> points,
                                                     Size point_dim, const VRConfig &config,
                                                     VRAlgorithm algorithm);
 
@@ -130,7 +130,7 @@ size_t estimateMemoryUsage(size_t num_points, size_t point_dim, double max_radiu
  * @param config Base VR configuration
  * @return Benchmark results for each algorithm
  */
-std::vector<AlgorithmBenchmark> benchmarkAllAlgorithms(core::BufferView<const double>points,
+std::vector<AlgorithmBenchmark> benchmarkAllAlgorithms(core::BufferView<const double> points,
                                                        Size point_dim, const VRConfig &config);
 
 /**

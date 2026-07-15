@@ -11,7 +11,6 @@
 namespace
 {
 
-
 constexpr double kTol = 1e-10;
 
 bool check_micro_batch_processor_construction()

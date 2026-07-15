@@ -11,7 +11,6 @@
 namespace
 {
 
-
 constexpr double TOL = 1e-12;
 
 bool check_tensor_construction_default()

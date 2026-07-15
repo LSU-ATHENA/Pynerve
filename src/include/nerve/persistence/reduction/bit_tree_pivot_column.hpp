@@ -1,11 +1,11 @@
 #pragma once
 
+#include "nerve/platform.hpp"
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
-
-#include "nerve/platform.hpp"
 
 namespace nerve::persistence
 {

@@ -235,7 +235,7 @@ void FeatureCache::initializeSharedMemory()
         return;
     }
     shm_ptr_ = nerve::sys::map(nullptr, shm_size_, nerve::sys::MAP_PROT_RW,
-                                 nerve::sys::MAP_FLAG_SHARED, shm_fd_, 0);
+                               nerve::sys::MAP_FLAG_SHARED, shm_fd_, 0);
     if (shm_ptr_ == nerve::sys::kMapFailed)
     {
         shm_ptr_ = nullptr;

@@ -40,7 +40,10 @@ template <typename Scalar = int>
 class SparseBoundaryMatrix
 {
 public:
-    SparseBoundaryMatrix(int rows, int cols) : rows_(rows), cols_(cols) {}
+    SparseBoundaryMatrix(int rows, int cols)
+        : rows_(rows)
+        , cols_(cols)
+    {}
 
     int numRows() const { return rows_; }
     int numCols() const { return cols_; }
@@ -80,10 +83,7 @@ public:
         return it != entries_.end() ? it->second : Scalar{};
     }
 
-    bool isNonzero(int row, int col) const
-    {
-        return entries_.find({row, col}) != entries_.end();
-    }
+    bool isNonzero(int row, int col) const { return entries_.find({row, col}) != entries_.end(); }
 
 private:
     int rows_ = 0;
@@ -93,8 +93,7 @@ private:
     {
         std::size_t operator()(const std::pair<int, int> &p) const noexcept
         {
-            return static_cast<std::size_t>(p.first) * 7919 +
-                   static_cast<std::size_t>(p.second);
+            return static_cast<std::size_t>(p.first) * 7919 + static_cast<std::size_t>(p.second);
         }
     };
 
@@ -195,9 +194,9 @@ private:
     Diagram computeApproximatePersistence(const std::vector<Simplex> &complex,
                                           const ::nerve::core::DeterminismContract &contract);
 
-    std::vector<Index>
-    sampleLandmarkWitnesses(const std::vector<Simplex> &complex, std::size_t num_witnesses,
-                            const ::nerve::core::DeterminismContract &contract);
+    std::vector<Index> sampleLandmarkWitnesses(const std::vector<Simplex> &complex,
+                                               std::size_t num_witnesses,
+                                               const ::nerve::core::DeterminismContract &contract);
     std::vector<Index>
     sampleMaxPersistenceWitnesses(const std::vector<Simplex> &complex, std::size_t num_witnesses,
                                   const ::nerve::core::DeterminismContract &contract);

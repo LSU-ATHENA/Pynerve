@@ -1,9 +1,9 @@
-#include "nerve/simd/simd_base.hpp"
-#include "nerve/simd/simd_distance.hpp"
 #include "nerve/config.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/cpu/x86_intrinsics.hpp"
 #include "nerve/platform.hpp"
+#include "nerve/simd/simd_base.hpp"
+#include "nerve/simd/simd_distance.hpp"
 
 #include <cmath>
 #include <cstring>
@@ -71,8 +71,8 @@ void pairwiseDistanceMatrixSse4(const double *points, Size n, Size dim, double *
         matrix[i * n + i] = 0.0;
         for (Size j = i + 1; j < n; ++j)
         {
-            double d = nerve::simd::simd_euclidean(
-                points + i * dim, points + j * dim, static_cast<std::size_t>(dim));
+            double d = nerve::simd::simd_euclidean(points + i * dim, points + j * dim,
+                                                   static_cast<std::size_t>(dim));
             matrix[i * n + j] = d;
             matrix[j * n + i] = d;
         }

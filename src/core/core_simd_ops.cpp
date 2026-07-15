@@ -21,8 +21,7 @@ void simdMemset(void *dst, int value, std::size_t bytes)
 void simdMemcpyAligned(void *dst, const void *src, std::size_t bytes)
 {
     // Check 64-byte alignment for potential streaming stores
-    if (reinterpret_cast<uintptr_t>(dst) % 64 == 0 &&
-        reinterpret_cast<uintptr_t>(src) % 64 == 0)
+    if (reinterpret_cast<uintptr_t>(dst) % 64 == 0 && reinterpret_cast<uintptr_t>(src) % 64 == 0)
     {
         // Currently delegates to simd_memcpy; aligned streaming store
         // optimization can be added to the SIMD primitive layer later.

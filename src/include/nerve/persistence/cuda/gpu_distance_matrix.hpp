@@ -44,7 +44,7 @@ public:
             std::unique_ptr<GPUDistanceMatrix>(new GPUDistanceMatrix(config)));
     }
 
-    errors::ErrorResult<void> computeDistances(core::BufferView<const double>points,
+    errors::ErrorResult<void> computeDistances(core::BufferView<const double> points,
                                                size_t n_points, size_t point_dim, double max_radius,
                                                std::vector<double> &distances) const
     {

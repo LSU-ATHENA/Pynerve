@@ -223,33 +223,31 @@ std::vector<T> DiagramConv2D<T>::forward(std::span<const T> input, size_t batch_
                             const size_t in_y = oy * static_cast<size_t>(config_.stride_h) + ky_s;
                             // input and kernel are contiguous for consecutive kx
                             const size_t input_base =
-                                (((b * static_cast<size_t>(config_.in_channels) + ic_s) *
-                                      height +
+                                (((b * static_cast<size_t>(config_.in_channels) + ic_s) * height +
                                   in_y) *
                                      width +
                                  ox * static_cast<size_t>(config_.stride_w));
                             const size_t kernel_base =
                                 (((static_cast<size_t>(oc) *
-                                        static_cast<size_t>(config_.in_channels) +
-                                    ic_s) *
-                                       static_cast<size_t>(config_.kernel_h) +
-                                   ky_s) *
-                                      static_cast<size_t>(config_.kernel_w));
+                                       static_cast<size_t>(config_.in_channels) +
+                                   ic_s) *
+                                      static_cast<size_t>(config_.kernel_h) +
+                                  ky_s) *
+                                 static_cast<size_t>(config_.kernel_w));
                             const size_t kw = static_cast<size_t>(config_.kernel_w);
 
                             // Batched dot product via dispatch table
                             T partial;
                             if constexpr (std::is_same_v<T, double>)
                                 partial = nerve::simd::simd_dot(&input[input_base],
-                                                                 &kernel_[kernel_base], kw);
+                                                                &kernel_[kernel_base], kw);
                             else if constexpr (std::is_same_v<T, float>)
                                 partial = nerve::simd::simd_dot_f32(&input[input_base],
-                                                                     &kernel_[kernel_base], kw);
+                                                                    &kernel_[kernel_base], kw);
                             if (!std::isfinite(partial))
                             {
-                                throw_invalid_argument(
-                                    "DiagramConv2D::forward",
-                                    "convolution produced non-finite values");
+                                throw_invalid_argument("DiagramConv2D::forward",
+                                                       "convolution produced non-finite values");
                             }
                             sum += partial;
                         }
@@ -354,9 +352,8 @@ std::vector<T> PersistenceImageLayer<T>::forward(std::span<const T> diagram, siz
 
     const T birth_range = max_death - min_birth;
     // Pre-compute Gaussian kernel once (constant per forward() call)
-    const int spread =
-        bounded_spread(config_.sigma, config_.resolution_h, config_.resolution_w,
-                       "PersistenceImageLayer::forward");
+    const int spread = bounded_spread(config_.sigma, config_.resolution_h, config_.resolution_w,
+                                      "PersistenceImageLayer::forward");
     const int win = 2 * spread + 1;
     const size_t kernel_count = static_cast<size_t>(win) * static_cast<size_t>(win);
     const T inv_two_sigma_sq = T(1) / (T(2) * config_.sigma * config_.sigma);
@@ -464,9 +461,8 @@ std::vector<T> PersistenceImageLayer<T>::forward_multi_dim(std::span<const T> di
     const T birth_range = max_death - min_birth;
 
     // Pre-compute Gaussian kernel once (constant per forward_multi_dim call)
-    const int spread =
-        bounded_spread(config_.sigma, config_.resolution_h, config_.resolution_w,
-                       "PersistenceImageLayer::forward_multi_dim");
+    const int spread = bounded_spread(config_.sigma, config_.resolution_h, config_.resolution_w,
+                                      "PersistenceImageLayer::forward_multi_dim");
     const int win = 2 * spread + 1;
     const size_t kernel_count = static_cast<size_t>(win) * static_cast<size_t>(win);
     const T inv_two_sigma_sq = T(1) / (T(2) * config_.sigma * config_.sigma);

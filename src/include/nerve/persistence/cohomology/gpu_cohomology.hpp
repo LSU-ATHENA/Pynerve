@@ -59,7 +59,8 @@ private:
     thrust::device_vector<int> d_coboundary_sizes_;
     thrust::device_vector<int> d_coboundary_offsets_;
     thrust::device_vector<int> d_pivot_table_;
-    thrust::device_vector<int> d_red_sizes_;  // Working copy of coboundary sizes after clearing/reduction
+    thrust::device_vector<int>
+        d_red_sizes_; // Working copy of coboundary sizes after clearing/reduction
 
     double last_compute_time_ms_ = 0.0;
     double cpu_baseline_ms_ = 0.0;
@@ -80,8 +81,7 @@ private:
  *  @param max_dimension  Highest simplex dimension to consider.
  *  @return               Populated PersistenceDiagram on success; empty on failure.
  */
-[[nodiscard]] PersistenceDiagram computeGPUCohomology(
-    const std::vector<SimplexGPU> &simplices,
-    int max_dimension);
+[[nodiscard]] PersistenceDiagram computeGPUCohomology(const std::vector<SimplexGPU> &simplices,
+                                                      int max_dimension);
 
 } // namespace nerve::persistence::gpu::cohomology

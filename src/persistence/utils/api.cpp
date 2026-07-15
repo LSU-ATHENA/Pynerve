@@ -54,8 +54,8 @@ errors::ErrorResult<PersistenceResult> validateOptions(const PersistenceOptions 
     return errors::ErrorResult<PersistenceResult>::success(PersistenceResult{});
 }
 
-errors::ErrorResult<PersistenceResult>
-validatePointCloud(core::BufferView<const double>points, Size point_dim)
+errors::ErrorResult<PersistenceResult> validatePointCloud(core::BufferView<const double> points,
+                                                          Size point_dim)
 {
     if (point_dim == 0)
     {
@@ -105,9 +105,10 @@ bool hasRequiredFaces(const algebra::SimplicialComplex &complex, const algebra::
     return true;
 }
 
-errors::ErrorResult<PersistenceResult>
-computeWithDimCap(core::BufferView<const double>points, Size point_dim,
-                  const PersistenceOptions &options, Size dim_cap)
+errors::ErrorResult<PersistenceResult> computeWithDimCap(core::BufferView<const double> points,
+                                                         Size point_dim,
+                                                         const PersistenceOptions &options,
+                                                         Size dim_cap)
 {
     PersistenceOptions wrapped = options;
     wrapped.max_dim = std::min(options.max_dim, dim_cap);
@@ -116,7 +117,7 @@ computeWithDimCap(core::BufferView<const double>points, Size point_dim,
 
 } // namespace
 
-errors::ErrorResult<PersistenceResult> compute(core::BufferView<const double>points,
+errors::ErrorResult<PersistenceResult> compute(core::BufferView<const double> points,
                                                Size point_dim, const PersistenceOptions &options)
 {
     if (auto validation = validateOptions(options); validation.isError())
@@ -246,29 +247,29 @@ updatePersistence(const std::vector<PersistenceEvent> &events, const Persistence
     return errors::ErrorResult<PersistenceResult>::success(std::move(result));
 }
 
-errors::ErrorResult<PersistenceResult>
-computePersistencePh4(core::BufferView<const double>points, Size point_dim,
-                      const PersistenceOptions &options)
+errors::ErrorResult<PersistenceResult> computePersistencePh4(core::BufferView<const double> points,
+                                                             Size point_dim,
+                                                             const PersistenceOptions &options)
 {
     return computeWithDimCap(points, point_dim, options, 4);
 }
 
-errors::ErrorResult<PersistenceResult>
-computePersistencePh5(core::BufferView<const double>points, Size point_dim,
-                      const PersistenceOptions &options)
+errors::ErrorResult<PersistenceResult> computePersistencePh5(core::BufferView<const double> points,
+                                                             Size point_dim,
+                                                             const PersistenceOptions &options)
 {
     return computeWithDimCap(points, point_dim, options, 5);
 }
 
-errors::ErrorResult<PersistenceResult>
-computePersistencePh6(core::BufferView<const double>points, Size point_dim,
-                      const PersistenceOptions &options)
+errors::ErrorResult<PersistenceResult> computePersistencePh6(core::BufferView<const double> points,
+                                                             Size point_dim,
+                                                             const PersistenceOptions &options)
 {
     return computeWithDimCap(points, point_dim, options, 6);
 }
 
 errors::ErrorResult<PersistenceResult>
-computePersistenceCohomology(core::BufferView<const double>points, Size point_dim,
+computePersistenceCohomology(core::BufferView<const double> points, Size point_dim,
                              const PersistenceOptions &options)
 {
     PersistenceOptions cohomology_options = options;

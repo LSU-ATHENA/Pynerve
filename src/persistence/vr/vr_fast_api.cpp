@@ -13,7 +13,7 @@ namespace nerve::persistence::accelerated
 {
 
 errors::ErrorResult<std::vector<Pair>>
-computeVrPersistenceAccelerated(core::BufferView<const double>points, Size point_dim,
+computeVrPersistenceAccelerated(core::BufferView<const double> points, Size point_dim,
                                 const VRConfig &config)
 {
     auto engine_result = AcceleratedVREngine::create(config);
@@ -26,7 +26,7 @@ computeVrPersistenceAccelerated(core::BufferView<const double>points, Size point
 }
 
 errors::ErrorResult<std::vector<Pair>>
-computeVrPersistenceFast(core::BufferView<const double>points, Size point_dim,
+computeVrPersistenceFast(core::BufferView<const double> points, Size point_dim,
                          const ::nerve::persistence::VRConfig &config)
 {
     const ::nerve::persistence::VRConfig effective = config.getEffectiveConfig();
@@ -72,7 +72,7 @@ computeVrPersistenceFast(core::BufferView<const double>points, Size point_dim,
 }
 
 ::nerve::persistence::VRConfig
-createOptimalConfig(core::BufferView<const double>points, Size point_dim,
+createOptimalConfig(core::BufferView<const double> points, Size point_dim,
                     const ::nerve::persistence::VRConfig &base_config)
 {
     if (point_dim == 0)

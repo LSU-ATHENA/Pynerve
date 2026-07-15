@@ -104,15 +104,15 @@ static void *tryHugepageAlloc()
 {
 #if defined(__linux__) && defined(MAP_ANONYMOUS)
     void *p = nerve::sys::map(nullptr, kHugePageSize, nerve::sys::MAP_PROT_RW,
-                               nerve::sys::MAP_FLAG_PRIVATE | nerve::sys::MAP_FLAG_ANONYMOUS);
+                              nerve::sys::MAP_FLAG_PRIVATE | nerve::sys::MAP_FLAG_ANONYMOUS);
     if (p != nerve::sys::kMapFailed)
     {
         nerve::sys::advise(p, kHugePageSize, nerve::sys::MAP_ADV_HUGEPAGE);
         return p;
     }
     p = nerve::sys::map(nullptr, kHugePageSize, nerve::sys::MAP_PROT_RW,
-                         nerve::sys::MAP_FLAG_PRIVATE | nerve::sys::MAP_FLAG_ANONYMOUS |
-                         nerve::sys::MAP_FLAG_HUGETLB);
+                        nerve::sys::MAP_FLAG_PRIVATE | nerve::sys::MAP_FLAG_ANONYMOUS |
+                            nerve::sys::MAP_FLAG_HUGETLB);
     if (p != nerve::sys::kMapFailed)
         return p;
 #endif

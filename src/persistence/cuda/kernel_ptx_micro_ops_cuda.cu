@@ -87,7 +87,7 @@ __device__ int32_t Ptx92MicroOps::szext(int8_t value)
 }
 
 __device__ void DualIssuePerfect::distanceQuadChain(const float *p1, const float *p2, int dim,
-                                                     float &result)
+                                                    float &result)
 {
     float sum0 = 0.0f;
     float sum1 = 0.0f;
@@ -155,25 +155,13 @@ struct PtxHopperOps
 #endif
     }
 
-    __device__ static unsigned int clusterRank()
-    {
-        return ptx::cluster_rank();
-    }
+    __device__ static unsigned int clusterRank() { return ptx::cluster_rank(); }
 
-    __device__ static unsigned int clusterSize()
-    {
-        return ptx::cluster_size();
-    }
+    __device__ static unsigned int clusterSize() { return ptx::cluster_size(); }
 
-    __device__ static void clusterBarrierArrive()
-    {
-        ptx::cluster_barrier_arrive();
-    }
+    __device__ static void clusterBarrierArrive() { ptx::cluster_barrier_arrive(); }
 
-    __device__ static void clusterBarrierWait()
-    {
-        ptx::cluster_barrier_wait();
-    }
+    __device__ static void clusterBarrierWait() { ptx::cluster_barrier_wait(); }
 };
 
 // Blackwell (sm100+) operations
@@ -183,7 +171,9 @@ struct PtxBlackwellOps
     {
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 1000
         asm volatile("stmatrix.sync.aligned.x4.b32 [%0], {%1, %2, %3, %4};"
-                     : : "l"(dst), "f"(src[0]), "f"(src[1]), "f"(src[2]), "f"(src[3]) : "memory");
+                     :
+                     : "l"(dst), "f"(src[0]), "f"(src[1]), "f"(src[2]), "f"(src[3])
+                     : "memory");
 #else
         for (int i = 0; i < rows * cols; ++i)
             dst[i] = src[i];
@@ -201,10 +191,7 @@ struct PtxBlackwellOps
 #endif
     }
 
-    __device__ static bool supportsFP4()
-    {
-        return ptx::supports_fp4_hw(100);
-    }
+    __device__ static bool supportsFP4() { return ptx::supports_fp4_hw(100); }
 };
 
 // Advanced warp-level reduction helpers
@@ -242,10 +229,7 @@ struct AdvancedReduction
         return (static_cast<unsigned long long>(hi) << 32) | lo;
     }
 
-    __device__ static float warpReduceSum(float value)
-    {
-        return ptx::warp_reduce_sum_f32(value);
-    }
+    __device__ static float warpReduceSum(float value) { return ptx::warp_reduce_sum_f32(value); }
 
     __device__ static double warpReduceSum64(double value)
     {

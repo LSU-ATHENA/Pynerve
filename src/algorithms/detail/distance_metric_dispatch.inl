@@ -7,53 +7,64 @@ constexpr size_t kSimdWidthDoubles = nerve::math::simd::kAvx512Doubles;
 constexpr size_t kDistanceBlockSize = nerve::math::distance::kDefaultBlockSize;
 constexpr double kDefaultEpsilon = nerve::math::kEpsilonDouble;
 
-template<nerve::algorithms::Numeric T>
-[[nodiscard]] constexpr size_t simd_lane_width() noexcept {
-    if constexpr (sizeof(T) == sizeof(float)) {
+template <nerve::algorithms::Numeric T>
+[[nodiscard]] constexpr size_t simd_lane_width() noexcept
+{
+    if constexpr (sizeof(T) == sizeof(float))
+    {
         return kSimdWidthFloats;
     }
     return kSimdWidthDoubles;
 }
 
-template<nerve::algorithms::Numeric T>
-[[nodiscard]] T euclidean_distance(const T* a, const T* b, size_t dim) {
+template <nerve::algorithms::Numeric T>
+[[nodiscard]] T euclidean_distance(const T *a, const T *b, size_t dim)
+{
     T sum_sq = nerve::math::Constants<T>::kZero;
-    for (size_t d = 0; d < dim; ++d) {
+    for (size_t d = 0; d < dim; ++d)
+    {
         const T diff = a[d] - b[d];
         sum_sq += diff * diff;
     }
     return checked_distance_result(std::sqrt(sum_sq), "euclidean distance");
 }
 
-template<nerve::algorithms::Numeric T>
-[[nodiscard]] T manhattan_distance(const T* a, const T* b, size_t dim) {
+template <nerve::algorithms::Numeric T>
+[[nodiscard]] T manhattan_distance(const T *a, const T *b, size_t dim)
+{
     T sum = nerve::math::Constants<T>::kZero;
-    for (size_t d = 0; d < dim; ++d) {
+    for (size_t d = 0; d < dim; ++d)
+    {
         sum += std::abs(a[d] - b[d]);
     }
     return checked_distance_result(sum, "manhattan distance");
 }
 
-template<nerve::algorithms::Numeric T>
-[[nodiscard]] T chebyshev_distance(const T* a, const T* b, size_t dim) {
+template <nerve::algorithms::Numeric T>
+[[nodiscard]] T chebyshev_distance(const T *a, const T *b, size_t dim)
+{
     T max_diff = nerve::math::Constants<T>::kZero;
-    for (size_t d = 0; d < dim; ++d) {
+    for (size_t d = 0; d < dim; ++d)
+    {
         max_diff = std::max(max_diff, std::abs(a[d] - b[d]));
     }
     return checked_distance_result(max_diff, "chebyshev distance");
 }
 
-template<nerve::algorithms::Numeric T>
-[[nodiscard]] T cosine_distance(const T* a, const T* b, size_t dim) {
+template <nerve::algorithms::Numeric T>
+[[nodiscard]] T cosine_distance(const T *a, const T *b, size_t dim)
+{
     T dot = nerve::math::Constants<T>::kZero;
     T norm_a_sq = nerve::math::Constants<T>::kZero;
     T norm_b_sq = nerve::math::Constants<T>::kZero;
-    for (size_t d = 0; d < dim; ++d) {
+    for (size_t d = 0; d < dim; ++d)
+    {
         dot += a[d] * b[d];
         norm_a_sq += a[d] * a[d];
         norm_b_sq += b[d] * b[d];
     }
-    if (!std::isfinite(dot) || !std::isfinite(norm_a_sq) || !std::isfinite(norm_b_sq)) {
+    if (!std::isfinite(dot) || !std::isfinite(norm_a_sq) || !std::isfinite(norm_b_sq))
+    {
         throw std::overflow_error("cosine distance overflowed");
     }
 
@@ -61,29 +72,25 @@ template<nerve::algorithms::Numeric T>
     // - both zero: distance 0 (indistinguishable)
     // - one zero: distance 1 (neutral dissimilarity in [0, 2] cosine range)
     constexpr T kEpsilon = static_cast<T>(kDefaultEpsilon);
-    if (norm_a_sq <= kEpsilon || norm_b_sq <= kEpsilon) {
-        return (norm_a_sq <= kEpsilon && norm_b_sq <= kEpsilon)
-                 ? nerve::math::Constants<T>::kZero
-                 : nerve::math::Constants<T>::kOne;
+    if (norm_a_sq <= kEpsilon || norm_b_sq <= kEpsilon)
+    {
+        return (norm_a_sq <= kEpsilon && norm_b_sq <= kEpsilon) ? nerve::math::Constants<T>::kZero
+                                                                : nerve::math::Constants<T>::kOne;
     }
 
     const T denom = checked_distance_result(std::sqrt(norm_a_sq * norm_b_sq), "cosine distance");
     const T raw_similarity = dot / denom;
-    const T similarity = std::clamp(
-        checked_distance_result(raw_similarity, "cosine distance"),
-        -nerve::math::Constants<T>::kOne,
-        nerve::math::Constants<T>::kOne
-    );
+    const T similarity =
+        std::clamp(checked_distance_result(raw_similarity, "cosine distance"),
+                   -nerve::math::Constants<T>::kOne, nerve::math::Constants<T>::kOne);
     return nerve::math::Constants<T>::kOne - similarity;
 }
 
-template<nerve::algorithms::Numeric T>
+template <nerve::algorithms::Numeric T>
 [[nodiscard]] T distance_from_matrix_metric(
-    const T* a,
-    const T* b,
-    size_t dim,
-    typename nerve::algorithms::DistanceMatrixComputer<T>::Config::Metric metric
-) {
+    const T *a, const T *b, size_t dim,
+    typename nerve::algorithms::DistanceMatrixComputer<T>::Config::Metric metric)
+{
     using Metric = typename nerve::algorithms::DistanceMatrixComputer<T>::Config::Metric;
 
     if constexpr (std::is_same_v<T, double>)
@@ -119,8 +126,7 @@ template<nerve::algorithms::Numeric T>
                     "manhattan distance");
             case Metric::COSINE:
                 return checked_distance_result(
-                    static_cast<T>(nerve::simd::simd_cosine_f32(a, b, dim)),
-                    "cosine distance");
+                    static_cast<T>(nerve::simd::simd_cosine_f32(a, b, dim)), "cosine distance");
             case Metric::CHEBYSHEV:
                 return chebyshev_distance(a, b, dim);
             default:
@@ -146,15 +152,14 @@ template<nerve::algorithms::Numeric T>
     return euclidean_distance(a, b, dim);
 }
 
-template<nerve::algorithms::Numeric T>
-[[nodiscard]] T distance_from_knn_metric(
-    const T* a,
-    const T* b,
-    size_t dim,
-    typename nerve::algorithms::KNNComputer<T>::Config::Metric metric
-) {
+template <nerve::algorithms::Numeric T>
+[[nodiscard]] T
+distance_from_knn_metric(const T *a, const T *b, size_t dim,
+                         typename nerve::algorithms::KNNComputer<T>::Config::Metric metric)
+{
     using Metric = typename nerve::algorithms::KNNComputer<T>::Config::Metric;
-    switch (metric) {
+    switch (metric)
+    {
         case Metric::EUCLIDEAN:
             return euclidean_distance(a, b, dim);
         case Metric::MANHATTAN:
