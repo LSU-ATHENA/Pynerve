@@ -956,6 +956,18 @@ float reduce_max_f16(const half *data, std::size_t n)
 {
     if (n == 0)
         return 0.0f;
+    // Use pure scalar for n < 8 to avoid reading past the buffer
+    if (n < 8)
+    {
+        float m = half_to_float(data[0]);
+        for (std::size_t i = 1; i < n; ++i)
+        {
+            float v = half_to_float(data[i]);
+            if (v > m)
+                m = v;
+        }
+        return m;
+    }
     std::size_t i = 0;
     __m128i v0_half = _mm_loadu_si128(reinterpret_cast<const __m128i *>(data));
     __m256 vmax = _mm256_cvtph_ps(v0_half);
@@ -984,6 +996,18 @@ float reduce_min_f16(const half *data, std::size_t n)
 {
     if (n == 0)
         return 0.0f;
+    // Use pure scalar for n < 8 to avoid reading past the buffer
+    if (n < 8)
+    {
+        float m = half_to_float(data[0]);
+        for (std::size_t i = 1; i < n; ++i)
+        {
+            float v = half_to_float(data[i]);
+            if (v < m)
+                m = v;
+        }
+        return m;
+    }
     std::size_t i = 0;
     __m128i v0_half = _mm_loadu_si128(reinterpret_cast<const __m128i *>(data));
     __m256 vmin = _mm256_cvtph_ps(v0_half);
