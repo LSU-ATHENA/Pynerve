@@ -3242,9 +3242,12 @@ bool test_softmax_f16()
 
 bool test_zero_size_f16()
 {
-    nerve::simd::half dummy_a[] = {nerve::simd::float_to_half(0.0f)};
-    nerve::simd::half dummy_b[] = {nerve::simd::float_to_half(0.0f)};
-    nerve::simd::half dummy_c[] = {nerve::simd::float_to_half(0.0f)};
+    // All primitives should handle n=0 gracefully.
+    // Buffers sized to 4 to accommodate gemv_f16/ger_f16 calls with m=3.
+    nerve::simd::half dummy_a[4] = {nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f)};
+    nerve::simd::half dummy_b[4] = {nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f)};
+    nerve::simd::half dummy_c[4] = {nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f), nerve::simd::float_to_half(0.0f)};
+    std::uint8_t dummy_quant[4] = {0, 0, 0, 0};
     std::uint8_t dummy_quant[] = {0};
     nerve::simd::simd_add_f16(dummy_a, dummy_b, 0);
     nerve::simd::simd_sub_f16(dummy_a, dummy_b, 0);
@@ -3291,9 +3294,11 @@ bool test_zero_size_f16()
 
 bool test_zero_size_f32()
 {
-    float dummy_a[] = {0.0f};
-    float dummy_b[] = {0.0f};
-    float dummy_c[] = {0.0f};
+    // All primitives should handle n=0 gracefully.
+    // Buffers sized to 4 to accommodate gemv_f32/ger_f32 calls with m=3.
+    float dummy_a[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float dummy_b[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    float dummy_c[4] = {0.0f, 0.0f, 0.0f, 0.0f};
     nerve::simd::simd_add_f32(dummy_a, dummy_b, 0);
     nerve::simd::simd_sub_f32(dummy_a, dummy_b, 0);
     nerve::simd::simd_mul_f32(dummy_a, dummy_b, 0);
