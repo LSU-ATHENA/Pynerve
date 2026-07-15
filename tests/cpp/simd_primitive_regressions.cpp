@@ -3402,9 +3402,9 @@ struct TestCase
     bool (*fn)();
 };
 
-#define TEST(x)    \
-    {                \
-        #x, x        \
+#define TEST(x)                                                                                    \
+    {                                                                                              \
+        #x, x                                                                                      \
     }
 
 int main()

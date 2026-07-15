@@ -256,8 +256,8 @@ ProbeValue<std::uint64_t> probeMemoryValue(bool available_memory)
     ProbeValue<std::uint64_t> out;
     std::uint64_t value = 0;
 #if defined(__linux__)
-    struct sysinfo
-        info{};
+    struct sysinfo info
+    {};
     if (sysinfo(&info) != 0)
     {
         out.status = ProbeStatus::kError;
