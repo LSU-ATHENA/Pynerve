@@ -1862,10 +1862,13 @@ PYBIND11_MODULE(nerve_extras, m)
                  "Format as 'major.minor.patch' string")
             .def("is_compatible_with", &nerve::serialization::SchemaVersion::isCompatibleWith,
                  py::arg("other"), "Check if this version is compatible with another")
-            .def("__eq__", &nerve::serialization::SchemaVersion::operator==, py::arg("other"))
-            .def("__lt__", &nerve::serialization::SchemaVersion::operator<, py::arg("other"))
-            .def("__le__", &nerve::serialization::SchemaVersion::operator<=, py::arg("other"))
-            .def("__ge__", &nerve::serialization::SchemaVersion::operator>=, py::arg("other"))
+            .def("__eq__",
+                 [](const nerve::serialization::SchemaVersion &self,
+                    const nerve::serialization::SchemaVersion &other) { return self == other; },
+                 py::arg("other"))
+            .def("__lt__", [](const nerve::serialization::SchemaVersion &self, const nerve::serialization::SchemaVersion &other) { return self < other; }, py::arg("other"))
+            .def("__le__", [](const nerve::serialization::SchemaVersion &self, const nerve::serialization::SchemaVersion &other) { return self <= other; }, py::arg("other"))
+            .def("__ge__", [](const nerve::serialization::SchemaVersion &self, const nerve::serialization::SchemaVersion &other) { return self >= other; }, py::arg("other"))
             .def_static("from_string", &nerve::serialization::SchemaVersion::fromString,
                         py::arg("version_str"),
                         "Parse a 'major.minor.patch' string into a SchemaVersion")
