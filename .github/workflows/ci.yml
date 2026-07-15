@@ -20,7 +20,7 @@ jobs:
   lint:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -29,7 +29,7 @@ jobs:
       - run: python tools/static_analysis.py --language python --required
       - run: python -m pyright python/pynerve/ || echo "pyright warnings (non-blocking)"
       - name: Verify .pyi stubs are up to date
-        run: python tools/generate_stubs.py --check || echo "stub check skipped (torch not available)"
+        run: python tools/generate_pyi.py --check || echo "stub check skipped (torch not available)"
       - name: Check C++ formatting
         uses: pre-commit/action@v3.0.1
         with:
@@ -41,7 +41,7 @@ jobs:
       matrix:
         target: ["3.10", "3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.target }}
@@ -55,7 +55,7 @@ jobs:
   test-coverage:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -79,7 +79,7 @@ jobs:
       matrix:
         simd: [scalar, sse41, avx2, auto, avx512]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -166,7 +166,7 @@ jobs:
       matrix:
         simd: [scalar, auto]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -201,7 +201,7 @@ jobs:
       matrix:
         simd: [scalar, auto]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -234,7 +234,7 @@ jobs:
       matrix:
         simd: [scalar, auto]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -268,7 +268,7 @@ jobs:
       matrix:
         simd: [scalar, auto]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -302,7 +302,7 @@ jobs:
       matrix:
         simd: [scalar, neon]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -340,7 +340,7 @@ jobs:
   static-native:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -361,7 +361,7 @@ jobs:
         build_type: [Debug, Release]
         shard: [0, 1, 2, 3]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -386,7 +386,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04, ubuntu-24.04-arm]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -410,7 +410,7 @@ jobs:
       matrix:
         python: ["3.10", "3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
@@ -435,7 +435,7 @@ jobs:
   torch-cpu:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -459,7 +459,7 @@ jobs:
     env:
       OMPI_MCA_rmaps_base_oversubscribe: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -475,7 +475,7 @@ jobs:
       NERVE_TEST_CUDA: "1"
       NERVE_TEST_CUDA_AWARE_MPI: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -501,7 +501,7 @@ jobs:
       NERVE_SHARD_INDEX: ${{ matrix.shard }}
       NERVE_SHARD_COUNT: 8
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -531,7 +531,7 @@ jobs:
     env:
       NINJA_STATUS: "[%f/%t %s] "
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -569,7 +569,7 @@ jobs:
   changed-module-selection:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v5

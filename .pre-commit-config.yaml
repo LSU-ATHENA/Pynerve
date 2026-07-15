@@ -34,7 +34,7 @@ repos:
     hooks:
       - id: generate-stubs
         name: Generate .pyi stubs
-        entry: python -m tools.generate_stubs
+        entry: python -m tools.generate_pyi
         language: system
         files: ^python/pynerve/.*\.py$
         pass_filenames: false
