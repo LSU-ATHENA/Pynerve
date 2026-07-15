@@ -888,6 +888,19 @@ float reduce_max_f16(const half *data, std::size_t n)
 {
     if (n == 0)
         return 0.0f;
+    // Pure scalar path for small n to avoid reading garbage past the buffer
+    // when the unconditional SIMD load below would read 32 bytes (16 halves).
+    if (n < 16)
+    {
+        float m = half_to_float(data[0]);
+        for (std::size_t i = 1; i < n; ++i)
+        {
+            float v = half_to_float(data[i]);
+            if (v > m)
+                m = v;
+        }
+        return m;
+    }
     std::size_t i = 0;
     __m256i v0_half = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(data));
     __m512 vmax = _mm512_cvtph_ps(v0_half);
@@ -911,6 +924,19 @@ float reduce_min_f16(const half *data, std::size_t n)
 {
     if (n == 0)
         return 0.0f;
+    // Pure scalar path for small n to avoid reading garbage past the buffer
+    // when the unconditional SIMD load below would read 32 bytes (16 halves).
+    if (n < 16)
+    {
+        float m = half_to_float(data[0]);
+        for (std::size_t i = 1; i < n; ++i)
+        {
+            float v = half_to_float(data[i]);
+            if (v < m)
+                m = v;
+        }
+        return m;
+    }
     std::size_t i = 0;
     __m256i v0_half = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(data));
     __m512 vmin = _mm512_cvtph_ps(v0_half);
