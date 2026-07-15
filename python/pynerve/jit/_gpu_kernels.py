@@ -18,7 +18,7 @@ from ._setup import HAS_CUDA, cuda
 
 _gpu_pairwise_distances: Any = None
 _gpu_persistence_image_kernel: Any = None
-_jit_persistence_image_gpu: Any = None
+_jit_persistence_image_gpu: Any = None  # pyright: ignore[reportRedeclaration]
 
 if HAS_CUDA:
     assert cuda is not None
@@ -68,7 +68,6 @@ if HAS_CUDA:
                     gaussian = math.exp(-dist_sq / 2.0)
                     cuda.atomic.add(image, (px, py), pers * gaussian)
 
-    # pyright: ignore[reportRedeclaration, reportGeneralTypeIssues]
     def _jit_persistence_image_gpu(
         pairs: np.ndarray, resolution: int = 64, sigma: float = 0.1
     ) -> np.ndarray:
