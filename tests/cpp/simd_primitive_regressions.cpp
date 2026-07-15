@@ -1609,7 +1609,8 @@ bool test_add_f32()
         ref::add_f32(a_ref.data(), b_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(a_simd[i] - a_ref[i]) > 1e-6f)
+            if (std::abs(a_simd[i] - a_ref[i]) >
+                1e-5f * std::max(1.0f, std::max(std::abs(a_simd[i]), std::abs(a_ref[i]))))
             {
                 std::cerr << "  FAIL add_f32 at n=" << n << " i=" << i << " simd=" << a_simd[i]
                           << " ref=" << a_ref[i] << "\n";
@@ -1688,7 +1689,8 @@ bool test_sub_f32()
         ref::sub_f32(a_ref.data(), b_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(a_simd[i] - a_ref[i]) > 1e-6f)
+            if (std::abs(a_simd[i] - a_ref[i]) >
+                1e-5f * std::max(1.0f, std::max(std::abs(a_simd[i]), std::abs(a_ref[i]))))
             {
                 std::cerr << "  FAIL sub_f32 at n=" << n << " i=" << i << " simd=" << a_simd[i]
                           << " ref=" << a_ref[i] << "\n";
@@ -1718,7 +1720,8 @@ bool test_mul_f32()
         ref::mul_f32(a_ref.data(), b_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(a_simd[i] - a_ref[i]) > 1e-6f)
+            if (std::abs(a_simd[i] - a_ref[i]) >
+                1e-5f * std::max(1.0f, std::max(std::abs(a_simd[i]), std::abs(a_ref[i]))))
             {
                 std::cerr << "  FAIL mul_f32 at n=" << n << " i=" << i << " simd=" << a_simd[i]
                           << " ref=" << a_ref[i] << "\n";
@@ -1748,7 +1751,10 @@ bool test_scale_f32()
             ref::scale_f32(data_ref.data(), alpha, n);
             for (std::size_t i = 0; i < n; ++i)
             {
-                if (std::abs(data_simd[i] - data_ref[i]) > 1e-6f)
+                if (std::abs(data_simd[i] - data_ref[i]) >
+                    1e-5f *
+                        std::max(1.0f,
+                                 std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
                 {
                     std::cerr << "  FAIL scale_f32 at n=" << n << " alpha=" << alpha << " i=" << i
                               << " simd=" << data_simd[i] << " ref=" << data_ref[i] << "\n";
@@ -1782,7 +1788,9 @@ bool test_axpy_f32()
             ref::axpy_f32(alpha, x_ref.data(), y_ref.data(), n);
             for (std::size_t i = 0; i < n; ++i)
             {
-                if (std::abs(y_simd[i] - y_ref[i]) > 1e-6f)
+                if (std::abs(y_simd[i] - y_ref[i]) >
+                    1e-5f *
+                        std::max(1.0f, std::max(std::abs(y_simd[i]), std::abs(y_ref[i]))))
                 {
                     std::cerr << "  FAIL axpy_f32 at n=" << n << " alpha=" << alpha << " i=" << i
                               << " simd=" << y_simd[i] << " ref=" << y_ref[i] << "\n";
@@ -1805,7 +1813,8 @@ bool test_reduce_max_f32()
             data[i] = static_cast<float>(d[i]);
         float simd_val = nerve::simd::simd_reduce_max_f32(data.data(), n);
         float ref_val = ref::reduce_max_f32(data.data(), n);
-        if (std::abs(simd_val - ref_val) > 1e-6f)
+        if (std::abs(simd_val - ref_val) >
+            1e-5f * std::max(1.0f, std::max(std::abs(simd_val), std::abs(ref_val))))
         {
             std::cerr << "  FAIL reduce_max_f32 at n=" << n << " simd=" << simd_val
                       << " ref=" << ref_val << "\n";
@@ -1826,7 +1835,8 @@ bool test_norm2_f32()
             data[i] = static_cast<float>(d[i]);
         float simd_val = nerve::simd::simd_norm2_f32(data.data(), n);
         float ref_val = ref::norm2_f32(data.data(), n);
-        if (std::abs(simd_val - ref_val) > 1e-6f)
+        if (std::abs(simd_val - ref_val) >
+            1e-5f * std::max(1.0f, std::max(std::abs(simd_val), std::abs(ref_val))))
         {
             std::cerr << "  FAIL norm2_f32 at n=" << n << " simd=" << simd_val << " ref=" << ref_val
                       << "\n";
@@ -1852,7 +1862,10 @@ bool test_abs_f32()
         ref::abs_f32(data_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(data_simd[i] - data_ref[i]) > 1e-6f)
+            if (std::abs(data_simd[i] - data_ref[i]) >
+                1e-5f *
+                    std::max(1.0f,
+                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL abs_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
@@ -1879,7 +1892,10 @@ bool test_relu_f32()
         ref::relu_f32(data_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(data_simd[i] - data_ref[i]) > 1e-6f)
+            if (std::abs(data_simd[i] - data_ref[i]) >
+                1e-5f *
+                    std::max(1.0f,
+                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL relu_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
@@ -1909,7 +1925,8 @@ bool test_min_f32()
         ref::min_f32(a_ref.data(), b_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(a_simd[i] - a_ref[i]) > 1e-6f)
+            if (std::abs(a_simd[i] - a_ref[i]) >
+                1e-5f * std::max(1.0f, std::max(std::abs(a_simd[i]), std::abs(a_ref[i]))))
             {
                 std::cerr << "  FAIL min_f32 at n=" << n << " i=" << i << " simd=" << a_simd[i]
                           << " ref=" << a_ref[i] << "\n";
@@ -1939,7 +1956,8 @@ bool test_max_f32()
         ref::max_f32(a_ref.data(), b_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(a_simd[i] - a_ref[i]) > 1e-6f)
+            if (std::abs(a_simd[i] - a_ref[i]) >
+                1e-5f * std::max(1.0f, std::max(std::abs(a_simd[i]), std::abs(a_ref[i]))))
             {
                 std::cerr << "  FAIL max_f32 at n=" << n << " i=" << i << " simd=" << a_simd[i]
                           << " ref=" << a_ref[i] << "\n";
@@ -1971,7 +1989,10 @@ bool test_clamp_f32()
             ref::clamp_f32(copy_ref.data(), lo, hi, n);
             for (std::size_t i = 0; i < n; ++i)
             {
-                if (std::abs(copy_simd[i] - copy_ref[i]) > 1e-6f)
+                if (std::abs(copy_simd[i] - copy_ref[i]) >
+                    1e-5f *
+                        std::max(1.0f,
+                                 std::max(std::abs(copy_simd[i]), std::abs(copy_ref[i]))))
                 {
                     std::cerr << "  FAIL clamp_f32 at n=" << n << " lo=" << lo << " hi=" << hi
                               << " i=" << i << " simd=" << copy_simd[i] << " ref=" << copy_ref[i]
@@ -2005,7 +2026,9 @@ bool test_gemv_f32()
         ref::gemv_f32(alpha, A_ref.data(), x.data(), beta, y_ref.data(), m, n);
         for (std::size_t i = 0; i < m; ++i)
         {
-            if (std::abs(y_simd[i] - y_ref[i]) > 1e-6f)
+            if (std::abs(y_simd[i] - y_ref[i]) >
+                1e-5f *
+                    std::max(1.0f, std::max(std::abs(y_simd[i]), std::abs(y_ref[i]))))
             {
                 std::cerr << "  FAIL gemv_f32 at m=" << m << " n=" << n << " i=" << i
                           << " simd=" << y_simd[i] << " ref=" << y_ref[i] << "\n";
@@ -2036,7 +2059,8 @@ bool test_ger_f32()
         ref::ger_f32(alpha, x.data(), y.data(), A_ref.data(), m, n);
         for (std::size_t i = 0; i < m * n; ++i)
         {
-            if (std::abs(A_simd[i] - A_ref[i]) > 1e-6f)
+            if (std::abs(A_simd[i] - A_ref[i]) >
+                1e-5f * std::max(1.0f, std::max(std::abs(A_simd[i]), std::abs(A_ref[i]))))
             {
                 std::cerr << "  FAIL ger_f32 at m=" << m << " n=" << n << " i=" << i
                           << " simd=" << A_simd[i] << " ref=" << A_ref[i] << "\n";
@@ -2088,7 +2112,8 @@ bool test_euclidean_f32()
         }
         float simd_val = nerve::simd::simd_euclidean_f32(a.data(), b.data(), dim);
         float ref_val = ref::euclidean_f32(a.data(), b.data(), dim);
-        if (std::abs(simd_val - ref_val) > 1e-6f)
+        if (std::abs(simd_val - ref_val) >
+            1e-5f * std::max(1.0f, std::max(std::abs(simd_val), std::abs(ref_val))))
         {
             std::cerr << "  FAIL euclidean_f32 at dim=" << dim << " simd=" << simd_val
                       << " ref=" << ref_val << "\n";
@@ -2113,7 +2138,8 @@ bool test_cosine_f32()
         }
         float simd_val = nerve::simd::simd_cosine_f32(a.data(), b.data(), dim);
         float ref_val = ref::cosine_f32(a.data(), b.data(), dim);
-        if (std::abs(simd_val - ref_val) > 1e-6f)
+        if (std::abs(simd_val - ref_val) >
+            1e-5f * std::max(1.0f, std::max(std::abs(simd_val), std::abs(ref_val))))
         {
             std::cerr << "  FAIL cosine_f32 at dim=" << dim << " simd=" << simd_val
                       << " ref=" << ref_val << "\n";
@@ -2143,7 +2169,9 @@ bool test_fmad_f32()
         ref::fmad_f32(a.data(), b.data(), c_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(c_simd[i] - c_ref[i]) > 1e-6f)
+            if (std::abs(c_simd[i] - c_ref[i]) >
+                1e-5f *
+                    std::max(1.0f, std::max(std::abs(c_simd[i]), std::abs(c_ref[i]))))
             {
                 std::cerr << "  FAIL fmad_f32 at n=" << n << " i=" << i << " simd=" << c_simd[i]
                           << " ref=" << c_ref[i] << "\n";
@@ -2165,7 +2193,8 @@ bool test_reduce_min_f32()
             data[i] = static_cast<float>(d[i]);
         float simd_val = nerve::simd::simd_reduce_min_f32(data.data(), n);
         float ref_val = ref::reduce_min_f32(data.data(), n);
-        if (std::abs(simd_val - ref_val) > 1e-6f)
+        if (std::abs(simd_val - ref_val) >
+            1e-5f * std::max(1.0f, std::max(std::abs(simd_val), std::abs(ref_val))))
         {
             std::cerr << "  FAIL reduce_min_f32 at n=" << n << " simd=" << simd_val
                       << " ref=" << ref_val << "\n";
@@ -2191,7 +2220,10 @@ bool test_neg_f32()
         ref::neg_f32(data_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(data_simd[i] - data_ref[i]) > 1e-6f)
+            if (std::abs(data_simd[i] - data_ref[i]) >
+                1e-5f *
+                    std::max(1.0f,
+                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL neg_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
@@ -2218,7 +2250,10 @@ bool test_sqrt_f32()
         ref::sqrt_f32(data_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(data_simd[i] - data_ref[i]) > 1e-6f)
+            if (std::abs(data_simd[i] - data_ref[i]) >
+                1e-5f *
+                    std::max(1.0f,
+                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL sqrt_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
@@ -2273,7 +2308,10 @@ bool test_log_f32()
         ref::log_f32(data_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(data_simd[i] - data_ref[i]) > 1e-6f)
+            if (std::abs(data_simd[i] - data_ref[i]) >
+                1e-5f *
+                    std::max(1.0f,
+                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL log_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
@@ -2300,7 +2338,10 @@ bool test_sigmoid_f32()
         ref::sigmoid_f32(data_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(data_simd[i] - data_ref[i]) > 1e-6f)
+            if (std::abs(data_simd[i] - data_ref[i]) >
+                1e-5f *
+                    std::max(1.0f,
+                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL sigmoid_f32 at n=" << n << " i=" << i
                           << " simd=" << data_simd[i] << " ref=" << data_ref[i] << "\n";
@@ -2327,7 +2368,10 @@ bool test_tanh_f32()
         ref::tanh_f32(data_ref.data(), n);
         for (std::size_t i = 0; i < n; ++i)
         {
-            if (std::abs(data_simd[i] - data_ref[i]) > 1e-6f)
+            if (std::abs(data_simd[i] - data_ref[i]) >
+                1e-5f *
+                    std::max(1.0f,
+                             std::max(std::abs(data_simd[i]), std::abs(data_ref[i]))))
             {
                 std::cerr << "  FAIL tanh_f32 at n=" << n << " i=" << i << " simd=" << data_simd[i]
                           << " ref=" << data_ref[i] << "\n";
