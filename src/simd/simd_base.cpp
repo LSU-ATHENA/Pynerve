@@ -4,6 +4,16 @@
 #include <cstdlib>
 #include <cstring>
 
+// Fallback defines: these are normally set by CMake target_compile_definitions
+// via nerve_apply_neon()/nerve_apply_sve(). The fallback ensures the guards
+// below always see a defined value even when CMake detection doesn't trigger.
+#ifndef NERVE_HAS_NEON
+#define NERVE_HAS_NEON 0
+#endif
+#ifndef NERVE_HAS_SVE
+#define NERVE_HAS_SVE 0
+#endif
+
 namespace nerve::simd
 {
 
@@ -22,10 +32,10 @@ extern "C" void nerve_simd_assign_avx2(SimdDispatchTable *);
 #if defined(__AVX512F__)
 extern "C" void nerve_simd_assign_avx512(SimdDispatchTable *);
 #endif
-#if defined(NERVE_HAS_NEON) || defined(__ARM_NEON) || defined(__ARM_NEON__)
+#if NERVE_HAS_NEON
 extern "C" void nerve_simd_assign_neon(SimdDispatchTable *);
 #endif
-#if defined(NERVE_HAS_SVE) || defined(__ARM_FEATURE_SVE)
+#if NERVE_HAS_SVE
 extern "C" void nerve_simd_assign_sve(SimdDispatchTable *);
 #endif
 
@@ -78,7 +88,7 @@ static bool cpu_has_sse41()
 
 static bool cpu_has_neon()
 {
-#if defined(NERVE_HAS_NEON) || defined(__ARM_NEON) || defined(__ARM_NEON__)
+#if NERVE_HAS_NEON
     return true;
 #else
     return false;
@@ -87,7 +97,7 @@ static bool cpu_has_neon()
 
 static bool cpu_has_sve()
 {
-#if defined(NERVE_HAS_SVE) || defined(__ARM_FEATURE_SVE)
+#if NERVE_HAS_SVE
     return true;
 #else
     return false;
@@ -175,12 +185,12 @@ void simd_init()
                 nerve_simd_assign_sse(&SIMD);
                 break;
 #endif
-#if defined(NERVE_HAS_NEON) || defined(__ARM_NEON) || defined(__ARM_NEON__)
+#if NERVE_HAS_NEON
             case SimdArch::NEON:
                 nerve_simd_assign_neon(&SIMD);
                 break;
 #endif
-#if defined(NERVE_HAS_SVE) || defined(__ARM_FEATURE_SVE)
+#if NERVE_HAS_SVE
             case SimdArch::SVE:
                 nerve_simd_assign_sve(&SIMD);
                 break;
