@@ -47,15 +47,3 @@ MatrixXd MatrixXd::operator-(const MatrixXd &other) const
     return result;
 }
 
-double MatrixXd::norm() const
-{
-    double sum = 0.0;
-    for (int i = 0; i < rows_; ++i)
-    {
-        for (int j = 0; j < cols_; ++j)
-        {
-            sum += data_[i][j] * data_[i][j];
-        }
-    }
-    return std::sqrt(sum);
-}

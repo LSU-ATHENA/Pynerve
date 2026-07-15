@@ -65,7 +65,14 @@ public:
     MatrixXd operator*(double scalar) const;
     MatrixXd operator+(const MatrixXd &other) const;
     MatrixXd operator-(const MatrixXd &other) const;
-    double norm() const;
+    double norm() const
+    {
+        double sum = 0.0;
+        for (int i = 0; i < rows_; ++i)
+            for (int j = 0; j < cols_; ++j)
+                sum += data_[i][j] * data_[i][j];
+        return std::sqrt(sum);
+    }
     // Row access
     std::vector<double> &row(int i) { return data_[i]; }
     const std::vector<double> &row(int i) const { return data_[i]; }
