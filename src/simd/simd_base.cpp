@@ -146,49 +146,53 @@ const char *simd_arch_name(SimdArch arch)
 
 void simd_init()
 {
-    static bool initialized = false;
-    if (initialized)
-        return;
-    initialized = true;
+    // C++11 magic statics guarantee thread-safe one-time initialization.
+    // The SIMD dispatch table must be fully populated before any thread
+    // can call through its function pointers, otherwise OpenMP threads
+    // racing on the first distance computation would see null pointers
+    // and trigger a SIGSEGV.
+    static const bool initialized = []() -> bool {
+        SimdArch arch = detect_simd_arch();
 
-    SimdArch arch = detect_simd_arch();
-
-    switch (arch)
-    {
+        switch (arch)
+        {
 #if defined(__AVX512F__)
-        case SimdArch::AVX512:
-            if (cpu_has_avx512f())
-            {
-                nerve_simd_assign_avx512(&SIMD);
-                break;
-            }
-            // Fall through if runtime check fails despite compile-time support
+            case SimdArch::AVX512:
+                if (cpu_has_avx512f())
+                {
+                    nerve_simd_assign_avx512(&SIMD);
+                    break;
+                }
+                // Fall through if runtime check fails despite compile-time support
 #endif
 #if defined(__AVX2__)
-        case SimdArch::AVX2:
-            nerve_simd_assign_avx2(&SIMD);
-            break;
+            case SimdArch::AVX2:
+                nerve_simd_assign_avx2(&SIMD);
+                break;
 #endif
 #if defined(__SSE4_1__)
-        case SimdArch::SSE41:
-            nerve_simd_assign_sse(&SIMD);
-            break;
+            case SimdArch::SSE41:
+                nerve_simd_assign_sse(&SIMD);
+                break;
 #endif
 #if defined(NERVE_HAS_NEON) || defined(__ARM_NEON) || defined(__ARM_NEON__)
-        case SimdArch::NEON:
-            nerve_simd_assign_neon(&SIMD);
-            break;
+            case SimdArch::NEON:
+                nerve_simd_assign_neon(&SIMD);
+                break;
 #endif
 #if defined(NERVE_HAS_SVE) || defined(__ARM_FEATURE_SVE)
-        case SimdArch::SVE:
-            nerve_simd_assign_sve(&SIMD);
-            break;
+            case SimdArch::SVE:
+                nerve_simd_assign_sve(&SIMD);
+                break;
 #endif
-        default:
-        case SimdArch::SCALAR:
-            nerve_simd_assign_scalar(&SIMD);
-            break;
-    }
+            default:
+            case SimdArch::SCALAR:
+                nerve_simd_assign_scalar(&SIMD);
+                break;
+        }
+        return true;
+    }();
+    (void)initialized;
 }
 
 } // namespace nerve::simd
