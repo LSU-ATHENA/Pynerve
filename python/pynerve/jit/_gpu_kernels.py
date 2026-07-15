@@ -10,7 +10,7 @@ PTX optimisations applied where Numba exposes them:
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 
@@ -19,7 +19,7 @@ from ._setup import HAS_CUDA, cuda
 
 _gpu_pairwise_distances: Any = None
 _gpu_persistence_image_kernel: Any = None
-_jit_persistence_image_gpu: Any = None  # pyright: ignore[reportAssignmentType]
+_jit_persistence_image_gpu: Any = cast(Any, None)
 
 if HAS_CUDA:
     assert cuda is not None
