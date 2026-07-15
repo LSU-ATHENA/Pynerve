@@ -707,6 +707,11 @@ inline ThreadHandle thread_self() noexcept
 }
 
 /// Portable pthread_setaffinity_np().  Returns 0 on success.
+///
+/// On platforms without thread affinity support (macOS, other POSIX),
+/// this is a no-op that returns 0. Callers that require strict affinity
+/// should guard calls with #if defined(__linux__) or check the return
+/// value on platforms where it may fail.
 inline int thread_set_affinity(ThreadHandle thread, const CpuSet *set) noexcept
 {
 #if NERVE_PLATFORM_WINDOWS
@@ -722,13 +727,20 @@ inline int thread_set_affinity(ThreadHandle thread, const CpuSet *set) noexcept
 
     DWORD_PTR prev = SetThreadAffinityMask(thread, mask);
     return (prev != 0) ? 0 : -1;
-#else
+#elif defined(__linux__)
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     for (int i = 0; i < CPU_SETSIZE && i < CpuSet::kMaxCpus; ++i)
         if (set->isset(i))
             CPU_SET(i, &cpuset);
     return ::pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
+#else
+    // macOS and other platforms without thread affinity.
+    // Thread affinity is a performance optimization; callers that
+    // strictly require it should guard with #if defined(__linux__).
+    (void)thread;
+    (void)set;
+    return 0;
 #endif
 }
 
