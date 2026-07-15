@@ -60,14 +60,12 @@ struct StreamingPersistenceDiagram
         return !points.empty() && window_start_time_ns < window_end_time_ns &&
                std::isfinite(computation_time_ms) && computation_time_ms >= 0.0 &&
                std::isfinite(approximation_error) && approximation_error >= 0.0 &&
-               std::all_of(
-                   points.begin(), points.end(),
-                   [](const auto &point) {
-                       return std::isfinite(point.first) &&
-                              (std::isfinite(point.second) ||
-                               point.second == std::numeric_limits<float>::infinity()) &&
-                              point.second >= point.first;
-                   });
+               std::all_of(points.begin(), points.end(), [](const auto &point) {
+                   return std::isfinite(point.first) &&
+                          (std::isfinite(point.second) ||
+                           point.second == std::numeric_limits<float>::infinity()) &&
+                          point.second >= point.first;
+               });
     }
 };
 class ApproximateStreamingPH
