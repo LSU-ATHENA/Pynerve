@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from .common import *  # noqa: F403
 from .common import (
-    _pybind_module_defs,
-)  # noqa: F401
+    _check_torch_operator_schema_text,  # noqa: F401
+    _pybind_module_defs,  # noqa: F401
+)
 
 
 def _check_expected_args(
