@@ -96,8 +96,8 @@ SIMDCalculator::batchEuclideanDistances(const double *query_point, const double 
             {
                 const double *t =
                     target_points + (offset + static_cast<std::size_t>(i)) * dimension;
-                results[offset + static_cast<std::size_t>(i)] = checkedDistanceResult(
-                    nerve::simd::simd_euclidean(query_point, t, dimension));
+                results[offset + static_cast<std::size_t>(i)] =
+                    checkedDistanceResult(nerve::simd::simd_euclidean(query_point, t, dimension));
             }
         }
         for (std::size_t i = num_batches * batch_size; i < num_targets; ++i)
@@ -147,8 +147,7 @@ SIMDCalculator::computeDistanceMatrix(const double *points, std::size_t num_poin
             for (std::size_t j = i + 1; j < num_points; ++j)
             {
                 const double *pj = points + j * dimension;
-                double dist =
-                    checkedDistanceResult(nerve::simd::simd_euclidean(pi, pj, dimension));
+                double dist = checkedDistanceResult(nerve::simd::simd_euclidean(pi, pj, dimension));
                 distanceMatrix[i * num_points + j] = dist;
                 distanceMatrix[j * num_points + i] = dist;
             }
@@ -193,8 +192,8 @@ SIMDCalculator::computeCompressedMatrix(const double *points, std::size_t num_po
             for (std::size_t j = i + 1; j < num_points; ++j)
             {
                 const double *pj = points + j * dimension;
-                compressedMatrix[index++] = checkedDistanceResult(
-                    nerve::simd::simd_euclidean(pi, pj, dimension));
+                compressedMatrix[index++] =
+                    checkedDistanceResult(nerve::simd::simd_euclidean(pi, pj, dimension));
             }
         }
     }

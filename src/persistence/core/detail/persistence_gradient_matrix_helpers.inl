@@ -46,4 +46,3 @@ MatrixXd MatrixXd::operator-(const MatrixXd &other) const
     }
     return result;
 }
-

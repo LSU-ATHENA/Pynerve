@@ -161,9 +161,9 @@ std::vector<double> SIMDDistanceCalculator::batchEuclideanDistances(const double
         const double *pi = points + i * dim;
         for (size_t j = i + 1; j < num_points; ++j)
         {
-            distances.push_back(checkedDistanceResult(
-                nerve::simd::simd_euclidean(pi, points + j * dim, dim),
-                "euclidean distance overflow"));
+            distances.push_back(
+                checkedDistanceResult(nerve::simd::simd_euclidean(pi, points + j * dim, dim),
+                                      "euclidean distance overflow"));
         }
     }
     return distances;
