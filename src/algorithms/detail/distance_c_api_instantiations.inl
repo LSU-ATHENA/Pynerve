@@ -11,7 +11,11 @@ std::span<const T> make_c_input_span(const T *points, size_t rows, size_t dim,
     }
     if (input_size == 0)
     {
-        return {};
+        // Return an empty span with a non-null sentinel to avoid UBSAN
+        // warning about reference binding to null pointer in
+        // std::span(nullptr, 0).
+        static const T sentinel{};
+        return std::span<const T>(&sentinel, 0);
     }
     return std::span<const T>(points, input_size);
 }

@@ -1522,12 +1522,15 @@ bool test_dequantize()
 
 bool test_zero_size_all_primitives()
 {
-    // All primitives should handle n=0 gracefully
-    double dummy_a[] = {0.0};
-    double dummy_b[] = {0.0};
-    double dummy_c[] = {0.0};
-    char dummy_mem[1] = {0};
-    std::uint8_t dummy_quant[1] = {0};
+    // All primitives should handle n=0 gracefully.
+    // Buffers sized to 4 to accommodate gemv/ger calls with m=3 (the
+    // largest non-zero dimension passed below).  Single-element arrays
+    // trigger stack-buffer-overflow under ASAN when gemv iterates m=3.
+    double dummy_a[4] = {0.0, 0.0, 0.0, 0.0};
+    double dummy_b[4] = {0.0, 0.0, 0.0, 0.0};
+    double dummy_c[4] = {0.0, 0.0, 0.0, 0.0};
+    char dummy_mem[4] = {0, 0, 0, 0};
+    std::uint8_t dummy_quant[4] = {0, 0, 0, 0};
 
     nerve::simd::simd_add(dummy_a, dummy_b, 0);
     nerve::simd::simd_sub(dummy_a, dummy_b, 0);
