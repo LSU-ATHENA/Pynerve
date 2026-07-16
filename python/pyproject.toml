@@ -37,15 +37,15 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",]
 
-[project.urls]
-Homepage = "https://github.com/LSU-ATHENA/Pynerve"
-Repository = "https://github.com/LSU-ATHENA/Pynerve"
-Issues = "https://github.com/LSU-ATHENA/Pynerve/issues"
-
 dependencies = [
     "numpy>=1.21.0",
     "scipy>=1.7.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/LSU-ATHENA/Pynerve"
+Repository = "https://github.com/LSU-ATHENA/Pynerve"
+Issues = "https://github.com/LSU-ATHENA/Pynerve/issues"
 
 [project.optional-dependencies]
 all = [
