@@ -180,7 +180,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 # Dependencies
-find_package(PkgConfig REQUIRED)
+find_package(PkgConfig QUIET)
 find_package(Threads REQUIRED)
 
 # CUDA setup
