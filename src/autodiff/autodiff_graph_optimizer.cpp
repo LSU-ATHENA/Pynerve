@@ -64,7 +64,7 @@ public:
 
     int addNode(Node::Type type, const std::vector<int> &inputs = {})
     {
-        int id = nodes.size();
+        int id = static_cast<int>(nodes.size());
         auto node = std::make_unique<Node>(id, type);
         node->inputs = inputs;
 
@@ -201,7 +201,7 @@ public:
 
         for (const auto &node : graph.nodes)
         {
-            in_degree[node->id] = node->inputs.size();
+            in_degree[node->id] = static_cast<int>(node->inputs.size());
         }
 
         std::queue<int> ready;

@@ -20,17 +20,10 @@ void simdMemset(void *dst, int value, std::size_t bytes)
 
 void simdMemcpyAligned(void *dst, const void *src, std::size_t bytes)
 {
-    // Check 64-byte alignment for potential streaming stores
-    if (reinterpret_cast<uintptr_t>(dst) % 64 == 0 && reinterpret_cast<uintptr_t>(src) % 64 == 0)
-    {
-        // Currently delegates to simd_memcpy; aligned streaming store
-        // optimization can be added to the SIMD primitive layer later.
-        nerve::simd::simd_memcpy(dst, src, static_cast<std::size_t>(bytes));
-    }
-    else
-    {
-        nerve::simd::simd_memcpy(dst, src, static_cast<std::size_t>(bytes));
-    }
+    // Both aligned and unaligned paths currently delegate to the same
+    // simd_memcpy primitive.  The aligned path exists as an extension point
+    // for future streaming-store optimisations.
+    nerve::simd::simd_memcpy(dst, src, static_cast<std::size_t>(bytes));
 }
 
 double simdReduceSum(const double *data, std::size_t n)
