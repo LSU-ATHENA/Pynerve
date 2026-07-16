@@ -342,7 +342,7 @@ If Pynerve contributes to published research, please cite:
   title={Pynerve},
   version={1.0.0},
   year={2026},
-  author={Pradip Debnath},
+  author={Pradip Debnath and Keith G. Mills},
   url={https://github.com/LSU-ATHENA/Pynerve}
 }
 ```
