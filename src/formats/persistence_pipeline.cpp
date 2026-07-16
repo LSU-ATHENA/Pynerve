@@ -129,7 +129,6 @@ PersistencePipeline::PersistencePipeline(const PipelineConfig &config)
     : config_(config)
 {}
 
-PersistencePipeline::~PersistencePipeline() = default;
 
 errors::ErrorResult<PipelineResult>
 PersistencePipeline::compute(const PackedBoundaryMatrix &boundary_matrix,
