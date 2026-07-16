@@ -8,6 +8,13 @@
 requires = ["scikit-build-core>=0.8", "pybind11", "numpy>=1.21.0"]
 build-backend = "scikit_build_core.build"
 
+[project]
+name = "pynerve"
+version = "1.0.1"
+description = "Fast TDA library"
+readme = "../README.md"
+license = {text = "MIT"}
+
 [tool.scikit-build]
 cmake.build-type = "Release"
 cmake.source-dir = "."
