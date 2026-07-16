@@ -82,6 +82,7 @@ jobs:
           CIBW_ARCHS: auto64
           CIBW_SKIP: "*-musllinux_*"
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
+          CIBW_BEFORE_ALL_LINUX: "yum install -y python3-devel ninja-build libomp-devel || dnf install -y python3-devel ninja-build libomp-devel"
 
       - uses: actions/upload-artifact@v4
         with:

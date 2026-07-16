@@ -7,6 +7,7 @@
 #include <memory>
 #include <ranges>
 #include <span>
+#include <string>
 #include <tuple>
 #include <vector>
 namespace nerve
@@ -100,7 +101,20 @@ struct Pair
     {
         return death == std::numeric_limits<Field>::infinity();
     }
-    auto operator<=>(const Pair &other) const = default;
+    bool operator==(const Pair &o) const
+    {
+        return birth == o.birth && death == o.death && dimension == o.dimension &&
+               birth_index == o.birth_index && death_index == o.death_index;
+    }
+    bool operator!=(const Pair &o) const { return !(*this == o); }
+    auto operator<=>(const Pair &o) const
+    {
+        if (auto c = birth <=> o.birth; c != 0) return c;
+        if (auto c = death <=> o.death; c != 0) return c;
+        if (auto c = dimension <=> o.dimension; c != 0) return c;
+        if (auto c = birth_index <=> o.birth_index; c != 0) return c;
+        return death_index <=> o.death_index;
+    }
 };
 enum class MemoryLocation
 {
