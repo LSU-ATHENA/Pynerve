@@ -70,6 +70,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Copy README and LICENSE for wheel build
+        run: cp README.md python/README.md && cp LICENSE python/LICENSE
+
       - name: Build wheels with cibuildwheel
         uses: pypa/cibuildwheel@v2.22
         with:
