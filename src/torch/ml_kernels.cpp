@@ -1,10 +1,11 @@
 // ML Kernel Operations for Persistence Diagrams
 // C++20 implementation of kernel methods
 
+#define _USE_MATH_DEFINES
+
 #include <torch/torch.h>
 
 #include <algorithm>
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <limits>
 #include <numeric>

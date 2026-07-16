@@ -8,6 +8,10 @@
 #include <stdexcept>
 #include <string>
 
+#ifdef _WIN32
+#include <malloc.h>
+#endif
+
 namespace nerve::core
 {
 
@@ -28,6 +32,15 @@ namespace
 [[nodiscard]] bool additionWouldExceed(size_t lhs, size_t rhs, size_t limit) noexcept
 {
     return lhs > limit || rhs > limit - lhs;
+}
+
+void freeBlock(void *ptr) noexcept
+{
+#ifdef _WIN32
+    _aligned_free(ptr);
+#else
+    std::free(ptr);
+#endif
 }
 
 } // namespace
@@ -67,7 +80,7 @@ void MemoryPool::reset(const DeterminismContract &contract)
     {
         if (block.ptr)
         {
-            std::free(block.ptr);
+            freeBlock(block.ptr);
         }
     }
     blocks_.clear();
@@ -106,8 +119,15 @@ void *MemoryPool::allocateFromPoolDeterministic(std::size_t size, std::size_t al
         throw std::bad_alloc();
     }
 
-    void *ptr = alignment <= alignof(std::max_align_t) ? std::malloc(size)
-                                                       : std::aligned_alloc(alignment, size);
+    void *ptr = alignment <= alignof(std::max_align_t)
+                    ? std::malloc(size)
+                    :
+#ifdef _WIN32
+                    _aligned_malloc(size, alignment)
+#else
+                    std::aligned_alloc(alignment, size)
+#endif
+                    ;
     if (!ptr)
     {
         throw std::bad_alloc();

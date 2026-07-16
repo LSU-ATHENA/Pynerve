@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core_types.hpp"
@@ -5,7 +7,6 @@
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
 #include "test_utils.hpp"
 
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
