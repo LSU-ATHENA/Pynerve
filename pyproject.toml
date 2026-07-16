@@ -102,6 +102,9 @@ sdist.include = [
     "LICENSE",
 ]
 
+[tool.cibuildwheel]
+package-dir = "."
+
 [tool.ruff]
 line-length = 100
 target-version = "py310"

@@ -69,8 +69,6 @@ jobs:
 
       - name: Build wheels with cibuildwheel
         uses: pypa/cibuildwheel@v2.22
-        with:
-          package-dir: "."
         env:
           CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-*"
           CIBW_ARCHS: auto64
@@ -78,6 +76,7 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: manylinux_2_28
           CIBW_ENVIRONMENT_LINUX: "Python_ROOT_DIR=$(python3 -c 'import sys; print(sys.prefix)')"
           CIBW_BEFORE_ALL_LINUX: "yum install -y ninja-build libomp-devel || dnf install -y ninja-build libomp-devel"
+
 
       - uses: actions/upload-artifact@v4
         with:
