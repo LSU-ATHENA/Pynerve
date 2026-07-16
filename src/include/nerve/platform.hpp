@@ -768,7 +768,7 @@ inline int numa_node_of_cpu(int cpu) noexcept
 #if defined(__linux__) && defined(NERVE_HAS_NUMA)
     return ::numa_node_of_cpu(cpu);
 #elif NERVE_PLATFORM_WINDOWS
-    USHORT node = 0;
+    UCHAR node = 0;
     if (GetNumaProcessorNode(static_cast<UCHAR>(cpu), &node))
         return static_cast<int>(node);
     return 0;
