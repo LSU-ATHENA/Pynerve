@@ -15,7 +15,7 @@ namespace nerve::persistence
 namespace
 {
 
-static thread_local std::vector<std::vector<int64_t>> t_binom;
+static thread_local std::vector<std::vector<uint64_t>> t_binom;
 
 void ensure_binom(int n)
 {
@@ -35,7 +35,7 @@ int64_t C(int n, int k)
 {
     if (k < 0 || k > n)
         return 0;
-    return t_binom[n][k];
+    return static_cast<int64_t>(t_binom[n][k]);
 }
 
 int64_t bidx_enc(int a, int b)
