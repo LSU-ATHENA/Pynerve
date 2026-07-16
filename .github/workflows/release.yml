@@ -46,7 +46,6 @@ jobs:
           path: dist/*.tar.gz
 
   build-wheels-linux:
-    needs: [build-sdist]
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -72,7 +71,6 @@ jobs:
 
   build-wheels-macos:
     continue-on-error: true
-    needs: [build-sdist]
     runs-on: macos-14
     strategy:
       fail-fast: false
@@ -95,7 +93,6 @@ jobs:
 
   build-wheels-windows:
     continue-on-error: true
-    needs: [build-sdist]
     runs-on: windows-2022
     strategy:
       fail-fast: false
