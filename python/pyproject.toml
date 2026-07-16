@@ -1,0 +1,28 @@
+# Minimal pyproject.toml for sdist builds only.
+# The main build config is at ../pyproject.toml (repo root).
+# This file exists so that `python -m build --sdist python/` can
+# produce a source distribution from the python/ subdirectory,
+# which was the original working configuration.
+
+[build-system]
+requires = ["scikit-build-core>=0.8", "pybind11", "numpy>=1.21.0"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+cmake.build-type = "Release"
+cmake.source-dir = "."
+cmake.args = [
+    "-DBUILD_PYTHON=ON",
+    "-DBUILD_TESTS=OFF",
+    "-DENABLE_CUDA=OFF",
+    "-DENABLE_MPI=OFF",
+]
+sdist.include = [
+    "../src/**",
+    "../tools/**",
+    "../cmake/**",
+    "../CMakeLists.txt",
+    "bindings/**",
+    "../README.md",
+    "../LICENSE",
+]
