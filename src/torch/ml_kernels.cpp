@@ -4,6 +4,7 @@
 #include <torch/torch.h>
 
 #include <algorithm>
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <limits>
 #include <numeric>

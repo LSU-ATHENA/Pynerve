@@ -3,6 +3,7 @@
 #include "nerve/simd/simd_base.hpp"
 
 #include <algorithm>
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <random>
 #include <vector>

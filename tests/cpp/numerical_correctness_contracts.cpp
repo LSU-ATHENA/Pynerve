@@ -5,6 +5,7 @@
 #include "nerve/persistence/vr/vr_fast_ops.hpp"
 #include "test_utils.hpp"
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
