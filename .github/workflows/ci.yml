@@ -383,11 +383,10 @@ jobs:
       - run: python tools/run_tests.py --build-dir build --label cpu --label generated --shard-index ${{ matrix.shard }} --shard-count 4
 
   native-arch:
-    # -march=native can emit instructions unsupported by heterogeneous
-    # GitHub runner hardware, causing intermittent SIGILL.  Mark as
-    # continue-on-error so a transient instruction mismatch does not
-    # block the rest of the pipeline.
-    continue-on-error: true
+    # Use a pinned baseline on x86_64: heterogeneous GitHub runner
+    # hardware may not support all instructions emitted by -march=native,
+    # causing intermittent SIGILL.  ARM runners have consistent hardware
+    # so -march=native is safe there.
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -402,7 +401,21 @@ jobs:
       - if: runner.os == 'Linux'
         run: sudo apt-get update || true && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
       - run: python -m pip install -U pip pytest hypothesis ninja scikit-build-core pybind11 numpy scipy
-      - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_PYTHON=ON -DENABLE_CUDA=OFF -DNERVE_NATIVE_ARCH=ON
+      - name: Configure (x86_64 pinned to x86-64-v3; ARM uses native)
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-24.04" ]; then
+            cmake -S . -B build -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DBUILD_TESTS=ON -DBUILD_PYTHON=ON \
+              -DENABLE_CUDA=OFF \
+              -DCMAKE_CXX_FLAGS="-march=x86-64-v3 -mtune=generic"
+          else
+            cmake -S . -B build -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DBUILD_TESTS=ON -DBUILD_PYTHON=ON \
+              -DENABLE_CUDA=OFF \
+              -DNERVE_NATIVE_ARCH=ON
+          fi
       - run: cmake --build build --parallel
       - run: cmake --install build --prefix "$RUNNER_TEMP/pynerve-install"
       - run: cp -r python/pynerve "$RUNNER_TEMP/pynerve-install/pynerve"
