@@ -96,25 +96,18 @@ struct Pair
     Dimension dimension = 0;
     Index birth_index = -1;
     Index death_index = -1;
+
+    Pair() = default;
+    constexpr Pair(Field b, Field d, Dimension dim, Index bi, Index di)
+        : birth(b), death(d), dimension(dim), birth_index(bi), death_index(di)
+    {}
+
     [[nodiscard]] constexpr Field lifetime() const noexcept { return death - birth; }
     [[nodiscard]] constexpr bool isInfinite() const noexcept
     {
         return death == std::numeric_limits<Field>::infinity();
     }
-    bool operator==(const Pair &o) const
-    {
-        return birth == o.birth && death == o.death && dimension == o.dimension &&
-               birth_index == o.birth_index && death_index == o.death_index;
-    }
-    bool operator!=(const Pair &o) const { return !(*this == o); }
-    auto operator<=>(const Pair &o) const
-    {
-        if (auto c = birth <=> o.birth; c != 0) return c;
-        if (auto c = death <=> o.death; c != 0) return c;
-        if (auto c = dimension <=> o.dimension; c != 0) return c;
-        if (auto c = birth_index <=> o.birth_index; c != 0) return c;
-        return death_index <=> o.death_index;
-    }
+    auto operator<=>(const Pair &other) const = default;
 };
 enum class MemoryLocation
 {
