@@ -1,7 +1,8 @@
 /**
  * @brief Memory-mapped file for large streaming datasets
  *
- * Enables out-of-core streaming of large point clouds
+ * Enables out-of-core streaming of large point clouds.
+ * On Windows this degenerates to a no-op stub.
  */
 class MemoryMappedFile
 {
@@ -14,11 +15,12 @@ public:
 
     ~MemoryMappedFile() { close(); }
 
-    bool open(const std::string &filename)
+    bool open(const std::string & /*filename*/)
     {
+#ifndef _WIN32
         close();
         current_offset_ = 0;
-        fd_ = ::open(filename.c_str(), O_RDONLY);
+        fd_ = ::open(/*filename*/.c_str(), O_RDONLY);
         if (fd_ < 0)
             return false;
 
@@ -51,10 +53,14 @@ public:
         madvise(data_, size_, MADV_SEQUENTIAL);
 
         return true;
+#else
+        return false;
+#endif
     }
 
     void close()
     {
+#ifndef _WIN32
         if (data_)
         {
             munmap(data_, size_);
@@ -65,6 +71,7 @@ public:
             ::close(fd_);
             fd_ = -1;
         }
+#endif
         size_ = 0;
         current_offset_ = 0;
     }
