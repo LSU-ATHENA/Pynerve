@@ -7,8 +7,13 @@
 namespace nerve::simd
 {
 
-// Float16 type -- mapped to compiler-supported _Float16
+// Float16 type -- mapped to compiler-supported _Float16.
+// MSVC does not support _Float16; fall back to float as a compatible superset.
+#if defined(_MSC_VER)
+using half = float;
+#else
 using half = _Float16;
+#endif
 
 // Helper: convert float to half using round-to-nearest-even
 inline float half_to_float(half v)
