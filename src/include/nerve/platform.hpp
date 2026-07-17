@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <type_traits>
 
-#if NERVE_COMPILER_MSVC
+#if defined(_MSC_VER)
 #include <immintrin.h>
 #include <intrin.h>
 #endif
