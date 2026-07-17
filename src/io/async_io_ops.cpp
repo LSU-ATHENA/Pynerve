@@ -40,6 +40,7 @@ IoBackend detectBestBackend()
 
 Size preadFull(int fd, void *buffer, Size size, Size offset)
 {
+#ifndef _WIN32
     uint8_t *dst = static_cast<uint8_t *>(buffer);
     Size remaining = size;
     Size off = offset;
@@ -59,10 +60,15 @@ Size preadFull(int fd, void *buffer, Size size, Size offset)
         off += static_cast<Size>(n);
     }
     return size - remaining;
+#else
+    (void)fd; (void)buffer; (void)size; (void)offset;
+    return 0;
+#endif
 }
 
 Size pwriteFull(int fd, const void *buffer, Size size, Size offset)
 {
+#ifndef _WIN32
     const uint8_t *src = static_cast<const uint8_t *>(buffer);
     Size remaining = size;
     Size off = offset;
@@ -82,6 +88,10 @@ Size pwriteFull(int fd, const void *buffer, Size size, Size offset)
         off += static_cast<Size>(n);
     }
     return size - remaining;
+#else
+    (void)fd; (void)buffer; (void)size; (void)offset;
+    return 0;
+#endif
 }
 
 std::unique_ptr<IoEngine> IoEngine::create(IoBackend backend)
@@ -260,8 +270,12 @@ AsyncFileWriter::~AsyncFileWriter()
 
 void AsyncFileWriter::open(const std::string &path)
 {
+#ifndef _WIN32
     impl_->fd =
         ::open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#else
+    impl_->fd = -1;
+#endif
     if (impl_->fd < 0)
     {
         throw std::runtime_error("Cannot create file: " + path + " (" + std::strerror(errno) + ")");

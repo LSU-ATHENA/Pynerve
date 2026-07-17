@@ -117,7 +117,7 @@ double estimateComputationTime(const ProblemCharacteristicsLocal &prob)
 
     (void)prob.gpu_available;
     double distance_time = 1e-7 * n * n * dim;
-    double clique_time = 1e-8 * std::pow(n, std::min(dim + 1, 4.0)) * std::pow(r, dim);
+    double clique_time = 1e-8 * std::pow(n, (std::min)(dim + 1, 4.0)) * std::pow(r, dim);
 
     return distance_time + clique_time;
 }

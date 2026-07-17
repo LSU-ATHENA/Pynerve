@@ -11,13 +11,12 @@ namespace nerve::persistence
 {
 
 void ParallelCliqueExpander::expand(size_t num_points, algebra::SimplicialComplex &complex,
-                                    SimplexSet &seen)
-{            for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(num_points); ++i)
+                                    SimplexSet &seen)    for (size_t i = 0; i < num_points; ++i)
     {
         std::vector<Index> v{static_cast<Index>(i)};
         complex.addSimplexWithFiltration(algebra::Simplex(v), 0.0);
     }
-            for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(num_points); ++i)
+    for (size_t i = 0; i < num_points; ++i)
     {
         for (int j : neighbors_[i])
         {
@@ -42,7 +41,7 @@ void ParallelCliqueExpander::expand(size_t num_points, algebra::SimplicialComple
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 16)
 #endif
-        for (size_t i = 0; i < num_points; ++i)
+        for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(num_points); ++i)
         {
             std::vector<int> current{static_cast<int>(i)};
             std::vector<int> candidates;

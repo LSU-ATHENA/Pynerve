@@ -248,7 +248,7 @@ std::vector<size_t> LandmarkSelector::selectDensityWeighted(const std::vector<do
     std::vector<double> densities(num_points);
 
 #pragma omp parallel for
-    for (size_t i = 0; i < num_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(num_points); ++i)
     {
         const double *p1 = &points[i * point_dim];
 
