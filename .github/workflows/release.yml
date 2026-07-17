@@ -114,6 +114,7 @@ jobs:
 
   upload-wheels:
     needs: [build-wheels-linux, build-wheels-macos, build-wheels-windows]
+    if: always()
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/download-artifact@v4.1
