@@ -594,6 +594,13 @@ PYBIND11_MODULE(nerve_extras, m)
             .def("reset_reference", &nerve::anomaly::LifetimeDriftDetector::resetReference,
                  "Reset the reference distribution");
 
+        // TODO: Add implementations for MarketAnomalyDetector,
+        // OnlinePValueCalculator, RegimeChangeDetector, and
+        // AnomalyDetectionManager to topology_drift_ops.cpp, then
+        // remove this guard. On Linux/macOS, shared libraries allow
+        // lazy symbol resolution, but Windows requires all symbols at
+        // link time (MSVC LNK2001).
+#ifndef _WIN32
         // MarketAnomalyDetector
         py::class_<nerve::anomaly::MarketAnomalyDetector::MarketConfig>(anomaly, "MarketConfig")
             .def(py::init<>())
@@ -874,6 +881,7 @@ PYBIND11_MODULE(nerve_extras, m)
                  py::arg("report"), "Generate alert strings from an AnomalyReport")
             .def("send_alerts", &nerve::anomaly::AnomalyDetectionManager::sendAlerts,
                  py::arg("alerts"), "Send alert strings");
+#endif // _WIN32
     }
 
     // error/error_handling -- circuit breaker, retry, observability

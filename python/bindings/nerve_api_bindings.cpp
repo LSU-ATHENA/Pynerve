@@ -290,7 +290,11 @@ py::dict run_point_cloud_entrypoint(const py::handle &points_obj,
 PYBIND11_MODULE(pynerve_internal, m)
 {
     m.doc() = "Nerve persistence bindings";
+#ifndef _WIN32
+    // CUBLAS_WORKSPACE_CONFIG is a CUDA environment variable;
+    // setenv is POSIX-only — skip on Windows (no CUDA in wheel builds).
     setenv("CUBLAS_WORKSPACE_CONFIG", ":4096:8", 1);
+#endif
 
     py::enum_<nerve::persistence::PersistenceMode>(m, "PersistenceMode")
         .value("EXACT", nerve::persistence::PersistenceMode::EXACT)
