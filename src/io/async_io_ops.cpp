@@ -202,6 +202,8 @@ void AsyncFileReader::open(const std::string &path)
     }
 #elif defined(__APPLE__)
     impl_->fd = ::open(path.c_str(), O_RDONLY);
+#elif defined(_WIN32)
+    impl_->fd = -1;
 #else
     impl_->fd = ::open(path.c_str(), O_RDONLY);
 #endif
@@ -303,8 +305,12 @@ Size AsyncFileWriter::write(const void *buffer, Size offset, Size size)
 
 void AsyncFileWriter::sync()
 {
+#ifndef _WIN32
     if (impl_->fd >= 0)
         fsync(impl_->fd);
+#else
+    (void)impl_;
+#endif
 }
 
 Size AsyncFileWriter::fileSize() const
