@@ -2,8 +2,6 @@
 #include "nerve/core_types.hpp"
 #include "nerve/persistence/core/core_types.hpp"
 
-#include <sys/types.h>
-
 #include <algorithm>
 #include <bit>
 #include <cstddef>
@@ -90,12 +88,12 @@ public:
         }
     }
 
-    [[nodiscard]] ssize_t findPivot(size_t col) const noexcept
+    [[nodiscard]] std::ptrdiff_t findPivot(size_t col) const noexcept
     {
         if (col >= n_cols_)
             return -1;
         size_t col_start = col * words_per_col_;
-        for (ssize_t word_idx = static_cast<ssize_t>(words_per_col_) - 1; word_idx >= 0; --word_idx)
+        for (std::ptrdiff_t word_idx = static_cast<std::ptrdiff_t>(words_per_col_) - 1; word_idx >= 0; --word_idx)
         {
             uint64_t word = data_[col_start + word_idx];
             if (word != 0)
@@ -104,7 +102,7 @@ public:
                 const size_t row = static_cast<size_t>(word_idx) * BITS_PER_WORD + bit_pos;
                 if (static_cast<size_t>(row) < n_rows_)
                 {
-                    return static_cast<ssize_t>(row);
+                    return static_cast<std::ptrdiff_t>(row);
                 }
             }
         }
@@ -256,16 +254,16 @@ protected:
     return packed;
 }
 
-[[nodiscard]] inline std::vector<std::pair<ssize_t, size_t>>
+[[nodiscard]] inline std::vector<std::pair<std::ptrdiff_t, size_t>>
 reduceBitPacked(BitPackedZ2Matrix &matrix)
 {
-    std::vector<std::pair<ssize_t, size_t>> pivots;
+    std::vector<std::pair<std::ptrdiff_t, size_t>> pivots;
     pivots.reserve(matrix.getNumCols());
 
-    std::unordered_map<ssize_t, size_t> pivot_to_col;
+    std::unordered_map<std::ptrdiff_t, size_t> pivot_to_col;
     for (size_t col = 0; col < matrix.getNumCols(); ++col)
     {
-        ssize_t pivot = matrix.findPivot(col);
+        std::ptrdiff_t pivot = matrix.findPivot(col);
         while (pivot >= 0)
         {
             auto it = pivot_to_col.find(pivot);

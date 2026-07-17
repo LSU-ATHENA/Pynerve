@@ -1,6 +1,10 @@
 // Memory Pool Implementation for Persistent Homology
 // Arena-style allocation for fast, cache-aligned memory management
 
+#ifdef _WIN32
+#include <malloc.h>
+#endif
+
 #include "nerve/persistence/memory/memory_pool.hpp"
 
 #include <algorithm>
@@ -28,7 +32,11 @@ Arena::Arena(size_t capacity)
     , owns_buffer_(true)
 {
     // Allocate aligned to cache line
+#ifdef _WIN32
+    buffer_ = static_cast<char *>(_aligned_malloc(capacity, CACHE_LINE_SIZE));
+#else
     buffer_ = static_cast<char *>(aligned_alloc(CACHE_LINE_SIZE, capacity));
+#endif
     if (!buffer_)
     {
         throw std::bad_alloc();
