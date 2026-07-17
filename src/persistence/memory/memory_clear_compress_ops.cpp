@@ -302,7 +302,7 @@ reduceMatrixClearCompressParallel(const std::vector<std::vector<int>> &matrix_co
     std::vector<ChunkReductionResult> chunk_results(chunks.size());
 
 #pragma omp parallel for schedule(dynamic) num_threads(num_threads)
-    for (size_t i = 0; i < chunks.size(); ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(chunks.size()); ++i)
     {
         std::unordered_map<int, int> local_pivot_map;
         chunk_results[i] = reduceChunk(chunks[i], local_pivot_map, config);

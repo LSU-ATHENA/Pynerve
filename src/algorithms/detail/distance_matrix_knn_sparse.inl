@@ -22,7 +22,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute_blocked(std::span<const T> poi
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) if (config_.use_openmp)
 #endif
-            for (size_t i = ii; i < i_end; ++i)
+            for (std::ptrdiff_t i = static_cast<std::ptrdiff_t>(ii); i < static_cast<std::ptrdiff_t>(i_end); ++i)
             {
                 for (size_t j = std::max(jj, i); j < j_end; ++j)
                 {
@@ -114,7 +114,7 @@ KNNComputer<T>::compute_brute_force(std::span<const T> points, size_t n_points, 
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) if (config_.use_openmp)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         std::vector<std::pair<T, size_t>> nearest;
         nearest.reserve(result.k);
@@ -172,7 +172,7 @@ KNNComputer<T>::compute_query(std::span<const T> reference, size_t n_ref,
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) if (config_.use_openmp)
 #endif
-    for (size_t i = 0; i < n_query; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_query); ++i)
     {
         std::vector<std::pair<T, size_t>> nearest;
         nearest.reserve(result.k);
@@ -233,7 +233,7 @@ SparseDistanceMatrixComputer<T>::compute_epsilon(std::span<const T> points, size
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) reduction(+ : nnz)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         for (size_t j = 0; j < n_points; ++j)
         {

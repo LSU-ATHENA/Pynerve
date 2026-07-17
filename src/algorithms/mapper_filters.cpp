@@ -154,7 +154,7 @@ std::vector<T> EccentricityFilter<T>::apply(std::span<const T> points, size_t n_
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         T max_dist = nerve::math::Constants<T>::kZero;
         for (size_t j = 0; j < n_points; ++j)
@@ -193,7 +193,7 @@ std::vector<T> DensityFilter<T>::apply(std::span<const T> points, size_t n_point
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         std::vector<std::pair<T, size_t>> dists;
         const size_t effective_k =

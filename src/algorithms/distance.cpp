@@ -192,7 +192,7 @@ std::vector<T> EuclideanMetric<T>::compute_matrix(std::span<const T> points, siz
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         for (size_t j = i + 1; j < n_points; ++j)
         {
@@ -248,7 +248,7 @@ std::vector<T> ManhattanMetric<T>::compute_matrix(std::span<const T> points, siz
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         for (size_t j = i + 1; j < n_points; ++j)
         {
@@ -298,7 +298,7 @@ std::vector<T> CosineMetric<T>::compute_matrix(std::span<const T> points, size_t
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         for (size_t j = i + 1; j < n_points; ++j)
         {
@@ -342,7 +342,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute(std::span<const T> points, siz
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) if (config_.use_openmp)
 #endif
-            for (size_t i = 0; i < n_points; ++i)
+            for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
             {
                 for (size_t j = i + 1; j < n_points; ++j)
                 {
@@ -375,7 +375,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute_pairwise(std::span<const T> se
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) if (config_.use_openmp)
 #endif
-    for (size_t i = 0; i < n_a; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_a); ++i)
     {
         const T *a_row = &set_a[i * dim];
         for (size_t j = 0; j < n_b; ++j)
@@ -449,7 +449,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute_euclidean(std::span<const T> p
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) if (config_.use_openmp)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         for (size_t j = i; j < n_points; ++j)
         {
@@ -499,7 +499,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute_manhattan(std::span<const T> p
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) if (config_.use_openmp)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         for (size_t j = i; j < n_points; ++j)
         {

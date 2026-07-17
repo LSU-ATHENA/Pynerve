@@ -4,7 +4,9 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include <algorithm>
 #include <chrono>
@@ -223,6 +225,7 @@ void FeatureCache::initializeSharedMemory()
 {
     if (!config_.enable_shared_memory || config_.shm_name.empty())
         return;
+#ifndef _WIN32
     shm_size_ = config_.max_entries * sizeof(FeatureEntry);
     shm_fd_ = ::shm_open(config_.shm_name.c_str(), O_CREAT | O_RDWR, 0600);
     if (shm_fd_ < 0)
@@ -243,6 +246,12 @@ void FeatureCache::initializeSharedMemory()
         shm_fd_ = -1;
         shm_size_ = 0;
     }
+#else
+    // Shared memory not supported on Windows; the cache operates in process-local mode.
+    shm_ptr_ = nullptr;
+    shm_fd_ = -1;
+    shm_size_ = 0;
+#endif
 }
 
 void FeatureCache::cleanupSharedMemory()
@@ -252,6 +261,7 @@ void FeatureCache::cleanupSharedMemory()
         nerve::sys::unmap(shm_ptr_, shm_size_);
         shm_ptr_ = nullptr;
     }
+#ifndef _WIN32
     if (shm_fd_ >= 0)
     {
         ::close(shm_fd_);
@@ -259,6 +269,7 @@ void FeatureCache::cleanupSharedMemory()
             ::shm_unlink(config_.shm_name.c_str());
         shm_fd_ = -1;
     }
+#endif
     shm_size_ = 0;
 }
 
