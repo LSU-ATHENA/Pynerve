@@ -350,7 +350,8 @@ VRComplex buildParallelVRComplex(const std::vector<Point> &points, float max_dis
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 64)
-#endif            for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(adjacency.bucket_count()); ++i)
+#endif
+            for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(adjacency.bucket_count()); ++i)
         {
             for (auto it = adjacency.begin(i); it != adjacency.end(i); ++it)
             {
@@ -368,7 +369,8 @@ VRComplex buildParallelVRComplex(const std::vector<Point> &points, float max_dis
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 128)
-#endif            for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(complex.edges.size()); ++i)
+#endif
+            for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(complex.edges.size()); ++i)
         {
             const auto &e = complex.edges[i];
             int u = e.u, v = e.v;

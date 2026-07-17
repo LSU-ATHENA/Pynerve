@@ -148,7 +148,8 @@ void computeDistanceMatrixTiledParallel(const std::vector<double> &points, size_
 
     const size_t num_tiles = (num_points + tile_size - 1) / tile_size;
 
-#pragma omp parallel for schedule(dynamic, 1)        for (std::ptrdiff_t tile_i = 0; tile_i < static_cast<std::ptrdiff_t>(num_tiles); ++tile_i)
+#pragma omp parallel for schedule(dynamic, 1)
+    for (std::ptrdiff_t tile_i = 0; tile_i < static_cast<std::ptrdiff_t>(num_tiles); ++tile_i)
     {
         size_t i_start = tile_i * tile_size;
         size_t i_end = std::min(i_start + tile_size, num_points);

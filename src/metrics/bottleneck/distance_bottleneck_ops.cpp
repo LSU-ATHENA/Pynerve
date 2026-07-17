@@ -459,7 +459,8 @@ parallelBottleneckDistances(const std::vector<std::vector<std::pair<float, float
 
     std::vector<double> results(n);
 
-#pragma omp parallel for schedule(dynamic)        for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n); ++i)
+#pragma omp parallel for schedule(dynamic)
+        for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n); ++i)
     {
         results[i] = adaptiveBottleneckDistance(diagrams1[i], diagrams2[i]);
     }
