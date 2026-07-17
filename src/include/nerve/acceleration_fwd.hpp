@@ -1,8 +1,4 @@
 #pragma once
-// NOTE: This header is ONLY included by the 19 src/acceleration/*.cpp files.
-// Those files are excluded from the build when NERVE_HAS_CUDA is OFF (see
-// src/CMakeLists.txt), so the CUDA-dependent forward declarations below
-// are never processed without cuda_runtime.h available.
 #include "nerve/types.hpp"
 
 #include <cstddef>
@@ -13,9 +9,7 @@
 using MPI_Comm = int;
 #endif
 
-#ifdef NERVE_HAS_CUDA
 #include <cuda_runtime.h>
-#endif
 
 namespace nerve::algorithms::multi_gpu
 {
