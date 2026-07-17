@@ -31,18 +31,18 @@ constexpr double MILLIS_PER_SECOND = 1000.0;
 
 size_t saturatedProduct(size_t lhs, size_t rhs)
 {
-    if (lhs != 0 && rhs > std::numeric_limits<size_t>::max() / lhs)
+    if (lhs != 0 && rhs > (std::numeric_limits<size_t>::max)() / lhs)
     {
-        return std::numeric_limits<size_t>::max();
+        return (std::numeric_limits<size_t>::max)();
     }
     return lhs * rhs;
 }
 
 size_t saturatedAdd(size_t lhs, size_t rhs)
 {
-    if (rhs > std::numeric_limits<size_t>::max() - lhs)
+    if (rhs > (std::numeric_limits<size_t>::max)() - lhs)
     {
-        return std::numeric_limits<size_t>::max();
+        return (std::numeric_limits<size_t>::max)();
     }
     return lhs + rhs;
 }
@@ -67,10 +67,10 @@ size_t saturatedScaledSize(size_t value, double scale)
         return 0;
     }
     const double scaled = static_cast<double>(value) * scale;
-    const double max_size = static_cast<double>(std::numeric_limits<size_t>::max());
+    const double max_size = static_cast<double>((std::numeric_limits<size_t>::max)());
     if (!std::isfinite(scaled) || scaled >= max_size)
     {
-        return std::numeric_limits<size_t>::max();
+        return (std::numeric_limits<size_t>::max)();
     }
     return static_cast<size_t>(scaled);
 }

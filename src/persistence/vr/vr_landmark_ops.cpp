@@ -212,7 +212,7 @@ std::vector<size_t> LandmarkSelector::selectGrid(const std::vector<double> &poin
     if (selected.size() < num_landmarks)
     {
         std::vector<size_t> remaining;
-        for (size_t i = 0; i < num_points; ++i)
+        for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(num_points); ++i)
         {
             if (std::ranges::find(selected, i) == selected.end())
             {

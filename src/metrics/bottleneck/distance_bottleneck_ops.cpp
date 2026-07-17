@@ -450,8 +450,7 @@ parallelBottleneckDistances(const std::vector<std::vector<std::pair<float, float
     {
         throw std::invalid_argument("diagram batches must have the same size");
     }
-    size_t n = diagrams1.size();
-    for (size_t i = 0; i < n; ++i)
+    size_t n = diagrams1.size();        for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n); ++i)
     {
         validateDiagram(diagrams1[i], "first");
         validateDiagram(diagrams2[i], "second");
@@ -460,8 +459,7 @@ parallelBottleneckDistances(const std::vector<std::vector<std::pair<float, float
 
     std::vector<double> results(n);
 
-#pragma omp parallel for schedule(dynamic)
-    for (size_t i = 0; i < n; ++i)
+#pragma omp parallel for schedule(dynamic)        for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n); ++i)
     {
         results[i] = adaptiveBottleneckDistance(diagrams1[i], diagrams2[i]);
     }
