@@ -16,7 +16,12 @@ namespace nerve::simd
 namespace scalar
 {
 
-__attribute__((noipa)) void memcpy(void *dst, const void *src, std::size_t bytes)
+#if defined(__GNUC__)
+__attribute__((noipa))
+#elif defined(_MSC_VER)
+__declspec(noinline)
+#endif
+void memcpy(void *dst, const void *src, std::size_t bytes)
 {
     auto *d = static_cast<std::uint8_t *>(dst);
     const auto *s = static_cast<const std::uint8_t *>(src);
@@ -24,7 +29,12 @@ __attribute__((noipa)) void memcpy(void *dst, const void *src, std::size_t bytes
         d[i] = s[i];
 }
 
-__attribute__((noipa)) void memset(void *dst, int value, std::size_t bytes)
+#if defined(__GNUC__)
+__attribute__((noipa))
+#elif defined(_MSC_VER)
+__declspec(noinline)
+#endif
+void memset(void *dst, int value, std::size_t bytes)
 {
     auto *d = static_cast<std::uint8_t *>(dst);
     auto v = static_cast<std::uint8_t>(value);
