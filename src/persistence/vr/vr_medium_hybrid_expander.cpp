@@ -11,7 +11,9 @@ namespace nerve::persistence
 {
 
 void ParallelCliqueExpander::expand(size_t num_points, algebra::SimplicialComplex &complex,
-                                    SimplexSet &seen)    for (size_t i = 0; i < num_points; ++i)
+                                    SimplexSet &seen)
+{
+    for (size_t i = 0; i < num_points; ++i)
     {
         std::vector<Index> v{static_cast<Index>(i)};
         complex.addSimplexWithFiltration(algebra::Simplex(v), 0.0);
