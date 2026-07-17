@@ -24,7 +24,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute_blocked(std::span<const T> poi
 #endif
             for (std::ptrdiff_t i = static_cast<std::ptrdiff_t>(ii); i < static_cast<std::ptrdiff_t>(i_end); ++i)
             {
-                for (size_t j = std::max(jj, i); j < j_end; ++j)
+                for (size_t j = std::max(jj, static_cast<size_t>(i)); j < j_end; ++j)
                 {
                     T sum = 0;
                     for (size_t d = 0; d < dim; ++d)
