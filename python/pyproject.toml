@@ -10,7 +10,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "pynerve"
-version = "1.0.2"
+version = "1.0.3"
 description = "Fast TDA library"
 readme = "../README.md"
 license = {text = "MIT"}
