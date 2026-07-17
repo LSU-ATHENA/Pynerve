@@ -226,7 +226,8 @@ StreamingResult computeTiledPH(const std::vector<double> &points, size_t point_d
 
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(dynamic)
-#endif        for (std::ptrdiff_t tile_idx = 0; tile_idx < static_cast<std::ptrdiff_t>(tiles.size()); ++tile_idx)
+#endif
+    for (std::ptrdiff_t tile_idx = 0; tile_idx < static_cast<std::ptrdiff_t>(tiles.size()); ++tile_idx)
     {
         const auto &tile = tiles[tile_idx];
 
