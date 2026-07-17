@@ -1,4 +1,8 @@
 #pragma once
+// NOTE: This header is ONLY included by the 19 src/acceleration/*.cpp files.
+// Those files are excluded from the build when NERVE_HAS_CUDA is OFF (see
+// src/CMakeLists.txt), so the CUDA-dependent forward declarations below
+// are never processed without cuda_runtime.h available.
 #include "nerve/types.hpp"
 
 #include <cstddef>
@@ -11,13 +15,6 @@ using MPI_Comm = int;
 
 #ifdef NERVE_HAS_CUDA
 #include <cuda_runtime.h>
-#else
-// Stub CUDA types for compilation without CUDA (e.g. Windows wheel builds).
-// The acceleration .cpp files unconditionally use cudaError_t/cudaStream_t
-// in function signatures even when CUDA is off, returning stub values like
-// cudaErrorNotSupported. These stubs satisfy the type system.
-enum cudaError_t : int { cudaSuccess = 0, cudaErrorInvalidValue = 1, cudaErrorNotSupported = 2 };
-typedef void *cudaStream_t;
 #endif
 
 namespace nerve::algorithms::multi_gpu
