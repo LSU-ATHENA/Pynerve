@@ -15,12 +15,12 @@ public:
 
     ~MemoryMappedFile() { close(); }
 
-    bool open(const std::string & /*filename*/)
+    bool open(const std::string &filename)
     {
 #ifndef _WIN32
         close();
         current_offset_ = 0;
-        fd_ = ::open(/*filename*/.c_str(), O_RDONLY);
+        fd_ = ::open(filename.c_str(), O_RDONLY);
         if (fd_ < 0)
             return false;
 
@@ -54,6 +54,7 @@ public:
 
         return true;
 #else
+        (void)filename;
         return false;
 #endif
     }
