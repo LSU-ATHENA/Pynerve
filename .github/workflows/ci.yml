@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  # cancel-in-progress: true  # disabled due to GitHub Actions queue backlog
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.run_id }}
+  cancel-in-progress: true
 
 env:
   CMAKE_GENERATOR: Ninja
