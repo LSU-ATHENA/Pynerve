@@ -875,7 +875,7 @@ PYBIND11_MODULE(nerve_extras, m)
                  py::arg("report"), "Generate alert strings from an AnomalyReport")
             .def("send_alerts", &nerve::anomaly::AnomalyDetectionManager::sendAlerts,
                  py::arg("alerts"), "Send alert strings");
-
+    }
 
     // error/error_handling -- circuit breaker, retry, observability
     {
