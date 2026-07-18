@@ -129,7 +129,6 @@ PersistencePipeline::PersistencePipeline(const PipelineConfig &config)
     : config_(config)
 {}
 
-
 errors::ErrorResult<PipelineResult>
 PersistencePipeline::compute(const PackedBoundaryMatrix &boundary_matrix,
                              const std::vector<Field> &filtration_values)

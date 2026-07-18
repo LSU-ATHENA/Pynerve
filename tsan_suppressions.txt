@@ -80,3 +80,7 @@ race:processTilesParallel
 # Each thread processes a distinct query vector
 race:buildHNSWGraphParallel
 
+# Wasserstein distance parallel (graphs/graph_topology.cpp)
+# Threads process distinct diagram pairs
+race:computeWassersteinDistance
+

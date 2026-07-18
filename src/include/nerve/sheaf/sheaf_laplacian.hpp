@@ -84,7 +84,7 @@ public:
         std::vector<double> attribute_contributions;
         persistence::StabilityCertificate stability_certificate;
         double numerical_residual;
-        bool isStable;
+        bool isStable = false;
     };
     struct EigenpairResult
     {
@@ -95,7 +95,7 @@ public:
         double total_topological_influence;
         std::vector<double> error_estimates;
         persistence::StabilityCertificate eigenpair_certificate;
-        bool converged;
+        bool converged = false;
         size_t iterations_used;
     };
     struct SpectralConfig

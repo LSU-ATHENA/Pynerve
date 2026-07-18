@@ -377,6 +377,7 @@ void RetryBackoffManager::resetStats()
 void RetryBackoffManager::updateRetryStats(const std::string &operation_name, ErrorCode error_code,
                                            bool success)
 {
+    (void)error_code;
     total_retries_.fetch_add(1, std::memory_order_relaxed);
     if (success)
     {
