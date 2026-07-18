@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <deque>
+#include <iostream>
 #include <vector>
 
 namespace nerve::anomaly
@@ -1615,9 +1616,17 @@ AnomalyDetectionManager::generateAlerts(const AnomalyReport &report)
 
 bool AnomalyDetectionManager::sendAlerts(const std::vector<std::string> &alerts)
 {
-    // Stub: alerts are consumed by the caller via generateAlerts().
-    // Returns true if there were alerts to send.
-    return !alerts.empty();
+    if (alerts.empty())
+    {
+        return false;
+    }
+
+    for (const auto &alert : alerts)
+    {
+        std::cerr << "[nerve::anomaly] " << alert << std::endl;
+    }
+
+    return true;
 }
 
 std::string
