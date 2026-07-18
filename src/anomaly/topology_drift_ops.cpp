@@ -592,9 +592,7 @@ void LifetimeDriftDetector::updateAdaptiveThreshold(double current_drift_score)
     }
 }
 
-// ──────────────────────────────────────────────────────────────────────
 // MarketAnomalyDetector
-// ──────────────────────────────────────────────────────────────────────
 
 MarketAnomalyDetector::MarketAnomalyDetector(const MarketConfig &config) : config_(config) {}
 
@@ -965,9 +963,7 @@ MarketAnomalyDetector::normalizeFeatures(const std::vector<double> &features) co
     return result;
 }
 
-// ──────────────────────────────────────────────────────────────────────
 // OnlinePValueCalculator
-// ──────────────────────────────────────────────────────────────────────
 
 OnlinePValueCalculator::OnlinePValueCalculator(const PValueConfig &config) : config_(config) {}
 
@@ -1112,9 +1108,7 @@ double OnlinePValueCalculator::computeTwoSidedPValue(
     return static_cast<double>(count) / static_cast<double>(distribution.size());
 }
 
-// ──────────────────────────────────────────────────────────────────────
 // RegimeChangeDetector
-// ──────────────────────────────────────────────────────────────────────
 
 RegimeChangeDetector::RegimeChangeDetector(const RegimeConfig &config) : config_(config) {}
 
@@ -1460,9 +1454,7 @@ RegimeChangeDetector::clusterFeatures(const std::vector<std::vector<float>> &fea
     return centroids;
 }
 
-// ──────────────────────────────────────────────────────────────────────
 // AnomalyDetectionManager (singleton)
-// ──────────────────────────────────────────────────────────────────────
 
 AnomalyDetectionManager &AnomalyDetectionManager::instance()
 {
