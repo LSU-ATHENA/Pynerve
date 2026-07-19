@@ -67,12 +67,21 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         "Tests are divided evenly across shards. "
         "Also configurable via NERVE_SHARD_INDEX and NERVE_SHARD_COUNT env vars.",
     )
+    parser.addoption(
+        "--flaky-report",
+        type=str,
+        default=None,
+        help="Write flaky test results to this JSON file for CI tracking. "
+        "Tests marked @pytest.mark.flaky are tracked; failures are recorded "
+        "with test name, nodeid, and failure reason.",
+    )
 
 
 def pytest_configure(config: pytest.Config) -> None:
     for marker in (
         "fast",
         "slow",
+        "flaky",
         "generated",
         "cpu",
         "cuda",
@@ -99,6 +108,33 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     for item in items:
         if not item.get_closest_marker("slow"):
             item.add_marker(pytest.mark.fast)
+
+    # Auto-skip SM capability markers when GPU isn't capable enough.
+    # sm75 = Turing (RTX 20xx, T4), sm80 = Ampere (A100, RTX 30xx),
+    # sm90 = Hopper (H100). Tests auto-skip if the GPU is below the required tier.
+    cc = _cuda_compute_capability()
+    if cc is not None:
+        cc_value = cc[0] * 10 + cc[1]  # e.g. (8, 6) → 86
+        for item in items:
+            _apply_sm_skip(item, cc_value)
+
+
+def _apply_sm_skip(item: pytest.Item, cc_value: int) -> None:
+    """Skip a test if the GPU compute capability is below the required SM tier."""
+    sm_requirements = {
+        "sm75": 75,
+        "sm80": 80,
+        "sm90": 90,
+    }
+    for marker_name, min_cc in sm_requirements.items():
+        if item.get_closest_marker(marker_name) and cc_value < min_cc:
+            item.add_marker(
+                pytest.mark.skip(
+                    reason=f"Requires SM {min_cc // 10}.{min_cc % 10}+ "
+                    f"(current: SM {cc_value // 10}.{cc_value % 10})"
+                )
+            )
+            return
 
 
 try:
@@ -182,3 +218,56 @@ def multi_gpu():
     import torch
 
     return torch.cuda
+
+
+# ---------------------------------------------------------------------------
+# Flaky test tracking — CI integration for GPU test reliability monitoring
+# ---------------------------------------------------------------------------
+
+_flaky_results: list[dict[str, object]] = []
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> None:
+    """Track test outcomes for flaky test reporting.
+
+    Tests marked @pytest.mark.flaky have their pass/fail status recorded.
+    Results are written to the --flaky-report JSON file at session end.
+    """
+    outcome = yield
+    report = outcome.get_result()
+
+    if item.get_closest_marker("flaky") and report.when == "call":
+        _flaky_results.append(
+            {
+                "nodeid": item.nodeid,
+                "name": item.name,
+                "outcome": report.outcome,
+                "duration": round(report.duration, 4),
+                "message": (
+                    report.longreprtext[:500]
+                    if hasattr(report, "longreprtext") and report.longreprtext
+                    else ""
+                ),
+            }
+        )
+
+
+def pytest_sessionfinish(session: pytest.Session) -> None:
+    """Write flaky test report if --flaky-report was specified."""
+    report_path = session.config.getoption("--flaky-report", default=None)
+    if report_path and _flaky_results:
+        import json
+
+        failures = [r for r in _flaky_results if r["outcome"] == "failed"]
+        report = {
+            "total_flaky_tests": len(_flaky_results),
+            "failures": len(failures),
+            "pass_rate": (
+                round((len(_flaky_results) - len(failures)) / len(_flaky_results) * 100, 1)
+                if _flaky_results
+                else 100.0
+            ),
+            "results": _flaky_results,
+        }
+        Path(report_path).write_text(json.dumps(report, indent=2), encoding="utf-8")
