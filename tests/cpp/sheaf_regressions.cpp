@@ -13,7 +13,6 @@
 namespace
 {
 
-
 constexpr double TOL = 1e-10;
 
 std::mt19937_64 make_rng()

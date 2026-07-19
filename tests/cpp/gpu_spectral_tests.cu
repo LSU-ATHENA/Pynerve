@@ -57,9 +57,7 @@ int main()
     // Spectral: jacobi eigendecomposition on 3x3
     {
         std::vector<std::vector<double>> mat = {
-            {2.0, -1.0,  0.0},
-            {-1.0, 2.0, -1.0},
-            {0.0, -1.0,  2.0}};
+            {2.0, -1.0, 0.0}, {-1.0, 2.0, -1.0}, {0.0, -1.0, 2.0}};
         auto result = nerve::spectral::detail::jacobiEigendecomposition(mat, 128, 1e-12);
         assert(result.eigenvalues.size() == 3);
         assert(result.eigenvectors.size() == 3);
@@ -93,7 +91,8 @@ int main()
         gpu_solver.setGpuMemoryLimit(256);
         size_t usage = gpu_solver.getGpuMemoryUsage();
         assert(usage <= 256 || usage == 0);
-        std::cout << "PASSED: PersistentLaplacianSolverGPU memory limit (usage=" << usage << " MB)\n";
+        std::cout << "PASSED: PersistentLaplacianSolverGPU memory limit (usage=" << usage
+                  << " MB)\n";
     }
 
     // Spectral: PersistentLaplacianSolverGPU -- computeSpectrumGpu on 2x2 laplacian
@@ -105,7 +104,8 @@ int main()
 
         if (!gpu_solver.isAvailable())
         {
-            std::cout << "SKIP: PersistentLaplacianSolverGPU computeSpectrumGpu (GPU unavailable)\n";
+            std::cout
+                << "SKIP: PersistentLaplacianSolverGPU computeSpectrumGpu (GPU unavailable)\n";
         }
         else
         {
@@ -126,8 +126,9 @@ int main()
             }
             else
             {
-                std::cout << "PASSED: PersistentLaplacianSolverGPU computeSpectrumGpu returned error ("
-                          << static_cast<uint32_t>(result.errorCode()) << ")\n";
+                std::cout
+                    << "PASSED: PersistentLaplacianSolverGPU computeSpectrumGpu returned error ("
+                    << static_cast<uint32_t>(result.errorCode()) << ")\n";
             }
         }
     }
@@ -162,7 +163,8 @@ int main()
                 assert(sd.eigenvalues.size() > 0);
                 for (size_t i = 0; i < sd.eigenvalues.size(); ++i)
                     assert(sd.eigenvalues[i] >= -1e-10);
-                std::cout << "PASSED: PersistentLaplacianSolverGPU computeSpectrumGpu (3x3 path graph)\n";
+                std::cout
+                    << "PASSED: PersistentLaplacianSolverGPU computeSpectrumGpu (3x3 path graph)\n";
             }
             else
             {

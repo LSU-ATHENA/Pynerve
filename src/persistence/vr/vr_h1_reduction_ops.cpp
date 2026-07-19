@@ -87,7 +87,7 @@ ReducedVRH1Result buildReducedVRForH1(const std::vector<double> &points_data, si
 #if defined(_OPENMP)
 #pragma omp parallel for schedule(dynamic) if (config.num_threads > 1)
 #endif
-        for (size_t i = 0; i < all_edges.size(); ++i)
+            for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(all_edges.size()); ++i)
         {
             if (canFormH1Feature(all_edges[i], points, config.max_radius, config))
             {

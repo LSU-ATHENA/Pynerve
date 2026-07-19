@@ -34,8 +34,8 @@ bool check_pca_compress_decompress_roundtrip()
     }
     if (decompressed.size() != data.size())
     {
-        std::cerr << "decompressed size mismatch: " << decompressed.size()
-                  << " vs " << data.size() << "\n";
+        std::cerr << "decompressed size mismatch: " << decompressed.size() << " vs " << data.size()
+                  << "\n";
         return false;
     }
     return true;
@@ -108,8 +108,7 @@ bool check_pca_decompress_preserves_size()
     // Decompressed should match original size
     if (decompressed.size() != original.size())
     {
-        std::cerr << "size mismatch: " << decompressed.size()
-                  << " vs " << original.size() << "\n";
+        std::cerr << "size mismatch: " << decompressed.size() << " vs " << original.size() << "\n";
         return false;
     }
     // Decompressed should contain float values

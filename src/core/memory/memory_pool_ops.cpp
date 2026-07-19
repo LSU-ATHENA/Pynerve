@@ -10,6 +10,10 @@
 #include <stdexcept>
 #include <string>
 
+#ifdef _WIN32
+#include <malloc.h>
+#endif
+
 namespace nerve::core
 {
 
@@ -64,12 +68,27 @@ namespace
 {
     void *ptr = alignment <= alignof(std::max_align_t)
                     ? std::malloc(allocation_size)
-                    : std::aligned_alloc(alignment, allocation_size);
+                    :
+#ifdef _WIN32
+                    _aligned_malloc(allocation_size, alignment)
+#else
+                    std::aligned_alloc(alignment, allocation_size)
+#endif
+                    ;
     if (!ptr)
     {
         throw std::bad_alloc();
     }
     return ptr;
+}
+
+void freeBlock(void *ptr) noexcept
+{
+#ifdef _WIN32
+    _aligned_free(ptr);
+#else
+    std::free(ptr);
+#endif
 }
 
 } // namespace
@@ -108,7 +127,7 @@ MemoryPool::~MemoryPool()
     {
         if (block.ptr)
         {
-            std::free(block.ptr);
+            freeBlock(block.ptr);
         }
     }
 }
@@ -143,7 +162,7 @@ MemoryPool &MemoryPool::operator=(MemoryPool &&other) noexcept
         {
             if (block.ptr)
             {
-                std::free(block.ptr);
+                freeBlock(block.ptr);
             }
         }
         pool_size_ = other.pool_size_;
@@ -350,7 +369,7 @@ void MemoryPool::reset()
     {
         if (block.ptr)
         {
-            std::free(block.ptr);
+            freeBlock(block.ptr);
         }
     }
     blocks_.clear();

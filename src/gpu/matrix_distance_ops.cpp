@@ -81,7 +81,7 @@ ComputeManager::computeDistanceMatrix(const std::vector<std::vector<double>> &po
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         if (overflowed_distance.load(std::memory_order_relaxed))
         {

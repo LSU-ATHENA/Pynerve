@@ -133,7 +133,7 @@ public:
     static errors::ErrorResult<std::unique_ptr<AcceleratedVREngine>> create(const VRConfig &config);
     virtual ~AcceleratedVREngine() = default;
     virtual errors::ErrorResult<std::vector<Pair>>
-    computeVrPersistence(core::BufferView<const double>points, Size point_dim,
+    computeVrPersistence(core::BufferView<const double> points, Size point_dim,
                          const VRConfig &config) = 0;
     virtual AcceleratedPerformanceStats getPerformanceStats() const = 0;
     virtual void updateConfig(const VRConfig &config) = 0;
@@ -171,29 +171,29 @@ size_t estimateMemoryRequirements(size_t n_points, size_t point_dim, size_t max_
 } // namespace utils
 
 errors::ErrorResult<std::vector<Pair>>
-computeVrPersistenceAccelerated(core::BufferView<const double>points, Size point_dim,
+computeVrPersistenceAccelerated(core::BufferView<const double> points, Size point_dim,
                                 const VRConfig &config);
 errors::ErrorResult<std::vector<Pair>>
-computeVrPersistenceFast(core::BufferView<const double>points, Size point_dim,
+computeVrPersistenceFast(core::BufferView<const double> points, Size point_dim,
                          const VRConfig &config);
-VRConfig createOptimalConfig(core::BufferView<const double>points, Size point_dim,
+VRConfig createOptimalConfig(core::BufferView<const double> points, Size point_dim,
                              const VRConfig &base_config);
 
 inline errors::ErrorResult<std::vector<Pair>>
-compute_vr_persistence_accelerated(core::BufferView<const double>points, Size point_dim,
+compute_vr_persistence_accelerated(core::BufferView<const double> points, Size point_dim,
                                    const VRConfig &config)
 {
     return computeVrPersistenceAccelerated(points, point_dim, config);
 }
 
 inline errors::ErrorResult<std::vector<Pair>>
-compute_vr_persistence_fast(core::BufferView<const double>points, Size point_dim,
+compute_vr_persistence_fast(core::BufferView<const double> points, Size point_dim,
                             const VRConfig &config)
 {
     return computeVrPersistenceFast(points, point_dim, config);
 }
 
-inline VRConfig create_optimal_config(core::BufferView<const double>points, Size point_dim,
+inline VRConfig create_optimal_config(core::BufferView<const double> points, Size point_dim,
                                       const VRConfig &base_config)
 {
     return createOptimalConfig(points, point_dim, base_config);
@@ -220,12 +220,12 @@ inline errors::ErrorResult<void> export_performance_report(const std::string &fi
 namespace accelerated
 {
 errors::ErrorResult<std::vector<Pair>>
-computeVrPersistenceAccelerated(core::BufferView<const double>points, Size point_dim,
+computeVrPersistenceAccelerated(core::BufferView<const double> points, Size point_dim,
                                 const VRConfig &config);
 errors::ErrorResult<std::vector<Pair>>
-computeVrPersistenceFast(core::BufferView<const double>points, Size point_dim,
+computeVrPersistenceFast(core::BufferView<const double> points, Size point_dim,
                          const VRConfig &config);
-VRConfig createOptimalConfig(core::BufferView<const double>points, Size point_dim,
+VRConfig createOptimalConfig(core::BufferView<const double> points, Size point_dim,
                              const VRConfig &base_config);
 } // namespace accelerated
 

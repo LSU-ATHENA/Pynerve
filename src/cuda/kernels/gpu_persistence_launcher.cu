@@ -686,8 +686,8 @@ GpuPersistenceReducer::~GpuPersistenceReducer() = default;
 
 errors::ErrorResult<void>
 GpuPersistenceReducer::compute(const algebra::BoundaryMatrix &boundary_matrix,
-                                std::vector<Index> &out_pivots,
-                                std::vector<std::pair<Size, Size>> &out_pairs)
+                               std::vector<Index> &out_pivots,
+                               std::vector<std::pair<Size, Size>> &out_pairs)
 {
     out_pivots.clear();
     out_pairs.clear();
@@ -727,8 +727,8 @@ GpuPersistenceReducer::compute(const algebra::BoundaryMatrix &boundary_matrix,
 
 errors::ErrorResult<void>
 GpuPersistenceReducer::computeCohomology(const algebra::BoundaryMatrix &boundary_matrix,
-                                          std::vector<Index> &out_pivots,
-                                          std::vector<std::pair<Size, Size>> &out_pairs)
+                                         std::vector<Index> &out_pivots,
+                                         std::vector<std::pair<Size, Size>> &out_pairs)
 {
     out_pivots.clear();
     out_pairs.clear();

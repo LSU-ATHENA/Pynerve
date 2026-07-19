@@ -65,7 +65,7 @@ struct WitnessComplexConfig
  * @param num_landmarks Number of landmarks (0 = auto-select)
  * @return Vector of persistence pairs (approximate)
  */
-std::vector<Pair> computeVrPersistenceLargeWitness(core::BufferView<const double>points,
+std::vector<Pair> computeVrPersistenceLargeWitness(core::BufferView<const double> points,
                                                    Size point_dim, const VRConfig &config,
                                                    size_t num_landmarks = 0);
 

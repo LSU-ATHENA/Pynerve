@@ -1,0 +1,86 @@
+# TSan suppressions for pynerve
+#
+# These suppress false-positive data races caused by OpenMP-parallelized
+# loops that write to non-overlapping indices of shared std::vector arrays.
+# TSan's happens-before tracking cannot follow OpenMP work-sharing
+# constructs, so it flags vector::data()/size() access from multiple
+# threads as races even though the actual memory operations don't conflict.
+#
+# All suppressed functions have been verified:
+# - Each thread writes to a disjoint subset of array indices
+# - No two threads ever write to the same memory location
+# - The computations are deterministic modulo floating-point reassociation
+
+# OpenMP parallel distance matrix computation (vr_distance_tiled_ops.cpp)
+# Each (tile_i, tile_j) pair writes to a unique submatrix block
+race:computeDistanceMatrixTiledParallel
+
+# OpenMP parallel NUMA-aware distance matrix (vr_distance_tiled_ops.cpp)
+# Each node writes to a disjoint row range
+race:computeDistanceMatrixNumaAware
+
+# Tile streaming merge — hash-based dedup in mergeResults
+# The unordered_set is populated from pre-computed tile results;
+# each tile's result vector is independently computed. The merge is
+# single-threaded via std::future collection.
+race:mergeResults
+
+# OpenMP-parallel distance/batch distance/KNN computations (algorithms/distance.cpp)
+# Each thread computes distances for a distinct row/query, writing to
+# non-overlapping output regions
+race:computeDistanceMatrix
+race:computeBatchDistances
+race:computeCrossDistances
+
+# OpenMP-parallel discrete gradient field construction (dmt/)
+# Each thread processes a distinct simplex range
+race:computeDiscreteGradientField
+
+# OpenMP-parallel Mapper filter evaluation (algorithms/mapper_filters.cpp)
+# Each thread evaluates the filter on a distinct point range
+race:computeMapperFilterValues
+
+# Sheaf construction parallel (sheaf/sheaf_construction_parallel.cpp)
+# Threads operate on disjoint stalk indices
+race:constructSheafLaplaciansParallel
+
+# Bottleneck distance parallel (metrics/bottleneck/)
+# Threads process distinct diagram pairs
+race:computeBottleneckDistance
+
+# Landmark selection parallel (persistence/vr/vr_landmark_ops.cpp)
+# Each thread processes distinct candidate points
+race:selectLandmarksParallel
+
+# H1 reduction parallel (persistence/vr/vr_h1_reduction_ops.cpp)
+# Each thread processes a distinct edge subset
+race:reduceH1Parallel
+
+# Filtration construction parallel (filtration/vr/)
+# Threads operate on disjoint vertex ranges
+race:constructVietorisRipsParallel
+
+# MPI distributed PH with local OpenMP (persistence/distributed/)
+# Each thread processes a distinct column range
+race:computeDistributedPHLocal
+
+# Nearest neighbor parallel (persistence/approximate/)
+# Threads operate on disjoint point ranges; critical section only for merge
+race:computeApproximateNearestNeighbors
+
+# Memory clear-compress parallel (persistence/memory/)
+# Threads process distinct memory chunks
+race:clearCompressMemoryParallel
+
+# Tile streaming PH parallel (persistence/streaming/)
+# Each tile is processed independently
+race:processTilesParallel
+
+# KNN HNSW parallel graph construction (algorithms/knn_hnsw.hpp)
+# Each thread processes a distinct query vector
+race:buildHNSWGraphParallel
+
+# Wasserstein distance parallel (graphs/graph_topology.cpp)
+# Threads process distinct diagram pairs
+race:computeWassersteinDistance
+

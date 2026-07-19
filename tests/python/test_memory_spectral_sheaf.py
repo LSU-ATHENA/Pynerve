@@ -6,16 +6,15 @@ Covers nerve_extras.memory, nerve_extras.spectral, and nerve_extras.sheaf.
 from __future__ import annotations
 
 import math
-import os
-import random
 import sys
+from pathlib import Path
 
 import pytest
 
 # Add the build directory so nerve_extras can be imported
-_build_path = os.path.join(os.path.dirname(__file__), "..", "..", "build", "python")
-if os.path.isdir(_build_path) and _build_path not in sys.path:
-    sys.path.insert(0, _build_path)
+_build_path = Path(__file__).resolve().parent.parent.parent / "build" / "python"
+if _build_path.is_dir() and str(_build_path) not in sys.path:
+    sys.path.insert(0, str(_build_path))
 
 try:
     import nerve_extras

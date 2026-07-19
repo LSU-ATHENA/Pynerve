@@ -15,6 +15,7 @@ def _cupy_runtime_available() -> bool:
     if not HAS_CUPY:
         return False
     try:
+        assert cp is not None  # type guard: HAS_CUPY ensures cp is imported
         cp.cuda.runtime.getDeviceCount()
         return True
     except Exception:

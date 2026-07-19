@@ -4,9 +4,8 @@
 namespace nerve::persistence::accelerated
 {
 
-errors::ErrorResult<std::vector<Pair>>
-reduceFiltrationCpu(core::BufferView<const double>points, size_t point_dim,
-                    const VRConfig &config)
+errors::ErrorResult<std::vector<Pair>> reduceFiltrationCpu(core::BufferView<const double> points,
+                                                           size_t point_dim, const VRConfig &config)
 {
     return computeVrPersistenceFast(points, point_dim, config);
 }

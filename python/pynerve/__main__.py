@@ -36,7 +36,8 @@ def _cmd_diagram_load(args: argparse.Namespace) -> int:
         print(f"Error loading diagram: {exc}", file=sys.stderr)
         return 1
     if isinstance(result, np.ndarray):
-        print(f"Loaded {result.shape[0]} points with {result.shape[1]} dimensions")
+        arr: np.ndarray = result  # narrow type for pyright
+        print(f"Loaded {arr.shape[0]} points with {arr.shape[1]} dimensions")
     else:
         print(f"Loaded {len(result)} persistence pairs")
     return 0

@@ -65,7 +65,7 @@ struct PersistenceResult
     PersistenceDiagnostics diagnostics;
 };
 
-errors::ErrorResult<PersistenceResult> compute(core::BufferView<const double>points,
+errors::ErrorResult<PersistenceResult> compute(core::BufferView<const double> points,
                                                Size point_dim,
                                                const PersistenceOptions &options = {});
 
@@ -75,19 +75,19 @@ updatePersistence(const std::vector<PersistenceEvent> &events,
 
 // Algorithm entrypoints routed to the canonical engine.
 errors::ErrorResult<PersistenceResult>
-computePersistencePh4(core::BufferView<const double>points, Size point_dim,
+computePersistencePh4(core::BufferView<const double> points, Size point_dim,
                       const PersistenceOptions &options = {});
 
 errors::ErrorResult<PersistenceResult>
-computePersistencePh5(core::BufferView<const double>points, Size point_dim,
+computePersistencePh5(core::BufferView<const double> points, Size point_dim,
                       const PersistenceOptions &options = {});
 
 errors::ErrorResult<PersistenceResult>
-computePersistencePh6(core::BufferView<const double>points, Size point_dim,
+computePersistencePh6(core::BufferView<const double> points, Size point_dim,
                       const PersistenceOptions &options = {});
 
 errors::ErrorResult<PersistenceResult>
-computePersistenceCohomology(core::BufferView<const double>points, Size point_dim,
+computePersistenceCohomology(core::BufferView<const double> points, Size point_dim,
                              const PersistenceOptions &options = {});
 
 } // namespace nerve::persistence

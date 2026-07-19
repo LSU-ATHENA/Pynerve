@@ -21,7 +21,7 @@ def test_mpi_is_optional_for_base_install() -> None:
     "backend",
     [
         pytest.param("cpu", marks=pytest.mark.cpu),
-        pytest.param("cuda", marks=pytest.mark.cuda),
+        pytest.param("cuda", marks=[pytest.mark.cuda, pytest.mark.gpu_multi]),
     ],
 )
 def test_multi_device_labels_are_selectable(generated_cases, backend: str) -> None:

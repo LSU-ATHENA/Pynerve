@@ -20,7 +20,6 @@ using namespace nerve::test;
 
 constexpr double kTol = 1e-10;
 
-
 bool check_large_cloud_2d()
 {
     std::mt19937 rng(42);

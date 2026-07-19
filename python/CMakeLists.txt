@@ -75,7 +75,7 @@ if(BUILD_TESTS AND NOT NERVE_TESTS_ADDED)
 endif()
 
 # Find Python and pybind11.
-find_package(Python 3.10...<3.14 COMPONENTS Interpreter Development NumPy REQUIRED)
+find_package(Python 3.10...<3.14 COMPONENTS Interpreter Development.Module NumPy REQUIRED)
 execute_process(
     COMMAND ${Python_EXECUTABLE} -c "import pybind11; print(pybind11.get_cmake_dir())"
     OUTPUT_VARIABLE PYBIND11_CMAKE_DIR

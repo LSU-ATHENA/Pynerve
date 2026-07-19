@@ -121,12 +121,13 @@ Tensor GraphEncoder::applyGcn(const Tensor &features, const Tensor &adjacency,
                 continue;
             }
             // Loop-swap: in outer, out inner - weights are contiguous for consecutive out
-            double* out_row = &output[row * layer.output_dim];
+            double *out_row = &output[row * layer.output_dim];
             const Size out_dim = layer.output_dim;
             for (Size in = 0; in < usable_dim; ++in)
             {
                 const double scale = weight * features.data()[nbr * feature_shape[1] + in];
-                nerve::simd::simd_axpy(scale, &layer.weights.data()[in * out_dim], out_row, out_dim);
+                nerve::simd::simd_axpy(scale, &layer.weights.data()[in * out_dim], out_row,
+                                       out_dim);
             }
             // Check finiteness of the partial result for this neighbor
             for (Size o = 0; o < out_dim; ++o)

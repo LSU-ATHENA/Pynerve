@@ -1,6 +1,6 @@
+#include "nerve/algebra/simd_distance.hpp"
 #include "nerve/simd/simd_base.hpp"
 #include "nerve/simd/simd_distance.hpp"
-#include "nerve/algebra/simd_distance.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -28,8 +28,7 @@ size_t checkedElementCount(size_t rows, size_t dim)
 
 bool valuesAreFinite(const double *values, size_t count)
 {
-    return std::all_of(values, values + count,
-                       [](double value) { return std::isfinite(value); });
+    return std::all_of(values, values + count, [](double value) { return std::isfinite(value); });
 }
 
 double checkedDistanceResult(double value, const char *message)
@@ -41,7 +40,8 @@ double checkedDistanceResult(double value, const char *message)
 
 void validateDistanceInputs(const double *a, const double *b, size_t dim)
 {
-    if (dim == 0) return;
+    if (dim == 0)
+        return;
     if (a == nullptr || b == nullptr)
         throw std::invalid_argument("distance vector inputs must not be null");
     if (!valuesAreFinite(a, dim) || !valuesAreFinite(b, dim))
@@ -118,8 +118,7 @@ double SIMDDistanceCalculator::manhattanDistanceScalar(const double *a, const do
 double SIMDDistanceCalculator::cosineDistance(const double *a, const double *b, size_t dim)
 {
     validateDistanceInputs(a, b, dim);
-    return checkedDistanceResult(nerve::simd::simd_cosine(a, b, dim),
-                                 "cosine distance overflow");
+    return checkedDistanceResult(nerve::simd::simd_cosine(a, b, dim), "cosine distance overflow");
 }
 
 double SIMDDistanceCalculator::cosineDistanceScalar(const double *a, const double *b, size_t dim)
@@ -135,7 +134,8 @@ double SIMDDistanceCalculator::cosineDistanceScalar(const double *a, const doubl
     norm_b = std::sqrt(norm_b);
     if (!std::isfinite(dot_product) || !std::isfinite(norm_a) || !std::isfinite(norm_b))
         throw std::overflow_error("cosine distance overflow");
-    if (norm_a == 0.0 || norm_b == 0.0) return 1.0;
+    if (norm_a == 0.0 || norm_b == 0.0)
+        return 1.0;
     double cosine_sim = dot_product / (norm_a * norm_b);
     if (!std::isfinite(cosine_sim))
         throw std::overflow_error("cosine distance overflow");
@@ -143,13 +143,14 @@ double SIMDDistanceCalculator::cosineDistanceScalar(const double *a, const doubl
     return 1.0 - cosine_sim;
 }
 
-std::vector<double> SIMDDistanceCalculator::batchEuclideanDistances(
-    const double *points, size_t num_points, size_t dim)
+std::vector<double> SIMDDistanceCalculator::batchEuclideanDistances(const double *points,
+                                                                    size_t num_points, size_t dim)
 {
     const size_t pair_count = validateBatchInputs(points, num_points, dim);
     std::vector<double> distances;
     distances.reserve(pair_count);
-    if (pair_count == 0) return distances;
+    if (pair_count == 0)
+        return distances;
     if (dim == 0)
     {
         distances.assign(pair_count, 0.0);
@@ -160,7 +161,9 @@ std::vector<double> SIMDDistanceCalculator::batchEuclideanDistances(
         const double *pi = points + i * dim;
         for (size_t j = i + 1; j < num_points; ++j)
         {
-            distances.push_back(nerve::simd::simd_euclidean(pi, points + j * dim, dim));
+            distances.push_back(
+                checkedDistanceResult(nerve::simd::simd_euclidean(pi, points + j * dim, dim),
+                                      "euclidean distance overflow"));
         }
     }
     return distances;

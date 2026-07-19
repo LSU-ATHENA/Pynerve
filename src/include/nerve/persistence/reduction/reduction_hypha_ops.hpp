@@ -33,8 +33,7 @@ class HyphaReducer
 {
 public:
     struct Config
-    {
-    };
+    {};
 
     HyphaReducer();
     explicit HyphaReducer(const Config &cfg);
@@ -48,8 +47,8 @@ public:
     const Config &config() const { return config_; }
 
 private:
-    std::vector<Pair> gpuSubmatrixReduction(const int *col_ptr, const int *row_indices,
-                                            int nnz, int n_cols, int n_rows,
+    std::vector<Pair> gpuSubmatrixReduction(const int *col_ptr, const int *row_indices, int nnz,
+                                            int n_cols, int n_rows,
                                             const std::vector<double> &col_filtration_values,
                                             const std::vector<double> &row_filtration_values,
                                             const std::vector<Dimension> &dimensions,

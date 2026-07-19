@@ -64,12 +64,7 @@ int main()
 
     // Simple triangle (3 vertices, 3 edges, 1 triangle) -> dim-2
     {
-        const int columns_data[] = {
-            0, 1,
-            0, 2,
-            1, 2,
-            3, 4, 5
-        };
+        const int columns_data[] = {0, 1, 0, 2, 1, 2, 3, 4, 5};
         const nerve::Size column_sizes[] = {0, 0, 0, 2, 2, 2, 3};
         const double weights[] = {0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0};
 
@@ -85,15 +80,7 @@ int main()
 
     // Square with diagonal (4 vertices, 5 edges, 2 triangles) dim-2
     {
-        const int columns_data[] = {
-            0, 1,
-            0, 2,
-            1, 3,
-            2, 3,
-            0, 3,
-            4, 6, 8,
-            5, 7, 8
-        };
+        const int columns_data[] = {0, 1, 0, 2, 1, 3, 2, 3, 0, 3, 4, 6, 8, 5, 7, 8};
         const nerve::Size column_sizes[] = {0, 0, 0, 0, 2, 2, 2, 2, 2, 3, 3};
         const double weights[] = {0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.414, 2.0, 2.0};
 
@@ -109,26 +96,16 @@ int main()
 
     // Tetrahedron (4 vertices, 6 edges, 4 triangles, 1 tetrahedron) dim-3 boundary matrix
     {
-        const int columns_data[] = {
-            0, 1,
-            0, 2,
-            0, 3,
-            1, 2,
-            1, 3,
-            2, 3,
-            4, 5, 7,
-            4, 6, 8,
-            5, 6, 9,
-            7, 8, 9,
-            10, 11, 12, 13
-        };
-        const nerve::Size column_sizes[] = {0,0,0,0, 2,2,2,2,2,2, 3,3,3,3, 4};
-        const double weights[] = {0,0,0,0, 1,1,1,1,1,1, 2,2,2,2, 3};
+        const int columns_data[] = {0, 1, 0, 2, 0, 3, 1, 2, 1, 3, 2,  3,  4,  5,
+                                    7, 4, 6, 8, 5, 6, 9, 7, 8, 9, 10, 11, 12, 13};
+        const nerve::Size column_sizes[] = {0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4};
+        const double weights[] = {0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3};
 
         auto reduction = nerve::persistence::accelerated::CUDAMatrixReduction::create(
             nerve::persistence::accelerated::MatrixReductionConfig{3, true});
         assert(reduction.isSuccess());
-        auto result = reduction.value()->compute_reduction(columns_data, column_sizes, weights, 15, 3);
+        auto result =
+            reduction.value()->compute_reduction(columns_data, column_sizes, weights, 15, 3);
         assert(result.isSuccess());
         assert_pair_count_positive(*reduction.value());
         const auto &stats = reduction.value()->get_performance_stats();
@@ -138,30 +115,33 @@ int main()
 
     // Octahedron (6 vertices, 12 edges, 8 triangles) dim-2
     {
-        const int columns_data[] = {
-            0,1, 0,2, 0,3, 0,4,
-            1,5, 2,5, 3,5, 4,5,
-            1,2, 2,3, 3,4, 4,1,
-            6,8,14,
-            6,9,15,
-            7,9,16,
-            7,8,17,
-            10,14,17,
-            11,15,14,
-            12,16,15,
-            13,17,16
-        };
+        const int columns_data[] = {0,  1, 0, 2,  0,  3,  0,  4,  1,  5,  2,  5,  3,  5,  4,  5,
+                                    1,  2, 2, 3,  3,  4,  4,  1,  6,  8,  14, 6,  9,  15, 7,  9,
+                                    16, 7, 8, 17, 10, 14, 17, 11, 15, 14, 12, 16, 15, 13, 17, 16};
 
         nerve::Size column_sizes[26];
         double weights[26];
-        for (int i = 0; i < 6; ++i) { column_sizes[i] = 0; weights[i] = 0.0; }
-        for (int i = 6; i < 18; ++i) { column_sizes[i] = 2; weights[i] = 1.0; }
-        for (int i = 18; i < 26; ++i) { column_sizes[i] = 3; weights[i] = 2.0; }
+        for (int i = 0; i < 6; ++i)
+        {
+            column_sizes[i] = 0;
+            weights[i] = 0.0;
+        }
+        for (int i = 6; i < 18; ++i)
+        {
+            column_sizes[i] = 2;
+            weights[i] = 1.0;
+        }
+        for (int i = 18; i < 26; ++i)
+        {
+            column_sizes[i] = 3;
+            weights[i] = 2.0;
+        }
 
         auto reduction = nerve::persistence::accelerated::CUDAMatrixReduction::create(
             nerve::persistence::accelerated::MatrixReductionConfig{2, true});
         assert(reduction.isSuccess());
-        auto result = reduction.value()->compute_reduction(columns_data, column_sizes, weights, 26, 2);
+        auto result =
+            reduction.value()->compute_reduction(columns_data, column_sizes, weights, 26, 2);
         assert(result.isSuccess());
         assert(reduction.value()->get_performance_stats().pairs_created >= 3);
     }
@@ -268,25 +248,27 @@ int main()
     // Octahedron clearing: clearing vs non-clearing produce same pairs (dim-2)
     // Uses a larger 26-column octahedron boundary matrix with 8 triangles
     {
-        const int columns_data[] = {
-            0,1, 0,2, 0,3, 0,4,
-            1,5, 2,5, 3,5, 4,5,
-            1,2, 2,3, 3,4, 4,1,
-            6,8,14,
-            6,9,15,
-            7,9,16,
-            7,8,17,
-            10,14,17,
-            11,15,14,
-            12,16,15,
-            13,17,16
-        };
+        const int columns_data[] = {0,  1, 0, 2,  0,  3,  0,  4,  1,  5,  2,  5,  3,  5,  4,  5,
+                                    1,  2, 2, 3,  3,  4,  4,  1,  6,  8,  14, 6,  9,  15, 7,  9,
+                                    16, 7, 8, 17, 10, 14, 17, 11, 15, 14, 12, 16, 15, 13, 17, 16};
 
         nerve::Size column_sizes[26];
         double weights[26];
-        for (int i = 0; i < 6; ++i) { column_sizes[i] = 0; weights[i] = 0.0; }
-        for (int i = 6; i < 18; ++i) { column_sizes[i] = 2; weights[i] = 1.0; }
-        for (int i = 18; i < 26; ++i) { column_sizes[i] = 3; weights[i] = 2.0; }
+        for (int i = 0; i < 6; ++i)
+        {
+            column_sizes[i] = 0;
+            weights[i] = 0.0;
+        }
+        for (int i = 6; i < 18; ++i)
+        {
+            column_sizes[i] = 2;
+            weights[i] = 1.0;
+        }
+        for (int i = 18; i < 26; ++i)
+        {
+            column_sizes[i] = 3;
+            weights[i] = 2.0;
+        }
 
         nerve::persistence::accelerated::MatrixReductionConfig config_clear;
         config_clear.max_dim = 2;
@@ -295,7 +277,8 @@ int main()
 
         auto red_clear = nerve::persistence::accelerated::CUDAMatrixReduction::create(config_clear);
         assert(red_clear.isSuccess());
-        auto result_clear = red_clear.value()->compute_reduction(columns_data, column_sizes, weights, 26, 2);
+        auto result_clear =
+            red_clear.value()->compute_reduction(columns_data, column_sizes, weights, 26, 2);
         assert(result_clear.isSuccess());
         const auto &stats_clear = red_clear.value()->get_performance_stats();
 
@@ -304,9 +287,11 @@ int main()
         config_no_clear.enable_clearing = false;
         config_no_clear.enable_performance_monitoring = true;
 
-        auto red_no_clear = nerve::persistence::accelerated::CUDAMatrixReduction::create(config_no_clear);
+        auto red_no_clear =
+            nerve::persistence::accelerated::CUDAMatrixReduction::create(config_no_clear);
         assert(red_no_clear.isSuccess());
-        auto result_no_clear = red_no_clear.value()->compute_reduction(columns_data, column_sizes, weights, 26, 2);
+        auto result_no_clear =
+            red_no_clear.value()->compute_reduction(columns_data, column_sizes, weights, 26, 2);
         assert(result_no_clear.isSuccess());
         const auto &stats_no_clear = red_no_clear.value()->get_performance_stats();
 
@@ -332,21 +317,29 @@ int main()
     // Cubical grid clearing: clearing vs non-clearing across dim-2 and dim-3
     // 8 vertices, 12 edges, 6 faces, 1 cube -> 27 columns total
     {
-        const int columns_data[] = {
-            0,1,    1,3,    3,2,    2,0,
-            4,5,    5,7,    7,6,    6,4,
-            0,4,    1,5,    2,6,    3,7,
-            0,1,2,3,   4,5,6,7,   0,8,4,9,
-            2,10,6,11, 3,8,7,10,  1,9,5,11,
-            0,1,2,3,4,5
-        };
+        const int columns_data[] = {0, 1,  1, 3,  3, 2, 2, 0,  4, 5, 5, 7,  7, 6, 6, 4, 0, 4,
+                                    1, 5,  2, 6,  3, 7, 0, 1,  2, 3, 4, 5,  6, 7, 0, 8, 4, 9,
+                                    2, 10, 6, 11, 3, 8, 7, 10, 1, 9, 5, 11, 0, 1, 2, 3, 4, 5};
 
         nerve::Size column_sizes[27];
         double weights[27];
-        for (int i = 0; i < 8; ++i) { column_sizes[i] = 0; weights[i] = 0.0; }
-        for (int i = 8; i < 20; ++i) { column_sizes[i] = 2; weights[i] = 1.0; }
-        for (int i = 20; i < 26; ++i) { column_sizes[i] = 4; weights[i] = 2.0; }
-        column_sizes[26] = 6; weights[26] = 3.0;
+        for (int i = 0; i < 8; ++i)
+        {
+            column_sizes[i] = 0;
+            weights[i] = 0.0;
+        }
+        for (int i = 8; i < 20; ++i)
+        {
+            column_sizes[i] = 2;
+            weights[i] = 1.0;
+        }
+        for (int i = 20; i < 26; ++i)
+        {
+            column_sizes[i] = 4;
+            weights[i] = 2.0;
+        }
+        column_sizes[26] = 6;
+        weights[26] = 3.0;
 
         // dim-2 clearing comparison
         for (int dim = 2; dim <= 3; ++dim)
@@ -356,9 +349,11 @@ int main()
             cfg_clear.enable_clearing = true;
             cfg_clear.enable_performance_monitoring = true;
 
-            auto red_clear = nerve::persistence::accelerated::CUDAMatrixReduction::create(cfg_clear);
+            auto red_clear =
+                nerve::persistence::accelerated::CUDAMatrixReduction::create(cfg_clear);
             assert(red_clear.isSuccess());
-            auto res_clear = red_clear.value()->compute_reduction(columns_data, column_sizes, weights, 27, dim);
+            auto res_clear =
+                red_clear.value()->compute_reduction(columns_data, column_sizes, weights, 27, dim);
             assert(res_clear.isSuccess());
             const auto &s_clear = red_clear.value()->get_performance_stats();
 
@@ -367,9 +362,11 @@ int main()
             cfg_no_clear.enable_clearing = false;
             cfg_no_clear.enable_performance_monitoring = true;
 
-            auto red_no_clear = nerve::persistence::accelerated::CUDAMatrixReduction::create(cfg_no_clear);
+            auto red_no_clear =
+                nerve::persistence::accelerated::CUDAMatrixReduction::create(cfg_no_clear);
             assert(red_no_clear.isSuccess());
-            auto res_no_clear = red_no_clear.value()->compute_reduction(columns_data, column_sizes, weights, 27, dim);
+            auto res_no_clear = red_no_clear.value()->compute_reduction(columns_data, column_sizes,
+                                                                        weights, 27, dim);
             assert(res_no_clear.isSuccess());
             const auto &s_no_clear = red_no_clear.value()->get_performance_stats();
 
@@ -382,8 +379,8 @@ int main()
             }
             if (s_clear.columns_processed != 27)
             {
-                std::cerr << "FAIL: cubical grid dim-" << dim
-                          << " expected 27 columns, got " << s_clear.columns_processed << "\n";
+                std::cerr << "FAIL: cubical grid dim-" << dim << " expected 27 columns, got "
+                          << s_clear.columns_processed << "\n";
                 return 1;
             }
         }
@@ -391,25 +388,27 @@ int main()
 
     // Clearing reproducibility: octahedron with clearing, 5 runs
     {
-        const int columns_data[] = {
-            0,1, 0,2, 0,3, 0,4,
-            1,5, 2,5, 3,5, 4,5,
-            1,2, 2,3, 3,4, 4,1,
-            6,8,14,
-            6,9,15,
-            7,9,16,
-            7,8,17,
-            10,14,17,
-            11,15,14,
-            12,16,15,
-            13,17,16
-        };
+        const int columns_data[] = {0,  1, 0, 2,  0,  3,  0,  4,  1,  5,  2,  5,  3,  5,  4,  5,
+                                    1,  2, 2, 3,  3,  4,  4,  1,  6,  8,  14, 6,  9,  15, 7,  9,
+                                    16, 7, 8, 17, 10, 14, 17, 11, 15, 14, 12, 16, 15, 13, 17, 16};
 
         nerve::Size column_sizes[26];
         double weights[26];
-        for (int i = 0; i < 6; ++i) { column_sizes[i] = 0; weights[i] = 0.0; }
-        for (int i = 6; i < 18; ++i) { column_sizes[i] = 2; weights[i] = 1.0; }
-        for (int i = 18; i < 26; ++i) { column_sizes[i] = 3; weights[i] = 2.0; }
+        for (int i = 0; i < 6; ++i)
+        {
+            column_sizes[i] = 0;
+            weights[i] = 0.0;
+        }
+        for (int i = 6; i < 18; ++i)
+        {
+            column_sizes[i] = 2;
+            weights[i] = 1.0;
+        }
+        for (int i = 18; i < 26; ++i)
+        {
+            column_sizes[i] = 3;
+            weights[i] = 2.0;
+        }
 
         nerve::persistence::accelerated::MatrixReductionConfig config;
         config.max_dim = 2;
@@ -420,7 +419,8 @@ int main()
         {
             auto reduction = nerve::persistence::accelerated::CUDAMatrixReduction::create(config);
             assert(reduction.isSuccess());
-            auto result = reduction.value()->compute_reduction(columns_data, column_sizes, weights, 26, 2);
+            auto result =
+                reduction.value()->compute_reduction(columns_data, column_sizes, weights, 26, 2);
             assert(result.isSuccess());
             const auto &stats = reduction.value()->get_performance_stats();
 
@@ -435,9 +435,9 @@ int main()
             }
             else if (static_cast<int>(stats.pairs_created) != prev_pairs)
             {
-                std::cerr << "FAIL: clearing reproducibility: run " << run
-                          << " produced " << stats.pairs_created
-                          << " pairs but run 0 produced " << prev_pairs << "\n";
+                std::cerr << "FAIL: clearing reproducibility: run " << run << " produced "
+                          << stats.pairs_created << " pairs but run 0 produced " << prev_pairs
+                          << "\n";
                 return 1;
             }
         }
@@ -453,7 +453,8 @@ int main()
         std::mt19937 rng(seed);
         std::uniform_real_distribution<double> dist(0.0, 1.0);
         std::vector<double> pts(static_cast<std::size_t>(n_pts * 3));
-        for (auto &v : pts) v = dist(rng);
+        for (auto &v : pts)
+            v = dist(rng);
 
         nerve::persistence::PersistenceOptions gpu_opts;
         gpu_opts.backend = nerve::persistence::PersistenceBackend::CUDA_HYBRID;
@@ -461,8 +462,7 @@ int main()
         gpu_opts.max_radius = threshold;
 
         auto gpu_result = nerve::persistence::compute(
-            nerve::core::BufferView<const double>(pts.data(), pts.size()),
-            3, gpu_opts);
+            nerve::core::BufferView<const double>(pts.data(), pts.size()), 3, gpu_opts);
         assert(gpu_result.isSuccess());
 
         nerve::persistence::PersistenceOptions cpu_opts;
@@ -471,8 +471,7 @@ int main()
         cpu_opts.max_radius = threshold;
 
         auto cpu_result = nerve::persistence::compute(
-            nerve::core::BufferView<const double>(pts.data(), pts.size()),
-            3, cpu_opts);
+            nerve::core::BufferView<const double>(pts.data(), pts.size()), 3, cpu_opts);
         assert(cpu_result.isSuccess());
 
         if (gpu_result.value().pairs.empty())
@@ -504,15 +503,7 @@ int main()
     // Square clearing: clearing vs non-clearing produce same pairs (dim-2)
     // 4 vertices, 5 edges, 2 triangles -> 11 columns
     {
-        const int columns_data[] = {
-            0, 1,
-            0, 2,
-            1, 3,
-            2, 3,
-            0, 3,
-            4, 6, 8,
-            5, 7, 8
-        };
+        const int columns_data[] = {0, 1, 0, 2, 1, 3, 2, 3, 0, 3, 4, 6, 8, 5, 7, 8};
         const nerve::Size column_sizes[] = {0, 0, 0, 0, 2, 2, 2, 2, 2, 3, 3};
         const double weights[] = {0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.414, 2.0, 2.0};
 
@@ -522,7 +513,8 @@ int main()
 
         auto red_clear = nerve::persistence::accelerated::CUDAMatrixReduction::create(config_clear);
         assert(red_clear.isSuccess());
-        auto res_clear = red_clear.value()->compute_reduction(columns_data, column_sizes, weights, 11, 2);
+        auto res_clear =
+            red_clear.value()->compute_reduction(columns_data, column_sizes, weights, 11, 2);
         assert(res_clear.isSuccess());
         const auto &s_clear = red_clear.value()->get_performance_stats();
 
@@ -530,9 +522,11 @@ int main()
         config_no_clear.max_dim = 2;
         config_no_clear.enable_clearing = false;
 
-        auto red_no_clear = nerve::persistence::accelerated::CUDAMatrixReduction::create(config_no_clear);
+        auto red_no_clear =
+            nerve::persistence::accelerated::CUDAMatrixReduction::create(config_no_clear);
         assert(red_no_clear.isSuccess());
-        auto res_no_clear = red_no_clear.value()->compute_reduction(columns_data, column_sizes, weights, 11, 2);
+        auto res_no_clear =
+            red_no_clear.value()->compute_reduction(columns_data, column_sizes, weights, 11, 2);
         assert(res_no_clear.isSuccess());
         const auto &s_no_clear = red_no_clear.value()->get_performance_stats();
 
@@ -544,7 +538,8 @@ int main()
         }
         if (s_clear.columns_processed != 11)
         {
-            std::cerr << "FAIL: square expected 11 columns, got " << s_clear.columns_processed << "\n";
+            std::cerr << "FAIL: square expected 11 columns, got " << s_clear.columns_processed
+                      << "\n";
             return 1;
         }
     }
@@ -552,21 +547,10 @@ int main()
     // Tetrahedron clearing: clearing vs non-clearing (dim-3)
     // 4 vertices, 6 edges, 4 triangles, 1 tetrahedron -> 15 columns
     {
-        const int columns_data[] = {
-            0, 1,
-            0, 2,
-            0, 3,
-            1, 2,
-            1, 3,
-            2, 3,
-            4, 5, 7,
-            4, 6, 8,
-            5, 6, 9,
-            7, 8, 9,
-            10, 11, 12, 13
-        };
-        const nerve::Size column_sizes[] = {0,0,0,0, 2,2,2,2,2,2, 3,3,3,3, 4};
-        const double weights[] = {0,0,0,0, 1,1,1,1,1,1, 2,2,2,2, 3};
+        const int columns_data[] = {0, 1, 0, 2, 0, 3, 1, 2, 1, 3, 2,  3,  4,  5,
+                                    7, 4, 6, 8, 5, 6, 9, 7, 8, 9, 10, 11, 12, 13};
+        const nerve::Size column_sizes[] = {0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4};
+        const double weights[] = {0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3};
 
         nerve::persistence::accelerated::MatrixReductionConfig config_clear;
         config_clear.max_dim = 3;
@@ -574,7 +558,8 @@ int main()
 
         auto red_clear = nerve::persistence::accelerated::CUDAMatrixReduction::create(config_clear);
         assert(red_clear.isSuccess());
-        auto res_clear = red_clear.value()->compute_reduction(columns_data, column_sizes, weights, 15, 3);
+        auto res_clear =
+            red_clear.value()->compute_reduction(columns_data, column_sizes, weights, 15, 3);
         assert(res_clear.isSuccess());
         const auto &s_clear = red_clear.value()->get_performance_stats();
 
@@ -582,9 +567,11 @@ int main()
         config_no_clear.max_dim = 3;
         config_no_clear.enable_clearing = false;
 
-        auto red_no_clear = nerve::persistence::accelerated::CUDAMatrixReduction::create(config_no_clear);
+        auto red_no_clear =
+            nerve::persistence::accelerated::CUDAMatrixReduction::create(config_no_clear);
         assert(red_no_clear.isSuccess());
-        auto res_no_clear = red_no_clear.value()->compute_reduction(columns_data, column_sizes, weights, 15, 3);
+        auto res_no_clear =
+            red_no_clear.value()->compute_reduction(columns_data, column_sizes, weights, 15, 3);
         assert(res_no_clear.isSuccess());
         const auto &s_no_clear = red_no_clear.value()->get_performance_stats();
 
@@ -596,7 +583,8 @@ int main()
         }
         if (s_clear.columns_processed != 15)
         {
-            std::cerr << "FAIL: tetrahedron expected 15 columns, got " << s_clear.columns_processed << "\n";
+            std::cerr << "FAIL: tetrahedron expected 15 columns, got " << s_clear.columns_processed
+                      << "\n";
             return 1;
         }
         if (s_clear.pairs_created < 3)
@@ -608,25 +596,27 @@ int main()
 
     // Octahedron multi-dim: run with clearing at dim-2 and dim-3 on same data
     {
-        const int columns_data[] = {
-            0,1, 0,2, 0,3, 0,4,
-            1,5, 2,5, 3,5, 4,5,
-            1,2, 2,3, 3,4, 4,1,
-            6,8,14,
-            6,9,15,
-            7,9,16,
-            7,8,17,
-            10,14,17,
-            11,15,14,
-            12,16,15,
-            13,17,16
-        };
+        const int columns_data[] = {0,  1, 0, 2,  0,  3,  0,  4,  1,  5,  2,  5,  3,  5,  4,  5,
+                                    1,  2, 2, 3,  3,  4,  4,  1,  6,  8,  14, 6,  9,  15, 7,  9,
+                                    16, 7, 8, 17, 10, 14, 17, 11, 15, 14, 12, 16, 15, 13, 17, 16};
 
         nerve::Size column_sizes[26];
         double weights[26];
-        for (int i = 0; i < 6; ++i) { column_sizes[i] = 0; weights[i] = 0.0; }
-        for (int i = 6; i < 18; ++i) { column_sizes[i] = 2; weights[i] = 1.0; }
-        for (int i = 18; i < 26; ++i) { column_sizes[i] = 3; weights[i] = 2.0; }
+        for (int i = 0; i < 6; ++i)
+        {
+            column_sizes[i] = 0;
+            weights[i] = 0.0;
+        }
+        for (int i = 6; i < 18; ++i)
+        {
+            column_sizes[i] = 2;
+            weights[i] = 1.0;
+        }
+        for (int i = 18; i < 26; ++i)
+        {
+            column_sizes[i] = 3;
+            weights[i] = 2.0;
+        }
 
         for (int dim = 1; dim <= 3; ++dim)
         {
@@ -671,13 +661,8 @@ int main()
         };
 
         TestConfig configs[] = {
-            {1, true, false},
-            {2, true, false},
-            {2, true, true},
-            {2, false, true},
-            {3, true, false},
-            {3, false, false},
-            {2, true, false}, // repeat to verify determinism
+            {1, true, false}, {2, true, false},  {2, true, true},  {2, false, true},
+            {3, true, false}, {3, false, false}, {2, true, false}, // repeat to verify determinism
         };
 
         int config_idx = -1;
@@ -693,15 +678,15 @@ int main()
 
             auto red = nerve::persistence::accelerated::CUDAMatrixReduction::create(cfg);
             assert(red.isSuccess());
-            auto res = red.value()->compute_reduction(columns_data, column_sizes, weights, 7, tc.max_dim);
+            auto res =
+                red.value()->compute_reduction(columns_data, column_sizes, weights, 7, tc.max_dim);
             assert(res.isSuccess());
             const auto &stats = red.value()->get_performance_stats();
 
             if (stats.columns_processed != 7)
             {
                 std::cerr << "FAIL: config " << config_idx << " max_dim=" << tc.max_dim
-                          << " clear=" << tc.enable_clearing
-                          << " stream=" << tc.enable_streaming
+                          << " clear=" << tc.enable_clearing << " stream=" << tc.enable_streaming
                           << " columns=" << stats.columns_processed << " expected 7\n";
                 return 1;
             }
@@ -711,13 +696,14 @@ int main()
                 // Non-default config: just verify it works
                 if (stats.pairs_created < 1)
                 {
-                    std::cerr << "FAIL: config " << config_idx << " (no clear, no stream) produced no pairs\n";
+                    std::cerr << "FAIL: config " << config_idx
+                              << " (no clear, no stream) produced no pairs\n";
                     return 1;
                 }
             }
 
             // Check determinism for identical config (last entry == first with clearing)
-            if (config_idx == 6)  // last entry
+            if (config_idx == 6) // last entry
             {
                 if (static_cast<int>(stats.pairs_created) != prev_pairs)
                 {
@@ -765,7 +751,8 @@ int main()
         }
         if (stats.get_memory_efficiency() <= 0.0 || stats.get_memory_efficiency() > 1.0)
         {
-            std::cerr << "FAIL: memory efficiency out of range: " << stats.get_memory_efficiency() << "\n";
+            std::cerr << "FAIL: memory efficiency out of range: " << stats.get_memory_efficiency()
+                      << "\n";
             return 1;
         }
         assert(stats.columns_processed > 0);
@@ -822,7 +809,8 @@ int main()
         std::mt19937 rng(seed);
         std::uniform_real_distribution<double> dist(0.0, 1.0);
         std::vector<double> pts(static_cast<std::size_t>(n_pts * 3));
-        for (auto &v : pts) v = dist(rng);
+        for (auto &v : pts)
+            v = dist(rng);
 
         nerve::persistence::PersistenceOptions gpu_opts;
         gpu_opts.backend = nerve::persistence::PersistenceBackend::CUDA_HYBRID;
@@ -830,8 +818,7 @@ int main()
         gpu_opts.max_radius = threshold;
 
         auto gpu_result = nerve::persistence::compute(
-            nerve::core::BufferView<const double>(pts.data(), pts.size()),
-            3, gpu_opts);
+            nerve::core::BufferView<const double>(pts.data(), pts.size()), 3, gpu_opts);
         assert(gpu_result.isSuccess());
 
         nerve::persistence::PersistenceOptions cpu_opts;
@@ -840,8 +827,7 @@ int main()
         cpu_opts.max_radius = threshold;
 
         auto cpu_result = nerve::persistence::compute(
-            nerve::core::BufferView<const double>(pts.data(), pts.size()),
-            3, cpu_opts);
+            nerve::core::BufferView<const double>(pts.data(), pts.size()), 3, cpu_opts);
         assert(cpu_result.isSuccess());
 
         assert(!gpu_result.value().pairs.empty());
@@ -859,29 +845,37 @@ int main()
 
     // Dim-3 persistence on a cubical grid (8 vertices, 12 edges, 6 faces, 1 cube)
     {
-        const int columns_data[] = {
-            0,1,    1,3,    3,2,    2,0,
-            4,5,    5,7,    7,6,    6,4,
-            0,4,    1,5,    2,6,    3,7,
-            0,1,2,3,   4,5,6,7,   0,8,4,9,
-            2,10,6,11, 3,8,7,10,  1,9,5,11,
-            0,1,2,3,4,5
-        };
+        const int columns_data[] = {0, 1,  1, 3,  3, 2, 2, 0,  4, 5, 5, 7,  7, 6, 6, 4, 0, 4,
+                                    1, 5,  2, 6,  3, 7, 0, 1,  2, 3, 4, 5,  6, 7, 0, 8, 4, 9,
+                                    2, 10, 6, 11, 3, 8, 7, 10, 1, 9, 5, 11, 0, 1, 2, 3, 4, 5};
 
         nerve::Size column_sizes[27];
         double weights[27];
-        for (int i = 0; i < 8; ++i) { column_sizes[i] = 0; weights[i] = 0.0; }
-        for (int i = 8; i < 20; ++i) { column_sizes[i] = 2; weights[i] = 1.0; }
-        for (int i = 20; i < 26; ++i) { column_sizes[i] = 4; weights[i] = 2.0; }
-        column_sizes[26] = 6; weights[26] = 3.0;
+        for (int i = 0; i < 8; ++i)
+        {
+            column_sizes[i] = 0;
+            weights[i] = 0.0;
+        }
+        for (int i = 8; i < 20; ++i)
+        {
+            column_sizes[i] = 2;
+            weights[i] = 1.0;
+        }
+        for (int i = 20; i < 26; ++i)
+        {
+            column_sizes[i] = 4;
+            weights[i] = 2.0;
+        }
+        column_sizes[26] = 6;
+        weights[26] = 3.0;
 
         // dim-2 boundary matrix (triangles x edges)
         {
             auto reduction = nerve::persistence::accelerated::CUDAMatrixReduction::create(
                 nerve::persistence::accelerated::MatrixReductionConfig{2, true});
             assert(reduction.isSuccess());
-            auto result = reduction.value()->compute_reduction(
-                columns_data, column_sizes, weights, 27, 2);
+            auto result =
+                reduction.value()->compute_reduction(columns_data, column_sizes, weights, 27, 2);
             assert(result.isSuccess());
             const auto &stats = reduction.value()->get_performance_stats();
             assert(stats.columns_processed > 0);
@@ -892,8 +886,8 @@ int main()
             auto reduction = nerve::persistence::accelerated::CUDAMatrixReduction::create(
                 nerve::persistence::accelerated::MatrixReductionConfig{3, true});
             assert(reduction.isSuccess());
-            auto result = reduction.value()->compute_reduction(
-                columns_data, column_sizes, weights, 27, 3);
+            auto result =
+                reduction.value()->compute_reduction(columns_data, column_sizes, weights, 27, 3);
             assert(result.isSuccess());
             const auto &stats = reduction.value()->get_performance_stats();
             assert(stats.columns_processed > 0);
@@ -912,8 +906,8 @@ int main()
             auto reduction = nerve::persistence::accelerated::CUDAMatrixReduction::create(
                 nerve::persistence::accelerated::MatrixReductionConfig{2, true});
             assert(reduction.isSuccess());
-            auto result = reduction.value()->compute_reduction(
-                columns_data, column_sizes, weights, 7, 2);
+            auto result =
+                reduction.value()->compute_reduction(columns_data, column_sizes, weights, 7, 2);
             assert(result.isSuccess());
             const auto &stats = reduction.value()->get_performance_stats();
 
@@ -928,9 +922,9 @@ int main()
             }
             else if (static_cast<int>(stats.pairs_created) != prev_pairs)
             {
-                std::cerr << "FAIL: reproducibility: run " << run
-                          << " produced " << stats.pairs_created
-                          << " pairs but run 0 produced " << prev_pairs << "\n";
+                std::cerr << "FAIL: reproducibility: run " << run << " produced "
+                          << stats.pairs_created << " pairs but run 0 produced " << prev_pairs
+                          << "\n";
                 return 1;
             }
         }
@@ -945,7 +939,8 @@ int main()
         std::mt19937 rng(seed);
         std::uniform_real_distribution<double> dist(0.0, 1.0);
         std::vector<double> pts(static_cast<std::size_t>(n_pts * 3));
-        for (auto &v : pts) v = dist(rng);
+        for (auto &v : pts)
+            v = dist(rng);
 
         {
             nerve::persistence::PersistenceOptions opts;
@@ -954,8 +949,7 @@ int main()
             opts.max_radius = threshold;
 
             auto result = nerve::persistence::compute(
-                nerve::core::BufferView<const double>(pts.data(), pts.size()),
-                3, opts);
+                nerve::core::BufferView<const double>(pts.data(), pts.size()), 3, opts);
             assert(result.isSuccess());
         }
     }

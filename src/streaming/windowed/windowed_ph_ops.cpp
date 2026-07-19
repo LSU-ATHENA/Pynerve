@@ -1,6 +1,10 @@
 
 #include "nerve/streaming/windowed_ph.hpp"
 
+#ifdef _WIN32
+#include <malloc.h>
+#endif
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -99,7 +103,11 @@ void NUMAMemoryPool::initializePool()
     block_used_.assign(num_blocks, false);
     for (std::size_t i = 0; i < num_blocks; ++i)
     {
+#ifdef _WIN32
+        void *block = _aligned_malloc(block_size, alignof(std::max_align_t));
+#else
         void *block = std::aligned_alloc(alignof(std::max_align_t), block_size);
+#endif
         if (block == nullptr) [[unlikely]]
         {
             throw std::runtime_error("NUMAMemoryPool failed to preallocate block");
@@ -126,7 +134,11 @@ void *NUMAMemoryPool::allocate(std::size_t size)
     }
 
     const std::size_t aligned = alignUp(size, alignof(std::max_align_t));
+#ifdef _WIN32
+    void *ptr = _aligned_malloc(aligned, alignof(std::max_align_t));
+#else
     void *ptr = std::aligned_alloc(alignof(std::max_align_t), aligned);
+#endif
     if (ptr != nullptr) [[likely]]
     {
         allocated_bytes_ += aligned;

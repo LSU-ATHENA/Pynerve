@@ -4,7 +4,6 @@
 
 #include <cstddef>
 #include <string>
-#include <string>
 #include <vector>
 
 namespace nerve::persistence::h3

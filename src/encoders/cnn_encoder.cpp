@@ -305,8 +305,7 @@ Tensor CNNEncoder::applyConvolution(const Tensor &input, const ConvLayer &layer)
                                 Size weight_base =
                                     ((ic * out_channels + oc) * kernel_h + kh) * kernel_w;
                                 const double partial = nerve::simd::simd_dot(
-                                    &input.data()[input_base],
-                                    &layer.weights.data()[weight_base],
+                                    &input.data()[input_base], &layer.weights.data()[weight_base],
                                     kernel_w);
                                 if (!std::isfinite(partial))
                                 {
@@ -371,10 +370,10 @@ Tensor CNNEncoder::applyPooling(const Tensor &input, const PoolingLayer &layer) 
                             Size base = ((b * channels + c) * height + h) * width + ow * pool_size;
                             double row_max =
                                 nerve::simd::simd_reduce_max(&input.data()[base], pool_size);
-                            if (row_max > pooled) pooled = row_max;
+                            if (row_max > pooled)
+                                pooled = row_max;
                         }
-                        Size output_idx =
-                            ((b * channels + c) * out_height + oh) * out_width + ow;
+                        Size output_idx = ((b * channels + c) * out_height + oh) * out_width + ow;
                         outputData[output_idx] = pooled;
                     }
                     else
@@ -393,8 +392,7 @@ Tensor CNNEncoder::applyPooling(const Tensor &input, const PoolingLayer &layer) 
                             }
                             pooled += row_sum;
                         }
-                        Size output_idx =
-                            ((b * channels + c) * out_height + oh) * out_width + ow;
+                        Size output_idx = ((b * channels + c) * out_height + oh) * out_width + ow;
                         outputData[output_idx] =
                             pooled / static_cast<double>(pool_size * pool_size);
                     }

@@ -9,8 +9,8 @@
 #include <mpi.h>
 #endif
 
-#include "nerve/types.hpp"
 #include "nerve/acceleration_fwd.hpp"
+#include "nerve/types.hpp"
 
 namespace nerve::persistence::mpi_cuda
 {

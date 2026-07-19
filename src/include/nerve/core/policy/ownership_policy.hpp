@@ -280,6 +280,6 @@ constexpr bool is_zero_copy_compatible_v =
 template <typename T>
 constexpr bool is_huge_buffer_compatible_v =
     std::is_same_v<T, PinnedBufferView<typename T::value_type>>;
-} // namespace nerve::core::ownership_utils
+} // namespace ownership_utils
 
 } // namespace nerve::core

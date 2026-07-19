@@ -147,6 +147,6 @@ public:
 
 } // namespace async
 
-} // namespace nerve::gpu
+} // namespace gpu
 
 } // namespace nerve

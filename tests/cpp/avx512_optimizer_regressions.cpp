@@ -10,7 +10,6 @@
 namespace
 {
 
-
 bool check_avx512_feature_detection()
 {
     auto features = nerve::persistence::avx512::detectAVX512Features();

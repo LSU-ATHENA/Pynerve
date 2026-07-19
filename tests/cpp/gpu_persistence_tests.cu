@@ -22,7 +22,8 @@ int main()
 
         // Validate config
         auto err = cfg.validate();
-        assert(err == errors::ErrorCode::E0_SUCCESS || err != errors::ErrorCode::E0_SUCCESS); // smoke
+        assert(err == errors::ErrorCode::E0_SUCCESS ||
+               err != errors::ErrorCode::E0_SUCCESS); // smoke
         std::cout << "PASSED: GPUApparentPairs::Config (max_simplices=1024, dim=3)\n";
     }
 

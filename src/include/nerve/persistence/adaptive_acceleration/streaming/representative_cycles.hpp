@@ -170,12 +170,12 @@ public:
     create(const RepresentativeConfig &config);
 
     errors::ErrorResult<CycleVisualizationData>
-    generateVisualizationData(const Cycle &cycle, core::BufferView<const double>points,
+    generateVisualizationData(const Cycle &cycle, core::BufferView<const double> points,
                               std::size_t point_dim);
 
     errors::ErrorResult<std::vector<CycleVisualizationData>>
     generateVisualizationData(const std::vector<Cycle> &cycles,
-                              core::BufferView<const double>points, std::size_t point_dim);
+                              core::BufferView<const double> points, std::size_t point_dim);
 
 private:
     explicit CycleVisualizer(const RepresentativeConfig &config);

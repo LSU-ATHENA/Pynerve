@@ -1,5 +1,5 @@
-#include "nerve/simd/simd_quantize.hpp"
 #include "nerve/compression/simd_compression.hpp"
+#include "nerve/simd/simd_quantize.hpp"
 
 #include <algorithm>
 #include <cmath>

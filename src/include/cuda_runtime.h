@@ -17,6 +17,19 @@ typedef std::size_t Size;
 #define NERVE_CUDA_RUNTIME_AVAILABLE 1
 #else
 #define NERVE_CUDA_RUNTIME_AVAILABLE 0
+#define NERVE_CUDA_STUBS_NEEDED
+#endif
+#elif defined(__CUDACC__)
+// Compiling with nvcc — expect real CUDA runtime
+#include <cuda_runtime.h>
+#define NERVE_CUDA_RUNTIME_AVAILABLE 1
+#else
+// No __has_include_next (MSVC, old GCC) and not nvcc — always use stubs
+#define NERVE_CUDA_RUNTIME_AVAILABLE 0
+#define NERVE_CUDA_STUBS_NEEDED
+#endif
+
+#ifdef NERVE_CUDA_STUBS_NEEDED
 
 #include <cstddef>
 #include <cstdint>
@@ -447,8 +460,4 @@ inline cudaError_t cudaEventElapsedTime(float *ms, cudaEvent_t /*start*/, cudaEv
     return cudaSuccess;
 }
 
-#endif
-#else
-#include <cuda_runtime.h>
-#define NERVE_CUDA_RUNTIME_AVAILABLE 1
-#endif
+#endif // NERVE_CUDA_STUBS_NEEDED

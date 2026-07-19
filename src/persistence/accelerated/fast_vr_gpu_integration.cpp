@@ -6,7 +6,7 @@ namespace nerve::persistence::accelerated
 {
 
 errors::ErrorResult<std::vector<Pair>>
-computeVrWithHybridDispatch(core::BufferView<const double>points, size_t point_dim,
+computeVrWithHybridDispatch(core::BufferView<const double> points, size_t point_dim,
                             const HeterogeneousFastVR::Config &config,
                             const core::DeterminismContract &contract)
 {

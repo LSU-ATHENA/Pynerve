@@ -59,13 +59,19 @@ __host__ __device__ inline std::size_t row_major_idx(int row, int col, int leadi
 template <DistanceScalar T>
 __device__ __forceinline__ bool accumulate_fma_sq(T diff, T &sum)
 {
-    if (!isfinite(diff)) { return false; }
+    if (!isfinite(diff))
+    {
+        return false;
+    }
     T next;
     if constexpr (std::is_same_v<T, float>)
         next = ptx::fma_f32(diff, diff, sum);
     else
         next = ptx::fma_f64(diff, diff, sum);
-    if (!isfinite(next)) { return false; }
+    if (!isfinite(next))
+    {
+        return false;
+    }
     sum = next;
     return true;
 }
@@ -111,8 +117,8 @@ __global__ void __launch_bounds__(256)
 template <DistanceScalar T>
 __global__ void __launch_bounds__(256)
     pairwise_distance_fma_kernel(const T *__restrict__ points, int points_ld,
-                                  T *__restrict__ output, int output_ld, int n_points,
-                                  int point_dim, T max_radius, bool clip_radius)
+                                 T *__restrict__ output, int output_ld, int n_points, int point_dim,
+                                 T max_radius, bool clip_radius)
 {
     const int row = blockIdx.y * blockDim.y + threadIdx.y;
     const int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -154,8 +160,8 @@ __global__ void __launch_bounds__(256)
     }
     for (; d < point_dim && valid_distance; ++d)
     {
-        const T diff = points[row_major_idx(row, d, points_ld)] -
-                       points[row_major_idx(col, d, points_ld)];
+        const T diff =
+            points[row_major_idx(row, d, points_ld)] - points[row_major_idx(col, d, points_ld)];
         if constexpr (std::is_same_v<T, float>)
             sum = ptx::fma_f32(diff, diff, sum);
         else
@@ -175,7 +181,8 @@ __global__ void __launch_bounds__(256)
             distance = ptx::hwmin_f32(distance, max_radius);
         else
             distance = ptx::hwmin_f64(distance, max_radius);
-        if (distance >= max_radius) distance = device_inf<T>();
+        if (distance >= max_radius)
+            distance = device_inf<T>();
     }
 
     output[row_major_idx(row, col, output_ld)] = distance;
@@ -186,8 +193,8 @@ __global__ void __launch_bounds__(256)
 template <DistanceScalar T>
 __global__ void __launch_bounds__(256)
     pairwise_distance_tiled_fma_kernel(const T *__restrict__ points, int points_ld,
-                                        T *__restrict__ output, int output_ld, int n_points,
-                                        int point_dim, T max_radius, bool clip_radius)
+                                       T *__restrict__ output, int output_ld, int n_points,
+                                       int point_dim, T max_radius, bool clip_radius)
 {
     __shared__ T tile_a[kFmaTileSize][kFmaTileSize + 1];
     __shared__ T tile_b[kFmaTileSize][kFmaTileSize + 1];
@@ -220,13 +227,19 @@ __global__ void __launch_bounds__(256)
                 sum = ptx::fma_f32(diff, diff, sum);
             else
                 sum = ptx::fma_f64(diff, diff, sum);
-            if (!isfinite(sum)) { valid_distance = false; break; }
+            if (!isfinite(sum))
+            {
+                valid_distance = false;
+                break;
+            }
         }
-        if (!valid_distance) break;
+        if (!valid_distance)
+            break;
         __syncthreads();
     }
 
-    if (row >= n_points || col >= n_points || row > col) return;
+    if (row >= n_points || col >= n_points || row > col)
+        return;
 
     T distance = valid_distance ? device_sqrt(sum) : device_inf<T>();
     if (clip_radius && distance > max_radius)
@@ -238,8 +251,8 @@ __global__ void __launch_bounds__(256)
 
 template <DistanceScalar T>
 cudaError_t launch_pairwise_distance_radius_impl(const T *points, int points_ld, T *output,
-                                                  int output_ld, int n_points, int point_dim,
-                                                  T max_radius, cudaStream_t stream)
+                                                 int output_ld, int n_points, int point_dim,
+                                                 T max_radius, cudaStream_t stream)
 {
     if (!std::isfinite(max_radius))
     {
@@ -290,8 +303,8 @@ cudaError_t launch_pairwise_distance_radius_impl(const T *points, int points_ld,
 } // namespace
 
 cudaError_t launch_pairwise_distance_radius_f32(const float *d_points, int points_ld, float *d_out,
-                                                 int out_ld, int n_points, int dim, float max_radius,
-                                                 void *stream_handle)
+                                                int out_ld, int n_points, int dim, float max_radius,
+                                                void *stream_handle)
 {
     const cudaStream_t stream = reinterpret_cast<cudaStream_t>(stream_handle);
     return launch_pairwise_distance_radius_impl(d_points, points_ld, d_out, out_ld, n_points, dim,
@@ -299,8 +312,8 @@ cudaError_t launch_pairwise_distance_radius_f32(const float *d_points, int point
 }
 
 cudaError_t launch_pairwise_distance_radius_f64(const double *d_points, int points_ld,
-                                                 double *d_out, int out_ld, int n_points, int dim,
-                                                 double max_radius, void *stream_handle)
+                                                double *d_out, int out_ld, int n_points, int dim,
+                                                double max_radius, void *stream_handle)
 {
     const cudaStream_t stream = reinterpret_cast<cudaStream_t>(stream_handle);
     return launch_pairwise_distance_radius_impl(d_points, points_ld, d_out, out_ld, n_points, dim,

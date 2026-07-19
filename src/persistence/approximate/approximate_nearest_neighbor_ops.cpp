@@ -95,7 +95,7 @@ ANNResult fastEdgeDetectionANN(const std::vector<double> &points, size_t point_d
     std::vector<double> edge_weights;
 
 #pragma omp parallel for schedule(dynamic)
-    for (size_t i = 0; i < num_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(num_points); ++i)
     {
         auto neighbors =
             index.searchRadius(std::span<const double>(&points[i * point_dim], point_dim),

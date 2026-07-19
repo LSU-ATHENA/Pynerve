@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 #include "nerve/common/accelerated_types.hpp"
 #include "nerve/core/policy/ownership_policy.hpp"
 #include "nerve/core_types.hpp"
@@ -23,7 +25,6 @@ using nerve::persistence::VRAlgorithmSelection;
 using namespace nerve::test;
 
 // Helpers
-
 
 size_t count_pairs_by_dim(const std::vector<Pair> &pairs, Dimension dim)
 {

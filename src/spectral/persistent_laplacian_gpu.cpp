@@ -132,15 +132,17 @@ PersistentLaplacianSolverGPU::computeSpectrumGpu(const Eigen::SparseMatrix<doubl
     cudaMalloc(&d_v0, n * sizeof(double));
     cudaMemcpy(d_v0, v0.data(), n * sizeof(double), cudaMemcpyHostToDevice);
 
-    const int num_requested =
-        config_.num_eigenpairs > 0 ? static_cast<int>(config_.num_eigenpairs) + 10 : kDefaultKrylovDim;
+    const int num_requested = config_.num_eigenpairs > 0
+                                  ? static_cast<int>(config_.num_eigenpairs) + 10
+                                  : kDefaultKrylovDim;
     std::vector<double> alpha, beta;
     lanczosIteration(csr, d_v0, n, num_requested, alpha, beta);
 
     cudaFree(d_v0);
     csr.release();
 
-    SpectralDecomposition result = tridiagToEigenpairs(alpha, beta, n, static_cast<int>(config_.num_eigenpairs));
+    SpectralDecomposition result =
+        tridiagToEigenpairs(alpha, beta, n, static_cast<int>(config_.num_eigenpairs));
     return errors::ErrorResult<SpectralDecomposition>::success(std::move(result));
 #else
     return errors::ErrorResult<SpectralDecomposition>::error(errors::ErrorCode::E51_LAPLACIAN_ABORT,
@@ -199,15 +201,17 @@ PersistentLaplacianSolverGPU::computeSpectrumGpuWithWarmStart(
     cudaMalloc(&d_v0, n * sizeof(double));
     cudaMemcpy(d_v0, v0.data(), n * sizeof(double), cudaMemcpyHostToDevice);
 
-    const int num_requested =
-        config_.num_eigenpairs > 0 ? static_cast<int>(config_.num_eigenpairs) + 10 : kDefaultKrylovDim;
+    const int num_requested = config_.num_eigenpairs > 0
+                                  ? static_cast<int>(config_.num_eigenpairs) + 10
+                                  : kDefaultKrylovDim;
     std::vector<double> alpha, beta;
     lanczosIteration(csr, d_v0, n, num_requested, alpha, beta);
 
     cudaFree(d_v0);
     csr.release();
 
-    SpectralDecomposition result = tridiagToEigenpairs(alpha, beta, n, static_cast<int>(config_.num_eigenpairs));
+    SpectralDecomposition result =
+        tridiagToEigenpairs(alpha, beta, n, static_cast<int>(config_.num_eigenpairs));
     return errors::ErrorResult<SpectralDecomposition>::success(std::move(result));
 #else
     (void)previous_result;
@@ -266,8 +270,10 @@ PersistentLaplacianSolverGPU::gpuArnoldi(const Eigen::SparseMatrix<double> &lapl
                 v0[i] = 1.0 / std::sqrt(static_cast<double>(n));
     }
 
-    const int krylov_dim = std::min(
-        config_.num_eigenpairs > 0 ? static_cast<int>(config_.num_eigenpairs) + 10 : kDefaultKrylovDim, n - 1);
+    const int krylov_dim =
+        std::min(config_.num_eigenpairs > 0 ? static_cast<int>(config_.num_eigenpairs) + 10
+                                            : kDefaultKrylovDim,
+                 n - 1);
 
     std::vector<double> H_data(krylov_dim * (krylov_dim + 1), 0.0);
 
@@ -319,8 +325,9 @@ PersistentLaplacianSolverGPU::gpuArnoldi(const Eigen::SparseMatrix<double> &lapl
         return errors::ErrorResult<SpectralDecomposition>::error(
             errors::ErrorCode::E51_LAPLACIAN_ABORT, "Arnoldi eigensolver failed");
 
-    const int num_out =
-        config_.num_eigenpairs > 0 ? std::min(static_cast<int>(config_.num_eigenpairs), krylov_dim) : krylov_dim;
+    const int num_out = config_.num_eigenpairs > 0
+                            ? std::min(static_cast<int>(config_.num_eigenpairs), krylov_dim)
+                            : krylov_dim;
     result.eigenvalues.resize(num_out);
     for (int i = 0; i < num_out; ++i)
         result.eigenvalues[i] = std::real(solver.eigenvalues()[i]);
@@ -334,8 +341,8 @@ PersistentLaplacianSolverGPU::gpuArnoldi(const Eigen::SparseMatrix<double> &lapl
     cudaFree(d_v_next);
     cudaFree(d_w);
     csr.release();
-    return errors::ErrorResult<SpectralDecomposition>::error(
-        errors::ErrorCode::E51_LAPLACIAN_ABORT, "Arnoldi requires nvcc compilation");
+    return errors::ErrorResult<SpectralDecomposition>::error(errors::ErrorCode::E51_LAPLACIAN_ABORT,
+                                                             "Arnoldi requires nvcc compilation");
 #endif
 #else
     (void)warm_start;
@@ -395,15 +402,17 @@ PersistentLaplacianSolverGPU::gpuLanczos(const Eigen::SparseMatrix<double> &lapl
     cudaMalloc(&d_v0, n * sizeof(double));
     cudaMemcpy(d_v0, v0.data(), n * sizeof(double), cudaMemcpyHostToDevice);
 
-    const int num_requested =
-        config_.num_eigenpairs > 0 ? static_cast<int>(config_.num_eigenpairs) + 10 : kDefaultKrylovDim;
+    const int num_requested = config_.num_eigenpairs > 0
+                                  ? static_cast<int>(config_.num_eigenpairs) + 10
+                                  : kDefaultKrylovDim;
     std::vector<double> alpha, beta;
     lanczosIteration(csr, d_v0, n, num_requested, alpha, beta);
 
     cudaFree(d_v0);
     csr.release();
 
-    SpectralDecomposition result = tridiagToEigenpairs(alpha, beta, n, static_cast<int>(config_.num_eigenpairs));
+    SpectralDecomposition result =
+        tridiagToEigenpairs(alpha, beta, n, static_cast<int>(config_.num_eigenpairs));
     return errors::ErrorResult<SpectralDecomposition>::success(std::move(result));
 #else
     (void)warm_start;

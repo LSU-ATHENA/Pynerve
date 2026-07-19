@@ -4,7 +4,8 @@ int main()
 {
     if (!has_gpu())
     {
-        std::cerr << "No CUDA device available -- skipping GPU distance matrix kernel coverage tests\n";
+        std::cerr
+            << "No CUDA device available -- skipping GPU distance matrix kernel coverage tests\n";
         return 0;
     }
     // Distance matrix: verify correctness on known triangle
@@ -15,8 +16,8 @@ int main()
         config.enable_streaming = false;
 
         std::vector<double> distances;
-        assert(run_distance_matrix_config(kTrianglePoints, kTriangleN, kTriangleDim, 10.0,
-                                          config, distances));
+        assert(run_distance_matrix_config(kTrianglePoints, kTriangleN, kTriangleDim, 10.0, config,
+                                          distances));
         assert(distances.size() == 9);
         assert(approx_equal(distances[0 * kTriangleN + 0], 0.0)); // self
         assert(approx_equal(distances[0 * kTriangleN + 1], 3.0)); // (0,0)-(3,0)
@@ -40,8 +41,8 @@ int main()
 
         std::vector<double> distances;
         // max_radius=4.0 should reject d(1,2)=5.0 but accept d(0,1)=3.0 and d(0,2)=4.0
-        assert(run_distance_matrix_config(kTrianglePoints, kTriangleN, kTriangleDim, 4.0,
-                                          config, distances));
+        assert(run_distance_matrix_config(kTrianglePoints, kTriangleN, kTriangleDim, 4.0, config,
+                                          distances));
         assert(approx_equal(distances[0 * kTriangleN + 1], 3.0));
         assert(approx_equal(distances[0 * kTriangleN + 2], 4.0));
         // d(1,2) should be -1.0 (rejected by radius)
@@ -128,10 +129,9 @@ int main()
 
         // First run: full matrix as streaming (offset=0, size=n*n)
         Size total = static_cast<Size>(n) * static_cast<Size>(n);
-        auto result = cuda_host::launchDistanceMatrixKernel(d_points, d_distances,
-                                                            static_cast<Size>(n),
-                                                            static_cast<Size>(dim),
-                                                            100.0, config, 0, total);
+        auto result =
+            cuda_host::launchDistanceMatrixKernel(d_points, d_distances, static_cast<Size>(n),
+                                                  static_cast<Size>(dim), 100.0, config, 0, total);
         assert(!result.isError());
 
         std::vector<double> ref(dist_bytes / sizeof(double));
@@ -140,10 +140,9 @@ int main()
         // 9 more runs with streaming: verify identical results
         for (int run = 1; run < 10; ++run)
         {
-            result = cuda_host::launchDistanceMatrixKernel(d_points, d_distances,
-                                                           static_cast<Size>(n),
-                                                           static_cast<Size>(dim),
-                                                           100.0, config, 0, total);
+            result = cuda_host::launchDistanceMatrixKernel(
+                d_points, d_distances, static_cast<Size>(n), static_cast<Size>(dim), 100.0, config,
+                0, total);
             assert(!result.isError());
 
             std::vector<double> cur(dist_bytes / sizeof(double));
@@ -206,8 +205,8 @@ int main()
         config.enable_streaming = false;
 
         std::vector<double> d;
-        assert(run_distance_matrix_config(kTrianglePoints, kTriangleN, kTriangleDim, 10.0,
-                                          config, d));
+        assert(
+            run_distance_matrix_config(kTrianglePoints, kTriangleN, kTriangleDim, 10.0, config, d));
 
         // Expected distance matrix (3x3, row-major):
         //   [ 0,  3,  4 ]
@@ -485,7 +484,8 @@ int main()
             for (int j = 0; j < n; ++j)
                 assert(approx_equal(d[i * n + j], 0.0, 1e-12));
 
-        std::cout << "PASSED: distance matrix all identical points shared path (dim=16, all zero)\n";
+        std::cout
+            << "PASSED: distance matrix all identical points shared path (dim=16, all zero)\n";
     }
 
     // Distance matrix: collinear points with duplicate coordinates
@@ -695,7 +695,8 @@ int main()
         assert(matrix->isAvailable());
 
         std::vector<double> h_distances(kTriangleN * kTriangleN);
-        nerve::core::BufferView<const double> points_view(kTrianglePoints, kTriangleN * kTriangleDim);
+        nerve::core::BufferView<const double> points_view(kTrianglePoints,
+                                                          kTriangleN * kTriangleDim);
         nerve::core::BufferView<double> dist_view(h_distances.data(), h_distances.size());
 
         auto result = matrix->compute(points_view, dist_view, kTriangleDim, 10.0);
@@ -713,7 +714,8 @@ int main()
         auto matrix = std::move(matrix_result.value());
 
         std::vector<double> h_distances(kTriangleN * kTriangleN);
-        nerve::core::BufferView<const double> points_view(kTrianglePoints, kTriangleN * kTriangleDim);
+        nerve::core::BufferView<const double> points_view(kTrianglePoints,
+                                                          kTriangleN * kTriangleDim);
         nerve::core::BufferView<double> dist_view(h_distances.data(), h_distances.size());
 
         auto result = matrix->computeStreaming(points_view, dist_view, kTriangleDim, 10.0, 2);
@@ -733,10 +735,12 @@ int main()
         constexpr int n = 3;
         constexpr int dim = 2;
         std::vector<double> bad_points(n * dim);
-        bad_points[0] = 0.0; bad_points[1] = 0.0;                        // (0, 0)
-        bad_points[2] = std::numeric_limits<double>::quiet_NaN();         // (NaN, 2)
+        bad_points[0] = 0.0;
+        bad_points[1] = 0.0;                                      // (0, 0)
+        bad_points[2] = std::numeric_limits<double>::quiet_NaN(); // (NaN, 2)
         bad_points[3] = 2.0;
-        bad_points[4] = 3.0; bad_points[5] = 4.0;                        // (3, 4)
+        bad_points[4] = 3.0;
+        bad_points[5] = 4.0; // (3, 4)
 
         std::vector<double> h_distances(static_cast<size_t>(n) * static_cast<size_t>(n));
         nerve::core::BufferView<const double> points_view(bad_points.data(), bad_points.size());
@@ -758,10 +762,12 @@ int main()
         constexpr int n = 3;
         constexpr int dim = 2;
         std::vector<double> bad_points(n * dim);
-        bad_points[0] = 0.0; bad_points[1] = 0.0;                        // (0, 0)
-        bad_points[2] = std::numeric_limits<double>::infinity();          // (inf, 2)
+        bad_points[0] = 0.0;
+        bad_points[1] = 0.0;                                     // (0, 0)
+        bad_points[2] = std::numeric_limits<double>::infinity(); // (inf, 2)
         bad_points[3] = 2.0;
-        bad_points[4] = 3.0; bad_points[5] = 4.0;                        // (3, 4)
+        bad_points[4] = 3.0;
+        bad_points[5] = 4.0; // (3, 4)
 
         std::vector<double> h_distances(static_cast<size_t>(n) * static_cast<size_t>(n));
         nerve::core::BufferView<const double> points_view(bad_points.data(), bad_points.size());
@@ -783,10 +789,12 @@ int main()
         constexpr int n = 3;
         constexpr int dim = 2;
         std::vector<double> bad_points(n * dim);
-        bad_points[0] = 0.0; bad_points[1] = 0.0;                        // (0, 0)
-        bad_points[2] = -std::numeric_limits<double>::infinity();         // (-inf, 2)
+        bad_points[0] = 0.0;
+        bad_points[1] = 0.0;                                      // (0, 0)
+        bad_points[2] = -std::numeric_limits<double>::infinity(); // (-inf, 2)
         bad_points[3] = 2.0;
-        bad_points[4] = 3.0; bad_points[5] = 4.0;                        // (3, 4)
+        bad_points[4] = 3.0;
+        bad_points[5] = 4.0; // (3, 4)
 
         std::vector<double> h_distances(static_cast<size_t>(n) * static_cast<size_t>(n));
         nerve::core::BufferView<const double> points_view(bad_points.data(), bad_points.size());
@@ -808,10 +816,12 @@ int main()
         constexpr int n = 3;
         constexpr int dim = 2;
         std::vector<double> bad_points(n * dim);
-        bad_points[0] = 0.0; bad_points[1] = 0.0;
+        bad_points[0] = 0.0;
+        bad_points[1] = 0.0;
         bad_points[2] = std::numeric_limits<double>::quiet_NaN();
         bad_points[3] = 2.0;
-        bad_points[4] = 3.0; bad_points[5] = 4.0;
+        bad_points[4] = 3.0;
+        bad_points[5] = 4.0;
 
         std::vector<double> h_distances(static_cast<size_t>(n) * static_cast<size_t>(n));
         nerve::core::BufferView<const double> points_view(bad_points.data(), bad_points.size());

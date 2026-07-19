@@ -23,7 +23,6 @@ using namespace nerve::test;
 
 constexpr double kStrictTol = 1e-10;
 
-
 bool pairs_match(const Pair &a, const Pair &b, double tol = kStrictTol)
 {
     if (a.dimension != b.dimension)
@@ -41,14 +40,12 @@ template <typename Container>
 bool assert_pairs_equal(const Container &expected, const Container &actual,
                         const std::string &label, double tol = kStrictTol)
 {
-    const auto c1 = canonical(
-        std::vector<Pair>(expected.begin(), expected.end()));
-    const auto c2 = canonical(
-        std::vector<Pair>(actual.begin(), actual.end()));
+    const auto c1 = canonical(std::vector<Pair>(expected.begin(), expected.end()));
+    const auto c2 = canonical(std::vector<Pair>(actual.begin(), actual.end()));
     if (c1.size() != c2.size())
     {
-        std::cerr << "FAIL [" << label << "]: pair count mismatch -- "
-                  << c1.size() << " vs " << c2.size() << "\n";
+        std::cerr << "FAIL [" << label << "]: pair count mismatch -- " << c1.size() << " vs "
+                  << c2.size() << "\n";
         for (const auto &p : c1)
             std::cerr << "  expected: dim=" << p.dimension << " birth=" << p.birth
                       << " death=" << p.death << "\n";
@@ -61,10 +58,9 @@ bool assert_pairs_equal(const Container &expected, const Container &actual,
     {
         if (!pairs_match(c1[i], c2[i], tol))
         {
-        std::cerr << "FAIL [" << label << "]: pair " << i
-                  << " differs -- expected dim=" << c1[i].dimension
-                      << " birth=" << c1[i].birth << " death=" << c1[i].death
-                      << ", got dim=" << c2[i].dimension
+            std::cerr << "FAIL [" << label << "]: pair " << i
+                      << " differs -- expected dim=" << c1[i].dimension << " birth=" << c1[i].birth
+                      << " death=" << c1[i].death << ", got dim=" << c2[i].dimension
                       << " birth=" << c2[i].birth << " death=" << c2[i].death << "\n";
             return false;
         }
@@ -93,16 +89,14 @@ Size count_finite(const std::vector<Pair> &pairs, Dimension dim)
 }
 
 /// Check that no pairs have negative or extremely tiny persistence.
-bool all_persistence_nonnegative(const std::vector<Pair> &pairs,
-                                 const std::string &label)
+bool all_persistence_nonnegative(const std::vector<Pair> &pairs, const std::string &label)
 {
     for (const auto &p : pairs)
     {
         if (!p.isInfinite() && p.death < p.birth - kStrictTol)
         {
-            std::cerr << "FAIL [" << label << "]: negative persistence -- dim="
-                      << p.dimension << " birth=" << p.birth
-                      << " death=" << p.death << "\n";
+            std::cerr << "FAIL [" << label << "]: negative persistence -- dim=" << p.dimension
+                      << " birth=" << p.birth << " death=" << p.death << "\n";
             return false;
         }
     }
@@ -114,16 +108,17 @@ bool all_persistence_nonnegative(const std::vector<Pair> &pairs,
 /// VR topology:
 ///   r < 1          : 4 components                     -> betti-0 = 4
 ///   1 <= r < sqrt(2)     : 1 component (star graph)         -> betti-0 = 1
-///   r >= sqrt(2)         : contractible 3-ball              -> betti-0 = 1, betti-1 = 0, betti-2 = 0
+///   r >= sqrt(2)         : contractible 3-ball              -> betti-0 = 1, betti-1 = 0, betti-2 =
+///   0
 /// Faces and the 3-simplex all appear at r = sqrt(2), so every
 /// H1/H2 pair has zero persistence and should be filtered.
 bool check_tetrahedron_dim2_cohomology()
 {
     const std::vector<double> tet = {
-        0.0, 0.0, 0.0,  // v0
-        1.0, 0.0, 0.0,  // v1
-        0.0, 1.0, 0.0,  // v2
-        0.0, 0.0, 1.0   // v3
+        0.0, 0.0, 0.0, // v0
+        1.0, 0.0, 0.0, // v1
+        0.0, 1.0, 0.0, // v2
+        0.0, 0.0, 1.0  // v3
     };
 
     {
@@ -132,16 +127,13 @@ bool check_tetrahedron_dim2_cohomology()
         cfg.max_dim = 2;
         cfg.algorithm = VRAlgorithmSelection::EXACT_STANDARD;
 
-        const auto homology = nerve::persistence::computeVrPersistenceFast(
-            view_of(tet), 2, cfg);
+        const auto homology = nerve::persistence::computeVrPersistenceFast(view_of(tet), 2, cfg);
         const auto coho = nerve::persistence::computeCohomologyVR(tet, 4, 2, 2.0);
 
-        if (!assert_pairs_equal(homology, coho.pairs,
-                                "tet-maxdim2-homology-vs-cohomology"))
+        if (!assert_pairs_equal(homology, coho.pairs, "tet-maxdim2-homology-vs-cohomology"))
             return false;
 
-        if (!all_persistence_nonnegative(homology,
-                                         "tet-maxdim2-persistence-sign"))
+        if (!all_persistence_nonnegative(homology, "tet-maxdim2-persistence-sign"))
             return false;
 
         // H0: exactly 1 essential (connected component that never dies)
@@ -167,16 +159,13 @@ bool check_tetrahedron_dim2_cohomology()
         cfg.max_dim = 3;
         cfg.algorithm = VRAlgorithmSelection::EXACT_STANDARD;
 
-        const auto homology = nerve::persistence::computeVrPersistenceFast(
-            view_of(tet), 3, cfg);
+        const auto homology = nerve::persistence::computeVrPersistenceFast(view_of(tet), 3, cfg);
         const auto coho = nerve::persistence::computeCohomologyVR(tet, 4, 3, 2.0);
 
-        if (!assert_pairs_equal(homology, coho.pairs,
-                                "tet-maxdim3-homology-vs-cohomology"))
+        if (!assert_pairs_equal(homology, coho.pairs, "tet-maxdim3-homology-vs-cohomology"))
             return false;
 
-        if (!all_persistence_nonnegative(homology,
-                                         "tet-maxdim3-persistence-sign"))
+        if (!all_persistence_nonnegative(homology, "tet-maxdim3-persistence-sign"))
             return false;
 
         if (count_essential(homology, 0) != 1)
@@ -190,8 +179,8 @@ bool check_tetrahedron_dim2_cohomology()
         {
             if (count_essential(homology, d) != 0)
             {
-                std::cerr << "FAIL tet-maxdim3: expected 0 H" << d
-                          << " essential, got " << count_essential(homology, d) << "\n";
+                std::cerr << "FAIL tet-maxdim3: expected 0 H" << d << " essential, got "
+                          << count_essential(homology, d) << "\n";
                 return false;
             }
         }
@@ -205,7 +194,8 @@ bool check_tetrahedron_dim2_cohomology()
 /// VR topology:
 ///   r < 1          : 4 components                     -> betti-0 = 4
 ///   1 <= r < sqrt(2)     : 1 component, 1 H1 cycle         -> betti-0 = 1, betti-1 = 1
-///   r >= sqrt(2)         : filled square (diagonals)        -> betti-0 = 1, betti-1 = 0, betti-2 = 0
+///   r >= sqrt(2)         : filled square (diagonals)        -> betti-0 = 1, betti-1 = 0, betti-2 =
+///   0
 /// At max_radius = 2.0, the H1 cycle dies at r = sqrt(2) -> finite pair only.
 bool check_square_dim2_cohomology()
 {
@@ -216,12 +206,10 @@ bool check_square_dim2_cohomology()
     cfg.max_dim = 2;
     cfg.algorithm = VRAlgorithmSelection::EXACT_STANDARD;
 
-    const auto homology = nerve::persistence::computeVrPersistenceFast(
-        view_of(sq), 2, cfg);
+    const auto homology = nerve::persistence::computeVrPersistenceFast(view_of(sq), 2, cfg);
     const auto coho = nerve::persistence::computeCohomologyVR(sq, 4, 2, 2.0);
 
-    if (!assert_pairs_equal(homology, coho.pairs,
-                            "square-dim2-homology-vs-cohomology"))
+    if (!assert_pairs_equal(homology, coho.pairs, "square-dim2-homology-vs-cohomology"))
         return false;
 
     if (!all_persistence_nonnegative(homology, "square-dim2-persistence-sign"))
@@ -260,11 +248,11 @@ bool check_square_dim2_cohomology()
 bool check_octahedron_scaffold_dim2()
 {
     const std::vector<double> pts = {
-        0.0, 0.0, 0.0,   // v0 - origin
-        1.0, 0.0, 0.0,   // v1
-        -1.0, 0.0, 0.0,  // v2
-        0.0, 1.0, 0.0,   // v3
-        0.0, 0.0, 1.0    // v4
+        0.0,  0.0, 0.0, // v0 - origin
+        1.0,  0.0, 0.0, // v1
+        -1.0, 0.0, 0.0, // v2
+        0.0,  1.0, 0.0, // v3
+        0.0,  0.0, 1.0  // v4
     };
 
     VRConfig cfg;
@@ -272,8 +260,7 @@ bool check_octahedron_scaffold_dim2()
     cfg.max_dim = 2;
     cfg.algorithm = VRAlgorithmSelection::EXACT_STANDARD;
 
-    const auto homology = nerve::persistence::computeVrPersistenceFast(
-        view_of(pts), 3, cfg);
+    const auto homology = nerve::persistence::computeVrPersistenceFast(view_of(pts), 3, cfg);
     const auto coho = nerve::persistence::computeCohomologyVR(pts, 5, 3, 3.0);
 
     // Cohomology may produce dim-3 pairs; filter to dim <= 2 for comparison
@@ -282,12 +269,10 @@ bool check_octahedron_scaffold_dim2()
         if (p.dimension <= 2)
             coho_dim2.push_back(p);
 
-    if (!assert_pairs_equal(homology, coho_dim2,
-                            "octahedron-dim2-homology-vs-cohomology"))
+    if (!assert_pairs_equal(homology, coho_dim2, "octahedron-dim2-homology-vs-cohomology"))
         return false;
 
-    if (!all_persistence_nonnegative(homology,
-                                     "octahedron-dim2-persistence-sign"))
+    if (!all_persistence_nonnegative(homology, "octahedron-dim2-persistence-sign"))
         return false;
 
     // H0: exactly 1 essential (all points eventually connect)

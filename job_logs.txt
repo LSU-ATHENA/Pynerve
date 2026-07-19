@@ -1,0 +1,576 @@
+﻿2026-07-15T02:21:08.9893482Z Current runner version: '2.335.1'
+2026-07-15T02:21:08.9922231Z ##[group]Runner Image Provisioner
+2026-07-15T02:21:08.9923170Z Hosted Compute Agent
+2026-07-15T02:21:08.9923824Z Version: 20260624.560
+2026-07-15T02:21:08.9924467Z Commit: 925d229a51159bc391ae97e54a2dd1fe20af789d
+2026-07-15T02:21:08.9925261Z Build Date: 2026-06-24T18:26:47Z
+2026-07-15T02:21:08.9926162Z Worker ID: {68629796-e0aa-44b2-a1de-fb0b97cdd560}
+2026-07-15T02:21:08.9926872Z Azure Region: northcentralus
+2026-07-15T02:21:08.9927871Z ##[endgroup]
+2026-07-15T02:21:08.9929328Z ##[group]Operating System
+2026-07-15T02:21:08.9930032Z Ubuntu
+2026-07-15T02:21:08.9930623Z 24.04.4
+2026-07-15T02:21:08.9931148Z LTS
+2026-07-15T02:21:08.9931734Z ##[endgroup]
+2026-07-15T02:21:08.9932295Z ##[group]Runner Image
+2026-07-15T02:21:08.9932898Z Image: ubuntu-24.04
+2026-07-15T02:21:08.9933586Z Version: 20260705.232.1
+2026-07-15T02:21:08.9934862Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260705.232/images/ubuntu/Ubuntu2404-Readme.md
+2026-07-15T02:21:08.9936656Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260705.232
+2026-07-15T02:21:08.9937619Z ##[endgroup]
+2026-07-15T02:21:08.9938963Z ##[group]GITHUB_TOKEN Permissions
+2026-07-15T02:21:08.9940845Z Contents: read
+2026-07-15T02:21:08.9941579Z Metadata: read
+2026-07-15T02:21:08.9942175Z Packages: read
+2026-07-15T02:21:08.9943172Z ##[endgroup]
+2026-07-15T02:21:08.9945349Z Secret source: Actions
+2026-07-15T02:21:08.9946752Z Prepare workflow directory
+2026-07-15T02:21:09.0342098Z Prepare all required actions
+2026-07-15T02:21:09.0379779Z Getting action download info
+2026-07-15T02:21:09.2640277Z Download action repository 'actions/checkout@v6' (SHA:df4cb1c069e1874edd31b4311f1884172cec0e10)
+2026-07-15T02:21:09.3376852Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-07-15T02:21:09.4167501Z Download action repository 'hendrikmuhs/ccache-action@v1.2' (SHA:5ebbd400eff9e74630f759d94ddd7b6c26299639)
+2026-07-15T02:21:09.8561593Z Complete job name: asan (scalar)
+2026-07-15T02:21:09.9233145Z ##[group]Run actions/checkout@v6
+2026-07-15T02:21:09.9233974Z with:
+2026-07-15T02:21:09.9234419Z   repository: LSU-ATHENA/Pynerve
+2026-07-15T02:21:09.9238557Z   token: ***
+2026-07-15T02:21:09.9238995Z   ssh-strict: true
+2026-07-15T02:21:09.9239428Z   ssh-user: git
+2026-07-15T02:21:09.9239872Z   persist-credentials: true
+2026-07-15T02:21:09.9240354Z   clean: true
+2026-07-15T02:21:09.9240791Z   sparse-checkout-cone-mode: true
+2026-07-15T02:21:09.9241298Z   fetch-depth: 1
+2026-07-15T02:21:09.9241716Z   fetch-tags: false
+2026-07-15T02:21:09.9242146Z   show-progress: true
+2026-07-15T02:21:09.9242581Z   lfs: false
+2026-07-15T02:21:09.9242977Z   submodules: false
+2026-07-15T02:21:09.9243427Z   set-safe-directory: true
+2026-07-15T02:21:09.9244116Z env:
+2026-07-15T02:21:09.9244518Z   CMAKE_GENERATOR: Ninja
+2026-07-15T02:21:09.9244990Z   NERVE_TEST_RETRIES: 1
+2026-07-15T02:21:09.9245443Z ##[endgroup]
+2026-07-15T02:21:10.0339082Z Syncing repository: LSU-ATHENA/Pynerve
+2026-07-15T02:21:10.0341360Z ##[group]Getting Git version info
+2026-07-15T02:21:10.0342068Z Working directory is '/home/runner/work/Pynerve/Pynerve'
+2026-07-15T02:21:10.0343390Z [command]/usr/bin/git version
+2026-07-15T02:21:10.0406706Z git version 2.54.0
+2026-07-15T02:21:10.0430825Z ##[endgroup]
+2026-07-15T02:21:10.0447342Z Temporarily overriding HOME='/home/runner/work/_temp/11721535-dd49-4391-a8db-2e395e39247b' before making global git config changes
+2026-07-15T02:21:10.0449953Z Adding repository directory to the temporary git global config as a safe directory
+2026-07-15T02:21:10.0454807Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Pynerve/Pynerve
+2026-07-15T02:21:10.0569409Z Deleting the contents of '/home/runner/work/Pynerve/Pynerve'
+2026-07-15T02:21:10.0571418Z ##[group]Determining repository object format
+2026-07-15T02:21:10.0572788Z ##[endgroup]
+2026-07-15T02:21:10.0573967Z ##[group]Initializing the repository
+2026-07-15T02:21:10.0575083Z [command]/usr/bin/git init /home/runner/work/Pynerve/Pynerve
+2026-07-15T02:21:10.0687408Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-07-15T02:21:10.0688991Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-07-15T02:21:10.0690449Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-07-15T02:21:10.0691556Z hint: call:
+2026-07-15T02:21:10.0692185Z hint:
+2026-07-15T02:21:10.0693018Z hint: 	git config --global init.defaultBranch <name>
+2026-07-15T02:21:10.0694147Z hint:
+2026-07-15T02:21:10.0695050Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-07-15T02:21:10.0696650Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-07-15T02:21:10.0697792Z hint:
+2026-07-15T02:21:10.0698414Z hint: 	git branch -m <name>
+2026-07-15T02:21:10.0699145Z hint:
+2026-07-15T02:21:10.0700093Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-07-15T02:21:10.0701788Z Initialized empty Git repository in /home/runner/work/Pynerve/Pynerve/.git/
+2026-07-15T02:21:10.0712627Z [command]/usr/bin/git remote add origin https://github.com/LSU-ATHENA/Pynerve
+2026-07-15T02:21:10.0753002Z ##[endgroup]
+2026-07-15T02:21:10.0754135Z ##[group]Disabling automatic garbage collection
+2026-07-15T02:21:10.0757423Z [command]/usr/bin/git config --local gc.auto 0
+2026-07-15T02:21:10.0791966Z ##[endgroup]
+2026-07-15T02:21:10.0793192Z ##[group]Setting up auth
+2026-07-15T02:21:10.0793979Z Removing SSH command configuration
+2026-07-15T02:21:10.0798922Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-07-15T02:21:10.0834464Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-07-15T02:21:10.1256668Z Removing HTTP extra header
+2026-07-15T02:21:10.1258096Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-07-15T02:21:10.1275434Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-07-15T02:21:10.1549067Z Removing includeIf entries pointing to credentials config files
+2026-07-15T02:21:10.1556448Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-07-15T02:21:10.1594519Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-07-15T02:21:10.1843912Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-07-15T02:21:10.1890422Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Pynerve/Pynerve/.git.path /home/runner/work/_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:10.1927277Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Pynerve/Pynerve/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:10.1965145Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:10.2003270Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:10.2034958Z ##[endgroup]
+2026-07-15T02:21:10.2036264Z ##[group]Fetching the repository
+2026-07-15T02:21:10.2045717Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +ece74c1d1baecf7f73022804d86e40f1f6adaca7:refs/remotes/origin/release-manual
+2026-07-15T02:21:10.6788717Z From https://github.com/LSU-ATHENA/Pynerve
+2026-07-15T02:21:10.6790858Z  * [new ref]         ece74c1d1baecf7f73022804d86e40f1f6adaca7 -> origin/release-manual
+2026-07-15T02:21:10.6837137Z [command]/usr/bin/git branch --list --remote origin/release-manual
+2026-07-15T02:21:10.6882213Z   origin/release-manual
+2026-07-15T02:21:10.6892283Z [command]/usr/bin/git rev-parse refs/remotes/origin/release-manual
+2026-07-15T02:21:10.6924722Z ece74c1d1baecf7f73022804d86e40f1f6adaca7
+2026-07-15T02:21:10.6930238Z ##[endgroup]
+2026-07-15T02:21:10.6931811Z ##[group]Determining the checkout info
+2026-07-15T02:21:10.6933324Z ##[endgroup]
+2026-07-15T02:21:10.6936938Z [command]/usr/bin/git sparse-checkout disable
+2026-07-15T02:21:10.6989664Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-07-15T02:21:10.7022759Z ##[group]Checking out the ref
+2026-07-15T02:21:10.7028060Z [command]/usr/bin/git checkout --progress --force -B release-manual refs/remotes/origin/release-manual
+2026-07-15T02:21:10.8415943Z Switched to a new branch 'release-manual'
+2026-07-15T02:21:10.8417473Z branch 'release-manual' set up to track 'origin/release-manual'.
+2026-07-15T02:21:10.8426884Z ##[endgroup]
+2026-07-15T02:21:10.8478247Z [command]/usr/bin/git log -1 --format=%H
+2026-07-15T02:21:10.8510405Z ece74c1d1baecf7f73022804d86e40f1f6adaca7
+2026-07-15T02:21:10.8846883Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-15T02:21:10.8851986Z ##[group]Run actions/setup-python@v5
+2026-07-15T02:21:10.8852768Z with:
+2026-07-15T02:21:10.8853299Z   python-version: 3.11
+2026-07-15T02:21:10.8853915Z   cache: pip
+2026-07-15T02:21:10.8854460Z   check-latest: false
+2026-07-15T02:21:10.8863489Z   token: ***
+2026-07-15T02:21:10.8864099Z   update-environment: true
+2026-07-15T02:21:10.8864854Z   allow-prereleases: false
+2026-07-15T02:21:10.8865696Z   freethreaded: false
+2026-07-15T02:21:10.8866308Z env:
+2026-07-15T02:21:10.8866850Z   CMAKE_GENERATOR: Ninja
+2026-07-15T02:21:10.8867552Z   NERVE_TEST_RETRIES: 1
+2026-07-15T02:21:10.8868157Z ##[endgroup]
+2026-07-15T02:21:11.0305113Z ##[group]Installed versions
+2026-07-15T02:21:11.0405742Z (node:2346) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-07-15T02:21:11.0429091Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-07-15T02:21:11.0436070Z Successfully set up CPython (3.11.15)
+2026-07-15T02:21:11.0437754Z ##[endgroup]
+2026-07-15T02:21:11.3663662Z [command]/opt/hostedtoolcache/Python/3.11.15/x64/bin/pip cache dir
+2026-07-15T02:21:11.6699056Z /home/runner/.cache/pip
+2026-07-15T02:21:11.7967522Z Cache hit for: setup-python-Linux-x64-24.04-Ubuntu-python-3.11.15-pip-57c6c82f3672d5ecde407081899c564d4f844d6a89451fb738505f4e44d5cbc2
+2026-07-15T02:21:11.8074375Z (node:2346) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-07-15T02:21:12.3370975Z Received 12351388 of 12351388 (100.0%), 26.5 MBs/sec
+2026-07-15T02:21:12.3371800Z Cache Size: ~12 MB (12351388 B)
+2026-07-15T02:21:12.3397364Z [command]/usr/bin/tar -xf /home/runner/work/_temp/110e80fc-a3c3-4c81-a95c-685272d7820e/cache.tzst -P -C /home/runner/work/Pynerve/Pynerve --use-compress-program unzstd
+2026-07-15T02:21:12.3682718Z Cache restored successfully
+2026-07-15T02:21:12.3707025Z Cache restored from key: setup-python-Linux-x64-24.04-Ubuntu-python-3.11.15-pip-57c6c82f3672d5ecde407081899c564d4f844d6a89451fb738505f4e44d5cbc2
+2026-07-15T02:21:12.3917471Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-15T02:21:12.3918913Z ##[group]Run hendrikmuhs/ccache-action@v1.2
+2026-07-15T02:21:12.3919208Z with:
+2026-07-15T02:21:12.3919428Z   restore: true
+2026-07-15T02:21:12.3919657Z   max-size: 500MB
+2026-07-15T02:21:12.3919873Z   verbose: 0
+2026-07-15T02:21:12.3920078Z   variant: ccache
+2026-07-15T02:21:12.3920322Z   save: true
+2026-07-15T02:21:12.3920536Z   append-timestamp: true
+2026-07-15T02:21:12.3920784Z   create-symlink: false
+2026-07-15T02:21:12.3921030Z   job-summary: CCache Statistics
+2026-07-15T02:21:12.3921311Z   update-package-index: false
+2026-07-15T02:21:12.3921567Z env:
+2026-07-15T02:21:12.3921772Z   CMAKE_GENERATOR: Ninja
+2026-07-15T02:21:12.3922034Z   NERVE_TEST_RETRIES: 1
+2026-07-15T02:21:12.3922340Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:12.3922798Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib/pkgconfig
+2026-07-15T02:21:12.3923254Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:12.3923661Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:12.3924040Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:12.3924426Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib
+2026-07-15T02:21:12.3924776Z ##[endgroup]
+2026-07-15T02:21:12.4989010Z (node:2379) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-07-15T02:21:12.5009467Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-07-15T02:21:12.5010334Z ##[group]Install ccache
+2026-07-15T02:21:12.5052274Z [command]/usr/bin/sh -xc $(which sudo) apt-get install -y ccache
+2026-07-15T02:21:12.5098652Z + which sudo
+2026-07-15T02:21:12.5105980Z + /usr/bin/sudo apt-get install -y ccache
+2026-07-15T02:21:14.6321848Z Reading package lists...
+2026-07-15T02:21:14.8344509Z Building dependency tree...
+2026-07-15T02:21:14.8354554Z Reading state information...
+2026-07-15T02:21:15.0065276Z The following additional packages will be installed:
+2026-07-15T02:21:15.0068539Z   libhiredis1.1.0
+2026-07-15T02:21:15.0077320Z Suggested packages:
+2026-07-15T02:21:15.0077770Z   distcc | icecc
+2026-07-15T02:21:15.0286306Z The following NEW packages will be installed:
+2026-07-15T02:21:15.0293309Z   ccache libhiredis1.1.0
+2026-07-15T02:21:15.0526886Z 0 upgraded, 2 newly installed, 0 to remove and 2 not upgraded.
+2026-07-15T02:21:15.0527516Z Need to get 633 kB of archives.
+2026-07-15T02:21:15.0528111Z After this operation, 1756 kB of additional disk space will be used.
+2026-07-15T02:21:15.0528787Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-07-15T02:21:15.1334138Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libhiredis1.1.0 amd64 1.2.0-6ubuntu3 [41.4 kB]
+2026-07-15T02:21:15.1986037Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 ccache amd64 4.9.1-1 [592 kB]
+2026-07-15T02:21:15.5686059Z Fetched 633 kB in 0s (2369 kB/s)
+2026-07-15T02:21:15.5942718Z Selecting previously unselected package libhiredis1.1.0:amd64.
+2026-07-15T02:21:15.6208700Z (Reading database ... 
+2026-07-15T02:21:15.6209330Z (Reading database ... 5%
+2026-07-15T02:21:15.6209915Z (Reading database ... 10%
+2026-07-15T02:21:15.6210451Z (Reading database ... 15%
+2026-07-15T02:21:15.6211006Z (Reading database ... 20%
+2026-07-15T02:21:15.6211525Z (Reading database ... 25%
+2026-07-15T02:21:15.6212035Z (Reading database ... 30%
+2026-07-15T02:21:15.6212561Z (Reading database ... 35%
+2026-07-15T02:21:15.6213124Z (Reading database ... 40%
+2026-07-15T02:21:15.6213406Z (Reading database ... 45%
+2026-07-15T02:21:15.6213712Z (Reading database ... 50%
+2026-07-15T02:21:15.6263609Z (Reading database ... 55%
+2026-07-15T02:21:15.7710246Z (Reading database ... 60%
+2026-07-15T02:21:15.9203126Z (Reading database ... 65%
+2026-07-15T02:21:16.1268128Z (Reading database ... 70%
+2026-07-15T02:21:16.1821936Z (Reading database ... 75%
+2026-07-15T02:21:16.3262600Z (Reading database ... 80%
+2026-07-15T02:21:16.5479042Z (Reading database ... 85%
+2026-07-15T02:21:16.7653846Z (Reading database ... 90%
+2026-07-15T02:21:16.9357542Z (Reading database ... 95%
+2026-07-15T02:21:16.9358134Z (Reading database ... 100%
+2026-07-15T02:21:16.9358689Z (Reading database ... 202701 files and directories currently installed.)
+2026-07-15T02:21:16.9405172Z Preparing to unpack .../libhiredis1.1.0_1.2.0-6ubuntu3_amd64.deb ...
+2026-07-15T02:21:16.9440176Z Unpacking libhiredis1.1.0:amd64 (1.2.0-6ubuntu3) ...
+2026-07-15T02:21:16.9668580Z Selecting previously unselected package ccache.
+2026-07-15T02:21:16.9801609Z Preparing to unpack .../ccache_4.9.1-1_amd64.deb ...
+2026-07-15T02:21:16.9810557Z Unpacking ccache (4.9.1-1) ...
+2026-07-15T02:21:17.0321843Z Setting up libhiredis1.1.0:amd64 (1.2.0-6ubuntu3) ...
+2026-07-15T02:21:17.0344554Z Setting up ccache (4.9.1-1) ...
+2026-07-15T02:21:17.0367089Z Updating symlinks in /usr/lib/ccache ...
+2026-07-15T02:21:17.0485449Z Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+2026-07-15T02:21:17.0821031Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-07-15T02:21:17.0842215Z Not building database; man-db/auto-update is not 'true'.
+2026-07-15T02:21:17.7427008Z 
+2026-07-15T02:21:17.7427594Z Running kernel seems to be up-to-date.
+2026-07-15T02:21:17.7427946Z 
+2026-07-15T02:21:17.7428114Z No services need to be restarted.
+2026-07-15T02:21:17.7428400Z 
+2026-07-15T02:21:17.7429875Z No containers need to be restarted.
+2026-07-15T02:21:17.7430173Z 
+2026-07-15T02:21:17.7430362Z No user sessions are running outdated binaries.
+2026-07-15T02:21:17.7430700Z 
+2026-07-15T02:21:17.7431005Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-07-15T02:21:18.7110651Z 
+2026-07-15T02:21:18.7122838Z ##[endgroup]
+2026-07-15T02:21:18.7123275Z ##[group]Restore cache
+2026-07-15T02:21:18.8166481Z Cache hit for restore-key: ccache-2026-07-15T01:38:41.289Z
+2026-07-15T02:21:18.8267449Z (node:2379) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-07-15T02:21:19.9357814Z Received 123218566 of 127412870 (96.7%), 117.5 MBs/sec
+2026-07-15T02:21:20.1337481Z Received 127412870 of 127412870 (100.0%), 101.4 MBs/sec
+2026-07-15T02:21:20.1338302Z Cache Size: ~122 MB (127412870 B)
+2026-07-15T02:21:20.1455966Z [command]/usr/bin/tar -xf /home/runner/work/_temp/fe08aded-29a4-4808-bf79-6ce999768583/cache.tzst -P -C /home/runner/work/Pynerve/Pynerve --use-compress-program unzstd
+2026-07-15T02:21:20.3981620Z Cache restored successfully
+2026-07-15T02:21:20.4043849Z Restored from cache key "ccache-2026-07-15T01:38:41.289Z".
+2026-07-15T02:21:20.4045178Z ##[endgroup]
+2026-07-15T02:21:20.4045969Z ##[group]Configure ccache, linux
+2026-07-15T02:21:20.4060860Z [command]/usr/bin/sh -xc ccache --set-config=cache_dir='/home/runner/work/Pynerve/Pynerve/.ccache'
+2026-07-15T02:21:20.4100233Z + ccache --set-config=cache_dir=/home/runner/work/Pynerve/Pynerve/.ccache
+2026-07-15T02:21:20.4139886Z [command]/usr/bin/sh -xc ccache --set-config=max_size='500MB'
+2026-07-15T02:21:20.4173809Z + ccache --set-config=max_size=500MB
+2026-07-15T02:21:20.4208241Z [command]/usr/bin/sh -xc ccache --set-config=compression=true
+2026-07-15T02:21:20.4240079Z + ccache --set-config=compression=true
+2026-07-15T02:21:20.4264239Z Ccache config:
+2026-07-15T02:21:20.4276230Z [command]/usr/bin/sh -xc ccache -p
+2026-07-15T02:21:20.4307889Z + ccache -p
+2026-07-15T02:21:20.4323471Z (default) absolute_paths_in_stderr = false
+2026-07-15T02:21:20.4323943Z (default) base_dir = 
+2026-07-15T02:21:20.4324625Z (/home/runner/.config/ccache/ccache.conf) cache_dir = /home/runner/work/Pynerve/Pynerve/.ccache
+2026-07-15T02:21:20.4325836Z (default) compiler = 
+2026-07-15T02:21:20.4326214Z (default) compiler_check = mtime
+2026-07-15T02:21:20.4326674Z (default) compiler_type = auto
+2026-07-15T02:21:20.4327186Z (/home/runner/.config/ccache/ccache.conf) compression = true
+2026-07-15T02:21:20.4328002Z (default) compression_level = 0
+2026-07-15T02:21:20.4328418Z (default) cpp_extension = 
+2026-07-15T02:21:20.4328806Z (default) debug = false
+2026-07-15T02:21:20.4329180Z (default) debug_dir = 
+2026-07-15T02:21:20.4329535Z (default) debug_level = 2
+2026-07-15T02:21:20.4329921Z (default) depend_mode = false
+2026-07-15T02:21:20.4330339Z (default) direct_mode = true
+2026-07-15T02:21:20.4330738Z (default) disable = false
+2026-07-15T02:21:20.4331151Z (default) extra_files_to_hash = 
+2026-07-15T02:21:20.4331564Z (default) file_clone = false
+2026-07-15T02:21:20.4331969Z (default) hard_link = false
+2026-07-15T02:21:20.4332353Z (default) hash_dir = true
+2026-07-15T02:21:20.4332754Z (default) ignore_headers_in_manifest = 
+2026-07-15T02:21:20.4333238Z (default) ignore_options = 
+2026-07-15T02:21:20.4333635Z (default) inode_cache = true
+2026-07-15T02:21:20.4334049Z (default) keep_comments_cpp = false
+2026-07-15T02:21:20.4334477Z (default) log_file = 
+2026-07-15T02:21:20.4335019Z (default) max_files = 0
+2026-07-15T02:21:20.4335684Z (/home/runner/.config/ccache/ccache.conf) max_size = 500.0 MB
+2026-07-15T02:21:20.4336316Z (default) msvc_dep_prefix = Note: including file:
+2026-07-15T02:21:20.4336858Z (default) namespace = 
+2026-07-15T02:21:20.4337194Z (default) path = 
+2026-07-15T02:21:20.4337559Z (default) pch_external_checksum = false
+2026-07-15T02:21:20.4337964Z (default) prefix_command = 
+2026-07-15T02:21:20.4338226Z (default) prefix_command_cpp = 
+2026-07-15T02:21:20.4338483Z (default) read_only = false
+2026-07-15T02:21:20.4338727Z (default) read_only_direct = false
+2026-07-15T02:21:20.4339007Z (default) recache = false
+2026-07-15T02:21:20.4339276Z (default) remote_only = false
+2026-07-15T02:21:20.4339532Z (default) remote_storage = 
+2026-07-15T02:21:20.4339786Z (default) reshare = false
+2026-07-15T02:21:20.4340037Z (default) run_second_cpp = true
+2026-07-15T02:21:20.4340404Z (default) sloppiness = 
+2026-07-15T02:21:20.4340762Z (default) stats = true
+2026-07-15T02:21:20.4341129Z (default) stats_log = 
+2026-07-15T02:21:20.4341568Z (default) temporary_dir = /run/user/1001/ccache-tmp
+2026-07-15T02:21:20.4342072Z (default) umask = 
+2026-07-15T02:21:20.4345001Z [command]/usr/bin/sh -xc ccache -z
+2026-07-15T02:21:20.4376962Z + ccache -z
+2026-07-15T02:21:20.4839472Z Statistics zeroed
+2026-07-15T02:21:20.4846022Z ##[endgroup]
+2026-07-15T02:21:20.5030149Z ##[group]Run sudo apt-get update || true && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev
+2026-07-15T02:21:20.5030963Z [36;1msudo apt-get update || true && sudo apt-get install -y ninja-build libeigen3-dev libomp-dev[0m
+2026-07-15T02:21:20.5178007Z shell: /usr/bin/bash -e {0}
+2026-07-15T02:21:20.5178299Z env:
+2026-07-15T02:21:20.5178518Z   CMAKE_GENERATOR: Ninja
+2026-07-15T02:21:20.5178783Z   NERVE_TEST_RETRIES: 1
+2026-07-15T02:21:20.5179088Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:20.5179530Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib/pkgconfig
+2026-07-15T02:21:20.5180004Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:20.5180396Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:20.5180787Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:20.5181171Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib
+2026-07-15T02:21:20.5181585Z ##[endgroup]
+2026-07-15T02:21:20.5942310Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-07-15T02:21:20.6317336Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-07-15T02:21:20.6318555Z Get:6 https://packages.microsoft.com/repos/azure-cli noble InRelease [3564 B]
+2026-07-15T02:21:20.6319864Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-07-15T02:21:20.6349864Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-07-15T02:21:20.6426734Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-07-15T02:21:20.6476134Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-07-15T02:21:20.6578243Z Get:8 https://dl.google.com/linux/chrome-stable/deb stable InRelease [1825 B]
+2026-07-15T02:21:20.7670509Z Get:9 https://packages.microsoft.com/repos/azure-cli noble/main amd64 Packages [2314 B]
+2026-07-15T02:21:20.8130690Z Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [224 kB]
+2026-07-15T02:21:20.8203574Z Get:11 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [11.7 kB]
+2026-07-15T02:21:20.8232452Z Get:12 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [191 kB]
+2026-07-15T02:21:20.8664920Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1096 kB]
+2026-07-15T02:21:20.8887469Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [270 kB]
+2026-07-15T02:21:20.8927646Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [180 kB]
+2026-07-15T02:21:20.8952360Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1661 kB]
+2026-07-15T02:21:20.9116808Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [328 kB]
+2026-07-15T02:21:20.9135200Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [388 kB]
+2026-07-15T02:21:20.9168670Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1229 kB]
+2026-07-15T02:21:20.9267668Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [278 kB]
+2026-07-15T02:21:20.9270073Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+2026-07-15T02:21:20.9282531Z Get:22 http://azure.archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [5744 B]
+2026-07-15T02:21:20.9736849Z Get:23 http://azure.archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [10.5 kB]
+2026-07-15T02:21:20.9857725Z Get:24 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [835 kB]
+2026-07-15T02:21:20.9916932Z Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [188 kB]
+2026-07-15T02:21:20.9935183Z Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Components [44.9 kB]
+2026-07-15T02:21:20.9951734Z Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 c-n-f Metadata [11.9 kB]
+2026-07-15T02:21:20.9966633Z Get:28 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1177 kB]
+2026-07-15T02:21:21.0044615Z Get:29 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [232 kB]
+2026-07-15T02:21:21.0070023Z Get:30 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Components [76.2 kB]
+2026-07-15T02:21:21.0088644Z Get:31 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [24.2 kB]
+2026-07-15T02:21:21.0106332Z Get:32 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1139 kB]
+2026-07-15T02:21:21.0184180Z Get:33 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [260 kB]
+2026-07-15T02:21:21.0610001Z Get:34 https://dl.google.com/linux/chrome-stable/deb stable/main amd64 Packages [1221 B]
+2026-07-15T02:21:24.2712064Z Fetched 10.3 MB in 1s (7620 kB/s)
+2026-07-15T02:21:24.9735460Z Reading package lists...
+2026-07-15T02:21:25.0071099Z Reading package lists...
+2026-07-15T02:21:25.2022629Z Building dependency tree...
+2026-07-15T02:21:25.2030169Z Reading state information...
+2026-07-15T02:21:25.3683042Z The following additional packages will be installed:
+2026-07-15T02:21:25.3687159Z   libomp-18-dev libomp5-18
+2026-07-15T02:21:25.3692227Z Suggested packages:
+2026-07-15T02:21:25.3692603Z   libeigen3-doc libmpfrc++-dev libomp-18-doc
+2026-07-15T02:21:25.3874854Z The following NEW packages will be installed:
+2026-07-15T02:21:25.3880627Z   libeigen3-dev libomp-18-dev libomp-dev libomp5-18 ninja-build
+2026-07-15T02:21:25.4063310Z 0 upgraded, 5 newly installed, 0 to remove and 53 not upgraded.
+2026-07-15T02:21:25.4063954Z Need to get 2767 kB of archives.
+2026-07-15T02:21:25.4064536Z After this operation, 40.5 MB of additional disk space will be used.
+2026-07-15T02:21:25.4065204Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-07-15T02:21:25.4481477Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 libomp5-18 amd64 1:18.1.3-1ubuntu1 [608 kB]
+2026-07-15T02:21:25.4772145Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 libomp-18-dev amd64 1:18.1.3-1ubuntu1 [968 kB]
+2026-07-15T02:21:25.5085051Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 ninja-build amd64 1.11.1-2 [129 kB]
+2026-07-15T02:21:25.5425724Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 libeigen3-dev all 3.4.0-4build0.1 [1057 kB]
+2026-07-15T02:21:25.5745483Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libomp-dev amd64 1:18.0-59~exp2 [5366 B]
+2026-07-15T02:21:25.8292832Z Fetched 2767 kB in 0s (15.4 MB/s)
+2026-07-15T02:21:25.8486085Z Selecting previously unselected package libomp5-18:amd64.
+2026-07-15T02:21:25.8552215Z (Reading database ... 
+2026-07-15T02:21:25.8552695Z (Reading database ... 5%
+2026-07-15T02:21:25.8553056Z (Reading database ... 10%
+2026-07-15T02:21:25.8553435Z (Reading database ... 15%
+2026-07-15T02:21:25.8553906Z (Reading database ... 20%
+2026-07-15T02:21:25.8554258Z (Reading database ... 25%
+2026-07-15T02:21:25.8554496Z (Reading database ... 30%
+2026-07-15T02:21:25.8554733Z (Reading database ... 35%
+2026-07-15T02:21:25.8554973Z (Reading database ... 40%
+2026-07-15T02:21:25.8555202Z (Reading database ... 45%
+2026-07-15T02:21:25.8555448Z (Reading database ... 50%
+2026-07-15T02:21:25.8569108Z (Reading database ... 55%
+2026-07-15T02:21:25.8687981Z (Reading database ... 60%
+2026-07-15T02:21:25.8718567Z (Reading database ... 65%
+2026-07-15T02:21:25.8738257Z (Reading database ... 70%
+2026-07-15T02:21:25.8767690Z (Reading database ... 75%
+2026-07-15T02:21:25.8811201Z (Reading database ... 80%
+2026-07-15T02:21:25.8951859Z (Reading database ... 85%
+2026-07-15T02:21:25.9029633Z (Reading database ... 90%
+2026-07-15T02:21:25.9262293Z (Reading database ... 95%
+2026-07-15T02:21:25.9262767Z (Reading database ... 100%
+2026-07-15T02:21:25.9263566Z (Reading database ... 202724 files and directories currently installed.)
+2026-07-15T02:21:25.9308542Z Preparing to unpack .../libomp5-18_1%3a18.1.3-1ubuntu1_amd64.deb ...
+2026-07-15T02:21:25.9327414Z Unpacking libomp5-18:amd64 (1:18.1.3-1ubuntu1) ...
+2026-07-15T02:21:25.9663817Z Selecting previously unselected package libomp-18-dev.
+2026-07-15T02:21:25.9797226Z Preparing to unpack .../libomp-18-dev_1%3a18.1.3-1ubuntu1_amd64.deb ...
+2026-07-15T02:21:25.9804880Z Unpacking libomp-18-dev (1:18.1.3-1ubuntu1) ...
+2026-07-15T02:21:26.0865147Z Selecting previously unselected package ninja-build.
+2026-07-15T02:21:26.0999529Z Preparing to unpack .../ninja-build_1.11.1-2_amd64.deb ...
+2026-07-15T02:21:26.1007696Z Unpacking ninja-build (1.11.1-2) ...
+2026-07-15T02:21:26.1284365Z Selecting previously unselected package libeigen3-dev.
+2026-07-15T02:21:26.1418445Z Preparing to unpack .../libeigen3-dev_3.4.0-4build0.1_all.deb ...
+2026-07-15T02:21:26.1426275Z Unpacking libeigen3-dev (3.4.0-4build0.1) ...
+2026-07-15T02:21:26.2659327Z Selecting previously unselected package libomp-dev:amd64.
+2026-07-15T02:21:26.2798663Z Preparing to unpack .../libomp-dev_1%3a18.0-59~exp2_amd64.deb ...
+2026-07-15T02:21:26.2807061Z Unpacking libomp-dev:amd64 (1:18.0-59~exp2) ...
+2026-07-15T02:21:26.3192174Z Setting up libomp5-18:amd64 (1:18.1.3-1ubuntu1) ...
+2026-07-15T02:21:26.3214724Z Setting up ninja-build (1.11.1-2) ...
+2026-07-15T02:21:26.3234010Z Setting up libeigen3-dev (3.4.0-4build0.1) ...
+2026-07-15T02:21:26.3254685Z Setting up libomp-18-dev (1:18.1.3-1ubuntu1) ...
+2026-07-15T02:21:26.3273936Z Setting up libomp-dev:amd64 (1:18.0-59~exp2) ...
+2026-07-15T02:21:26.3297389Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-07-15T02:21:26.3314148Z Not building database; man-db/auto-update is not 'true'.
+2026-07-15T02:21:26.3326198Z Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+2026-07-15T02:21:26.8845104Z 
+2026-07-15T02:21:26.8846011Z Running kernel seems to be up-to-date.
+2026-07-15T02:21:26.8846289Z 
+2026-07-15T02:21:26.8846409Z No services need to be restarted.
+2026-07-15T02:21:26.8846644Z 
+2026-07-15T02:21:26.8846762Z No containers need to be restarted.
+2026-07-15T02:21:26.8846944Z 
+2026-07-15T02:21:26.8847084Z No user sessions are running outdated binaries.
+2026-07-15T02:21:26.8847306Z 
+2026-07-15T02:21:26.8847506Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-07-15T02:21:27.8470518Z ##[group]Run cmake -S . -B build -G Ninja \
+2026-07-15T02:21:27.8470915Z [36;1mcmake -S . -B build -G Ninja \[0m
+2026-07-15T02:21:27.8471239Z [36;1m  -DCMAKE_BUILD_TYPE=Debug \[0m
+2026-07-15T02:21:27.8471766Z [36;1m  -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -fno-sanitize-recover=address" \[0m
+2026-07-15T02:21:27.8472361Z [36;1m  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address" \[0m
+2026-07-15T02:21:27.8472699Z [36;1m  -DBUILD_TESTS=ON \[0m
+2026-07-15T02:21:27.8472963Z [36;1m  -DBUILD_PYTHON=OFF \[0m
+2026-07-15T02:21:27.8473232Z [36;1m  -DENABLE_CUDA=OFF \[0m
+2026-07-15T02:21:27.8473487Z [36;1m  -DNERVE_SIMD=scalar[0m
+2026-07-15T02:21:27.8510552Z shell: /usr/bin/bash -e {0}
+2026-07-15T02:21:27.8510829Z env:
+2026-07-15T02:21:27.8511051Z   CMAKE_GENERATOR: Ninja
+2026-07-15T02:21:27.8511309Z   NERVE_TEST_RETRIES: 1
+2026-07-15T02:21:27.8511626Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:27.8512120Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib/pkgconfig
+2026-07-15T02:21:27.8512556Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:27.8512944Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:27.8513338Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+2026-07-15T02:21:27.8513735Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib
+2026-07-15T02:21:27.8514070Z ##[endgroup]
+2026-07-15T02:21:28.9119310Z -- The CXX compiler identification is GNU 13.3.0
+2026-07-15T02:21:29.0455227Z -- Detecting CXX compiler ABI info
+2026-07-15T02:21:29.2888732Z -- Detecting CXX compiler ABI info - done
+2026-07-15T02:21:29.3064741Z -- Check for working CXX compiler: /usr/bin/c++ - skipped
+2026-07-15T02:21:29.3123309Z -- Detecting CXX compile features
+2026-07-15T02:21:29.3132465Z -- Detecting CXX compile features - done
+2026-07-15T02:21:29.3445426Z -- mimalloc not found - Using system allocator
+2026-07-15T02:21:29.3446138Z -- Hugepage support enabled
+2026-07-15T02:21:29.3796221Z -- liburing not found - Using mmap for async IO
+2026-07-15T02:21:29.3831600Z -- Found PkgConfig: /usr/bin/pkg-config (found version "1.8.1")
+2026-07-15T02:21:29.4112341Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+2026-07-15T02:21:29.5321841Z -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+2026-07-15T02:21:29.5333212Z -- Found Threads: TRUE
+2026-07-15T02:21:29.5368941Z -- Eigen3 found - Enabling Eigen-backed gradient and sheaf Laplacian components
+2026-07-15T02:21:29.5531273Z CMake Warning at CMakeLists.txt:252 (message):
+2026-07-15T02:21:29.5531629Z -- 
+2026-07-15T02:21:29.5531859Z -- Nerve Feature Summary:
+2026-07-15T02:21:29.5532134Z --   CUDA support:          OFF
+2026-07-15T02:21:29.5532409Z --   PyTorch support:       ON
+2026-07-15T02:21:29.5532677Z --   MPI support:           OFF
+2026-07-15T02:21:29.5532941Z --   Eigen3 support:        ON
+2026-07-15T02:21:29.5533190Z --   NUMA support:          OFF
+2026-07-15T02:21:29.5533422Z -- 
+2026-07-15T02:21:29.5533709Z   NUMA library not found, disabling NUMA features
+2026-07-15T02:21:29.5533933Z 
+2026-07-15T02:21:29.5533938Z 
+2026-07-15T02:21:29.5586674Z -- PyTorch not found - Building without ML integration
+2026-07-15T02:21:29.5587208Z -- CUDA disabled by ENABLE_CUDA=OFF
+2026-07-15T02:21:29.5587579Z -- MPI disabled - Building without distributed support
+2026-07-15T02:21:29.5592050Z -- Eigen3 found - Enabling Eigen-backed gradient and sheaf Laplacian components
+2026-07-15T02:21:29.7675261Z -- OpenMP found - Enabling OpenMP-parallelized CPU paths
+2026-07-15T02:21:29.7679538Z -- NUMA disabled - Building without NUMA optimizations
+2026-07-15T02:21:29.7738462Z -- Performing Test NERVE_HAS_AVX512
+2026-07-15T02:21:30.1946622Z -- Performing Test NERVE_HAS_AVX512 - Success
+2026-07-15T02:21:30.1947372Z -- Performing Test NERVE_HAS_AVX512_RUNTIME
+2026-07-15T02:21:30.9201767Z -- Performing Test NERVE_HAS_AVX512_RUNTIME - Failed
+2026-07-15T02:21:30.9202618Z -- AVX-512 codegen is available, but this CPU cannot execute AVX-512 instructions
+2026-07-15T02:21:30.9339046Z -- MPI communicator source added (always compiled)
+2026-07-15T02:21:30.9339585Z -- Added 13 Eigen3 source files
+2026-07-15T02:21:30.9340229Z -- AVX-512 detected but disabled for codegen (NERVE_SIMD=scalar)
+2026-07-15T02:21:30.9340942Z -- Benchmark sources disabled (NERVE_ENABLE_BENCHMARK_SOURCES=OFF)
+2026-07-15T02:21:30.9341840Z -- Advanced differentiable sources disabled (NERVE_ENABLE_ADVANCED_DIFFERENTIABLE_COMPONENTS=OFF)
+2026-07-15T02:21:30.9342595Z -- cuDNN component sources disabled (NERVE_ENABLE_CUDNN_COMPONENTS=OFF)
+2026-07-15T02:21:30.9360289Z -- Nerve Configuration Summary:
+2026-07-15T02:21:30.9360770Z --   Version: 1.0.0
+2026-07-15T02:21:30.9361158Z --   C++ Standard: 20
+2026-07-15T02:21:30.9361553Z --   Build Type: Debug
+2026-07-15T02:21:30.9361958Z --   Sources Included: 365 files
+2026-07-15T02:21:30.9362433Z --   Features:
+2026-07-15T02:21:30.9362806Z --     CUDA: OFF
+2026-07-15T02:21:30.9363171Z --     PyTorch: 0
+2026-07-15T02:21:30.9363523Z --     MPI: OFF
+2026-07-15T02:21:30.9363913Z --     Eigen3: 1
+2026-07-15T02:21:30.9364284Z --     NUMA: OFF
+2026-07-15T02:21:30.9364664Z --     AVX-512 codegen available: 1
+2026-07-15T02:21:30.9365167Z --     AVX-512 codegen enabled: OFF
+2026-07-15T02:21:31.1640356Z CMake Error at tests/CMakeLists.txt:1644 (message):
+2026-07-15T02:21:31.1641090Z   BUILD_TESTS=ON requires pytest for the selected Python interpreter
+2026-07-15T02:21:31.1641897Z   (/opt/hostedtoolcache/Python/3.11.15/x64/bin/python3.11).  Install pytest
+2026-07-15T02:21:31.1642610Z   or set Python3_EXECUTABLE to an interpreter with pytest.  Set
+2026-07-15T02:21:31.1643312Z   NERVE_ALLOW_MISSING_PYTEST=ON only for explicit C++-only test jobs.
+2026-07-15T02:21:31.1643766Z 
+2026-07-15T02:21:31.1643772Z 
+2026-07-15T02:21:31.1649372Z -- Configuring incomplete, errors occurred!
+2026-07-15T02:21:31.1792134Z ##[error]Process completed with exit code 1.
+2026-07-15T02:21:31.1898188Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-07-15T02:21:31.1899360Z Post job cleanup.
+2026-07-15T02:21:31.2989099Z (node:3180) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-07-15T02:21:31.2990313Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-07-15T02:21:31.3095367Z ##[group]ccache stats
+2026-07-15T02:21:31.3110519Z [command]/usr/bin/ccache -s
+2026-07-15T02:21:31.3187440Z Local storage:
+2026-07-15T02:21:31.3188018Z   Cache size (GB): 0.1 / 0.5 (28.35%)
+2026-07-15T02:21:31.3214186Z [command]/usr/bin/ccache --version
+2026-07-15T02:21:31.3264216Z ccache version 4.9.1
+2026-07-15T02:21:31.3265257Z Features: file-storage http-storage redis+unix-storage redis-storage
+2026-07-15T02:21:31.3266000Z 
+2026-07-15T02:21:31.3266185Z Copyright (C) 2002-2007 Andrew Tridgell
+2026-07-15T02:21:31.3266770Z Copyright (C) 2009-2024 Joel Rosdahl and other contributors
+2026-07-15T02:21:31.3267197Z 
+2026-07-15T02:21:31.3267584Z See <https://ccache.dev/credits.html> for a complete list of contributors.
+2026-07-15T02:21:31.3268087Z 
+2026-07-15T02:21:31.3268408Z This program is free software; you can redistribute it and/or modify it under
+2026-07-15T02:21:31.3269597Z the terms of the GNU General Public License as published by the Free Software
+2026-07-15T02:21:31.3270341Z Foundation; either version 3 of the License, or (at your option) any later
+2026-07-15T02:21:31.3270911Z version.
+2026-07-15T02:21:31.3272230Z ##[endgroup]
+2026-07-15T02:21:31.3376310Z Save cache using key "ccache-2026-07-15T02:21:31.337Z".
+2026-07-15T02:21:31.3510409Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/Pynerve/Pynerve --files-from manifest.txt --use-compress-program zstdmt
+2026-07-15T02:21:31.7867903Z (node:3180) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-07-15T02:21:32.7791014Z Sent 77463552 of 127394366 (60.8%), 73.9 MBs/sec
+2026-07-15T02:21:33.4788450Z Sent 127394366 of 127394366 (100.0%), 71.5 MBs/sec
+2026-07-15T02:21:33.5812312Z Post job cleanup.
+2026-07-15T02:21:33.6665974Z [command]/usr/bin/git version
+2026-07-15T02:21:33.6711012Z git version 2.54.0
+2026-07-15T02:21:33.6756215Z Temporarily overriding HOME='/home/runner/work/_temp/7f3649ae-0a66-43cf-a3bb-49cffc2a3fbc' before making global git config changes
+2026-07-15T02:21:33.6757307Z Adding repository directory to the temporary git global config as a safe directory
+2026-07-15T02:21:33.6764351Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Pynerve/Pynerve
+2026-07-15T02:21:33.6800575Z Removing SSH command configuration
+2026-07-15T02:21:33.6808355Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-07-15T02:21:33.6847726Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-07-15T02:21:33.7119890Z Removing HTTP extra header
+2026-07-15T02:21:33.7125867Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-07-15T02:21:33.7165889Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-07-15T02:21:33.7445173Z Removing includeIf entries pointing to credentials config files
+2026-07-15T02:21:33.7459787Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-07-15T02:21:33.7488388Z includeif.gitdir:/home/runner/work/Pynerve/Pynerve/.git.path
+2026-07-15T02:21:33.7489359Z includeif.gitdir:/home/runner/work/Pynerve/Pynerve/.git/worktrees/*.path
+2026-07-15T02:21:33.7490056Z includeif.gitdir:/github/workspace/.git.path
+2026-07-15T02:21:33.7490653Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-07-15T02:21:33.7499290Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Pynerve/Pynerve/.git.path
+2026-07-15T02:21:33.7528827Z /home/runner/work/_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:33.7543105Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Pynerve/Pynerve/.git.path /home/runner/work/_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:33.7603714Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Pynerve/Pynerve/.git/worktrees/*.path
+2026-07-15T02:21:33.7636521Z /home/runner/work/_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:33.7650105Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Pynerve/Pynerve/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:33.7694462Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-07-15T02:21:33.7725466Z /github/runner_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:33.7735315Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:33.7781095Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-07-15T02:21:33.7818915Z /github/runner_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:33.7837311Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config
+2026-07-15T02:21:33.7885120Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-07-15T02:21:33.8133911Z Removing credentials config '/home/runner/work/_temp/git-credentials-655a9443-23f2-4319-a83d-95a0012bdc24.config'
+2026-07-15T02:21:33.8286543Z Cleaning up orphan processes
+2026-07-15T02:21:33.8645360Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/setup-python@v5, hendrikmuhs/ccache-action@v1.2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

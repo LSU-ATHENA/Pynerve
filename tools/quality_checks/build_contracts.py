@@ -201,7 +201,7 @@ def check_build_install_contract() -> list[Finding]:
     pyproject_text = PYPROJECT_PATH.read_text(encoding="utf-8") if PYPROJECT_PATH.exists() else ""
 
     required_root_fragments = {
-        'CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin"': "Linux/macOS-only platform guard",
+        'CMAKE_SYSTEM_NAME MATCHES "Linux|Darwin|Windows"': "Linux/macOS/Windows platform guard",
         'CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|aarch64|ARM64"': "Linux x86_64/ARM64 architecture guard",
         "NERVE_CUDA_REQUIRED_VERSION_MAJOR 12": "CUDA required major version pin",
         "NERVE_CUDA_REQUIRED_VERSION_MINOR 4": "CUDA required minor version pin",

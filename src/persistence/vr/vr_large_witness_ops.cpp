@@ -29,7 +29,7 @@ constexpr double WITNESS_LANDMARK_RATIO_LARGE = 0.05;
 constexpr int WITNESS_HIGH_DIM_THRESHOLD = 3;
 constexpr double WITNESS_APPROXIMATION_FACTOR = 3.0;
 
-bool isValidLargeWitnessInput(core::BufferView<const double>points, Size point_dim,
+bool isValidLargeWitnessInput(core::BufferView<const double> points, Size point_dim,
                               const VRConfig &config)
 {
     if (point_dim == 0 || points.empty() || (points.size() % point_dim) != 0)
@@ -65,7 +65,7 @@ bool isValidLargeWitnessInput(core::BufferView<const double>points, Size point_d
 
 } // namespace
 
-std::vector<Pair> computeVrPersistenceLargeWitness(core::BufferView<const double>points,
+std::vector<Pair> computeVrPersistenceLargeWitness(core::BufferView<const double> points,
                                                    Size point_dim, const VRConfig &config,
                                                    size_t num_landmarks)
 {

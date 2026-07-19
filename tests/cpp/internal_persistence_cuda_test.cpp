@@ -28,8 +28,7 @@ bool check_gpu_clearing_construction()
     std::vector<int> dims;
     std::vector<double> filt;
     GPUClearingEngine::ClearingResult result;
-    auto status = GPUClearingEngine::applyClearingOptimization(
-        matrix, dims, filt, 0, 1.0, result);
+    auto status = GPUClearingEngine::applyClearingOptimization(matrix, dims, filt, 0, 1.0, result);
     if (status.isError())
         return false;
     return true;
@@ -57,8 +56,7 @@ bool check_gpu_clearing_triangle()
     }
 
     GPUClearingEngine::ClearingResult result;
-    auto status = GPUClearingEngine::applyClearingOptimization(
-        bm, dims, filt, 2, 100.0, result);
+    auto status = GPUClearingEngine::applyClearingOptimization(bm, dims, filt, 2, 100.0, result);
     if (status.isError())
     {
         std::fprintf(stderr, "clearing triangle failed: %s\n", status.compactSummary().c_str());
@@ -83,8 +81,10 @@ bool check_gpu_clearing_triangle()
     bool has_clear = false;
     for (std::size_t i = 0; i < result.positive_simplices.size(); ++i)
     {
-        if (result.positive_simplices[i]) has_positive = true;
-        if (result.columns_to_clear[i]) has_clear = true;
+        if (result.positive_simplices[i])
+            has_positive = true;
+        if (result.columns_to_clear[i])
+            has_clear = true;
     }
     if (!has_positive)
     {
@@ -117,8 +117,8 @@ bool check_gpu_clearing_error_paths()
         std::vector<int> dims;
         std::vector<double> filt = {std::numeric_limits<double>::quiet_NaN()};
         GPUClearingEngine::ClearingResult result;
-        auto status = GPUClearingEngine::applyClearingOptimization(
-            matrix, dims, filt, 0, 1.0, result);
+        auto status =
+            GPUClearingEngine::applyClearingOptimization(matrix, dims, filt, 0, 1.0, result);
         if (status.isSuccess())
         {
             std::fprintf(stderr, "expected error for NaN filtration value\n");
@@ -132,8 +132,8 @@ bool check_gpu_clearing_error_paths()
         std::vector<int> dims = {0, 1};
         std::vector<double> filt = {0.0};
         GPUClearingEngine::ClearingResult result;
-        auto status = GPUClearingEngine::applyClearingOptimization(
-            matrix, dims, filt, 0, 1.0, result);
+        auto status =
+            GPUClearingEngine::applyClearingOptimization(matrix, dims, filt, 0, 1.0, result);
         if (status.isSuccess())
         {
             std::fprintf(stderr, "expected error for mismatched sizes\n");
@@ -147,8 +147,8 @@ bool check_gpu_clearing_error_paths()
         std::vector<int> dims;
         std::vector<double> filt;
         GPUClearingEngine::ClearingResult result;
-        auto status = GPUClearingEngine::applyClearingOptimization(
-            matrix, dims, filt, 0, 1.0, result);
+        auto status =
+            GPUClearingEngine::applyClearingOptimization(matrix, dims, filt, 0, 1.0, result);
         if (status.isError())
         {
             std::fprintf(stderr, "expected success for empty case\n");
@@ -219,8 +219,7 @@ bool check_gpu_clearing_square()
     }
 
     GPUClearingEngine::ClearingResult result;
-    auto status = GPUClearingEngine::applyClearingOptimization(
-        bm, dims, filt, 2, 100.0, result);
+    auto status = GPUClearingEngine::applyClearingOptimization(bm, dims, filt, 2, 100.0, result);
     if (status.isError())
     {
         std::fprintf(stderr, "square clearing failed: %s\n", status.compactSummary().c_str());
@@ -237,8 +236,10 @@ bool check_gpu_clearing_square()
     int n_positive = 0, n_clear = 0;
     for (std::size_t i = 0; i < result.positive_simplices.size(); ++i)
     {
-        if (result.positive_simplices[i]) n_positive++;
-        if (result.columns_to_clear[i]) n_clear++;
+        if (result.positive_simplices[i])
+            n_positive++;
+        if (result.columns_to_clear[i])
+            n_clear++;
     }
 
     if (n_positive == 0)
@@ -311,8 +312,7 @@ bool check_gpu_clearing_octahedron()
     }
 
     GPUClearingEngine::ClearingResult result;
-    auto status = GPUClearingEngine::applyClearingOptimization(
-        bm, dims, filt, 2, 100.0, result);
+    auto status = GPUClearingEngine::applyClearingOptimization(bm, dims, filt, 2, 100.0, result);
     if (status.isError())
     {
         std::fprintf(stderr, "octahedron clearing failed: %s\n", status.compactSummary().c_str());
@@ -332,7 +332,8 @@ bool check_gpu_clearing_octahedron()
         if (result.positive_simplices[i])
         {
             n_positive++;
-            if (dims[i] == 0) n_positive_dim0++;
+            if (dims[i] == 0)
+                n_positive_dim0++;
         }
     }
 
@@ -350,7 +351,8 @@ bool check_gpu_clearing_octahedron()
 
     int n_clear = 0;
     for (std::size_t i = 0; i < result.columns_to_clear.size(); ++i)
-        if (result.columns_to_clear[i]) n_clear++;
+        if (result.columns_to_clear[i])
+            n_clear++;
 
     if (n_clear == 0)
     {
@@ -405,8 +407,7 @@ bool check_gpu_clearing_tetrahedron_dim3()
 
     // Test with target_dimension=3 (clearing at tetrahedron level)
     GPUClearingEngine::ClearingResult result;
-    auto status = GPUClearingEngine::applyClearingOptimization(
-        bm, dims, filt, 3, 100.0, result);
+    auto status = GPUClearingEngine::applyClearingOptimization(bm, dims, filt, 3, 100.0, result);
     if (status.isError())
     {
         std::fprintf(stderr, "tetrahedron dim-3 clearing failed: %s\n",
@@ -424,8 +425,10 @@ bool check_gpu_clearing_tetrahedron_dim3()
     int n_positive_dim0 = 0, n_positive_dim3 = 0;
     for (std::size_t i = 0; i < result.positive_simplices.size(); ++i)
     {
-        if (result.positive_simplices[i] && dims[i] == 0) n_positive_dim0++;
-        if (result.positive_simplices[i] && dims[i] == 3) n_positive_dim3++;
+        if (result.positive_simplices[i] && dims[i] == 0)
+            n_positive_dim0++;
+        if (result.positive_simplices[i] && dims[i] == 3)
+            n_positive_dim3++;
     }
 
     if (n_positive_dim0 != 4)
@@ -495,22 +498,20 @@ bool check_gpu_clearing_cubical_grid()
     const std::size_t expected = 8 + 12 + 12; // 8 vertices + 12 edges + 12 triangles
     if (static_cast<std::size_t>(bm.cols()) != expected)
     {
-        std::fprintf(stderr, "cubical grid: expected %zu columns, got %zu\n",
-                     expected, static_cast<std::size_t>(bm.cols()));
+        std::fprintf(stderr, "cubical grid: expected %zu columns, got %zu\n", expected,
+                     static_cast<std::size_t>(bm.cols()));
         return false;
     }
 
     GPUClearingEngine::ClearingResult result;
-    auto status = GPUClearingEngine::applyClearingOptimization(
-        bm, dims, filt, 2, 100.0, result);
+    auto status = GPUClearingEngine::applyClearingOptimization(bm, dims, filt, 2, 100.0, result);
     if (status.isError())
     {
         std::fprintf(stderr, "cubical grid clearing failed: %s\n", status.compactSummary().c_str());
         return false;
     }
 
-    if (result.positive_simplices.size() != expected ||
-        result.columns_to_clear.size() != expected)
+    if (result.positive_simplices.size() != expected || result.columns_to_clear.size() != expected)
     {
         std::fprintf(stderr, "cubical grid: result size mismatch\n");
         return false;
@@ -519,7 +520,8 @@ bool check_gpu_clearing_cubical_grid()
     // All 8 vertices should be positive
     int n_positive_dim0 = 0;
     for (std::size_t i = 0; i < result.positive_simplices.size(); ++i)
-        if (result.positive_simplices[i] && dims[i] == 0) n_positive_dim0++;
+        if (result.positive_simplices[i] && dims[i] == 0)
+            n_positive_dim0++;
 
     if (n_positive_dim0 != 8)
     {
@@ -559,8 +561,7 @@ bool check_gpu_clearing_ratio_validation()
         std::vector<int> dims;
         std::vector<double> filt;
         GPUClearingEngine::ClearingResult result;
-        auto status = GPUClearingEngine::applyClearingOptimization(
-            bm, dims, filt, 0, 1.0, result);
+        auto status = GPUClearingEngine::applyClearingOptimization(bm, dims, filt, 0, 1.0, result);
         if (status.isError())
         {
             std::fprintf(stderr, "ratio empty: expected success\n");
@@ -582,8 +583,7 @@ bool check_gpu_clearing_ratio_validation()
             filt.push_back(bm.getFiltrationValue(i));
         }
         GPUClearingEngine::ClearingResult result;
-        auto status = GPUClearingEngine::applyClearingOptimization(
-            bm, dims, filt, 0, 1.0, result);
+        auto status = GPUClearingEngine::applyClearingOptimization(bm, dims, filt, 0, 1.0, result);
         if (status.isError())
         {
             std::fprintf(stderr, "ratio single point: expected success\n");
@@ -591,9 +591,10 @@ bool check_gpu_clearing_ratio_validation()
         }
         int n_clear = 0;
         for (std::size_t i = 0; i < result.columns_to_clear.size(); ++i)
-            if (result.columns_to_clear[i]) n_clear++;
-        cases.push_back({"single_point", static_cast<int>(bm.cols()), n_clear,
-                         result.operations_saved});
+            if (result.columns_to_clear[i])
+                n_clear++;
+        cases.push_back(
+            {"single_point", static_cast<int>(bm.cols()), n_clear, result.operations_saved});
     }
 
     // Case 3: Triangle (7 simplices)
@@ -616,8 +617,8 @@ bool check_gpu_clearing_ratio_validation()
             filt.push_back(bm.getFiltrationValue(i));
         }
         GPUClearingEngine::ClearingResult result;
-        auto status = GPUClearingEngine::applyClearingOptimization(
-            bm, dims, filt, 2, 100.0, result);
+        auto status =
+            GPUClearingEngine::applyClearingOptimization(bm, dims, filt, 2, 100.0, result);
         if (status.isError())
         {
             std::fprintf(stderr, "ratio triangle: expected success\n");
@@ -625,9 +626,10 @@ bool check_gpu_clearing_ratio_validation()
         }
         int n_clear = 0;
         for (std::size_t i = 0; i < result.columns_to_clear.size(); ++i)
-            if (result.columns_to_clear[i]) n_clear++;
-        cases.push_back({"triangle", static_cast<int>(bm.cols()), n_clear,
-                         result.operations_saved});
+            if (result.columns_to_clear[i])
+                n_clear++;
+        cases.push_back(
+            {"triangle", static_cast<int>(bm.cols()), n_clear, result.operations_saved});
     }
 
     // Case 4: Octahedron (26 simplices)
@@ -665,8 +667,8 @@ bool check_gpu_clearing_ratio_validation()
             filt.push_back(bm.getFiltrationValue(i));
         }
         GPUClearingEngine::ClearingResult result;
-        auto status = GPUClearingEngine::applyClearingOptimization(
-            bm, dims, filt, 2, 100.0, result);
+        auto status =
+            GPUClearingEngine::applyClearingOptimization(bm, dims, filt, 2, 100.0, result);
         if (status.isError())
         {
             std::fprintf(stderr, "ratio octahedron: expected success\n");
@@ -674,9 +676,10 @@ bool check_gpu_clearing_ratio_validation()
         }
         int n_clear = 0;
         for (std::size_t i = 0; i < result.columns_to_clear.size(); ++i)
-            if (result.columns_to_clear[i]) n_clear++;
-        cases.push_back({"octahedron", static_cast<int>(bm.cols()), n_clear,
-                         result.operations_saved});
+            if (result.columns_to_clear[i])
+                n_clear++;
+        cases.push_back(
+            {"octahedron", static_cast<int>(bm.cols()), n_clear, result.operations_saved});
     }
 
     // Validate patterns across all cases
@@ -744,8 +747,8 @@ bool check_gpu_clearing_no_filtration()
     // Pass empty filtration vector
     std::vector<double> empty_filt;
     GPUClearingEngine::ClearingResult result;
-    auto status = GPUClearingEngine::applyClearingOptimization(
-        bm, dims, empty_filt, 2, 100.0, result);
+    auto status =
+        GPUClearingEngine::applyClearingOptimization(bm, dims, empty_filt, 2, 100.0, result);
     if (status.isError())
     {
         std::fprintf(stderr, "no filtration: %s\n", status.compactSummary().c_str());
@@ -761,8 +764,10 @@ bool check_gpu_clearing_no_filtration()
     int n_positive = 0, n_clear = 0;
     for (std::size_t i = 0; i < result.positive_simplices.size(); ++i)
     {
-        if (result.positive_simplices[i]) n_positive++;
-        if (result.columns_to_clear[i]) n_clear++;
+        if (result.positive_simplices[i])
+            n_positive++;
+        if (result.columns_to_clear[i])
+            n_clear++;
     }
 
     if (n_positive < 3)
@@ -797,8 +802,8 @@ bool check_gpu_clearing_target_dimensions()
 
     // Run at target_dimension=1 (edge-level clearing)
     GPUClearingEngine::ClearingResult result_dim1;
-    auto status1 = GPUClearingEngine::applyClearingOptimization(
-        bm, dims, filt, 1, 100.0, result_dim1);
+    auto status1 =
+        GPUClearingEngine::applyClearingOptimization(bm, dims, filt, 1, 100.0, result_dim1);
     if (status1.isError())
     {
         std::fprintf(stderr, "target dim=1: %s\n", status1.compactSummary().c_str());
@@ -807,8 +812,8 @@ bool check_gpu_clearing_target_dimensions()
 
     // Run at target_dimension=2 (triangle-level clearing)
     GPUClearingEngine::ClearingResult result_dim2;
-    auto status2 = GPUClearingEngine::applyClearingOptimization(
-        bm, dims, filt, 2, 100.0, result_dim2);
+    auto status2 =
+        GPUClearingEngine::applyClearingOptimization(bm, dims, filt, 2, 100.0, result_dim2);
     if (status2.isError())
     {
         std::fprintf(stderr, "target dim=2: %s\n", status2.compactSummary().c_str());

@@ -55,11 +55,11 @@ public:
     [[nodiscard]] Size cols() const noexcept;
     [[nodiscard]] Size dimension() const noexcept;
     [[nodiscard]] bool isEmpty() const noexcept;
-    std::vector<double> multiply(core::BufferView<const double>vector) const;
-    std::vector<double> transposeMultiply(core::BufferView<const double>vector) const;
+    std::vector<double> multiply(core::BufferView<const double> vector) const;
+    std::vector<double> transposeMultiply(core::BufferView<const double> vector) const;
     BoundaryMatrix transpose() const;
-    std::vector<double> applyBoundary(core::BufferView<const double>chain) const;
-    std::vector<double> applyCoboundary(core::BufferView<const double>cochain) const;
+    std::vector<double> applyBoundary(core::BufferView<const double> chain) const;
+    std::vector<double> applyCoboundary(core::BufferView<const double> cochain) const;
     static_assert(core::ownership_utils::is_view_type<core::BufferView<const double>>::value,
                   "Matrix operations should use non-owning views");
     static_assert(core::ownership_utils::validateHotPathApi<core::BufferView<const double>>(),
@@ -129,9 +129,8 @@ public:
     Size rank(Size k) const;
     Size bettiNumber(Size k) const;
     Size maxDimension() const noexcept;
-    std::vector<double> applyBoundary(Size k, core::BufferView<const double>chain) const;
-    std::vector<double> applyCoboundary(Size k,
-                                        core::BufferView<const double>cochain) const;
+    std::vector<double> applyBoundary(Size k, core::BufferView<const double> chain) const;
+    std::vector<double> applyCoboundary(Size k, core::BufferView<const double> cochain) const;
     static_assert(core::ownership_utils::is_view_type<core::BufferView<const double>>::value,
                   "Chain operations should use non-owning views");
     static_assert(core::ownership_utils::validateHotPathApi<core::BufferView<const double>>(),

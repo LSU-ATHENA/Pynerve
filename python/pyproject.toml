@@ -1,17 +1,37 @@
+# Minimal pyproject.toml for sdist builds only.
+# The main build config is at ../pyproject.toml (repo root).
+# This file exists so that `python -m build --sdist python/` can
+# produce a source distribution from the python/ subdirectory,
+# which was the original working configuration.
+#
+# Metadata (authors, keywords, urls, classifiers) is mirrored from
+# the root pyproject.toml so that sdist builds carry complete metadata.
+
 [build-system]
 requires = ["scikit-build-core>=0.8", "pybind11", "numpy>=1.21.0"]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "pynerve"
-version = "1.0.0"
+version = "1.0.4"
 description = "Fast TDA library"
-readme = "README.md"
-authors = [
-    {name = "Nerve contributors"}
-]
+readme = "../README.md"
 license = {text = "MIT"}
+authors = [
+    {name = "Nerve contributors", email = "pynerve@googlegroups.com"}
+]
 requires-python = ">=3.10,<3.14"
+keywords = [
+    "topological-data-analysis",
+    "persistent-homology",
+    "tda",
+    "topology",
+    "data-science",
+    "machine-learning",
+    "computational-topology",
+    "vietoris-rips",
+    "persistence-diagrams",
+]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
@@ -26,42 +46,16 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+
 dependencies = [
     "numpy>=1.21.0",
     "scipy>=1.7.0",
 ]
 
-[project.optional-dependencies]
-all = [
-    "pynerve[torch,dev,ml,cache]",
-]
-torch = [
-    "torch>=2.4",
-]
-triton = [
-    "triton>=2.1",
-    "torch>=2.4",
-]
-ml = [
-    "scikit-learn>=1.0.0",
-    "numba>=0.56.0",
-]
-cache = [
-    "diskcache>=5.0.0",
-]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "pytest-xdist>=3.0.0",
-    "hypothesis>=6.0.0",
-    "ruff>=0.6.0",
-    "mypy>=1.8.0",
-    "pyright>=1.1.0",
-    "interrogate>=1.0.0",
-    "build>=1.0.0",
-    "twine>=4.0.0",
-    "pre-commit>=3.0.0",
-]
+[project.urls]
+Homepage = "https://github.com/LSU-ATHENA/Pynerve"
+Repository = "https://github.com/LSU-ATHENA/Pynerve"
+Issues = "https://github.com/LSU-ATHENA/Pynerve/issues"
 
 [tool.scikit-build]
 cmake.build-type = "Release"
@@ -72,22 +66,12 @@ cmake.args = [
     "-DENABLE_CUDA=OFF",
     "-DENABLE_MPI=OFF",
 ]
-install.components = ["python"]
-wheel.packages = ["pynerve"]
 sdist.include = [
     "../src/**",
     "../tools/**",
-    "../CMakeLists.txt",
     "../cmake/**",
-    "README.md",
+    "../CMakeLists.txt",
+    "bindings/**",
+    "../README.md",
     "../LICENSE",
 ]
-
-[tool.ruff.lint.per-file-ignores]
-"pynerve/triton/*" = ["N802", "N803", "N806", "ARG001", "F841", "SIM108", "PLW0603"]
-
-[tool.pyright]
-reportOptionalMemberAccess = false
-
-
-

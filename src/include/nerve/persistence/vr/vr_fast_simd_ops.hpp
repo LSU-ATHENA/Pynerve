@@ -35,7 +35,7 @@ namespace nerve::persistence
  * @param config VR computation configuration
  * @return Vector of persistence pairs
  */
-std::vector<Pair> computeVrPersistenceFastSimd(core::BufferView<const double>points,
+std::vector<Pair> computeVrPersistenceFastSimd(core::BufferView<const double> points,
                                                Size point_dim, const VRConfig &config);
 
 /**

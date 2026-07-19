@@ -1,0 +1,124 @@
+# Pynerve CUDA CI Image
+# Pre-built Docker image with CUDA 12.4, cuDNN, NCCL, PyTorch, and all build deps.
+# Eliminates ~15 min of dependency install from every GPU CI run.
+#
+# Build & push:
+#   docker build -t ghcr.io/lsu-athena/pynerve-ci:cuda12.4 -f .github/docker/Dockerfile.ci .
+#   docker push ghcr.io/lsu-athena/pynerve-ci:cuda12.4
+#
+# Usage in CI:
+#   container:
+#     image: ghcr.io/lsu-athena/pynerve-ci:cuda12.4
+#     options: --gpus all
+
+FROM nvidia/cuda:12.4.0-devel-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CUDA_HOME=/usr/local/cuda
+ENV PATH="${CUDA_HOME}/bin:${PATH}"
+ENV LD_LIBRARY_PATH="${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends software-properties-common \
+    && add-apt-repository -y ppa:ubuntu-toolchain-r/test \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    # Build toolchain
+    build-essential \
+    g++-13 \
+    gcc-13 \
+    ninja-build \
+    cmake \
+    pkg-config \
+    # Math / linear algebra
+    libeigen3-dev \
+    libblas-dev \
+    liblapack-dev \
+    # Parallelism
+    libomp-dev \
+    libtbb-dev \
+    # MPI (optional, for cuda-aware-mpi jobs)
+    openmpi-bin \
+    libopenmpi-dev \
+    # Networking / compression
+    libhdf5-dev \
+    libboost-all-dev \
+    # Utilities
+    ccache \
+    git \
+    curl \
+    wget \
+    ca-certificates \
+    # Python build deps
+    python3.11 \
+    python3.11-dev \
+    python3.11-venv \
+    python3-pip \
+    # Cleanup
+    && rm -rf /var/lib/apt/lists/*
+
+# Set GCC 13 as default
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 \
+    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100 \
+    && update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-13 100
+
+<<<<<<< HEAD
+=======
+# Python environment
+>>>>>>> origin/development
+RUN python3.11 -m pip install --no-cache-dir -U pip setuptools wheel
+
+# Install PyTorch with CUDA 12.4 support
+RUN python3.11 -m pip install --no-cache-dir \
+    torch torchvision torchaudio \
+    --index-url https://download.pytorch.org/whl/cu124
+
+# Install pynerve build & test dependencies
+RUN python3.11 -m pip install --no-cache-dir \
+    ninja \
+    scikit-build-core \
+    pybind11 \
+    numpy>=1.21.0 \
+    scipy>=1.7.0 \
+    pytest \
+    pytest-xdist \
+    pytest-asyncio \
+    pytest-cov \
+    pytest-benchmark \
+    hypothesis \
+    psutil \
+    scikit-learn \
+    numba \
+    diskcache \
+    networkx \
+    matplotlib \
+    build
+
+# Optional test backends
+RUN python3.11 -m pip install --no-cache-dir \
+    gudhi ripser dionysus tensorboard 2>/dev/null || true
+
+<<<<<<< HEAD
+=======
+# ccache configuration
+>>>>>>> origin/development
+ENV CCACHE_DIR=/ccache
+ENV CCACHE_MAXSIZE=10G
+ENV CMAKE_C_COMPILER_LAUNCHER=ccache
+ENV CMAKE_CXX_COMPILER_LAUNCHER=ccache
+ENV CMAKE_CUDA_COMPILER_LAUNCHER=ccache
+
+<<<<<<< HEAD
+=======
+# Verify installation
+>>>>>>> origin/development
+RUN nvcc --version && \
+    gcc --version && \
+    python3.11 -c "import torch; print(f'PyTorch {torch.__version__}, CUDA {torch.version.cuda}, GPUs: {torch.cuda.device_count()}')" && \
+    python3.11 -c "import numpy; print(f'NumPy {numpy.__version__}')" && \
+    cmake --version && \
+    ccache --version
+
+# Default to Python 3.11
+RUN ln -sf /usr/bin/python3.11 /usr/bin/python && \
+    ln -sf /usr/bin/python3.11 /usr/bin/python3
+
+WORKDIR /workspace

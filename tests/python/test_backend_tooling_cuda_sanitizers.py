@@ -54,7 +54,7 @@ def _torch_cuda_available() -> bool:
 
 
 @pytest.mark.quality
-@pytest.mark.skipif(not _torch_cuda_available(), reason="torch with CUDA not available")
+@pytest.mark.gpu_slow
 @pytest.mark.skipif(not _torch_cuda_available(), reason="torch with CUDA not available")
 def test_cuda_backend_runs_memory_race_and_sync_sanitizers(
     monkeypatch: pytest.MonkeyPatch,

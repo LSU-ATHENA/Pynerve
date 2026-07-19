@@ -42,8 +42,8 @@ __device__ __forceinline__ XorStrategy selectXorStrategy(int num_words, int num_
 }
 
 __device__ __forceinline__ void packed_column_xor(uint64_t *dest, const uint64_t *src,
-                                                           int num_words, int lane_id,
-                                                           XorStrategy strategy = XorStrategy::Auto)
+                                                  int num_words, int lane_id,
+                                                  XorStrategy strategy = XorStrategy::Auto)
 {
     if (strategy == XorStrategy::Auto)
     {
@@ -52,32 +52,32 @@ __device__ __forceinline__ void packed_column_xor(uint64_t *dest, const uint64_t
 
     switch (strategy)
     {
-    case XorStrategy::GlobalAtomics:
-        for (int w = lane_id; w < num_words; w += kWarpSize)
-        {
-            ptx::atom_xor_global_u64(reinterpret_cast<unsigned long long*>(&dest[w]),
-                                 static_cast<unsigned long long>(src[w]));
-        }
-        __syncwarp();
-        break;
-    case XorStrategy::DirectXor:
-    default:
-        for (int w = lane_id; w < num_words; w += kWarpSize)
-        {
-            dest[w] ^= src[w];
-        }
-        break;
-    case XorStrategy::SharedMemXor:
-        for (int w = lane_id; w < num_words; w += kWarpSize)
-        {
-            dest[w] ^= src[w];
-        }
-        break;
+        case XorStrategy::GlobalAtomics:
+            for (int w = lane_id; w < num_words; w += kWarpSize)
+            {
+                ptx::atom_xor_global_u64(reinterpret_cast<unsigned long long *>(&dest[w]),
+                                         static_cast<unsigned long long>(src[w]));
+            }
+            __syncwarp();
+            break;
+        case XorStrategy::DirectXor:
+        default:
+            for (int w = lane_id; w < num_words; w += kWarpSize)
+            {
+                dest[w] ^= src[w];
+            }
+            break;
+        case XorStrategy::SharedMemXor:
+            for (int w = lane_id; w < num_words; w += kWarpSize)
+            {
+                dest[w] ^= src[w];
+            }
+            break;
     }
 }
 
 __device__ __forceinline__ int packed_column_find_msb_warp(const uint64_t *col_words, int num_words,
-                                                            int lane_id)
+                                                           int lane_id)
 {
     int lane_pivot = -1;
     for (int w = num_words - 1 - lane_id; w >= 0; w -= kWarpSize)
@@ -102,7 +102,7 @@ __device__ __forceinline__ int packed_column_find_msb_warp(const uint64_t *col_w
 }
 
 __device__ __forceinline__ int packed_column_find_lsb_warp(const uint64_t *col_words, int num_words,
-                                                            int lane_id)
+                                                           int lane_id)
 {
     int lane_pivot = -1;
     for (int w = lane_id; w < num_words; w += kWarpSize)
@@ -127,7 +127,7 @@ __device__ __forceinline__ int packed_column_find_lsb_warp(const uint64_t *col_w
 }
 
 __device__ __forceinline__ int packed_column_pivot_find(const uint64_t *col_words, int num_words,
-                                                         int lane_id, bool use_lowest = false)
+                                                        int lane_id, bool use_lowest = false)
 {
     if (use_lowest)
     {
@@ -137,7 +137,7 @@ __device__ __forceinline__ int packed_column_pivot_find(const uint64_t *col_word
 }
 
 __device__ __forceinline__ bool packed_column_try_claim_pivot(int *pivot_to_col, int pivot_row,
-                                                               int col_idx, int lane_id)
+                                                              int col_idx, int lane_id)
 {
     unsigned int warp_mask = kFullWarpMask;
     int selected = -1;
@@ -169,9 +169,9 @@ __device__ __forceinline__ bool packed_column_try_claim_pivot(int *pivot_to_col,
 }
 
 __device__ __forceinline__ bool packed_column_try_claim_pivot_64(uint64_t *pivot_storage,
-                                                                  int pivot_word_idx,
-                                                                  int pivot_bit_idx, int col_idx,
-                                                                  int lane_id)
+                                                                 int pivot_word_idx,
+                                                                 int pivot_bit_idx, int col_idx,
+                                                                 int lane_id)
 {
     uint64_t bit_mask = 1ULL << pivot_bit_idx;
     bool claimed = false;
@@ -187,8 +187,9 @@ __device__ __forceinline__ bool packed_column_try_claim_pivot_64(uint64_t *pivot
                 break;
             }
             assumed_val = old_val;
-            old_val = atomicCAS(reinterpret_cast<unsigned long long*>(&pivot_storage[pivot_word_idx]),
-                               assumed_val, assumed_val | bit_mask);
+            old_val =
+                atomicCAS(reinterpret_cast<unsigned long long *>(&pivot_storage[pivot_word_idx]),
+                          assumed_val, assumed_val | bit_mask);
         } while (assumed_val != old_val);
         if (!(old_val & bit_mask))
         {
@@ -199,8 +200,8 @@ __device__ __forceinline__ bool packed_column_try_claim_pivot_64(uint64_t *pivot
 }
 
 __device__ __forceinline__ void packed_column_xor_masked(uint64_t *dest, const uint64_t *src,
-                                                           const uint64_t *mask, int num_words,
-                                                           int lane_id)
+                                                         const uint64_t *mask, int num_words,
+                                                         int lane_id)
 {
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 500
     if (num_words <= 8)
@@ -239,7 +240,7 @@ __device__ __forceinline__ void packed_column_clear(uint64_t *col, int num_words
 }
 
 __device__ __forceinline__ int packed_column_popcount_warp(const uint64_t *col_words, int num_words,
-                                                            int lane_id)
+                                                           int lane_id)
 {
     int lane_sum = 0;
     for (int w = lane_id; w < num_words; w += kWarpSize)
@@ -254,7 +255,7 @@ __device__ __forceinline__ int packed_column_popcount_warp(const uint64_t *col_w
 }
 
 __device__ __forceinline__ void packed_column_copy(uint64_t *dest, const uint64_t *src,
-                                                    int num_words, int lane_id)
+                                                   int num_words, int lane_id)
 {
     for (int w = lane_id; w < num_words; w += kWarpSize)
     {
@@ -262,8 +263,8 @@ __device__ __forceinline__ void packed_column_copy(uint64_t *dest, const uint64_
     }
 }
 
-__device__ __forceinline__ bool packed_column_is_empty_warp(const uint64_t *col_words, int num_words,
-                                                             int lane_id)
+__device__ __forceinline__ bool packed_column_is_empty_warp(const uint64_t *col_words,
+                                                            int num_words, int lane_id)
 {
     int lane_empty = 1;
     for (int w = lane_id; w < num_words; w += kWarpSize)
@@ -365,7 +366,7 @@ __device__ __forceinline__ T warp_block_reduce_sum(T val, T *shared_mem)
 
 template <int kBlockSize>
 __device__ __forceinline__ unsigned int warp_block_reduce_or(unsigned int val,
-                                                              unsigned int *shared_mem)
+                                                             unsigned int *shared_mem)
 {
     int lane_id = threadIdx.x & (kWarpSize - 1);
     int warp_id = threadIdx.x / kWarpSize;
@@ -392,8 +393,8 @@ __device__ __forceinline__ unsigned int warp_block_reduce_or(unsigned int val,
 }
 
 __device__ __forceinline__ void async_pipeline_stage_column(const uint64_t *__restrict__ src_global,
-                                                             uint64_t *__restrict__ dst_shared,
-                                                             int num_words, int lane_id)
+                                                            uint64_t *__restrict__ dst_shared,
+                                                            int num_words, int lane_id)
 {
     // Fallback: cp.async requires immediate size operand which fails
     // with runtime values; use direct copy on all architectures.
@@ -404,23 +405,20 @@ __device__ __forceinline__ void async_pipeline_stage_column(const uint64_t *__re
     __syncwarp();
 }
 
-__device__ __forceinline__ void async_pipeline_stage_and_xor(uint64_t *__restrict__ dest_global,
-                                                              const uint64_t *__restrict__ src_global,
-                                                              uint64_t *__restrict__ scratch_shared,
-                                                              int num_words, int lane_id)
+__device__ __forceinline__ void
+async_pipeline_stage_and_xor(uint64_t *__restrict__ dest_global,
+                             const uint64_t *__restrict__ src_global,
+                             uint64_t *__restrict__ scratch_shared, int num_words, int lane_id)
 {
     async_pipeline_stage_column(src_global, scratch_shared, num_words, lane_id);
     __syncwarp();
-    packed_column_xor(dest_global, scratch_shared, num_words, lane_id,
-                               XorStrategy::DirectXor);
+    packed_column_xor(dest_global, scratch_shared, num_words, lane_id, XorStrategy::DirectXor);
 }
 
-__device__ __forceinline__ int packed_column_reduce_iterative(uint64_t *col_words,
-                                                               const uint64_t *__restrict__ all_columns,
-                                                               const int *__restrict__ pivot_to_col,
-                                                               int num_words, int num_columns,
-                                                               int col_idx, int lane_id,
-                                                               int iteration_limit)
+__device__ __forceinline__ int
+packed_column_reduce_iterative(uint64_t *col_words, const uint64_t *__restrict__ all_columns,
+                               const int *__restrict__ pivot_to_col, int num_words, int num_columns,
+                               int col_idx, int lane_id, int iteration_limit)
 {
     int pivot = packed_column_pivot_find(col_words, num_words, lane_id, false);
     const int pivot_limit = num_words * 64;
@@ -443,8 +441,7 @@ __device__ __forceinline__ int packed_column_reduce_iterative(uint64_t *col_word
             break;
         }
         const uint64_t *src_base = all_columns + static_cast<size_t>(src_col) * num_words;
-        packed_column_xor(col_words, src_base, num_words, lane_id,
-                                   XorStrategy::DirectXor);
+        packed_column_xor(col_words, src_base, num_words, lane_id, XorStrategy::DirectXor);
         __syncwarp();
         pivot = packed_column_pivot_find(col_words, num_words, lane_id, false);
     }
@@ -485,21 +482,21 @@ __device__ __forceinline__ int packed_column_find_pivot(const uint64_t *col_word
 }
 
 __device__ __forceinline__ void packed_column_xor_hw(uint64_t *dest, const uint64_t *src,
-                                                      int num_words, int lane_id)
+                                                     int num_words, int lane_id)
 {
     packed_column_xor(dest, src, num_words, lane_id, XorStrategy::DirectXor);
     __syncwarp();
 }
 
 __device__ __forceinline__ void packed_column_xor_atomic_hw(uint64_t *dest, const uint64_t *src,
-                                                             int num_words, int lane_id)
+                                                            int num_words, int lane_id)
 {
     packed_column_xor(dest, src, num_words, lane_id, XorStrategy::GlobalAtomics);
     __syncwarp();
 }
 
 __device__ __forceinline__ unsigned int warp_match_any_col(uint64_t col_hash, int lane_id,
-                                                            unsigned int warp_mask)
+                                                           unsigned int warp_mask)
 {
     (void)lane_id;
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 700

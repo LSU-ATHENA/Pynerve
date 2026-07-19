@@ -60,8 +60,7 @@ bool test_launch_distance_matrix_basic()
     }
 
     // Verify known edge distances
-    if (std::abs(h_dist[0 * n + 1] - 3.0) > 1e-8 ||
-        std::abs(h_dist[1 * n + 0] - 3.0) > 1e-8)
+    if (std::abs(h_dist[0 * n + 1] - 3.0) > 1e-8 || std::abs(h_dist[1 * n + 0] - 3.0) > 1e-8)
     {
         std::cerr << "d(0,1) = " << h_dist[1] << " (expected 3.0)\n";
         goto cleanup;
@@ -119,8 +118,8 @@ bool test_launch_distance_matrix_symmetry()
         {
             if (std::abs(h_dist[i * n + j] - h_dist[j * n + i]) > 1e-8)
             {
-                std::cerr << "Asymmetry at (" << i << "," << j << "): "
-                          << h_dist[i * n + j] << " vs " << h_dist[j * n + i] << "\n";
+                std::cerr << "Asymmetry at (" << i << "," << j << "): " << h_dist[i * n + j]
+                          << " vs " << h_dist[j * n + i] << "\n";
                 goto cleanup;
             }
         }

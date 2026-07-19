@@ -32,7 +32,8 @@ int main()
         auto &assignment = result.value();
         assert(assignment.num_assigned == 3);
         assert(assignment.total_cost < 10.0); // diagonal assignment
-        std::cout << "PASSED: hungarian solve (3x3 diagonal, cost=" << assignment.total_cost << ")\n";
+        std::cout << "PASSED: hungarian solve (3x3 diagonal, cost=" << assignment.total_cost
+                  << ")\n";
     }
 
     // Hungarian: solve on 4x3 rectangular matrix

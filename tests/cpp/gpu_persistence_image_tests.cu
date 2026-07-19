@@ -17,8 +17,7 @@ int main()
         std::vector<float> deaths = {1.0f, 0.8f, 0.9f};
         bool called = false;
         nerve::gpu::persistence_image::compute_persistence_image_gpu(
-            births, deaths, 16, 0.1f,
-            [&](const std::vector<std::vector<double>> &result) {
+            births, deaths, 16, 0.1f, [&](const std::vector<std::vector<double>> &result) {
                 assert(!result.empty());
                 called = true;
             });

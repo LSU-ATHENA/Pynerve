@@ -39,7 +39,7 @@ class PersistencePipeline
 {
 public:
     explicit PersistencePipeline(const PipelineConfig &config);
-    ~PersistencePipeline();
+    ~PersistencePipeline() = default;
 
     PersistencePipeline(const PersistencePipeline &) = delete;
     PersistencePipeline &operator=(const PersistencePipeline &) = delete;

@@ -9,10 +9,12 @@
 
 #include "nerve/core.hpp"
 
+#ifndef _WIN32
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#endif
 
 #include <algorithm>
 #include <atomic>

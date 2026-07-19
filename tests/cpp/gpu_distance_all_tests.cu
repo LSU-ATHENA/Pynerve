@@ -29,8 +29,8 @@ int main()
         config.block_tile_n = 64;
         config.pipeline_stages = 1;
 
-        cudaError_t err = nerve::gpu::launchDistanceFastEd(
-            points.data(), n_points, dim, distances.data(), n_points, config);
+        cudaError_t err = nerve::gpu::launchDistanceFastEd(points.data(), n_points, dim,
+                                                           distances.data(), n_points, config);
         assert(err == cudaSuccess);
         assert(distances[0] == 0.0f);
         std::cout << "PASSED: distanceFastEd (3 pts, 3D, custom tiles)\n";
@@ -55,11 +55,10 @@ int main()
         std::vector<nerve::math::Point2D> d1 = {{0.0, 1.0}, {0.1, 0.9}};
         std::vector<nerve::math::Point2D> d2 = {{0.0, 1.0}, {0.1, 0.9}};
         bool called = false;
-        nerve::gpu::wasserstein::compute_auction_distance_gpu(
-            d1, d2, 2.0, [&](double distance) {
-                assert(distance >= 0.0);
-                called = true;
-            });
+        nerve::gpu::wasserstein::compute_auction_distance_gpu(d1, d2, 2.0, [&](double distance) {
+            assert(distance >= 0.0);
+            called = true;
+        });
         assert(called);
         std::cout << "PASSED: wasserstein auction distance GPU (2 pairs)\n";
     }

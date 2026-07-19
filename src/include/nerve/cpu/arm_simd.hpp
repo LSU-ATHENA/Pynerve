@@ -1,10 +1,11 @@
 #pragma once
+#include "nerve/simd/simd_base.hpp"
+
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <cmath>
 #include <cstring>
 #include <limits>
-#include "nerve/simd/simd_base.hpp"
 
 #if defined(__ARM_NEON) || defined(__ARM_NEON__)
 #include <arm_neon.h>
@@ -207,7 +208,8 @@ inline double reduce_sum(const double *data, std::size_t n)
 
 inline double reduce_max(const double *data, std::size_t n)
 {
-    if (n == 0) return 0.0;
+    if (n == 0)
+        return 0.0;
     double m = data[0];
 #if NERVE_HAS_NEON
     std::size_t i = 0;
@@ -221,10 +223,12 @@ inline double reduce_max(const double *data, std::size_t n)
     vst1q_f64(tmp, vmax);
     m = tmp[0] > tmp[1] ? tmp[0] : tmp[1];
     for (; i < n; ++i)
-        if (data[i] > m) m = data[i];
+        if (data[i] > m)
+            m = data[i];
 #else
     for (std::size_t i = 1; i < n; ++i)
-        if (data[i] > m) m = data[i];
+        if (data[i] > m)
+            m = data[i];
 #endif
     return m;
 }
@@ -320,10 +324,12 @@ inline void relu(double *data, std::size_t n)
         vst1q_f64(data + i, vmaxq_f64(v, vzero));
     }
     for (; i < n; ++i)
-        if (data[i] < 0.0) data[i] = 0.0;
+        if (data[i] < 0.0)
+            data[i] = 0.0;
 #else
     for (std::size_t i = 0; i < n; ++i)
-        if (data[i] < 0.0) data[i] = 0.0;
+        if (data[i] < 0.0)
+            data[i] = 0.0;
 #endif
 }
 
@@ -342,14 +348,18 @@ inline void clamp(double *data, double lo, double hi, std::size_t n)
     }
     for (; i < n; ++i)
     {
-        if (data[i] < lo) data[i] = lo;
-        if (data[i] > hi) data[i] = hi;
+        if (data[i] < lo)
+            data[i] = lo;
+        if (data[i] > hi)
+            data[i] = hi;
     }
 #else
     for (std::size_t i = 0; i < n; ++i)
     {
-        if (data[i] < lo) data[i] = lo;
-        if (data[i] > hi) data[i] = hi;
+        if (data[i] < lo)
+            data[i] = lo;
+        if (data[i] > hi)
+            data[i] = hi;
     }
 #endif
 }
@@ -493,7 +503,8 @@ inline float reduce_sum_f32(const float *data, std::size_t n)
 
 inline float reduce_max_f32(const float *data, std::size_t n)
 {
-    if (n == 0) return 0.0f;
+    if (n == 0)
+        return 0.0f;
     float m = data[0];
 #if NERVE_HAS_NEON
     std::size_t i = 0;
@@ -506,19 +517,24 @@ inline float reduce_max_f32(const float *data, std::size_t n)
     float tmp[4];
     vst1q_f32(tmp, vmax);
     m = tmp[0];
-    for (int k = 1; k < 4; ++k) if (tmp[k] > m) m = tmp[k];
+    for (int k = 1; k < 4; ++k)
+        if (tmp[k] > m)
+            m = tmp[k];
     for (; i < n; ++i)
-        if (data[i] > m) m = data[i];
+        if (data[i] > m)
+            m = data[i];
 #else
     for (std::size_t i = 1; i < n; ++i)
-        if (data[i] > m) m = data[i];
+        if (data[i] > m)
+            m = data[i];
 #endif
     return m;
 }
 
 inline float reduce_min_f32(const float *data, std::size_t n)
 {
-    if (n == 0) return 0.0f;
+    if (n == 0)
+        return 0.0f;
     float m = data[0];
 #if NERVE_HAS_NEON
     std::size_t i = 0;
@@ -531,12 +547,16 @@ inline float reduce_min_f32(const float *data, std::size_t n)
     float tmp[4];
     vst1q_f32(tmp, vmin);
     m = tmp[0];
-    for (int k = 1; k < 4; ++k) if (tmp[k] < m) m = tmp[k];
+    for (int k = 1; k < 4; ++k)
+        if (tmp[k] < m)
+            m = tmp[k];
     for (; i < n; ++i)
-        if (data[i] < m) m = data[i];
+        if (data[i] < m)
+            m = data[i];
 #else
     for (std::size_t i = 1; i < n; ++i)
-        if (data[i] < m) m = data[i];
+        if (data[i] < m)
+            m = data[i];
 #endif
     return m;
 }
@@ -631,10 +651,13 @@ inline float cosine_f32(const float *a, const float *b, std::size_t n)
     float dot_val = dot_f32(a, b, n);
     float na = norm2_f32(a, n);
     float nb = norm2_f32(b, n);
-    if (na == 0.0f || nb == 0.0f) return 1.0f;
+    if (na == 0.0f || nb == 0.0f)
+        return 1.0f;
     float cos_sim = dot_val / (na * nb);
-    if (cos_sim < -1.0f) cos_sim = -1.0f;
-    if (cos_sim > 1.0f)  cos_sim = 1.0f;
+    if (cos_sim < -1.0f)
+        cos_sim = -1.0f;
+    if (cos_sim > 1.0f)
+        cos_sim = 1.0f;
     return 1.0f - cos_sim;
 }
 
@@ -729,10 +752,12 @@ inline void relu_f32(float *data, std::size_t n)
         vst1q_f32(data + i, vmaxq_f32(v, vzero));
     }
     for (; i < n; ++i)
-        if (data[i] < 0.0f) data[i] = 0.0f;
+        if (data[i] < 0.0f)
+            data[i] = 0.0f;
 #else
     for (std::size_t i = 0; i < n; ++i)
-        if (data[i] < 0.0f) data[i] = 0.0f;
+        if (data[i] < 0.0f)
+            data[i] = 0.0f;
 #endif
 }
 
@@ -787,14 +812,18 @@ inline void clamp_f32(float *data, float lo, float hi, std::size_t n)
     }
     for (; i < n; ++i)
     {
-        if (data[i] < lo) data[i] = lo;
-        if (data[i] > hi) data[i] = hi;
+        if (data[i] < lo)
+            data[i] = lo;
+        if (data[i] > hi)
+            data[i] = hi;
     }
 #else
     for (std::size_t i = 0; i < n; ++i)
     {
-        if (data[i] < lo) data[i] = lo;
-        if (data[i] > hi) data[i] = hi;
+        if (data[i] < lo)
+            data[i] = lo;
+        if (data[i] > hi)
+            data[i] = hi;
     }
 #endif
 }
@@ -991,7 +1020,8 @@ inline float reduce_sum_f32(const float *data, std::size_t n)
 
 inline float reduce_max_f32(const float *data, std::size_t n)
 {
-    if (n == 0) return 0.0f;
+    if (n == 0)
+        return 0.0f;
     float m = data[0];
 #if NERVE_HAS_SVE
     std::size_t i = 0;
@@ -1007,7 +1037,8 @@ inline float reduce_max_f32(const float *data, std::size_t n)
     m = svmaxv_f32(svptrue_b32(), vmax);
 #else
     for (std::size_t i = 1; i < n; ++i)
-        if (data[i] > m) m = data[i];
+        if (data[i] > m)
+            m = data[i];
 #endif
     return m;
 }
@@ -1083,7 +1114,8 @@ inline void fmad_f32(const float *a, const float *b, float *c, std::size_t n)
 
 inline float reduce_min_f32(const float *data, std::size_t n)
 {
-    if (n == 0) return 0.0f;
+    if (n == 0)
+        return 0.0f;
     float m = data[0];
 #if NERVE_HAS_SVE
     std::size_t i = 0;
@@ -1099,7 +1131,8 @@ inline float reduce_min_f32(const float *data, std::size_t n)
     m = svminv_f32(svptrue_b32(), vmin);
 #else
     for (std::size_t i = 1; i < n; ++i)
-        if (data[i] < m) m = data[i];
+        if (data[i] < m)
+            m = data[i];
 #endif
     return m;
 }
@@ -1205,10 +1238,13 @@ inline float cosine_f32(const float *a, const float *b, std::size_t n)
     float dot_val = dot_f32(a, b, n);
     float na = norm2_f32(a, n);
     float nb = norm2_f32(b, n);
-    if (na == 0.0f || nb == 0.0f) return 1.0f;
+    if (na == 0.0f || nb == 0.0f)
+        return 1.0f;
     float cos_sim = dot_val / (na * nb);
-    if (cos_sim < -1.0f) cos_sim = -1.0f;
-    if (cos_sim > 1.0f)  cos_sim = 1.0f;
+    if (cos_sim < -1.0f)
+        cos_sim = -1.0f;
+    if (cos_sim > 1.0f)
+        cos_sim = 1.0f;
     return 1.0f - cos_sim;
 }
 
@@ -1247,7 +1283,8 @@ inline void relu_f32(float *data, std::size_t n)
     }
 #else
     for (std::size_t i = 0; i < n; ++i)
-        if (data[i] < 0.0f) data[i] = 0.0f;
+        if (data[i] < 0.0f)
+            data[i] = 0.0f;
 #endif
 }
 
@@ -1308,8 +1345,10 @@ inline void clamp_f32(float *data, float lo, float hi, std::size_t n)
 #else
     for (std::size_t i = 0; i < n; ++i)
     {
-        if (data[i] < lo) data[i] = lo;
-        if (data[i] > hi) data[i] = hi;
+        if (data[i] < lo)
+            data[i] = lo;
+        if (data[i] > hi)
+            data[i] = hi;
     }
 #endif
 }
@@ -1337,9 +1376,11 @@ inline void add_f16(half *a, const half *b, std::size_t n)
         float16x4_t vrh = vcvt_f16_f32(vr);
         vst1_f16(reinterpret_cast<float16_t *>(a + i), vrh);
     }
-    for (; i < n; ++i) a[i] = float_to_half(half_to_float(a[i]) + half_to_float(b[i]));
+    for (; i < n; ++i)
+        a[i] = float_to_half(half_to_float(a[i]) + half_to_float(b[i]));
 #else
-    for (std::size_t i = 0; i < n; ++i) a[i] = float_to_half(half_to_float(a[i]) + half_to_float(b[i]));
+    for (std::size_t i = 0; i < n; ++i)
+        a[i] = float_to_half(half_to_float(a[i]) + half_to_float(b[i]));
 #endif
 }
 
@@ -1357,9 +1398,11 @@ inline void sub_f16(half *a, const half *b, std::size_t n)
         float16x4_t vrh = vcvt_f16_f32(vr);
         vst1_f16(reinterpret_cast<float16_t *>(a + i), vrh);
     }
-    for (; i < n; ++i) a[i] = float_to_half(half_to_float(a[i]) - half_to_float(b[i]));
+    for (; i < n; ++i)
+        a[i] = float_to_half(half_to_float(a[i]) - half_to_float(b[i]));
 #else
-    for (std::size_t i = 0; i < n; ++i) a[i] = float_to_half(half_to_float(a[i]) - half_to_float(b[i]));
+    for (std::size_t i = 0; i < n; ++i)
+        a[i] = float_to_half(half_to_float(a[i]) - half_to_float(b[i]));
 #endif
 }
 
@@ -1377,9 +1420,11 @@ inline void mul_f16(half *a, const half *b, std::size_t n)
         float16x4_t vrh = vcvt_f16_f32(vr);
         vst1_f16(reinterpret_cast<float16_t *>(a + i), vrh);
     }
-    for (; i < n; ++i) a[i] = float_to_half(half_to_float(a[i]) * half_to_float(b[i]));
+    for (; i < n; ++i)
+        a[i] = float_to_half(half_to_float(a[i]) * half_to_float(b[i]));
 #else
-    for (std::size_t i = 0; i < n; ++i) a[i] = float_to_half(half_to_float(a[i]) * half_to_float(b[i]));
+    for (std::size_t i = 0; i < n; ++i)
+        a[i] = float_to_half(half_to_float(a[i]) * half_to_float(b[i]));
 #endif
 }
 
@@ -1397,9 +1442,11 @@ inline void scale_f16(half *a, half alpha, std::size_t n)
         float16x4_t vrh = vcvt_f16_f32(vr);
         vst1_f16(reinterpret_cast<float16_t *>(a + i), vrh);
     }
-    for (; i < n; ++i) a[i] = float_to_half(half_to_float(a[i]) * fa);
+    for (; i < n; ++i)
+        a[i] = float_to_half(half_to_float(a[i]) * fa);
 #else
-    for (std::size_t i = 0; i < n; ++i) a[i] = float_to_half(half_to_float(a[i]) * fa);
+    for (std::size_t i = 0; i < n; ++i)
+        a[i] = float_to_half(half_to_float(a[i]) * fa);
 #endif
 }
 
@@ -1419,9 +1466,11 @@ inline void axpy_f16(half alpha, const half *x, half *y, std::size_t n)
         float16x4_t vrh = vcvt_f16_f32(vr);
         vst1_f16(reinterpret_cast<float16_t *>(y + i), vrh);
     }
-    for (; i < n; ++i) y[i] = float_to_half(half_to_float(y[i]) + fa * half_to_float(x[i]));
+    for (; i < n; ++i)
+        y[i] = float_to_half(half_to_float(y[i]) + fa * half_to_float(x[i]));
 #else
-    for (std::size_t i = 0; i < n; ++i) y[i] = float_to_half(half_to_float(y[i]) + fa * half_to_float(x[i]));
+    for (std::size_t i = 0; i < n; ++i)
+        y[i] = float_to_half(half_to_float(y[i]) + fa * half_to_float(x[i]));
 #endif
 }
 
@@ -1441,9 +1490,11 @@ inline void fmad_f16(const half *a, const half *b, half *c, std::size_t n)
         float16x4_t vrh = vcvt_f16_f32(vr);
         vst1_f16(reinterpret_cast<float16_t *>(c + i), vrh);
     }
-    for (; i < n; ++i) c[i] = float_to_half(half_to_float(c[i]) + half_to_float(a[i]) * half_to_float(b[i]));
+    for (; i < n; ++i)
+        c[i] = float_to_half(half_to_float(c[i]) + half_to_float(a[i]) * half_to_float(b[i]));
 #else
-    for (std::size_t i = 0; i < n; ++i) c[i] = float_to_half(half_to_float(c[i]) + half_to_float(a[i]) * half_to_float(b[i]));
+    for (std::size_t i = 0; i < n; ++i)
+        c[i] = float_to_half(half_to_float(c[i]) + half_to_float(a[i]) * half_to_float(b[i]));
 #endif
 }
 
@@ -1462,16 +1513,19 @@ inline float reduce_sum_f16(const half *data, std::size_t n)
     float tmp[4];
     vst1q_f32(tmp, vacc);
     sum = tmp[0] + tmp[1] + tmp[2] + tmp[3];
-    for (; i < n; ++i) sum += half_to_float(data[i]);
+    for (; i < n; ++i)
+        sum += half_to_float(data[i]);
 #else
-    for (std::size_t i = 0; i < n; ++i) sum += half_to_float(data[i]);
+    for (std::size_t i = 0; i < n; ++i)
+        sum += half_to_float(data[i]);
 #endif
     return sum;
 }
 
 inline float reduce_max_f16(const half *data, std::size_t n)
 {
-    if (n == 0) return 0.0f;
+    if (n == 0)
+        return 0.0f;
     float m = half_to_float(data[0]);
 #if NERVE_HAS_NEON
     std::size_t i = 0;
@@ -1486,17 +1540,30 @@ inline float reduce_max_f16(const half *data, std::size_t n)
     float tmp[4];
     vst1q_f32(tmp, vmax);
     m = tmp[0];
-    for (int k = 1; k < 4; ++k) if (tmp[k] > m) m = tmp[k];
-    for (; i < n; ++i) { float v = half_to_float(data[i]); if (v > m) m = v; }
+    for (int k = 1; k < 4; ++k)
+        if (tmp[k] > m)
+            m = tmp[k];
+    for (; i < n; ++i)
+    {
+        float v = half_to_float(data[i]);
+        if (v > m)
+            m = v;
+    }
 #else
-    for (std::size_t i = 1; i < n; ++i) { float v = half_to_float(data[i]); if (v > m) m = v; }
+    for (std::size_t i = 1; i < n; ++i)
+    {
+        float v = half_to_float(data[i]);
+        if (v > m)
+            m = v;
+    }
 #endif
     return m;
 }
 
 inline float reduce_min_f16(const half *data, std::size_t n)
 {
-    if (n == 0) return 0.0f;
+    if (n == 0)
+        return 0.0f;
     float m = half_to_float(data[0]);
 #if NERVE_HAS_NEON
     std::size_t i = 0;
@@ -1511,10 +1578,22 @@ inline float reduce_min_f16(const half *data, std::size_t n)
     float tmp[4];
     vst1q_f32(tmp, vmin);
     m = tmp[0];
-    for (int k = 1; k < 4; ++k) if (tmp[k] < m) m = tmp[k];
-    for (; i < n; ++i) { float v = half_to_float(data[i]); if (v < m) m = v; }
+    for (int k = 1; k < 4; ++k)
+        if (tmp[k] < m)
+            m = tmp[k];
+    for (; i < n; ++i)
+    {
+        float v = half_to_float(data[i]);
+        if (v < m)
+            m = v;
+    }
 #else
-    for (std::size_t i = 1; i < n; ++i) { float v = half_to_float(data[i]); if (v < m) m = v; }
+    for (std::size_t i = 1; i < n; ++i)
+    {
+        float v = half_to_float(data[i]);
+        if (v < m)
+            m = v;
+    }
 #endif
     return m;
 }
@@ -1536,9 +1615,11 @@ inline float dot_f16(const half *a, const half *b, std::size_t n)
     float tmp[4];
     vst1q_f32(tmp, vacc);
     sum = tmp[0] + tmp[1] + tmp[2] + tmp[3];
-    for (; i < n; ++i) sum += half_to_float(a[i]) * half_to_float(b[i]);
+    for (; i < n; ++i)
+        sum += half_to_float(a[i]) * half_to_float(b[i]);
 #else
-    for (std::size_t i = 0; i < n; ++i) sum += half_to_float(a[i]) * half_to_float(b[i]);
+    for (std::size_t i = 0; i < n; ++i)
+        sum += half_to_float(a[i]) * half_to_float(b[i]);
 #endif
     return sum;
 }
@@ -1558,9 +1639,17 @@ inline float norm2_f16(const half *vec, std::size_t n)
     float tmp[4];
     vst1q_f32(tmp, vacc);
     sum = tmp[0] + tmp[1] + tmp[2] + tmp[3];
-    for (; i < n; ++i) { float v = half_to_float(vec[i]); sum += v * v; }
+    for (; i < n; ++i)
+    {
+        float v = half_to_float(vec[i]);
+        sum += v * v;
+    }
 #else
-    for (std::size_t i = 0; i < n; ++i) { float v = half_to_float(vec[i]); sum += v * v; }
+    for (std::size_t i = 0; i < n; ++i)
+    {
+        float v = half_to_float(vec[i]);
+        sum += v * v;
+    }
 #endif
     return std::sqrt(sum);
 }
@@ -1578,9 +1667,11 @@ inline void neg_f16(half *data, std::size_t n)
         float16x4_t vrh = vcvt_f16_f32(vr);
         vst1_f16(reinterpret_cast<float16_t *>(data + i), vrh);
     }
-    for (; i < n; ++i) data[i] = float_to_half(-half_to_float(data[i]));
+    for (; i < n; ++i)
+        data[i] = float_to_half(-half_to_float(data[i]));
 #else
-    for (std::size_t i = 0; i < n; ++i) data[i] = float_to_half(-half_to_float(data[i]));
+    for (std::size_t i = 0; i < n; ++i)
+        data[i] = float_to_half(-half_to_float(data[i]));
 #endif
 }
 
@@ -1596,9 +1687,11 @@ inline void sqrt_f16(half *data, std::size_t n)
         float16x4_t vrh = vcvt_f16_f32(vr);
         vst1_f16(reinterpret_cast<float16_t *>(data + i), vrh);
     }
-    for (; i < n; ++i) data[i] = float_to_half(std::sqrt(half_to_float(data[i])));
+    for (; i < n; ++i)
+        data[i] = float_to_half(std::sqrt(half_to_float(data[i])));
 #else
-    for (std::size_t i = 0; i < n; ++i) data[i] = float_to_half(std::sqrt(half_to_float(data[i])));
+    for (std::size_t i = 0; i < n; ++i)
+        data[i] = float_to_half(std::sqrt(half_to_float(data[i])));
 #endif
 }
 
@@ -1668,9 +1761,11 @@ inline void abs_f16(half *data, std::size_t n)
         float16x4_t vrh = vcvt_f16_f32(vr);
         vst1_f16(reinterpret_cast<float16_t *>(data + i), vrh);
     }
-    for (; i < n; ++i) data[i] = float_to_half(std::abs(half_to_float(data[i])));
+    for (; i < n; ++i)
+        data[i] = float_to_half(std::abs(half_to_float(data[i])));
 #else
-    for (std::size_t i = 0; i < n; ++i) data[i] = float_to_half(std::abs(half_to_float(data[i])));
+    for (std::size_t i = 0; i < n; ++i)
+        data[i] = float_to_half(std::abs(half_to_float(data[i])));
 #endif
 }
 
@@ -1754,16 +1849,20 @@ inline void clamp_f16(half *data, half lo, half hi, std::size_t n)
     for (; i < n; ++i)
     {
         float v = half_to_float(data[i]);
-        if (v < flo) v = flo;
-        if (v > fhi) v = fhi;
+        if (v < flo)
+            v = flo;
+        if (v > fhi)
+            v = fhi;
         data[i] = float_to_half(v);
     }
 #else
     for (std::size_t i = 0; i < n; ++i)
     {
         float v = half_to_float(data[i]);
-        if (v < flo) v = flo;
-        if (v > fhi) v = fhi;
+        if (v < flo)
+            v = flo;
+        if (v > fhi)
+            v = fhi;
         data[i] = float_to_half(v);
     }
 #endif
@@ -1975,7 +2074,8 @@ inline void fmad_f16(const half *a, const half *b, half *c, std::size_t n)
 
 inline float reduce_max_f16(const half *data, std::size_t n)
 {
-    if (n == 0) return 0.0f;
+    if (n == 0)
+        return 0.0f;
     std::size_t i = 0;
     svfloat32_t vmax = svdup_n_f32(-std::numeric_limits<float>::infinity());
     svbool_t pg = svwhilelt_b32(i, n);
@@ -1992,7 +2092,8 @@ inline float reduce_max_f16(const half *data, std::size_t n)
 
 inline float reduce_min_f16(const half *data, std::size_t n)
 {
-    if (n == 0) return 0.0f;
+    if (n == 0)
+        return 0.0f;
     std::size_t i = 0;
     svfloat32_t vmin = svdup_n_f32(std::numeric_limits<float>::infinity());
     svbool_t pg = svwhilelt_b32(i, n);

@@ -107,11 +107,11 @@ inline VRConfig to_base_fast_vr_config(const VRConfig &config)
 } // namespace accelerated::detail
 
 // Function declarations
-std::vector<Pair> computeVrPersistenceFast(core::BufferView<const double>points,
-                                           Size point_dim, const VRConfig &config);
+std::vector<Pair> computeVrPersistenceFast(core::BufferView<const double> points, Size point_dim,
+                                           const VRConfig &config);
 
 errors::ErrorResult<std::vector<Pair>>
-computeVrPersistenceFastResult(core::BufferView<const double>points, Size point_dim,
+computeVrPersistenceFastResult(core::BufferView<const double> points, Size point_dim,
                                const VRConfig &config);
 
 inline std::vector<Pair> computeVrPersistence(const double *points, Size num_points, Size point_dim,

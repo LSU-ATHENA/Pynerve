@@ -16,8 +16,8 @@ int main()
         int num_nodes = 8;
         int feature_dim = 16;
         int num_heads = 4;
-        auto result = nerve::graphs::gpu::benchmarkMultiHeadAttention(
-            num_nodes, feature_dim, num_heads);
+        auto result =
+            nerve::graphs::gpu::benchmarkMultiHeadAttention(num_nodes, feature_dim, num_heads);
         assert(result.gpu_time_ms >= 0.0);
         assert(result.num_nodes == num_nodes);
         std::cout << "PASSED: multi-head attention benchmark (8 nodes, 16 dim, 4 heads, "
@@ -29,8 +29,8 @@ int main()
         int num_nodes = 32;
         int feature_dim = 64;
         int num_heads = 8;
-        auto result = nerve::graphs::gpu::benchmarkMultiHeadAttention(
-            num_nodes, feature_dim, num_heads);
+        auto result =
+            nerve::graphs::gpu::benchmarkMultiHeadAttention(num_nodes, feature_dim, num_heads);
         assert(result.gpu_time_ms >= 0.0);
         assert(result.num_nodes == num_nodes);
         std::cout << "PASSED: multi-head attention benchmark (32 nodes, 64 dim, 8 heads, "

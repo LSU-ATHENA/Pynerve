@@ -122,8 +122,8 @@ namespace simplify
 [[nodiscard]] SimplificationEstimate estimateSimplificationBenefit(size_t num_points,
                                                                    size_t num_edges);
 
-} // namespace nerve::persistence::simplify
+} // namespace simplify
 
-} // namespace nerve::persistence
+} // namespace persistence
 
 } // namespace nerve

@@ -3,6 +3,9 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
+#ifdef _WIN32
+#include <malloc.h>
+#endif
 #include <new>
 #if defined(NERVE_HAS_NUMA)
 #include <numa.h>
@@ -104,15 +107,15 @@ static void *tryHugepageAlloc()
 {
 #if defined(__linux__) && defined(MAP_ANONYMOUS)
     void *p = nerve::sys::map(nullptr, kHugePageSize, nerve::sys::MAP_PROT_RW,
-                               nerve::sys::MAP_FLAG_PRIVATE | nerve::sys::MAP_FLAG_ANONYMOUS);
+                              nerve::sys::MAP_FLAG_PRIVATE | nerve::sys::MAP_FLAG_ANONYMOUS);
     if (p != nerve::sys::kMapFailed)
     {
         nerve::sys::advise(p, kHugePageSize, nerve::sys::MAP_ADV_HUGEPAGE);
         return p;
     }
     p = nerve::sys::map(nullptr, kHugePageSize, nerve::sys::MAP_PROT_RW,
-                         nerve::sys::MAP_FLAG_PRIVATE | nerve::sys::MAP_FLAG_ANONYMOUS |
-                         nerve::sys::MAP_FLAG_HUGETLB);
+                        nerve::sys::MAP_FLAG_PRIVATE | nerve::sys::MAP_FLAG_ANONYMOUS |
+                            nerve::sys::MAP_FLAG_HUGETLB);
     if (p != nerve::sys::kMapFailed)
         return p;
 #endif
@@ -151,7 +154,11 @@ void *GlobalPagePool::allocFromOS() noexcept
         hugetlb_pages_.fetch_add(1, std::memory_order_relaxed);
         return p;
     }
+#ifdef _WIN32
+    p = _aligned_malloc(kHugePageSize, kHugePageSize);
+#else
     p = std::aligned_alloc(kHugePageSize, kHugePageSize);
+#endif
     if (!p)
     {
         p = std::malloc(kHugePageSize);
@@ -342,7 +349,11 @@ void *NumaAwareAllocator::allocate(Size bytes, Size alignment)
 #endif
     if (alignment <= alignof(std::max_align_t))
     {
+#ifdef _WIN32
+        void *p = _aligned_malloc(bytes, alignment);
+#else
         void *p = std::aligned_alloc(alignment, bytes);
+#endif
         if (p)
             trackAllocEvent(bytes);
         return p ? p : std::malloc(bytes);

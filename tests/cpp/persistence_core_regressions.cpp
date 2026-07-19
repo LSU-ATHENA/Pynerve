@@ -18,7 +18,6 @@ using nerve::persistence::Diagram;
 using nerve::persistence::Pair;
 using namespace nerve::test;
 
-
 bool check_pair_construction()
 {
     Pair p;

@@ -23,7 +23,6 @@ using nerve::graphs::SimplicialGraph;
 using nerve::graphs::WeightedGraph;
 using namespace nerve::test;
 
-
 bool check_graph_construction()
 {
     Graph g(3);

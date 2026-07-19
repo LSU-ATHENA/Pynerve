@@ -12,7 +12,6 @@
 namespace
 {
 
-
 constexpr double TOL = 1e-9;
 
 bool check_bottleneck_self_distance_zero()

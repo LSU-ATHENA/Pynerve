@@ -133,11 +133,7 @@ int main()
         const int max_simplex_size = 3;
 
         // Distance matrix (3x3)
-        std::vector<double> h_dist = {
-            0.0, 3.0, 4.0,
-            3.0, 0.0, 5.0,
-            4.0, 5.0, 0.0
-        };
+        std::vector<double> h_dist = {0.0, 3.0, 4.0, 3.0, 0.0, 5.0, 4.0, 5.0, 0.0};
 
         // One simplex (triangle) with vertices {0, 1, 2}
         std::vector<int> h_vertices = {0, 1, 2};
@@ -172,22 +168,20 @@ int main()
         cudaStream_t stream;
         cudaStreamCreate(&stream);
 
-        nerve::gpu::streaming::kernels::launchBirthDeathUpdate(
-            d_affected, 1, d_dist, d_birth, d_death, n_points,
-            d_vertices, d_sizes, max_simplex_size, stream);
+        nerve::gpu::streaming::kernels::launchBirthDeathUpdate(d_affected, 1, d_dist, d_birth,
+                                                               d_death, n_points, d_vertices,
+                                                               d_sizes, max_simplex_size, stream);
 
         cudaStreamSynchronize(stream);
 
-        cudaMemcpy(h_birth.data(), d_birth, n_simplices * sizeof(double),
-                   cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_birth.data(), d_birth, n_simplices * sizeof(double), cudaMemcpyDeviceToHost);
 
         // Max edge length of triangle is 5.0
         double expected_birth = 5.0;
         assert(std::fabs(h_birth[0] - expected_birth) < 1e-6);
         (void)expected_birth;
 
-        std::cout << "PASS: launchBirthDeathUpdate computed birth time "
-                  << h_birth[0] << std::endl;
+        std::cout << "PASS: launchBirthDeathUpdate computed birth time " << h_birth[0] << std::endl;
 
         cudaStreamDestroy(stream);
         cudaFree(d_dist);

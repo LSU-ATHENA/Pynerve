@@ -37,8 +37,7 @@ int main()
     {
         auto caps = nerve::gpu::advanced::AdvancedCapabilities::detect();
         std::cout << "PASSED: GPU features (PTX=" << caps.supportsPTXOptimizations()
-                  << " WGMMA=" << caps.supportsWGMMA()
-                  << " clusters=" << caps.supportsClusters()
+                  << " WGMMA=" << caps.supportsWGMMA() << " clusters=" << caps.supportsClusters()
                   << " FP4=" << caps.supportsFP4() << ")\n";
     }
 

@@ -459,6 +459,7 @@ class TestPersistentHomology:
         ph.cpu()
         assert ph.device == torch.device("cpu")
 
+    @pytest.mark.gpu_smoke
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_cuda_default(self):
         from pynerve.nn.persistent_homology import PersistentHomology
@@ -467,6 +468,7 @@ class TestPersistentHomology:
         ph.cuda()
         assert ph.device.type == "cuda"
 
+    @pytest.mark.gpu_smoke
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_cuda_index(self):
         from pynerve.nn.persistent_homology import PersistentHomology
@@ -475,6 +477,7 @@ class TestPersistentHomology:
         ph.cuda(0)
         assert ph.device.type == "cuda"
 
+    @pytest.mark.gpu_smoke
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
     def test_cuda_device(self):
         from pynerve.nn.persistent_homology import PersistentHomology

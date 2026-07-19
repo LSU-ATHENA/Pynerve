@@ -25,10 +25,10 @@ cudaError_t reduceMatrixOptimized(const std::uint64_t *boundaryMatrix, std::uint
                                   int n_cols, int n_words_per_col, int *pivotColumn,
                                   std::uint64_t *reduced, cudaStream_t stream);
 cudaError_t extractPivotOfColumn(const std::uint64_t *reduced, int n_cols, int words_per_col,
-                                  int *pivot_of_col, cudaStream_t stream);
+                                 int *pivot_of_col, cudaStream_t stream);
 cudaError_t launchBuildPackedFromCSC(std::uint64_t *d_packed, const int *d_col_ptr,
-                                    const int *d_row_indices, int n_cols, int words_per_col,
-                                    cudaStream_t stream);
+                                     const int *d_row_indices, int n_cols, int words_per_col,
+                                     cudaStream_t stream);
 } // namespace nerve::persistence::accelerated
 
 namespace nerve::gpu::kernels
@@ -269,8 +269,7 @@ public:
         int max_pivot = words_per_col * 64;
         int *d_pivot_to_col = nullptr;
         std::size_t pivot_bytes = 0;
-        if (!detail::checkedProduct(static_cast<std::size_t>(max_pivot), sizeof(int),
-                                    &pivot_bytes))
+        if (!detail::checkedProduct(static_cast<std::size_t>(max_pivot), sizeof(int), &pivot_bytes))
         {
             last_error_ = "pivot table byte size overflows size_t";
             return cudaErrorInvalidValue;

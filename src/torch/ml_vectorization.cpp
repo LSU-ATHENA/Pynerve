@@ -18,7 +18,6 @@ constexpr T clamp(T value, T min_val, T max_val)
     return std::max(min_val, std::min(value, max_val));
 }
 
-
 bool is_supported_weight_fn(const std::string &weight_fn)
 {
     return weight_fn == "constant" || weight_fn == "linear" || weight_fn == "persistence";

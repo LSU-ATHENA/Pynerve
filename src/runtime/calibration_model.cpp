@@ -2,7 +2,9 @@
 #include "nerve/runtime/calibration_model.hpp"
 
 #include <fcntl.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include <algorithm>
 #include <chrono>
@@ -107,6 +109,7 @@ errors::ErrorResult<void> appendLineAtomic(const std::string &path, const std::s
             return errors::ErrorResult<void>::error(errors::ErrorCode::E00_IO_TIMEOUT);
         }
     }
+#ifndef _WIN32
     const int fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644);
     if (fd < 0)
     {
@@ -136,6 +139,21 @@ errors::ErrorResult<void> appendLineAtomic(const std::string &path, const std::s
         return errors::ErrorResult<void>::error(errors::ErrorCode::E00_IO_TIMEOUT);
     }
     return errors::ErrorResult<void>::success();
+#else
+    // Fallback: use C++ standard library file I/O on Windows.
+    std::ofstream output(path, std::ios::app);
+    if (!output.is_open())
+    {
+        return errors::ErrorResult<void>::error(errors::ErrorCode::E00_IO_TIMEOUT);
+    }
+    output << line << '\n';
+    if (output.fail())
+    {
+        return errors::ErrorResult<void>::error(errors::ErrorCode::E00_IO_TIMEOUT);
+    }
+    output.flush();
+    return errors::ErrorResult<void>::success();
+#endif
 }
 PredictionWithBounds aggregateToPrediction(const std::string &bucket_id,
                                            const BucketAggregate &aggregate)

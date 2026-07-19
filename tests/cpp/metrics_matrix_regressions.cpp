@@ -12,7 +12,6 @@
 namespace
 {
 
-
 constexpr double kTol = 1e-10;
 
 std::vector<double> make_point_cloud(size_t n, size_t dim, unsigned seed)

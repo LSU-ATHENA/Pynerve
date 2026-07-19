@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 #include "nerve/approximation/distance_approximation.hpp"
 #include "nerve/core_types.hpp"
 #include "nerve/simd/simd_base.hpp"

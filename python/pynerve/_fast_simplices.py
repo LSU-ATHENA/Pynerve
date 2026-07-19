@@ -59,7 +59,7 @@ def enumerate_simplices_fast(
 
     edges_result = vr_edges_fast(points, _md)
     assert isinstance(edges_result, np.ndarray)
-    edges = edges_result.astype(np.int64, copy=False)
+    edges = edges_result.astype(np.int64, copy=False)  # type: ignore[union-attr]
     simplices.append(edges)
     if len(edges) == 0:
         return simplices

@@ -80,7 +80,7 @@ std::size_t binomialCoefficientBounded(std::size_t n, std::size_t k)
 
 } // namespace
 
-ProblemCharacteristics ProblemAnalyzer::analyzeProblem(core::BufferView<const double>points,
+ProblemCharacteristics ProblemAnalyzer::analyzeProblem(core::BufferView<const double> points,
                                                        std::size_t point_dim)
 {
     ProblemCharacteristics characteristics;
@@ -220,8 +220,7 @@ bool ProblemAnalyzer::shouldUseGpu(const ProblemCharacteristics &problem,
     return false;
 }
 
-double ProblemAnalyzer::computeDensity(core::BufferView<const double>points,
-                                       std::size_t point_dim)
+double ProblemAnalyzer::computeDensity(core::BufferView<const double> points, std::size_t point_dim)
 {
     if (points.size() == 0 || point_dim == 0)
     {
@@ -336,7 +335,7 @@ bool ProblemAnalyzer::isHighDimensional(std::size_t point_dim)
     return point_dim > 10;
 }
 
-bool ProblemAnalyzer::hasRegularStructure(core::BufferView<const double>points)
+bool ProblemAnalyzer::hasRegularStructure(core::BufferView<const double> points)
 {
     if (points.size() < 8)
     {

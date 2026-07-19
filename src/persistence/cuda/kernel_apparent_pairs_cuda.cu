@@ -267,6 +267,4 @@ __global__ void __launch_bounds__(256)
     }
 }
 
-
-
 } // namespace nerve::persistence::accelerated

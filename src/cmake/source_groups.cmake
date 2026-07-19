@@ -76,17 +76,11 @@ set(NERVE_CORE_SOURCES
     runtime/calibration_model.cpp
     runtime/calibration_model_detail.cpp
     runtime/hardware_probe.cpp
-    persistence/accelerated/cuda_edge_extraction.cpp
     persistence/accelerated/determinism.cpp
     persistence/accelerated/determinism_validation.cpp
     persistence/accelerated/error_code_registry.cpp
     persistence/accelerated/error_handling.cpp
     persistence/accelerated/exception_safety.cpp
-    persistence/accelerated/fast_vr_gpu_integration.cpp
-    persistence/accelerated/gpu_memory_monitor.cpp
-    persistence/accelerated/gpu_reduction_engine.cpp
-    persistence/accelerated/heterogeneous_fast_vr.cpp
-    persistence/accelerated/hybrid_reduction_engine.cpp
     persistence/accelerated/optimization_advice.cpp
     persistence/accelerated/performance.cpp
     persistence/accelerated/performance_impact.cpp
@@ -357,6 +351,12 @@ set(NERVE_CORE_SOURCES
 
 # CUDA-dependent core sources (always compiled when CUDA is available)
 set(NERVE_CUDA_CORE_SOURCES
+    persistence/accelerated/cuda_edge_extraction.cpp
+    persistence/accelerated/fast_vr_gpu_integration.cpp
+    persistence/accelerated/gpu_memory_monitor.cpp
+    persistence/accelerated/gpu_reduction_engine.cpp
+    persistence/accelerated/heterogeneous_fast_vr.cpp
+    persistence/accelerated/hybrid_reduction_engine.cpp
     persistence/adaptive_acceleration/cuda/hybrid_algorithms.cpp
     persistence/adaptive_acceleration/cuda/tensor_core_optimizer.cpp
     persistence/kernels/thread_block_cluster.cpp

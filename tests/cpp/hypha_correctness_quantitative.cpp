@@ -1,9 +1,9 @@
 // Quantitative correctness: measures HyphaReducer (GPU) vs reduceMatrixLockfree
 // (CPU reference) at count-level (pair count) and value-level (birth/death/dim).
 
+#include "hypha_test_helpers.hpp"
 #include "nerve/algebra/boundary.hpp"
 #include "nerve/persistence/reduction/reduction_hypha_ops.hpp"
-#include "hypha_test_helpers.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -44,9 +44,7 @@ inline PairKey make_key(const nerve::Pair &p)
 inline void sort_pairs_by_key(std::vector<nerve::Pair> &pairs)
 {
     std::sort(pairs.begin(), pairs.end(),
-              [](const nerve::Pair &a, const nerve::Pair &b) {
-                  return make_key(a) < make_key(b);
-              });
+              [](const nerve::Pair &a, const nerve::Pair &b) { return make_key(a) < make_key(b); });
 }
 
 // Per-dimension value-level stats
@@ -56,8 +54,8 @@ inline void sort_pairs_by_key(std::vector<nerve::Pair> &pairs)
 struct DimStats
 {
     int matched = 0;
-    int only_a = 0;   // pair exists in first result only
-    int only_b = 0;   // pair exists in second result only
+    int only_a = 0; // pair exists in first result only
+    int only_b = 0; // pair exists in second result only
 };
 
 static constexpr int kMaxDim = 3;
@@ -82,20 +80,16 @@ struct FastSeqResult
     double elapsed_ms;
 };
 
-FastSeqResult reduceSequentialFast(
-    const std::vector<std::vector<int>> &boundary,
-    const std::vector<double> &filtration_values,
-    const std::vector<double> &row_filtration_values,
-    const std::vector<nerve::Dimension> &dimensions,
-    int n_rows)
+FastSeqResult reduceSequentialFast(const std::vector<std::vector<int>> &boundary,
+                                   const std::vector<double> &filtration_values,
+                                   const std::vector<double> &row_filtration_values,
+                                   const std::vector<nerve::Dimension> &dimensions, int n_rows)
 {
     auto t0 = std::chrono::high_resolution_clock::now();
 
     int n_cols = static_cast<int>(boundary.size());
-    std::vector<int> pivot_to_column(
-        static_cast<std::size_t>(n_rows > 0 ? n_rows : 1), -1);
-    std::vector<int> column_pivot(
-        static_cast<std::size_t>(n_cols), -1);
+    std::vector<int> pivot_to_column(static_cast<std::size_t>(n_rows > 0 ? n_rows : 1), -1);
+    std::vector<int> column_pivot(static_cast<std::size_t>(n_cols), -1);
 
     for (int j = 0; j < n_cols; ++j)
     {
@@ -151,10 +145,9 @@ FastSeqResult reduceSequentialFast(
         if (p < 0)
             continue;
         nerve::Pair pair{};
-        pair.dimension =
-            static_cast<std::size_t>(j) < dimensions.size()
-                ? dimensions[static_cast<std::size_t>(j)]
-                : 0;
+        pair.dimension = static_cast<std::size_t>(j) < dimensions.size()
+                             ? dimensions[static_cast<std::size_t>(j)]
+                             : 0;
         std::size_t pu = static_cast<std::size_t>(p);
         pair.birth = pu < row_filtration_values.size()
                          ? row_filtration_values[pu]
@@ -166,15 +159,13 @@ FastSeqResult reduceSequentialFast(
     }
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    double elapsed =
-        std::chrono::duration<double, std::milli>(t1 - t0).count();
+    double elapsed = std::chrono::duration<double, std::milli>(t1 - t0).count();
     return {pairs, elapsed};
 }
 
 // Compare two sorted pair lists and return matched/orphan counts.
 PairComparison compare_pair_sets(const std::vector<nerve::Pair> &a_pairs,
-                                 const std::vector<nerve::Pair> &b_pairs,
-                                 const char *label_a = "A",
+                                 const std::vector<nerve::Pair> &b_pairs, const char *label_a = "A",
                                  const char *label_b = "B")
 {
     auto a_sorted = a_pairs;
@@ -211,11 +202,8 @@ PairComparison compare_pair_sets(const std::vector<nerve::Pair> &a_pairs,
             if (result.examples.size() < 3)
             {
                 char buf[128];
-                std::snprintf(buf, sizeof(buf),
-                              "  %s-only: (%.4f, %.4f, dim=%d)",
-                              label_a,
-                              std::get<0>(ak), std::get<1>(ak),
-                              static_cast<int>(std::get<2>(ak)));
+                std::snprintf(buf, sizeof(buf), "  %s-only: (%.4f, %.4f, dim=%d)", label_a,
+                              std::get<0>(ak), std::get<1>(ak), static_cast<int>(std::get<2>(ak)));
                 result.examples.push_back(buf);
             }
             ++ai;
@@ -227,11 +215,8 @@ PairComparison compare_pair_sets(const std::vector<nerve::Pair> &a_pairs,
             if (result.examples.size() < 3)
             {
                 char buf[128];
-                std::snprintf(buf, sizeof(buf),
-                              "  %s-only: (%.4f, %.4f, dim=%d)",
-                              label_b,
-                              std::get<0>(bk), std::get<1>(bk),
-                              static_cast<int>(std::get<2>(bk)));
+                std::snprintf(buf, sizeof(buf), "  %s-only: (%.4f, %.4f, dim=%d)", label_b,
+                              std::get<0>(bk), std::get<1>(bk), static_cast<int>(std::get<2>(bk)));
                 result.examples.push_back(buf);
             }
             ++bi;
@@ -246,11 +231,8 @@ PairComparison compare_pair_sets(const std::vector<nerve::Pair> &a_pairs,
         if (result.examples.size() < 3)
         {
             char buf[128];
-            std::snprintf(buf, sizeof(buf),
-                          "  %s-only: (%.4f, %.4f, dim=%d)",
-                          label_a,
-                          std::get<0>(ak), std::get<1>(ak),
-                          static_cast<int>(std::get<2>(ak)));
+            std::snprintf(buf, sizeof(buf), "  %s-only: (%.4f, %.4f, dim=%d)", label_a,
+                          std::get<0>(ak), std::get<1>(ak), static_cast<int>(std::get<2>(ak)));
             result.examples.push_back(buf);
         }
         ++ai;
@@ -263,11 +245,8 @@ PairComparison compare_pair_sets(const std::vector<nerve::Pair> &a_pairs,
         if (result.examples.size() < 3)
         {
             char buf[128];
-            std::snprintf(buf, sizeof(buf),
-                          "  %s-only: (%.4f, %.4f, dim=%d)",
-                          label_b,
-                          std::get<0>(bk), std::get<1>(bk),
-                          static_cast<int>(std::get<2>(bk)));
+            std::snprintf(buf, sizeof(buf), "  %s-only: (%.4f, %.4f, dim=%d)", label_b,
+                          std::get<0>(bk), std::get<1>(bk), static_cast<int>(std::get<2>(bk)));
             result.examples.push_back(buf);
         }
         ++bi;
@@ -336,8 +315,6 @@ struct SizeStats
     double total_seq_ms = 0.0;
 };
 
-
-
 // Trial runner
 
 TrialResult run_trial(int num_points, float threshold, unsigned seed, int dim)
@@ -373,7 +350,7 @@ TrialResult run_trial(int num_points, float threshold, unsigned seed, int dim)
     auto lockfree_row_filtration = std::vector<double>();
     auto lockfree_dims = std::vector<nerve::Dimension>();
     nerve::test::hypha::to_lockfree_format(bm, lockfree_boundary, lockfree_filtration,
-                                            lockfree_row_filtration, lockfree_dims);
+                                           lockfree_row_filtration, lockfree_dims);
     auto t2 = clock::now();
     auto lockfree_pairs = nerve::persistence::reduceMatrixLockfree(
         lockfree_boundary, lockfree_filtration, &lockfree_row_filtration, lockfree_dims,
@@ -382,9 +359,9 @@ TrialResult run_trial(int num_points, float threshold, unsigned seed, int dim)
     result.lockfree_pairs = static_cast<int>(lockfree_pairs.size());
     result.lockfree_ms = std::chrono::duration<double, std::milli>(t3 - t2).count();
 
-    auto fast_seq = reduceSequentialFast(
-        lockfree_boundary, lockfree_filtration, lockfree_row_filtration, lockfree_dims,
-        static_cast<int>(bm.rows()));
+    auto fast_seq =
+        reduceSequentialFast(lockfree_boundary, lockfree_filtration, lockfree_row_filtration,
+                             lockfree_dims, static_cast<int>(bm.rows()));
     result.seq_pairs = static_cast<int>(fast_seq.pairs.size());
     result.seq_ms = fast_seq.elapsed_ms;
 
@@ -414,34 +391,29 @@ int main()
         return 0;
     }
 
-    struct Config { int points; float threshold; int trials; int dim; };
+    struct Config
+    {
+        int points;
+        float threshold;
+        int trials;
+        int dim;
+    };
     Config configs[] = {
-        {100,  0.5f,  10,  0},
-        {200,  0.40f, 10,  0},
-        {500,  0.25f, 10,  0},
-        {20,   0.8f,  10,  2},
-        {50,   0.6f,  10,  2},
-        {100,  0.5f,  10,  2},
-        {200,  0.40f, 10,  2},
-        {100,  0.5f,  30,  1},
-        {200,  0.40f, 30,  1},
-        {500,  0.25f, 30,  1},
-        {1000, 0.18f, 30,  1},
-        {10,   0.9f,  15,  3},
-        {15,   0.7f,  15,  3},
-        {20,   0.6f,  15,  3},
-        {12,   1.0f,  15,  3},
+        {100, 0.5f, 10, 0},  {200, 0.40f, 10, 0}, {500, 0.25f, 10, 0},  {20, 0.8f, 10, 2},
+        {50, 0.6f, 10, 2},   {100, 0.5f, 10, 2},  {200, 0.40f, 10, 2},  {100, 0.5f, 30, 1},
+        {200, 0.40f, 30, 1}, {500, 0.25f, 30, 1}, {1000, 0.18f, 30, 1}, {10, 0.9f, 15, 3},
+        {15, 0.7f, 15, 3},   {20, 0.6f, 15, 3},   {12, 1.0f, 15, 3},
     };
 
     auto print_comp_header = []() {
-        std::printf("  %-6s | %3s | %8s | %8s | %8s | %8s | %5s | %5s | %5s\n",
-            "Points", "Dim", "GvL-Mis", "GvS-Mis", "LvS-Mis", "Pairs", "GPUms", "LFms", "Seqms");
+        std::printf("  %-6s | %3s | %8s | %8s | %8s | %8s | %5s | %5s | %5s\n", "Points", "Dim",
+                    "GvL-Mis", "GvS-Mis", "LvS-Mis", "Pairs", "GPUms", "LFms", "Seqms");
     };
 
     auto print_value_header = [](const char *label) {
         std::printf("\n--- Value-Level: %s ---\n", label);
-        std::printf("  %-6s | %3s | %8s | %8s | %8s | %9s\n",
-            "Points", "Dim", "Matched", "Only-A", "Only-B", "Mismatch%%");
+        std::printf("  %-6s | %3s | %8s | %8s | %8s | %9s\n", "Points", "Dim", "Matched", "Only-A",
+                    "Only-B", "Mismatch%%");
     };
 
     // Helper: accumulate PairComparison into a SizeStats field
@@ -463,21 +435,20 @@ int main()
         int total = comp.matched + comp.only_a + comp.only_b;
         int mismatched = comp.only_a + comp.only_b;
         double rate = total > 0 ? 100.0 * static_cast<double>(mismatched) / total : 0.0;
-        std::printf("  %6s | %3s | %8d | %8d | %8d | %8.2f%%\n",
-            points_str, dim_str,
-            comp.matched, comp.only_a, comp.only_b, rate);
+        std::printf("  %6s | %3s | %8d | %8d | %8d | %8.2f%%\n", points_str, dim_str, comp.matched,
+                    comp.only_a, comp.only_b, rate);
         // Per-dimension rows
         for (int d = 0; d < kDimCount; ++d)
         {
             int dim_total = comp.dims[d].matched + comp.dims[d].only_a + comp.dims[d].only_b;
-            if (dim_total == 0) continue;
+            if (dim_total == 0)
+                continue;
             int dim_mismatched = comp.dims[d].only_a + comp.dims[d].only_b;
-            double dim_rate = dim_total > 0
-                ? 100.0 * static_cast<double>(dim_mismatched) / dim_total
-                : 0.0;
-            std::printf("  %6s | %3s | %8d | %8d | %8d | %8.2f%%\n",
-                "", d <= kMaxDim ? std::to_string(d).c_str() : "?",
-                comp.dims[d].matched, comp.dims[d].only_a, comp.dims[d].only_b, dim_rate);
+            double dim_rate =
+                dim_total > 0 ? 100.0 * static_cast<double>(dim_mismatched) / dim_total : 0.0;
+            std::printf("  %6s | %3s | %8d | %8d | %8d | %8.2f%%\n", "",
+                        d <= kMaxDim ? std::to_string(d).c_str() : "?", comp.dims[d].matched,
+                        comp.dims[d].only_a, comp.dims[d].only_b, dim_rate);
         }
     };
 
@@ -506,26 +477,17 @@ int main()
     PairComparison grand_lf_vs_seq;
 
     // Header
-    std::printf("%s\n",
-        "  Three-Way HyphaReducer Correctness Test");
-    std::printf("%s\n",
-        "  GPU    = HyphaReducer (warp-level packed-column reduction)");
-    std::printf("%s\n",
-        "  LF     = reduceMatrixLockfree (CPU parallel, lockfree atomic)");
-    std::printf("%s\n",
-        "  Seq    = Reducer::reduceTwist  (CPU deterministic, ground truth)");
-    std::printf("%s\n",
-        "  GvL    = GPU vs Lockfree (net divergence)");
-    std::printf("%s\n",
-        "  GvS    = GPU vs Sequential (GPU-specific accuracy)");
-    std::printf("%s\n",
-        "  LvS    = Lockfree vs Sequential (algorithm noise)");
-    std::printf("%s\n",
-        "  Pairs matched by (birth, death, dimension) -- indices ignored");
+    std::printf("%s\n", "  Three-Way HyphaReducer Correctness Test");
+    std::printf("%s\n", "  GPU    = HyphaReducer (warp-level packed-column reduction)");
+    std::printf("%s\n", "  LF     = reduceMatrixLockfree (CPU parallel, lockfree atomic)");
+    std::printf("%s\n", "  Seq    = Reducer::reduceTwist  (CPU deterministic, ground truth)");
+    std::printf("%s\n", "  GvL    = GPU vs Lockfree (net divergence)");
+    std::printf("%s\n", "  GvS    = GPU vs Sequential (GPU-specific accuracy)");
+    std::printf("%s\n", "  LvS    = Lockfree vs Sequential (algorithm noise)");
+    std::printf("%s\n", "  Pairs matched by (birth, death, dimension) -- indices ignored");
     std::printf("\n");
 
-    std::printf("%s\n",
-        "--- Count-Level Accuracy (three-way) ---");
+    std::printf("%s\n", "--- Count-Level Accuracy (three-way) ---");
     print_comp_header();
 
     for (const auto &cfg : configs)
@@ -582,11 +544,9 @@ int main()
         double seq_ms = stats.total_seq_ms / stats.trials;
 
         std::printf("  %6d | %3d | %8d | %8d | %8d | %8d | %5.0f | %5.0f | %5.0f\n",
-            stats.num_points, cfg.dim,
-            stats.count_mismatches_gpu_lf,
-            stats.count_mismatches_gpu_seq,
-            stats.count_mismatches_lf_seq,
-            avg_seq_pairs, gpu_ms, lf_ms, seq_ms);
+                    stats.num_points, cfg.dim, stats.count_mismatches_gpu_lf,
+                    stats.count_mismatches_gpu_seq, stats.count_mismatches_lf_seq, avg_seq_pairs,
+                    gpu_ms, lf_ms, seq_ms);
 
         // Value-level: three comparisons
         char pts_str[16];
@@ -634,12 +594,10 @@ int main()
     double avg_lf_ms = grand_lockfree_ms / grand_trials;
     double avg_seq_ms = grand_seq_ms / grand_trials;
 
-    std::printf("  %-6s | %3s | %8d | %8d | %8d | %8d | %5.0f | %5.0f | %5.0f\n",
-        "TOTAL", "-",
-        grand_count_mismatches_gpu_lf,
-        grand_count_mismatches_gpu_seq,
-        grand_count_mismatches_lf_seq,
-        grand_total_seq_pairs, avg_gpu_ms, avg_lf_ms, avg_seq_ms);
+    std::printf("  %-6s | %3s | %8d | %8d | %8d | %8d | %5.0f | %5.0f | %5.0f\n", "TOTAL", "-",
+                grand_count_mismatches_gpu_lf, grand_count_mismatches_gpu_seq,
+                grand_count_mismatches_lf_seq, grand_total_seq_pairs, avg_gpu_ms, avg_lf_ms,
+                avg_seq_ms);
 
     // Grand total value-level
     std::printf("\n");
@@ -650,43 +608,33 @@ int main()
     print_value_header("GPU vs Lockfree (net divergence) -- Grand Total");
     print_value_comp("TOTAL", "ALL", grand_gpu_vs_lf);
 
-    std::printf("\n%s\n",
-        "  Legend:");
+    std::printf("\n%s\n", "  Legend:");
+    std::printf("%s\n", "  Count mismatch = trial where pair counts differ");
     std::printf("%s\n",
-        "  Count mismatch = trial where pair counts differ");
+                "  Value mismatch = pair (birth,death,dim) exists in one result but not both");
     std::printf("%s\n",
-        "  Value mismatch = pair (birth,death,dim) exists in one result but not both");
-    std::printf("%s\n",
-        "  GvL = GPU vs Lockfree (net divergence between two non-deterministic impls)");
-    std::printf("%s\n",
+                "  GvL = GPU vs Lockfree (net divergence between two non-deterministic impls)");
+    std::printf(
+        "%s\n",
         "  GvS = GPU vs Sequential (GPU-specific accuracy against deterministic ground truth)");
     std::printf("%s\n",
-        "  LvS = Lockfree vs Sequential (parallel algorithm noise against ground truth)");
+                "  LvS = Lockfree vs Sequential (parallel algorithm noise against ground truth)");
+    std::printf("%s\n", "");
+    std::printf("%s\n", "  Sequential Reducer (Reducer::reduceTwist) is the deterministic twist");
+    std::printf("%s\n", "  algorithm -- column-by-column, no parallelism.  Used as ground truth");
+    std::printf("%s\n", "  despite being ~10-100x slower than GPU.");
     std::printf("%s\n", "");
     std::printf("%s\n",
-        "  Sequential Reducer (Reducer::reduceTwist) is the deterministic twist");
+                "  Dim-0 (vertices x 0): 0%% mismatch all comparisons (no rows to race on).");
     std::printf("%s\n",
-        "  algorithm -- column-by-column, no parallelism.  Used as ground truth");
-    std::printf("%s\n",
-        "  despite being ~10-100x slower than GPU.");
+                "  Dim-1 (edges x vertices): GvL 0%% count mismatch, GvS ~0%% count mismatch.");
+    std::printf("%s\n", "  Dim-2 (triangles x edges): GvL ~50-80%% count mismatch; GvS reveals");
+    std::printf("%s\n", "  whether the lockfree and GPU share the same non-deterministic behavior");
+    std::printf("%s\n", "  or diverge independently from sequential.");
     std::printf("%s\n", "");
-    std::printf("%s\n",
-        "  Dim-0 (vertices x 0): 0%% mismatch all comparisons (no rows to race on).");
-    std::printf("%s\n",
-        "  Dim-1 (edges x vertices): GvL 0%% count mismatch, GvS ~0%% count mismatch.");
-    std::printf("%s\n",
-        "  Dim-2 (triangles x edges): GvL ~50-80%% count mismatch; GvS reveals");
-    std::printf("%s\n",
-        "  whether the lockfree and GPU share the same non-deterministic behavior");
-    std::printf("%s\n",
-        "  or diverge independently from sequential.");
-    std::printf("%s\n", "");
-    std::printf("%s\n",
-        "  Mismatch%% = (Only-A + Only-B) / total pairs in the comparison union.");
-    std::printf("%s\n",
-        "  Rate can exceed 100%% when both sides produce different pairs for");
-    std::printf("%s\n",
-        "  the same death simplex (races shift birth values pervasively).");
+    std::printf("%s\n", "  Mismatch%% = (Only-A + Only-B) / total pairs in the comparison union.");
+    std::printf("%s\n", "  Rate can exceed 100%% when both sides produce different pairs for");
+    std::printf("%s\n", "  the same death simplex (races shift birth values pervasively).");
     std::printf("\n");
 
     // PASS/FAIL: GPU-vs-Seq count error should be low (GPU should match
@@ -703,21 +651,24 @@ int main()
     //
     // The threshold of 1% accounts for this fundamental limit while
     // flagging any larger regression.
-    double gpu_seq_count_rate = grand_total_seq_pairs > 0
-        ? 100.0 * static_cast<double>(grand_count_delta_gpu_seq_abs) / grand_total_seq_pairs
-        : 0.0;
-    double lf_seq_count_rate = grand_total_seq_pairs > 0
-        ? 100.0 * static_cast<double>(grand_count_delta_lf_seq_abs) / grand_total_seq_pairs
-        : 0.0;
+    double gpu_seq_count_rate =
+        grand_total_seq_pairs > 0
+            ? 100.0 * static_cast<double>(grand_count_delta_gpu_seq_abs) / grand_total_seq_pairs
+            : 0.0;
+    double lf_seq_count_rate =
+        grand_total_seq_pairs > 0
+            ? 100.0 * static_cast<double>(grand_count_delta_lf_seq_abs) / grand_total_seq_pairs
+            : 0.0;
 
     std::printf("  GPU-vs-Seq count error rate: %.4f%%\n", gpu_seq_count_rate);
     std::printf("  LF-vs-Seq  count error rate: %.4f%%\n", lf_seq_count_rate);
     std::printf("\n");
 
     bool acceptable = (gpu_seq_count_rate < 1.0 && lf_seq_count_rate < 1.0);
-    std::printf("%s\n", acceptable
-        ? "PASS: GPU and Lockfree count error within 1% of sequential ground truth."
-        : "FAIL: count-level error exceeds tolerance.");
+    std::printf("%s\n",
+                acceptable
+                    ? "PASS: GPU and Lockfree count error within 1% of sequential ground truth."
+                    : "FAIL: count-level error exceeds tolerance.");
     return acceptable ? 0 : 1;
 }
 

@@ -7,7 +7,8 @@ int main()
 {
     if (!has_gpu())
     {
-        std::cerr << "No CUDA device available -- skipping GPU optimization kernel coverage tests\n";
+        std::cerr
+            << "No CUDA device available -- skipping GPU optimization kernel coverage tests\n";
         return 0;
     }
 
@@ -21,8 +22,8 @@ int main()
 
     // Optimization: multiplyWouldOverflow
     {
-        bool overflows = nerve::optimization::multiplyWouldOverflow(
-            static_cast<size_t>(1) << 32, static_cast<size_t>(1) << 32);
+        bool overflows = nerve::optimization::multiplyWouldOverflow(static_cast<size_t>(1) << 32,
+                                                                    static_cast<size_t>(1) << 32);
         assert(overflows || !overflows);
         std::cout << "PASSED: optimization multiplyWouldOverflow\n";
     }

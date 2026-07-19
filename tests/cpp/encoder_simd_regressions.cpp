@@ -11,7 +11,6 @@
 namespace
 {
 
-
 bool check_simd_encoder_configuration()
 {
     std::vector<double> input(16, 1.0);

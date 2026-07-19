@@ -29,7 +29,8 @@ int main()
 
     // Cluster: getOrBenchmarkClusterConfig
     {
-        auto result = nerve::persistence::accelerated::getOrBenchmarkClusterConfig(32, 2, "test_key");
+        auto result =
+            nerve::persistence::accelerated::getOrBenchmarkClusterConfig(32, 2, "test_key");
         assert(result.optimalTimeMs >= 0.0f);
         std::cout << "PASSED: getOrBenchmarkClusterConfig (32 points, dim=2)\n";
     }

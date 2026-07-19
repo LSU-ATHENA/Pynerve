@@ -24,8 +24,7 @@ int main()
         auto cols = matrix.numCols();
         assert(rows >= 0);
         assert(cols >= 0);
-        std::cout << "PASSED: PackedBoundaryMatrix dimensions ("
-                  << rows << "x" << cols << ")\n";
+        std::cout << "PASSED: PackedBoundaryMatrix dimensions (" << rows << "x" << cols << ")\n";
     }
 
     // Formats: PackedBoundaryMatrix nnz

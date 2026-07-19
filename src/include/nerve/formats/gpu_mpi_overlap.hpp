@@ -33,9 +33,7 @@ struct OverlapStats
     double overlap_efficiency = 0.0;
 };
 
-#if !defined(NERVE_HAS_CUDA) || !defined(NERVE_HAS_MPI)
-#error "nerve/formats/gpu_mpi_overlap.hpp requires both CUDA and MPI"
-#endif
+#if defined(NERVE_HAS_CUDA) && defined(NERVE_HAS_MPI)
 
 #include <cuda_runtime.h>
 #include <mpi.h>
@@ -93,5 +91,7 @@ private:
 
     void ensurePinnedCapacity(Size required_words);
 };
+
+#endif // NERVE_HAS_CUDA && NERVE_HAS_MPI
 
 } // namespace nerve::formats::mpi

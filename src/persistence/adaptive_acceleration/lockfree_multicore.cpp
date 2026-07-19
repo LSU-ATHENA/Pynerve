@@ -1,7 +1,7 @@
 
 #include "nerve/persistence/adaptive_acceleration/lockfree_multicore.hpp"
-#include "nerve/runtime/hardware_probe.hpp"
 #include "nerve/platform.hpp"
+#include "nerve/runtime/hardware_probe.hpp"
 
 #include <algorithm>
 #include <chrono>

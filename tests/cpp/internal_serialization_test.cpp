@@ -12,7 +12,6 @@
 namespace
 {
 
-
 bool check_byte_swapping()
 {
     (void)sizeof(nerve::serialization::SchemaVersion);

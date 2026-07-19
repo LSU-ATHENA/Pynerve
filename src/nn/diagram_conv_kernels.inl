@@ -57,15 +57,14 @@ void validate_numeric_span(std::span<const T> values, const std::string &functio
     {
         if (!std::isfinite(val))
         {
-            throw_invalid_argument(function_name,
-                                   "non-finite " + name + " value detected (" + std::to_string(val) +
-                                       ")");
+            throw_invalid_argument(function_name, "non-finite " + name + " value detected (" +
+                                                      std::to_string(val) + ")");
         }
     }
 }
 
-inline void validate_diagram_layout(std::span<const float> diagram, size_t batch_size, size_t n_pairs,
-                             const std::string &function_name)
+inline void validate_diagram_layout(std::span<const float> diagram, size_t batch_size,
+                                    size_t n_pairs, const std::string &function_name)
 {
     const size_t expected_diagram =
         checked_product({batch_size, n_pairs, 3}, function_name, "diagram shape size overflows");
@@ -117,9 +116,8 @@ std::vector<T> DiagramConv1D<T>::conv1d(std::span<const T> input, size_t batch_s
                         const int input_idx = static_cast<int>(i) + k - pad;
                         if (input_idx >= 0 && input_idx < static_cast<int>(n_pairs))
                         {
-                            const size_t input_offset =
-                                (b * config_.in_channels + ic) * n_pairs +
-                                static_cast<size_t>(input_idx);
+                            const size_t input_offset = (b * config_.in_channels + ic) * n_pairs +
+                                                        static_cast<size_t>(input_idx);
                             const size_t kernel_offset =
                                 (oc * config_.in_channels + ic) * config_.kernel_size +
                                 static_cast<size_t>(k);

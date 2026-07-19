@@ -10,6 +10,12 @@
 #include <limits>
 
 #ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #elif __linux__
 #include <unistd.h>
@@ -31,18 +37,18 @@ constexpr double MILLIS_PER_SECOND = 1000.0;
 
 size_t saturatedProduct(size_t lhs, size_t rhs)
 {
-    if (lhs != 0 && rhs > std::numeric_limits<size_t>::max() / lhs)
+    if (lhs != 0 && rhs > (std::numeric_limits<size_t>::max)() / lhs)
     {
-        return std::numeric_limits<size_t>::max();
+        return (std::numeric_limits<size_t>::max)();
     }
     return lhs * rhs;
 }
 
 size_t saturatedAdd(size_t lhs, size_t rhs)
 {
-    if (rhs > std::numeric_limits<size_t>::max() - lhs)
+    if (rhs > (std::numeric_limits<size_t>::max)() - lhs)
     {
-        return std::numeric_limits<size_t>::max();
+        return (std::numeric_limits<size_t>::max)();
     }
     return lhs + rhs;
 }
@@ -67,10 +73,10 @@ size_t saturatedScaledSize(size_t value, double scale)
         return 0;
     }
     const double scaled = static_cast<double>(value) * scale;
-    const double max_size = static_cast<double>(std::numeric_limits<size_t>::max());
+    const double max_size = static_cast<double>((std::numeric_limits<size_t>::max)());
     if (!std::isfinite(scaled) || scaled >= max_size)
     {
-        return std::numeric_limits<size_t>::max();
+        return (std::numeric_limits<size_t>::max)();
     }
     return static_cast<size_t>(scaled);
 }
@@ -117,7 +123,7 @@ double estimateComputationTime(const ProblemCharacteristicsLocal &prob)
 
     (void)prob.gpu_available;
     double distance_time = 1e-7 * n * n * dim;
-    double clique_time = 1e-8 * std::pow(n, std::min(dim + 1, 4.0)) * std::pow(r, dim);
+    double clique_time = 1e-8 * std::pow(n, (std::min)(dim + 1, 4.0)) * std::pow(r, dim);
 
     return distance_time + clique_time;
 }
@@ -241,8 +247,8 @@ size_t estimateMemoryUsage(size_t num_points, size_t point_dim, double max_radiu
 }
 
 // Main API: Auto-selected optimal VR algorithm
-std::vector<Pair> computeVrPersistenceAuto(core::BufferView<const double>points,
-                                           Size point_dim, const VRConfig &base_config)
+std::vector<Pair> computeVrPersistenceAuto(core::BufferView<const double> points, Size point_dim,
+                                           const VRConfig &base_config)
 {
     if (point_dim == 0 || points.size() == 0 || (points.size() % point_dim) != 0)
     {
@@ -282,7 +288,7 @@ std::vector<Pair> computeVrPersistenceAuto(core::BufferView<const double>points,
 }
 
 // Explicit algorithm selection API
-std::vector<Pair> computeVrPersistenceWithAlgorithm(core::BufferView<const double>points,
+std::vector<Pair> computeVrPersistenceWithAlgorithm(core::BufferView<const double> points,
                                                     Size point_dim, const VRConfig &config,
                                                     VRAlgorithm algorithm)
 {
@@ -381,7 +387,7 @@ AlgorithmRecommendation recommendAlgorithm(size_t num_points, size_t point_dim, 
 }
 
 // Benchmark and compare all algorithms
-std::vector<AlgorithmBenchmark> benchmarkAllAlgorithms(core::BufferView<const double>points,
+std::vector<AlgorithmBenchmark> benchmarkAllAlgorithms(core::BufferView<const double> points,
                                                        Size point_dim, const VRConfig &config)
 {
     std::vector<AlgorithmBenchmark> results;

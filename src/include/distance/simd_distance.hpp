@@ -3,10 +3,10 @@
 /// The dispatch table (nerve::simd::SIMD) is initialized once via simd_init()
 /// and selects the best available ISA (AVX-512, AVX2, SSE4.1, NEON, scalar).
 #pragma once
+#include "nerve/core_types.hpp"
 #include "nerve/simd/simd_base.hpp"
 #include "nerve/simd/simd_distance.hpp"
 #include "nerve/simd/simd_reduce.hpp"
-#include "nerve/core_types.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -34,15 +34,18 @@ public:
 
     double operator()(nerve::Size i, nerve::Size j) const noexcept
     {
-        if (i == j) return 0.0;
-        if (i > j) std::swap(i, j);
+        if (i == j)
+            return 0.0;
+        if (i > j)
+            std::swap(i, j);
         return data_[index(i, j)];
     }
 
     double &operator()(nerve::Size i, nerve::Size j) noexcept
     {
         assert(i != j);
-        if (i > j) std::swap(i, j);
+        if (i > j)
+            std::swap(i, j);
         return data_[index(i, j)];
     }
 
@@ -54,7 +57,8 @@ private:
 
     static nerve::Size checkedUpperTriangleSize(nerve::Size n)
     {
-        if (n < 2) return 0;
+        if (n < 2)
+            return 0;
         if (n > std::numeric_limits<nerve::Size>::max() / (n - 1))
             throw std::length_error("distance matrix upper-triangle size overflows");
         const nerve::Size count = (n * (n - 1)) / 2;
@@ -122,10 +126,7 @@ class DistanceComputer
 public:
     using DistFn = double (*)(const double *, const double *, nerve::Size);
 
-    DistanceComputer()
-    {
-        nerve::simd::simd_init();
-    }
+    DistanceComputer() { nerve::simd::simd_init(); }
 
     // Hot path: delegates to the dispatch table
     double compute(const double *a, const double *b, nerve::Size dim) const noexcept
@@ -133,8 +134,7 @@ public:
         return nerve::simd::simd_euclidean(a, b, static_cast<std::size_t>(dim));
     }
 
-    DistanceMatrix buildMatrix(const double *points,
-                               nerve::Size n_points, nerve::Size dim,
+    DistanceMatrix buildMatrix(const double *points, nerve::Size n_points, nerve::Size dim,
                                nerve::Size n_threads = 1) const
     {
         if (points == nullptr || n_points == 0 || dim == 0)
@@ -200,7 +200,8 @@ public:
             }
 
             for (auto &worker : workers)
-                if (worker.joinable()) worker.join();
+                if (worker.joinable())
+                    worker.join();
 
             if (first_exception)
                 std::rethrow_exception(first_exception);
@@ -254,8 +255,8 @@ struct DistanceBenchmark
 
     static double finiteSpeedup(double baseline_ms, double accelerated_ms)
     {
-        if (!std::isfinite(baseline_ms) || baseline_ms < 0.0 ||
-            !std::isfinite(accelerated_ms) || accelerated_ms <= 0.0)
+        if (!std::isfinite(baseline_ms) || baseline_ms < 0.0 || !std::isfinite(accelerated_ms) ||
+            accelerated_ms <= 0.0)
             return 1.0;
         const double measured_speedup = baseline_ms / accelerated_ms;
         return std::isfinite(measured_speedup) && measured_speedup >= 0.0 ? measured_speedup : 1.0;

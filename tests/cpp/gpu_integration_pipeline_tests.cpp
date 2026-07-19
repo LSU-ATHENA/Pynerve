@@ -6,12 +6,12 @@
 //
 // Label: persistence;gpu;cuda;integration
 
+#include "hypha_test_helpers.hpp"
 #include "nerve/algebra/boundary.hpp"
 #include "nerve/algebra/complex.hpp"
 #include "nerve/algebra/simplex.hpp"
 #include "nerve/persistence/reduction/reduction_hypha_ops.hpp"
 #include "nerve/persistence/reduction/reduction_lockfree_ops.hpp"
-#include "hypha_test_helpers.hpp"
 
 #include <cuda_runtime.h>
 
@@ -35,11 +35,8 @@ bool has_gpu()
     return err == cudaSuccess && device_count > 0;
 }
 
-
-
 // Test one configuration and return true if GPU matches sequential count
-bool test_pipeline(int n_points, float threshold, unsigned seed, int dim,
-                   int n_dims, bool verbose)
+bool test_pipeline(int n_points, float threshold, unsigned seed, int dim, int n_dims, bool verbose)
 {
     // Generate point cloud
     std::mt19937 rng(seed);
@@ -58,7 +55,8 @@ bool test_pipeline(int n_points, float threshold, unsigned seed, int dim,
         nerve::test::hypha::build_tetrahedra(complex);
     nerve::algebra::BoundaryMatrix bm(complex, static_cast<nerve::Size>(dim));
 
-    if (bm.cols() == 0) return true;
+    if (bm.cols() == 0)
+        return true;
 
     // GPU path (HyphaReducer)
     nerve::persistence::HyphaReducer hr;
@@ -70,8 +68,8 @@ bool test_pipeline(int n_points, float threshold, unsigned seed, int dim,
     auto lf_filtration = std::vector<double>();
     auto lf_row_filtration = std::vector<double>();
     auto lf_dims = std::vector<nerve::Dimension>();
-    nerve::test::hypha::to_lockfree_format(bm, lf_boundary, lf_filtration,
-                                            lf_row_filtration, lf_dims);
+    nerve::test::hypha::to_lockfree_format(bm, lf_boundary, lf_filtration, lf_row_filtration,
+                                           lf_dims);
     auto lf_pairs = nerve::persistence::reduceMatrixLockfree(
         lf_boundary, lf_filtration, &lf_row_filtration, lf_dims,
         nerve::persistence::recommendedThreadCount());
@@ -79,23 +77,20 @@ bool test_pipeline(int n_points, float threshold, unsigned seed, int dim,
 
     // Sequential (ground truth) -- shared helper from hypha_test_helpers.hpp
     auto seq_pairs = nerve::test::hypha::reduce_sequential_fast(
-        lf_boundary, lf_filtration, lf_row_filtration, lf_dims,
-        static_cast<int>(bm.rows()));
+        lf_boundary, lf_filtration, lf_row_filtration, lf_dims, static_cast<int>(bm.rows()));
     int seq_count = static_cast<int>(seq_pairs.size());
 
     // Count-level checks
     bool lf_ok = (lf_count == seq_count);
     // GPU has ~0.22% residual, so we check within tolerance
     int count_delta = std::abs(gpu_count - seq_count);
-    double count_rate = seq_count > 0
-        ? 100.0 * static_cast<double>(count_delta) / seq_count
-        : 0.0;
+    double count_rate = seq_count > 0 ? 100.0 * static_cast<double>(count_delta) / seq_count : 0.0;
     bool gpu_ok = (count_rate < 1.0);
 
     if (verbose && (!lf_ok || !gpu_ok))
     {
-        std::printf("  FAIL: pts=%d dim=%d nd=%d GPU=%d LF=%d Seq=%d delta=%.2f%%\n",
-                    n_points, dim, n_dims, gpu_count, lf_count, seq_count, count_rate);
+        std::printf("  FAIL: pts=%d dim=%d nd=%d GPU=%d LF=%d Seq=%d delta=%.2f%%\n", n_points, dim,
+                    n_dims, gpu_count, lf_count, seq_count, count_rate);
     }
 
     return gpu_ok && lf_ok;
@@ -122,8 +117,16 @@ int main()
         bool ok = true;
         for (int seed = 0; seed < 20; ++seed)
             ok = ok && test_pipeline(30, 0.6f, static_cast<unsigned>(seed), 0, 3, false);
-        if (ok) { ++passed; std::printf("  [PASS] Dim-0 pipeline (20 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] Dim-0 pipeline\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] Dim-0 pipeline (20 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] Dim-0 pipeline\n");
+        }
     }
 
     // Dim-1 pipeline
@@ -131,8 +134,16 @@ int main()
         bool ok = true;
         for (int seed = 0; seed < 20; ++seed)
             ok = ok && test_pipeline(20, 0.7f, static_cast<unsigned>(seed), 1, 3, false);
-        if (ok) { ++passed; std::printf("  [PASS] Dim-1 pipeline (20 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] Dim-1 pipeline\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] Dim-1 pipeline (20 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] Dim-1 pipeline\n");
+        }
     }
 
     // Dim-2 pipeline
@@ -140,8 +151,16 @@ int main()
         bool ok = true;
         for (int seed = 0; seed < 20; ++seed)
             ok = ok && test_pipeline(20, 0.8f, static_cast<unsigned>(seed), 2, 3, false);
-        if (ok) { ++passed; std::printf("  [PASS] Dim-2 pipeline (20 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] Dim-2 pipeline\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] Dim-2 pipeline (20 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] Dim-2 pipeline\n");
+        }
     }
 
     // 2D point clouds
@@ -149,8 +168,16 @@ int main()
         bool ok = true;
         for (int seed = 0; seed < 10; ++seed)
             ok = ok && test_pipeline(25, 0.6f, static_cast<unsigned>(seed), 1, 2, false);
-        if (ok) { ++passed; std::printf("  [PASS] 2D point cloud pipeline (10 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] 2D point cloud pipeline\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] 2D point cloud pipeline (10 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] 2D point cloud pipeline\n");
+        }
     }
 
     // 4D point clouds
@@ -158,8 +185,16 @@ int main()
         bool ok = true;
         for (int seed = 0; seed < 10; ++seed)
             ok = ok && test_pipeline(30, 0.7f, static_cast<unsigned>(seed), 2, 4, false);
-        if (ok) { ++passed; std::printf("  [PASS] 4D point cloud pipeline (10 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] 4D point cloud pipeline\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] 4D point cloud pipeline (10 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] 4D point cloud pipeline\n");
+        }
     }
 
     // Varying thresholds
@@ -169,8 +204,16 @@ int main()
         for (float t : thresholds)
             for (int seed = 0; seed < 5; ++seed)
                 ok = ok && test_pipeline(15, t, static_cast<unsigned>(seed), 2, 3, false);
-        if (ok) { ++passed; std::printf("  [PASS] Varying thresholds (20 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] Varying thresholds\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] Varying thresholds (20 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] Varying thresholds\n");
+        }
     }
 
     // End-to-end GPU pair validity
@@ -188,7 +231,8 @@ int main()
             auto complex = nerve::test::hypha::build_vr_complex(points, thresh);
             nerve::algebra::BoundaryMatrix bm(complex, 2);
 
-            if (bm.cols() == 0) continue;
+            if (bm.cols() == 0)
+                continue;
 
             nerve::persistence::HyphaReducer hr;
 
@@ -197,11 +241,22 @@ int main()
             for (const auto &p : gpu_pairs)
             {
                 if (!std::isfinite(p.birth))
-                { ok = false; break; }
+                {
+                    ok = false;
+                    break;
+                }
             }
         }
-        if (ok) { ++passed; std::printf("  [PASS] End-to-end GPU pair validity (30 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] End-to-end GPU pair validity\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] End-to-end GPU pair validity (30 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] End-to-end GPU pair validity\n");
+        }
     }
 
     // GPU pair validity on random point clouds
@@ -218,7 +273,8 @@ int main()
             auto points = nerve::test::hypha::random_point_cloud(n_pts, seed);
             auto complex = nerve::test::hypha::build_vr_complex(points, thresh);
             nerve::algebra::BoundaryMatrix bm(complex, 2);
-            if (bm.cols() == 0) continue;
+            if (bm.cols() == 0)
+                continue;
 
             nerve::persistence::HyphaReducer hr;
             auto pairs = hr.compute(bm);
@@ -227,11 +283,22 @@ int main()
             for (const auto &p : pairs)
             {
                 if (!std::isfinite(p.birth))
-                { ok = false; break; }
+                {
+                    ok = false;
+                    break;
+                }
             }
         }
-        if (ok) { ++passed; std::printf("  [PASS] GPU pair validity on random clouds (20 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] GPU pair validity on random clouds\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] GPU pair validity on random clouds (20 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] GPU pair validity on random clouds\n");
+        }
     }
 
     // Dim-3 pipeline (small point clouds with tetrahedra)
@@ -239,8 +306,16 @@ int main()
         bool ok = true;
         for (int seed = 0; seed < 15; ++seed)
             ok = ok && test_pipeline(12, 0.9f, static_cast<unsigned>(seed), 3, 3, false);
-        if (ok) { ++passed; std::printf("  [PASS] Dim-3 pipeline (15 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] Dim-3 pipeline\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] Dim-3 pipeline (15 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] Dim-3 pipeline\n");
+        }
     }
 
     // Dim-3 with varying thresholds
@@ -250,8 +325,16 @@ int main()
         for (float t : thresholds)
             for (int seed = 0; seed < 8; ++seed)
                 ok = ok && test_pipeline(15, t, static_cast<unsigned>(seed), 3, 3, false);
-        if (ok) { ++passed; std::printf("  [PASS] Dim-3 varying thresholds (32 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] Dim-3 varying thresholds\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] Dim-3 varying thresholds (32 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] Dim-3 varying thresholds\n");
+        }
     }
 
     // Dim-3 larger point clouds (up to 30 pts)
@@ -261,8 +344,16 @@ int main()
         for (int n : pts_list)
             for (int seed = 0; seed < 8; ++seed)
                 ok = ok && test_pipeline(n, 1.0f, static_cast<unsigned>(seed), 3, 3, false);
-        if (ok) { ++passed; std::printf("  [PASS] Dim-3 larger clouds (32 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] Dim-3 larger clouds\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] Dim-3 larger clouds (32 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] Dim-3 larger clouds\n");
+        }
     }
 
     // Dim-3 extreme filtration values
@@ -280,7 +371,8 @@ int main()
             auto complex = nerve::test::hypha::build_vr_complex(points, thresh);
             nerve::test::hypha::build_tetrahedra(complex);
             nerve::algebra::BoundaryMatrix bm(complex, 3);
-            if (bm.cols() == 0) continue;
+            if (bm.cols() == 0)
+                continue;
 
             nerve::persistence::HyphaReducer hr;
             auto pairs = hr.compute(bm);
@@ -289,11 +381,22 @@ int main()
             for (const auto &p : pairs)
             {
                 if (!std::isfinite(p.birth))
-                { ok = false; break; }
+                {
+                    ok = false;
+                    break;
+                }
             }
         }
-        if (ok) { ++passed; std::printf("  [PASS] Dim-3 extreme filtration values (20 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] Dim-3 extreme filtration values\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] Dim-3 extreme filtration values (20 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] Dim-3 extreme filtration values\n");
+        }
     }
 
     // Dim-3 GPU reproducibility (run HyphaReducer twice, count delta <= 2)
@@ -311,7 +414,8 @@ int main()
             auto complex = nerve::test::hypha::build_vr_complex(points, thresh);
             nerve::test::hypha::build_tetrahedra(complex);
             nerve::algebra::BoundaryMatrix bm(complex, 3);
-            if (bm.cols() == 0) continue;
+            if (bm.cols() == 0)
+                continue;
 
             nerve::persistence::HyphaReducer hr1;
             auto pairs1 = hr1.compute(bm);
@@ -322,21 +426,40 @@ int main()
             int count2 = static_cast<int>(pairs2.size());
             if (std::abs(count1 - count2) > 2)
             {
-                std::printf("FAIL: dim-3 reproducibility count delta=%d\n", std::abs(count1 - count2));
+                std::printf("FAIL: dim-3 reproducibility count delta=%d\n",
+                            std::abs(count1 - count2));
                 ok = false;
                 break;
             }
 
             // Both runs should produce valid pairs
             for (const auto &p : pairs1)
-                if (!std::isfinite(p.birth)) { ok = false; break; }
-            if (!ok) break;
+                if (!std::isfinite(p.birth))
+                {
+                    ok = false;
+                    break;
+                }
+            if (!ok)
+                break;
             for (const auto &p : pairs2)
-                if (!std::isfinite(p.birth)) { ok = false; break; }
-            if (!ok) break;
+                if (!std::isfinite(p.birth))
+                {
+                    ok = false;
+                    break;
+                }
+            if (!ok)
+                break;
         }
-        if (ok) { ++passed; std::printf("  [PASS] Dim-3 GPU reproducibility (15 configs)\n"); }
-        else { ++failed; std::printf("  [FAIL] Dim-3 GPU reproducibility\n"); }
+        if (ok)
+        {
+            ++passed;
+            std::printf("  [PASS] Dim-3 GPU reproducibility (15 configs)\n");
+        }
+        else
+        {
+            ++failed;
+            std::printf("  [FAIL] Dim-3 GPU reproducibility\n");
+        }
     }
 
     std::printf("\n=== Results: %d passed, %d failed ===\n", passed, failed);

@@ -51,7 +51,8 @@ int main()
     {
         std::vector<int> simplex_a = {0, 1};
         std::vector<int> simplex_b = {0, 1, 2};
-        bool can_pair = nerve::dmt::parallel::SimplexPairOps::canFormGradientPair(simplex_a, simplex_b);
+        bool can_pair =
+            nerve::dmt::parallel::SimplexPairOps::canFormGradientPair(simplex_a, simplex_b);
         static_cast<void>(can_pair);
         std::cout << "PASSED: SimplexPairOps canFormGradientPair\n";
     }

@@ -28,7 +28,6 @@ using nerve::persistence::Reducer;
 using nerve::persistence::VRAlgorithmSelection;
 using namespace nerve::test;
 
-
 SimplicialComplex make_tetrahedron()
 {
     SimplicialComplex complex;

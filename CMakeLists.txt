@@ -180,7 +180,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 # Dependencies
-find_package(PkgConfig REQUIRED)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    find_package(PkgConfig REQUIRED)
+else()
+    find_package(PkgConfig QUIET)
+endif()
 find_package(Threads REQUIRED)
 
 # CUDA setup

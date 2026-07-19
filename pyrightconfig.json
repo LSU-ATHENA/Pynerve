@@ -1,6 +1,6 @@
 {
   "include": ["python/pynerve"],
-  "exclude": ["**/__pycache__", "**/tests", "**/node_modules"],
+  "exclude": ["**/__pycache__", "**/tests", "**/node_modules", "python/pynerve/triton"],
   "pythonVersion": "3.10",
   "typeCheckingMode": "standard",
   "reportMissingImports": "none",

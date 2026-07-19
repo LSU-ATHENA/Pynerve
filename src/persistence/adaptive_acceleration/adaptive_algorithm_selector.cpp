@@ -76,7 +76,7 @@ bool checkedProduct(std::size_t lhs, std::size_t rhs, std::size_t &out)
     return true;
 }
 
-errors::ErrorResult<void> validateExecutionInput(core::BufferView<const double>points,
+errors::ErrorResult<void> validateExecutionInput(core::BufferView<const double> points,
                                                  std::size_t point_dim, const VRConfig &config)
 {
     if (point_dim == 0 || points.size() == 0 || points.size() % point_dim != 0 ||
@@ -312,9 +312,10 @@ public:
         return best->algorithm_type;
     }
 
-    errors::ErrorResult<std::vector<Pair>>
-    executeAdaptive(AdaptiveAlgorithmSelector &owner, core::BufferView<const double>points,
-                    std::size_t point_dim, const VRConfig &config)
+    errors::ErrorResult<std::vector<Pair>> executeAdaptive(AdaptiveAlgorithmSelector &owner,
+                                                           core::BufferView<const double> points,
+                                                           std::size_t point_dim,
+                                                           const VRConfig &config)
     {
         auto validation = validateExecutionInput(points, point_dim, config);
         if (validation.isError())
@@ -428,7 +429,7 @@ AdaptiveAlgorithmSelector::selectOptimalAlgorithm(const ProblemCharacteristics &
 }
 
 errors::ErrorResult<std::vector<Pair>>
-AdaptiveAlgorithmSelector::executeAdaptive(core::BufferView<const double>points,
+AdaptiveAlgorithmSelector::executeAdaptive(core::BufferView<const double> points,
                                            std::size_t point_dim, const VRConfig &config)
 {
     return impl_->executeAdaptive(*this, points, point_dim, config);

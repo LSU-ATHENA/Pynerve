@@ -4,12 +4,12 @@
 //
 // Label: persistence;gpu;cuda;generated;quality
 
+#include "hypha_test_helpers.hpp"
 #include "nerve/algebra/boundary.hpp"
 #include "nerve/algebra/complex.hpp"
 #include "nerve/algebra/simplex.hpp"
 #include "nerve/persistence/reduction/reduction_hypha_ops.hpp"
 #include "nerve/persistence/reduction/reduction_lockfree_ops.hpp"
-#include "hypha_test_helpers.hpp"
 
 #include <cuda_runtime.h>
 
@@ -40,10 +40,12 @@ bool invariant_death_ge_birth(const std::vector<nerve::Pair> &pairs)
 {
     for (const auto &p : pairs)
     {
-        if (p.isInfinite()) continue;                // essential class
+        if (p.isInfinite())
+            continue; // essential class
         if (!std::isfinite(p.birth) || !std::isfinite(p.death))
             return false;
-        if (p.death < p.birth) return false;          // death before birth
+        if (p.death < p.birth)
+            return false; // death before birth
     }
     return true;
 }
@@ -55,11 +57,13 @@ bool invariant_non_negative(const std::vector<nerve::Pair> &pairs)
     {
         if (p.isInfinite())
         {
-            if (p.birth < 0) return false;
+            if (p.birth < 0)
+                return false;
         }
         else
         {
-            if (p.birth < 0 || p.death < 0) return false;
+            if (p.birth < 0 || p.death < 0)
+                return false;
         }
     }
     return true;
@@ -99,11 +103,11 @@ bool fuzz_extreme_filtration_values()
     // with controlled filtration weights
     for (int trial = 0; trial < 20; ++trial)
     {
-        auto pts = nerve::test::hypha::random_point_cloud(15,
-                    static_cast<unsigned>(trial * 331));
+        auto pts = nerve::test::hypha::random_point_cloud(15, static_cast<unsigned>(trial * 331));
         auto complex = nerve::test::hypha::build_vr_complex(pts, 0.6f);
         nerve::algebra::BoundaryMatrix bm(complex, 2);
-        if (bm.cols() == 0) continue;
+        if (bm.cols() == 0)
+            continue;
 
         nerve::persistence::HyphaReducer hr;
         auto pairs = hr.compute(bm);
@@ -130,7 +134,8 @@ bool fuzz_minimal_point_clouds()
 
         auto complex = nerve::test::hypha::build_vr_complex(points, 1.0f);
         nerve::algebra::BoundaryMatrix bm(complex, 2);
-        if (bm.cols() == 0) continue;
+        if (bm.cols() == 0)
+            continue;
 
         nerve::persistence::HyphaReducer hr;
         auto pairs = hr.compute(bm);
@@ -149,12 +154,12 @@ bool fuzz_dim3_extreme_filtration_values()
 {
     for (int trial = 0; trial < 15; ++trial)
     {
-        auto pts = nerve::test::hypha::random_point_cloud(12,
-                    static_cast<unsigned>(trial * 331));
+        auto pts = nerve::test::hypha::random_point_cloud(12, static_cast<unsigned>(trial * 331));
         auto complex = nerve::test::hypha::build_vr_complex(pts, 1.0f);
         nerve::test::hypha::build_tetrahedra(complex);
         nerve::algebra::BoundaryMatrix bm(complex, 3);
-        if (bm.cols() == 0) continue;
+        if (bm.cols() == 0)
+            continue;
 
         nerve::persistence::HyphaReducer hr;
         auto pairs = hr.compute(bm);
@@ -183,7 +188,8 @@ bool fuzz_reproducibility()
         auto points = nerve::test::hypha::random_point_cloud(n_pts, seed);
         auto complex = nerve::test::hypha::build_vr_complex(points, thresh);
         nerve::algebra::BoundaryMatrix bm(complex, 2);
-        if (bm.cols() == 0) continue;
+        if (bm.cols() == 0)
+            continue;
 
         // Run GPU twice with same inputs
         nerve::persistence::HyphaReducer hr1;
@@ -199,14 +205,12 @@ bool fuzz_reproducibility()
         {
             // Allow small count differences due to non-determinism
             // but flag large differences
-            std::printf("  FAIL: reproducibility count delta=%d\n",
-                        std::abs(count1 - count2));
+            std::printf("  FAIL: reproducibility count delta=%d\n", std::abs(count1 - count2));
             return false;
         }
 
         // Both should produce valid pairs
-        if (!invariant_death_ge_birth(pairs1) ||
-            !invariant_death_ge_birth(pairs2))
+        if (!invariant_death_ge_birth(pairs1) || !invariant_death_ge_birth(pairs2))
             return false;
     }
     return true;
@@ -225,7 +229,10 @@ void print_results(const std::vector<TestResult> &results)
     for (const auto &r : results)
     {
         std::printf("  [%s] %s\n", r.passed ? "PASS" : "FAIL", r.name);
-        if (r.passed) ++passed; else ++failed;
+        if (r.passed)
+            ++passed;
+        else
+            ++failed;
     }
     std::printf("\n  %d passed, %d failed\n", passed, failed);
 }
@@ -273,17 +280,19 @@ int main()
             auto pts = nerve::test::hypha::random_point_cloud(tc.n_points, tc.seed);
             auto complex = nerve::test::hypha::build_vr_complex(pts, tc.threshold);
             nerve::algebra::BoundaryMatrix bm(complex, static_cast<nerve::Size>(tc.dim));
-            if (bm.cols() == 0) continue;
+            if (bm.cols() == 0)
+                continue;
             nerve::persistence::HyphaReducer hr;
             auto pairs = hr.compute(bm);
             ok = ok && invariant_death_ge_birth(pairs);
             ok = ok && invariant_non_negative(pairs);
             ok = ok && invariant_pair_count_bounded(pairs, static_cast<int>(bm.cols()));
             ok = ok && invariant_dimension_valid(pairs, tc.dim);
-            if (!ok) break;
+            if (!ok)
+                break;
         }
-        results.push_back({"Invariant: death >= birth, non-negative, bounded count, valid dim",
-                          ok});
+        results.push_back(
+            {"Invariant: death >= birth, non-negative, bounded count, valid dim", ok});
     }
 
     // Invariant: lockfree should also satisfy invariants
@@ -294,14 +303,15 @@ int main()
             auto pts = nerve::test::hypha::random_point_cloud(tc.n_points, tc.seed);
             auto complex = nerve::test::hypha::build_vr_complex(pts, tc.threshold);
             nerve::algebra::BoundaryMatrix bm(complex, static_cast<nerve::Size>(tc.dim));
-            if (bm.cols() == 0) continue;
+            if (bm.cols() == 0)
+                continue;
 
             auto lf_boundary = std::vector<std::vector<int>>();
             auto lf_filtration = std::vector<double>();
             auto lf_row_filtration = std::vector<double>();
             auto lf_dims = std::vector<nerve::Dimension>();
             nerve::test::hypha::to_lockfree_format(bm, lf_boundary, lf_filtration,
-                                                    lf_row_filtration, lf_dims);
+                                                   lf_row_filtration, lf_dims);
             auto lf_pairs = nerve::persistence::reduceMatrixLockfree(
                 lf_boundary, lf_filtration, &lf_row_filtration, lf_dims,
                 nerve::persistence::recommendedThreadCount());
@@ -310,7 +320,8 @@ int main()
             ok = ok && invariant_non_negative(lf_pairs);
             ok = ok && invariant_pair_count_bounded(lf_pairs, static_cast<int>(bm.cols()));
             ok = ok && invariant_dimension_valid(lf_pairs, tc.dim);
-            if (!ok) break;
+            if (!ok)
+                break;
         }
         results.push_back({"Invariant: lockfree satisfies all invariants", ok});
     }
@@ -356,7 +367,12 @@ int main()
 
     // Dim-3 GPU invariant: death >= birth, non-negative, bounded count, valid dim
     {
-        struct Dim3Case { int n_points; float threshold; unsigned seed; };
+        struct Dim3Case
+        {
+            int n_points;
+            float threshold;
+            unsigned seed;
+        };
         std::vector<Dim3Case> dim3_cases;
         {
             const int pts_list[] = {10, 15, 20, 30};
@@ -373,21 +389,28 @@ int main()
             auto complex = nerve::test::hypha::build_vr_complex(pts, tc.threshold);
             nerve::test::hypha::build_tetrahedra(complex);
             nerve::algebra::BoundaryMatrix bm(complex, 3);
-            if (bm.cols() == 0) continue;
+            if (bm.cols() == 0)
+                continue;
             nerve::persistence::HyphaReducer hr;
             auto pairs = hr.compute(bm);
             ok = ok && invariant_death_ge_birth(pairs);
             ok = ok && invariant_non_negative(pairs);
             ok = ok && invariant_pair_count_bounded(pairs, static_cast<int>(bm.cols()));
             ok = ok && invariant_dimension_valid(pairs, 3);
-            if (!ok) break;
+            if (!ok)
+                break;
         }
         results.push_back({"Dim-3 GPU: death >= birth, non-negative, bounded count", ok});
     }
 
     // Dim-3 lockfree invariant: all invariants
     {
-        struct Dim3Case { int n_points; float threshold; unsigned seed; };
+        struct Dim3Case
+        {
+            int n_points;
+            float threshold;
+            unsigned seed;
+        };
         std::vector<Dim3Case> dim3_cases;
         {
             const int pts_list[] = {10, 15, 20, 30};
@@ -404,13 +427,14 @@ int main()
             auto complex = nerve::test::hypha::build_vr_complex(pts, tc.threshold);
             nerve::test::hypha::build_tetrahedra(complex);
             nerve::algebra::BoundaryMatrix bm(complex, 3);
-            if (bm.cols() == 0) continue;
+            if (bm.cols() == 0)
+                continue;
             auto lf_boundary = std::vector<std::vector<int>>();
             auto lf_filtration = std::vector<double>();
             auto lf_row_filtration = std::vector<double>();
             auto lf_dims = std::vector<nerve::Dimension>();
             nerve::test::hypha::to_lockfree_format(bm, lf_boundary, lf_filtration,
-                                                    lf_row_filtration, lf_dims);
+                                                   lf_row_filtration, lf_dims);
             auto lf_pairs = nerve::persistence::reduceMatrixLockfree(
                 lf_boundary, lf_filtration, &lf_row_filtration, lf_dims,
                 nerve::persistence::recommendedThreadCount());
@@ -418,7 +442,8 @@ int main()
             ok = invariant_non_negative(lf_pairs) && ok;
             ok = invariant_pair_count_bounded(lf_pairs, static_cast<int>(bm.cols())) && ok;
             ok = invariant_dimension_valid(lf_pairs, 3) && ok;
-            if (!ok) break;
+            if (!ok)
+                break;
         }
         results.push_back({"Dim-3 lockfree: all invariants", ok});
     }
@@ -437,7 +462,8 @@ int main()
             auto complex = nerve::test::hypha::build_vr_complex(points, thresh);
             nerve::test::hypha::build_tetrahedra(complex);
             nerve::algebra::BoundaryMatrix bm(complex, 3);
-            if (bm.cols() == 0) continue;
+            if (bm.cols() == 0)
+                continue;
             nerve::persistence::HyphaReducer hr1;
             auto pairs1 = hr1.compute(bm);
             nerve::persistence::HyphaReducer hr2;
@@ -446,7 +472,8 @@ int main()
             int count2 = static_cast<int>(pairs2.size());
             if (std::abs(count1 - count2) > 2)
             {
-                std::printf("FAIL: dim-3 reproducibility count delta=%d\n", std::abs(count1 - count2));
+                std::printf("FAIL: dim-3 reproducibility count delta=%d\n",
+                            std::abs(count1 - count2));
                 ok = false;
                 break;
             }
@@ -464,7 +491,10 @@ int main()
     int total_passed = 0, total_failed = 0;
     for (const auto &r : results)
     {
-        if (r.passed) ++total_passed; else ++total_failed;
+        if (r.passed)
+            ++total_passed;
+        else
+            ++total_failed;
     }
     return total_failed == 0 ? 0 : 1;
 }

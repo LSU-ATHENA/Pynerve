@@ -20,7 +20,6 @@ using namespace nerve::test;
 
 constexpr double kTol = 1e-10;
 
-
 bool check_single_point_max_dim0()
 {
     const std::vector<double> pt = {0.0, 0.0};

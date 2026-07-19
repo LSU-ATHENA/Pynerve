@@ -30,7 +30,7 @@ constexpr double BOUNDARY_MATRIX_TOLERANCE = 1e-10;
     return entries_.empty();
 }
 
-std::vector<double> BoundaryMatrix::multiply(core::BufferView<const double>vector) const
+std::vector<double> BoundaryMatrix::multiply(core::BufferView<const double> vector) const
 {
     if (vector.size() != cols_)
     {
@@ -58,8 +58,7 @@ std::vector<double> BoundaryMatrix::multiply(core::BufferView<const double>vecto
     return result;
 }
 
-std::vector<double>
-BoundaryMatrix::transposeMultiply(core::BufferView<const double>vector) const
+std::vector<double> BoundaryMatrix::transposeMultiply(core::BufferView<const double> vector) const
 {
     if (vector.size() != rows_)
     {
@@ -110,13 +109,12 @@ BoundaryMatrix BoundaryMatrix::transpose() const
     return result;
 }
 
-std::vector<double> BoundaryMatrix::applyBoundary(core::BufferView<const double>chain) const
+std::vector<double> BoundaryMatrix::applyBoundary(core::BufferView<const double> chain) const
 {
     return multiply(chain);
 }
 
-std::vector<double>
-BoundaryMatrix::applyCoboundary(core::BufferView<const double>cochain) const
+std::vector<double> BoundaryMatrix::applyCoboundary(core::BufferView<const double> cochain) const
 {
     return transposeMultiply(cochain);
 }

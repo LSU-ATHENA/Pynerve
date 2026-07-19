@@ -1,6 +1,6 @@
 
-#include "nerve/gpu/gpu_ptx_ops.cuh"
 #include "nerve/gpu/gpu_error.hpp"
+#include "nerve/gpu/gpu_ptx_ops.cuh"
 
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
@@ -91,13 +91,8 @@ __device__ inline bool accumulateMatrixProduct(double lhs, double rhs, double &s
 // Original fallback kernels (preserved)
 
 __global__ __launch_bounds__(LAPLACIAN_BLOCK_SIZE) void computeUpLaplacianKernel(
-    const double *boundary_matrix,
-    const int *simplex_dimensions,
-    double *up_laplacian,
-    size_t size,
-    int d,
-    size_t n_d,
-    const size_t *d_indices)
+    const double *boundary_matrix, const int *simplex_dimensions, double *up_laplacian, size_t size,
+    int d, size_t n_d, const size_t *d_indices)
 {
     size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (n_d != 0 && n_d > static_cast<size_t>(-1) / n_d)
@@ -138,13 +133,8 @@ __global__ __launch_bounds__(LAPLACIAN_BLOCK_SIZE) void computeUpLaplacianKernel
 }
 
 __global__ __launch_bounds__(LAPLACIAN_BLOCK_SIZE) void computeDownLaplacianKernel(
-    const double *boundary_matrix,
-    const int *simplex_dimensions,
-    double *down_laplacian,
-    size_t size,
-    int d,
-    size_t n_d,
-    const size_t *d_indices)
+    const double *boundary_matrix, const int *simplex_dimensions, double *down_laplacian,
+    size_t size, int d, size_t n_d, const size_t *d_indices)
 {
     size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (n_d != 0 && n_d > static_cast<size_t>(-1) / n_d)
@@ -218,8 +208,7 @@ __global__ __launch_bounds__(LAPLACIAN_BLOCK_SIZE) void extractDimensionIndicesK
     }
 
     bool match = (simplex_dimensions[idx] == target_dimension);
-    unsigned long long inc =
-        static_cast<unsigned long long>(ptx::slct_u32(match, 1u, 0u));
+    unsigned long long inc = static_cast<unsigned long long>(ptx::slct_u32(match, 1u, 0u));
     size_t pos = static_cast<size_t>(atomicAdd(d_count, inc));
     if (match)
     {
@@ -228,9 +217,8 @@ __global__ __launch_bounds__(LAPLACIAN_BLOCK_SIZE) void extractDimensionIndicesK
 }
 
 __global__ __launch_bounds__(256) void computeUpLaplacianTiledKernel(
-    const double *boundary_matrix, const size_t *d_indices,
-    const size_t *d1_indices,
-    size_t n_d, size_t n_d1, double *up_laplacian, size_t size)
+    const double *boundary_matrix, const size_t *d_indices, const size_t *d1_indices, size_t n_d,
+    size_t n_d1, double *up_laplacian, size_t size)
 {
     constexpr int TILE_SIZE = LAPLACIAN_TILE_SIZE;
 
@@ -274,8 +262,7 @@ __global__ __launch_bounds__(256) void computeUpLaplacianTiledKernel(
 #pragma unroll
         for (int k = 0; k < TILE_SIZE; ++k)
         {
-            if (!ptx::fma_accumulate_prod_f64(tile_i[threadIdx.y][k],
-                                              tile_j[threadIdx.x][k], sum))
+            if (!ptx::fma_accumulate_prod_f64(tile_i[threadIdx.y][k], tile_j[threadIdx.x][k], sum))
             {
                 valid_sum = false;
                 break;
@@ -288,21 +275,15 @@ __global__ __launch_bounds__(256) void computeUpLaplacianTiledKernel(
     if (row < n_d && col < n_d)
     {
         const double kInf = __longlong_as_double(0x7ff0000000000000ULL);
-        up_laplacian[row * n_d + col] =
-            ptx::slct_f64(valid_sum, sum, kInf);
+        up_laplacian[row * n_d + col] = ptx::slct_f64(valid_sum, sum, kInf);
     }
 }
 
 // PTX-optimized kernels
 
 __global__ __launch_bounds__(LAPLACIAN_BLOCK_SIZE) void computeUpLaplacianPtxKernel(
-    const double *boundary_matrix,
-    const int *simplex_dimensions,
-    double *up_laplacian,
-    size_t size,
-    int d,
-    size_t n_d,
-    const size_t *d_indices)
+    const double *boundary_matrix, const int *simplex_dimensions, double *up_laplacian, size_t size,
+    int d, size_t n_d, const size_t *d_indices)
 {
     size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (n_d != 0 && n_d > static_cast<size_t>(-1) / n_d)
@@ -349,13 +330,8 @@ __global__ __launch_bounds__(LAPLACIAN_BLOCK_SIZE) void computeUpLaplacianPtxKer
 }
 
 __global__ __launch_bounds__(LAPLACIAN_BLOCK_SIZE) void computeDownLaplacianPtxKernel(
-    const double *boundary_matrix,
-    const int *simplex_dimensions,
-    double *down_laplacian,
-    size_t size,
-    int d,
-    size_t n_d,
-    const size_t *d_indices)
+    const double *boundary_matrix, const int *simplex_dimensions, double *down_laplacian,
+    size_t size, int d, size_t n_d, const size_t *d_indices)
 {
     size_t idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (n_d != 0 && n_d > static_cast<size_t>(-1) / n_d)
@@ -400,9 +376,8 @@ __global__ __launch_bounds__(LAPLACIAN_BLOCK_SIZE) void computeDownLaplacianPtxK
 }
 
 __global__ __launch_bounds__(256) void computeUpLaplacianTiledPtxKernel(
-    const double *boundary_matrix, const size_t *d_indices,
-    const size_t *d1_indices,
-    size_t n_d, size_t n_d1, double *up_laplacian, size_t size)
+    const double *boundary_matrix, const size_t *d_indices, const size_t *d1_indices, size_t n_d,
+    size_t n_d1, double *up_laplacian, size_t size)
 {
     constexpr int TILE_SIZE = LAPLACIAN_TILE_SIZE;
 
@@ -440,8 +415,9 @@ __global__ __launch_bounds__(256) void computeUpLaplacianTiledPtxKernel(
         {
             size_t global_row = d_indices[row];
             size_t global_col = d1_indices[tile_offset + threadIdx.x];
-            ptx::cp_async_shared_global<sizeof(double)>(&tile_i[threadIdx.y][threadIdx.x],
-                                        &boundary_matrix[global_row * size + global_col]);
+            ptx::cp_async_shared_global<sizeof(double)>(
+                &tile_i[threadIdx.y][threadIdx.x],
+                &boundary_matrix[global_row * size + global_col]);
         }
         else
         {
@@ -452,8 +428,9 @@ __global__ __launch_bounds__(256) void computeUpLaplacianTiledPtxKernel(
         {
             size_t global_row = d_indices[col];
             size_t global_col = d1_indices[tile_offset + threadIdx.x];
-            ptx::cp_async_shared_global<sizeof(double)>(&tile_j[threadIdx.y][threadIdx.x],
-                                        &boundary_matrix[global_row * size + global_col]);
+            ptx::cp_async_shared_global<sizeof(double)>(
+                &tile_j[threadIdx.y][threadIdx.x],
+                &boundary_matrix[global_row * size + global_col]);
         }
         else
         {
@@ -491,8 +468,7 @@ __global__ __launch_bounds__(256) void computeUpLaplacianTiledPtxKernel(
 #pragma unroll
         for (int k = 0; k < TILE_SIZE; ++k)
         {
-            if (!ptx::fma_accumulate_prod_f64(tile_i[threadIdx.y][k],
-                                              tile_j[threadIdx.x][k], sum))
+            if (!ptx::fma_accumulate_prod_f64(tile_i[threadIdx.y][k], tile_j[threadIdx.x][k], sum))
             {
                 valid_sum = false;
                 break;

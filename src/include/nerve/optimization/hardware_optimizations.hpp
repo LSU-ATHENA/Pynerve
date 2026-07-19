@@ -133,7 +133,7 @@ inline double branchlessAbs(double x)
 }
 
 // Likely/Unlikely Hints - delegate to portable NERVE_LIKELY/UNLIKELY from platform.hpp
-#define OPT_LIKELY(x)   NERVE_LIKELY(x)
+#define OPT_LIKELY(x) NERVE_LIKELY(x)
 #define OPT_UNLIKELY(x) NERVE_UNLIKELY(x)
 
 // Cache Control

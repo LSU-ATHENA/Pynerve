@@ -38,12 +38,12 @@ bool has_gpu()
 // Single-warp reference reduction kernel: processes all columns SEQUENTIALLY
 // using one warp, eliminating inter-warp read-write races on cross-column reads.
 // Semantically equivalent to packed_column_reduce_iterative.
-__global__ void singleWarpReductionRef(
-    uint64_t *columns, const int *pivot_to_col,
-    int num_words, int num_columns, int *new_pivots)
+__global__ void singleWarpReductionRef(uint64_t *columns, const int *pivot_to_col, int num_words,
+                                       int num_columns, int *new_pivots)
 {
     int lane_id = threadIdx.x;
-    if (lane_id >= 32) return;
+    if (lane_id >= 32)
+        return;
 
     for (int col = 0; col < num_columns; ++col)
     {
@@ -63,7 +63,8 @@ __global__ void singleWarpReductionRef(
         for (int off = 16; off > 0; off >>= 1)
         {
             int other = __shfl_down_sync(0xFFFFFFFFu, pivot, off);
-            if (other > pivot) pivot = other;
+            if (other > pivot)
+                pivot = other;
         }
         pivot = __shfl_sync(0xFFFFFFFFu, pivot, 0);
 
@@ -72,9 +73,11 @@ __global__ void singleWarpReductionRef(
         const int iter_limit = max(1, num_words * 4);
         for (int it = 0; pivot >= 0 && it < iter_limit; ++it)
         {
-            if (pivot >= pivot_limit) break;
+            if (pivot >= pivot_limit)
+                break;
             int src_col = pivot_to_col[pivot];
-            if (src_col < 0 || src_col >= num_columns) break;
+            if (src_col < 0 || src_col >= num_columns)
+                break;
 
             if (src_col == col)
             {
@@ -105,7 +108,8 @@ __global__ void singleWarpReductionRef(
             for (int off = 16; off > 0; off >>= 1)
             {
                 int other = __shfl_down_sync(0xFFFFFFFFu, pivot, off);
-                if (other > pivot) pivot = other;
+                if (other > pivot)
+                    pivot = other;
             }
             pivot = __shfl_sync(0xFFFFFFFFu, pivot, 0);
         }
@@ -125,15 +129,15 @@ __global__ void singleWarpReductionRef(
 //
 // Early-exit warps (pivot becomes unclaimed or self-cleared) use an `active`
 // flag but continue looping to participate in __syncthreads() barriers.
-__global__ void syncthreadsReductionRef(
-    uint64_t *columns, const int * /*col_pivots*/,
-    const int *pivot_to_col, int num_words, int num_columns,
-    int *new_pivots)
+__global__ void syncthreadsReductionRef(uint64_t *columns, const int * /*col_pivots*/,
+                                        const int *pivot_to_col, int num_words, int num_columns,
+                                        int *new_pivots)
 {
     const int warp_id = threadIdx.x / 32;
     const int lane_id = threadIdx.x % 32;
     const int col_idx = blockIdx.x * (blockDim.x / 32) + warp_id;
-    if (col_idx >= num_columns) return;
+    if (col_idx >= num_columns)
+        return;
 
     uint64_t *col_words = columns + (size_t)col_idx * (size_t)num_words;
     const int pivot_limit = num_words * 64;
@@ -152,7 +156,8 @@ __global__ void syncthreadsReductionRef(
     for (int off = 16; off > 0; off >>= 1)
     {
         int other = __shfl_down_sync(0xFFFFFFFFu, pivot, off);
-        if (other > pivot) pivot = other;
+        if (other > pivot)
+            pivot = other;
     }
     pivot = __shfl_sync(0xFFFFFFFFu, pivot, 0);
 
@@ -161,7 +166,7 @@ __global__ void syncthreadsReductionRef(
 
     for (int it = 0; it < iter_limit; ++it)
     {
-        // Phase 1: Check pivot state, handle self-clears
+        // Check pivot state, handle self-clears
         if (active)
         {
             if (pivot < 0)
@@ -191,12 +196,11 @@ __global__ void syncthreadsReductionRef(
 
         __syncthreads(); // Self-clears visible before XOR reads
 
-        // Phase 2: XOR with source column, find new pivot
+        // XOR with source column, find new pivot
         if (active)
         {
             int src_col = pivot_to_col[pivot];
-            const uint64_t *src_base = columns +
-                (size_t)src_col * (size_t)num_words;
+            const uint64_t *src_base = columns + (size_t)src_col * (size_t)num_words;
 
             for (int w = lane_id; w < num_words; w += 32)
                 col_words[w] ^= src_base[w];
@@ -215,7 +219,8 @@ __global__ void syncthreadsReductionRef(
             for (int off = 16; off > 0; off >>= 1)
             {
                 int other = __shfl_down_sync(0xFFFFFFFFu, pivot, off);
-                if (other > pivot) pivot = other;
+                if (other > pivot)
+                    pivot = other;
             }
             pivot = __shfl_sync(0xFFFFFFFFu, pivot, 0);
         }
@@ -246,7 +251,7 @@ int main()
         // src:              col 0 = 0b0101 (bits 0,2), col 1 = 0b1010 (bits 1,3)
         // dest ^= src:      col 0 = 0b0110,           col 1 = 0b0110
         const uint64_t h_dest[num_cols * num_words] = {0b0011ULL, 0b1100ULL};
-        const uint64_t h_src[num_cols * num_words]  = {0b0101ULL, 0b1010ULL};
+        const uint64_t h_src[num_cols * num_words] = {0b0101ULL, 0b1010ULL};
         const int h_sizes[num_cols] = {1, 1};
 
         uint64_t *d_dest = nullptr;
@@ -283,9 +288,8 @@ int main()
         }
 
         uint64_t h_result[num_cols * num_words];
-        if (!check_cuda(
-                cudaMemcpy(h_result, d_dest, sizeof(h_result), cudaMemcpyDeviceToHost),
-                "memcpy result d2h"))
+        if (!check_cuda(cudaMemcpy(h_result, d_dest, sizeof(h_result), cudaMemcpyDeviceToHost),
+                        "memcpy result d2h"))
         {
             cudaFree(d_dest);
             cudaFree(d_src);
@@ -299,8 +303,8 @@ int main()
         if (h_result[0] != expected_col0 || h_result[1] != expected_col1)
         {
             std::cerr << "FAIL: col_add_basic got [0x" << std::hex << h_result[0] << ", 0x"
-                      << h_result[1] << std::dec << "] expected [0x" << std::hex
-                      << expected_col0 << ", 0x" << expected_col1 << std::dec << "]\n";
+                      << h_result[1] << std::dec << "] expected [0x" << std::hex << expected_col0
+                      << ", 0x" << expected_col1 << std::dec << "]\n";
             cudaFree(d_dest);
             cudaFree(d_src);
             cudaFree(d_sizes);
@@ -319,10 +323,10 @@ int main()
 
         // col 0: word[0]=0xFF00, word[1]=0x00FF
         // col 1: word[0]=0x0FF0, word[1]=0xF00F
-        const uint64_t h_a[num_cols * num_words] = {0xFF00ULL, 0x00FFULL, 0x0FF0ULL, 0xF00FULL,
-                                                    0x0000ULL, 0xFFFFULL};
-        const uint64_t h_b[num_cols * num_words] = {0x0FF0ULL, 0xF00FULL, 0xFF00ULL, 0x00FFULL,
-                                                    0xAAAAULL, 0x5555ULL};
+        const uint64_t h_a[num_cols * num_words] = {0xFF00ULL, 0x00FFULL, 0x0FF0ULL,
+                                                    0xF00FULL, 0x0000ULL, 0xFFFFULL};
+        const uint64_t h_b[num_cols * num_words] = {0x0FF0ULL, 0xF00FULL, 0xFF00ULL,
+                                                    0x00FFULL, 0xAAAAULL, 0x5555ULL};
         // All columns have 2 words
         const int h_sizes[num_cols] = {2, 2, 2};
 
@@ -330,15 +334,14 @@ int main()
         uint64_t *d_b = nullptr;
         int *d_sizes = nullptr;
 
-        bool ok = check_cuda(cudaMalloc(&d_a, sizeof(h_a)), "malloc d_a") &&
-                  check_cuda(cudaMalloc(&d_b, sizeof(h_b)), "malloc d_b") &&
-                  check_cuda(cudaMalloc(&d_sizes, sizeof(h_sizes)), "malloc d_sizes") &&
-                  check_cuda(cudaMemcpy(d_a, h_a, sizeof(h_a), cudaMemcpyHostToDevice),
-                             "memcpy d_a") &&
-                  check_cuda(cudaMemcpy(d_b, h_b, sizeof(h_b), cudaMemcpyHostToDevice),
-                             "memcpy d_b") &&
-                  check_cuda(cudaMemcpy(d_sizes, h_sizes, sizeof(h_sizes), cudaMemcpyHostToDevice),
-                             "memcpy d_sizes");
+        bool ok =
+            check_cuda(cudaMalloc(&d_a, sizeof(h_a)), "malloc d_a") &&
+            check_cuda(cudaMalloc(&d_b, sizeof(h_b)), "malloc d_b") &&
+            check_cuda(cudaMalloc(&d_sizes, sizeof(h_sizes)), "malloc d_sizes") &&
+            check_cuda(cudaMemcpy(d_a, h_a, sizeof(h_a), cudaMemcpyHostToDevice), "memcpy d_a") &&
+            check_cuda(cudaMemcpy(d_b, h_b, sizeof(h_b), cudaMemcpyHostToDevice), "memcpy d_b") &&
+            check_cuda(cudaMemcpy(d_sizes, h_sizes, sizeof(h_sizes), cudaMemcpyHostToDevice),
+                       "memcpy d_sizes");
 
         if (!ok)
         {
@@ -370,9 +373,9 @@ int main()
                 uint64_t expected = h_a[col * num_words + w] ^ h_b[col * num_words + w];
                 if (h_result[col * num_words + w] != expected)
                 {
-                    std::cerr << "FAIL: col_add_multiword col=" << col << " word=" << w
-                              << " got 0x" << std::hex << h_result[col * num_words + w]
-                              << " expected 0x" << expected << std::dec << "\n";
+                    std::cerr << "FAIL: col_add_multiword col=" << col << " word=" << w << " got 0x"
+                              << std::hex << h_result[col * num_words + w] << " expected 0x"
+                              << expected << std::dec << "\n";
                     cudaFree(d_a);
                     cudaFree(d_b);
                     cudaFree(d_sizes);
@@ -388,7 +391,6 @@ int main()
 
     // Column Add -- zero columns (no-op)
     {
-
         uint64_t *d_src = nullptr;
         uint64_t *d_dst = nullptr;
         int *d_size = nullptr;
@@ -434,8 +436,7 @@ int main()
         // Column 1: bit 0 set                    -> pivot = 0
         // Column 2: bit 33 set                   -> pivot = 33
         // Column 3: all zeros                    -> pivot = -1
-        const uint64_t h_cols[num_cols * num_words] = {
-            (1ULL << 63), 1ULL, (1ULL << 33), 0ULL};
+        const uint64_t h_cols[num_cols * num_words] = {(1ULL << 63), 1ULL, (1ULL << 33), 0ULL};
         const int h_sizes[num_cols] = {1, 1, 1, 1};
 
         uint64_t *d_cols = nullptr;
@@ -461,8 +462,8 @@ int main()
             return 1;
         }
 
-        nerve::persistence::gpu::launchWarpSpecializedPivotFind(d_cols, d_sizes, num_words, num_cols,
-                                                                d_pivots, 0);
+        nerve::persistence::gpu::launchWarpSpecializedPivotFind(d_cols, d_sizes, num_words,
+                                                                num_cols, d_pivots, 0);
         if (!check_cuda(cudaDeviceSynchronize(), "pivot_find sync"))
         {
             cudaFree(d_cols);
@@ -471,9 +472,8 @@ int main()
             return 1;
         }
 
-        check_cuda(
-            cudaMemcpy(h_pivots, d_pivots, sizeof(h_pivots), cudaMemcpyDeviceToHost),
-            "pivot memcpy result");
+        check_cuda(cudaMemcpy(h_pivots, d_pivots, sizeof(h_pivots), cudaMemcpyDeviceToHost),
+                   "pivot memcpy result");
 
         const int expected_pivots[num_cols] = {63, 0, 33, -1};
         for (int i = 0; i < num_cols; ++i)
@@ -502,8 +502,8 @@ int main()
         // Column 0: word[2] has bit 0 set -> pivot = 2*64 + 0 = 128
         // Column 1: word[1] has bit 63 set, word[2] has bit 31 set -> pivot = 2*64+31 = 159
         const uint64_t h_cols[num_cols * num_words] = {
-            0ULL, 0ULL, 1ULL,                              // col 0: pivot at 128
-            0ULL, (1ULL << 63), (1ULL << 31)};             // col 1: pivot at 159
+            0ULL, 0ULL,         1ULL,          // col 0: pivot at 128
+            0ULL, (1ULL << 63), (1ULL << 31)}; // col 1: pivot at 159
         const int h_sizes[num_cols] = {3, 3};
 
         uint64_t *d_cols = nullptr;
@@ -529,8 +529,8 @@ int main()
             return 1;
         }
 
-        nerve::persistence::gpu::launchWarpSpecializedPivotFind(d_cols, d_sizes, num_words, num_cols,
-                                                                d_pivots, 0);
+        nerve::persistence::gpu::launchWarpSpecializedPivotFind(d_cols, d_sizes, num_words,
+                                                                num_cols, d_pivots, 0);
         if (!check_cuda(cudaDeviceSynchronize(), "pivot mw sync"))
         {
             cudaFree(d_cols);
@@ -539,9 +539,8 @@ int main()
             return 1;
         }
 
-        check_cuda(
-            cudaMemcpy(h_pivots, d_pivots, sizeof(h_pivots), cudaMemcpyDeviceToHost),
-            "pivot mw result");
+        check_cuda(cudaMemcpy(h_pivots, d_pivots, sizeof(h_pivots), cudaMemcpyDeviceToHost),
+                   "pivot mw result");
 
         const int expected_pivots[num_cols] = {128, 159};
         for (int i = 0; i < num_cols; ++i)
@@ -593,24 +592,23 @@ int main()
         int *d_col_pivots = nullptr;
         int *d_new_pivots = nullptr;
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, sizeof(h_cols)), "reduc malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, sizeof(h_pivot_to_col)),
-                       "reduc malloc pivot_to_col") &&
-            check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)),
-                       "reduc malloc col_pivots") &&
-            check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols),
-                       "reduc malloc new_pivots") &&
-            check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
-                       "reduc memcpy cols") &&
-            check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
-                                  cudaMemcpyHostToDevice),
-                       "reduc memcpy pivot_to_col") &&
-            check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
-                                  cudaMemcpyHostToDevice),
-                       "reduc memcpy col_pivots") &&
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
-                       "reduc memset new_pivots");
+        bool ok = check_cuda(cudaMalloc(&d_cols, sizeof(h_cols)), "reduc malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, sizeof(h_pivot_to_col)),
+                             "reduc malloc pivot_to_col") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)),
+                             "reduc malloc col_pivots") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols),
+                             "reduc malloc new_pivots") &&
+                  check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
+                             "reduc memcpy cols") &&
+                  check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
+                                        cudaMemcpyHostToDevice),
+                             "reduc memcpy pivot_to_col") &&
+                  check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
+                                        cudaMemcpyHostToDevice),
+                             "reduc memcpy col_pivots") &&
+                  check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
+                             "reduc memset new_pivots");
 
         if (!ok)
         {
@@ -622,9 +620,8 @@ int main()
             return 1;
         }
 
-        nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                          num_words, num_cols, d_new_pivots, 0,
-                                                          false);
+        nerve::persistence::gpu::launchPipelinedReduction(
+            d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
         if (!check_cuda(cudaDeviceSynchronize(), "reduc sync"))
         {
             cudaFree(d_cols);
@@ -634,17 +631,17 @@ int main()
             return 1;
         }
 
-        check_cuda(cudaMemcpy(h_new_pivots, d_new_pivots, sizeof(int) * num_cols,
-                              cudaMemcpyDeviceToHost),
-                   "reduc result");
+        check_cuda(
+            cudaMemcpy(h_new_pivots, d_new_pivots, sizeof(int) * num_cols, cudaMemcpyDeviceToHost),
+            "reduc result");
 
         // All columns should self-clear (pivot = -1)
         for (int i = 0; i < num_cols; ++i)
         {
             if (h_new_pivots[i] != -1)
             {
-                std::cerr << "FAIL: pipelined_reduction_self_clear col " << i << " pivot="
-                          << h_new_pivots[i] << " expected -1\n";
+                std::cerr << "FAIL: pipelined_reduction_self_clear col " << i
+                          << " pivot=" << h_new_pivots[i] << " expected -1\n";
                 cudaFree(d_cols);
                 cudaFree(d_pivot_to_col);
                 cudaFree(d_col_pivots);
@@ -655,8 +652,7 @@ int main()
 
         // Verify all columns are zeroed
         uint64_t h_result_cols[num_cols * num_words];
-        check_cuda(cudaMemcpy(h_result_cols, d_cols, sizeof(h_result_cols),
-                              cudaMemcpyDeviceToHost),
+        check_cuda(cudaMemcpy(h_result_cols, d_cols, sizeof(h_result_cols), cudaMemcpyDeviceToHost),
                    "reduc cols result");
         for (int i = 0; i < num_cols; ++i)
         {
@@ -700,24 +696,23 @@ int main()
         int *d_new_pivots = nullptr;
         int h_new_pivots[num_cols] = {};
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, sizeof(h_cols)), "reduc2 malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, sizeof(h_pivot_to_col)),
-                       "reduc2 malloc pivot_to_col") &&
-            check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)),
-                       "reduc2 malloc col_pivots") &&
-            check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols),
-                       "reduc2 malloc new_pivots") &&
-            check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
-                       "reduc2 memcpy cols") &&
-            check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
-                                  cudaMemcpyHostToDevice),
-                       "reduc2 memcpy pivot_to_col") &&
-            check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
-                                  cudaMemcpyHostToDevice),
-                       "reduc2 memcpy col_pivots") &&
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
-                       "reduc2 memset new_pivots");
+        bool ok = check_cuda(cudaMalloc(&d_cols, sizeof(h_cols)), "reduc2 malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, sizeof(h_pivot_to_col)),
+                             "reduc2 malloc pivot_to_col") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)),
+                             "reduc2 malloc col_pivots") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols),
+                             "reduc2 malloc new_pivots") &&
+                  check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
+                             "reduc2 memcpy cols") &&
+                  check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
+                                        cudaMemcpyHostToDevice),
+                             "reduc2 memcpy pivot_to_col") &&
+                  check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
+                                        cudaMemcpyHostToDevice),
+                             "reduc2 memcpy col_pivots") &&
+                  check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
+                             "reduc2 memset new_pivots");
 
         if (!ok)
         {
@@ -729,9 +724,8 @@ int main()
             return 1;
         }
 
-        nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                          num_words, num_cols, d_new_pivots, 0,
-                                                          false);
+        nerve::persistence::gpu::launchPipelinedReduction(
+            d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
         if (!check_cuda(cudaDeviceSynchronize(), "reduc2 sync"))
         {
             cudaFree(d_cols);
@@ -741,9 +735,9 @@ int main()
             return 1;
         }
 
-        check_cuda(cudaMemcpy(h_new_pivots, d_new_pivots, sizeof(int) * num_cols,
-                              cudaMemcpyDeviceToHost),
-                   "reduc2 result");
+        check_cuda(
+            cudaMemcpy(h_new_pivots, d_new_pivots, sizeof(int) * num_cols, cudaMemcpyDeviceToHost),
+            "reduc2 result");
 
         // Both columns should retain their original pivots (unclaimed -> break)
         const int expected_pivots[num_cols] = {2, 1};
@@ -751,8 +745,9 @@ int main()
         {
             if (h_new_pivots[i] != expected_pivots[i])
             {
-                std::cerr << "FAIL: pipelined_reduction_unclaimed col " << i << " pivot="
-                          << h_new_pivots[i] << " expected " << expected_pivots[i] << "\n";
+                std::cerr << "FAIL: pipelined_reduction_unclaimed col " << i
+                          << " pivot=" << h_new_pivots[i] << " expected " << expected_pivots[i]
+                          << "\n";
                 cudaFree(d_cols);
                 cudaFree(d_pivot_to_col);
                 cudaFree(d_col_pivots);
@@ -763,8 +758,7 @@ int main()
 
         // Verify data unchanged
         uint64_t h_result_cols[num_cols * num_words];
-        check_cuda(cudaMemcpy(h_result_cols, d_cols, sizeof(h_result_cols),
-                              cudaMemcpyDeviceToHost),
+        check_cuda(cudaMemcpy(h_result_cols, d_cols, sizeof(h_result_cols), cudaMemcpyDeviceToHost),
                    "reduc2 cols result");
         for (int i = 0; i < num_cols; ++i)
         {
@@ -825,8 +819,8 @@ int main()
         // Should return default (all zeros / 1.0) without crashing
         if (bench.column_add_time_ms != 0.0)
         {
-            std::cerr << "FAIL: benchmark zero case column_add_time_ms="
-                      << bench.column_add_time_ms << " expected 0\n";
+            std::cerr << "FAIL: benchmark zero case column_add_time_ms=" << bench.column_add_time_ms
+                      << " expected 0\n";
             return 1;
         }
     }
@@ -860,11 +854,13 @@ int main()
         }
         if (cfg.warps_per_block <= 0)
         {
-            std::cerr << "FAIL: config warps_per_block=" << cfg.warps_per_block << " should be > 0\n";
+            std::cerr << "FAIL: config warps_per_block=" << cfg.warps_per_block
+                      << " should be > 0\n";
             return 1;
         }
         // Large problem with tensor cores available should use tensor cores
-        auto cfg_large = nerve::persistence::gpu::getOptimalWarpSpecializationConfig(4096, 16, true);
+        auto cfg_large =
+            nerve::persistence::gpu::getOptimalWarpSpecializationConfig(4096, 16, true);
         if (!cfg_large.use_tensor_cores)
         {
             std::cerr << "FAIL: expected tensor cores enabled for large problem\n";
@@ -924,24 +920,23 @@ int main()
         int *d_new_pivots = nullptr;
         int h_new_pivots[num_cols] = {};
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, sizeof(h_cols)), "async malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, sizeof(h_pivot_to_col)),
-                       "async malloc pivot_to_col") &&
-            check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)),
-                       "async malloc col_pivots") &&
-            check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols),
-                       "async malloc new_pivots") &&
-            check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
-                       "async memcpy cols") &&
-            check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
-                                  cudaMemcpyHostToDevice),
-                       "async memcpy pivot_to_col") &&
-            check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
-                                  cudaMemcpyHostToDevice),
-                       "async memcpy col_pivots") &&
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
-                       "async memset new_pivots");
+        bool ok = check_cuda(cudaMalloc(&d_cols, sizeof(h_cols)), "async malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, sizeof(h_pivot_to_col)),
+                             "async malloc pivot_to_col") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)),
+                             "async malloc col_pivots") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols),
+                             "async malloc new_pivots") &&
+                  check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
+                             "async memcpy cols") &&
+                  check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
+                                        cudaMemcpyHostToDevice),
+                             "async memcpy pivot_to_col") &&
+                  check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
+                                        cudaMemcpyHostToDevice),
+                             "async memcpy col_pivots") &&
+                  check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
+                             "async memset new_pivots");
 
         if (!ok)
         {
@@ -954,9 +949,8 @@ int main()
         }
 
         // use_async_copy=true activates the async kernel variant
-        nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                          num_words, num_cols, d_new_pivots, 0,
-                                                          true);
+        nerve::persistence::gpu::launchPipelinedReduction(
+            d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
         if (!check_cuda(cudaDeviceSynchronize(), "async sync"))
         {
             cudaFree(d_cols);
@@ -966,9 +960,9 @@ int main()
             return 1;
         }
 
-        check_cuda(cudaMemcpy(h_new_pivots, d_new_pivots, sizeof(int) * num_cols,
-                              cudaMemcpyDeviceToHost),
-                   "async result");
+        check_cuda(
+            cudaMemcpy(h_new_pivots, d_new_pivots, sizeof(int) * num_cols, cudaMemcpyDeviceToHost),
+            "async result");
 
         // All columns should self-clear (pivot = -1)
         for (int i = 0; i < num_cols; ++i)
@@ -987,8 +981,7 @@ int main()
 
         // Verify all columns are zeroed
         uint64_t h_result_cols[num_cols * num_words];
-        check_cuda(cudaMemcpy(h_result_cols, d_cols, sizeof(h_result_cols),
-                              cudaMemcpyDeviceToHost),
+        check_cuda(cudaMemcpy(h_result_cols, d_cols, sizeof(h_result_cols), cudaMemcpyDeviceToHost),
                    "async cols result");
         for (int i = 0; i < num_cols; ++i)
         {
@@ -1032,24 +1025,23 @@ int main()
         int *d_new_pivots = nullptr;
         int h_new_pivots[num_cols] = {};
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, sizeof(h_cols)), "async2 malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, sizeof(h_pivot_to_col)),
-                       "async2 malloc pivot_to_col") &&
-            check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)),
-                       "async2 malloc col_pivots") &&
-            check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols),
-                       "async2 malloc new_pivots") &&
-            check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
-                       "async2 memcpy cols") &&
-            check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
-                                  cudaMemcpyHostToDevice),
-                       "async2 memcpy pivot_to_col") &&
-            check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
-                                  cudaMemcpyHostToDevice),
-                       "async2 memcpy col_pivots") &&
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
-                       "async2 memset new_pivots");
+        bool ok = check_cuda(cudaMalloc(&d_cols, sizeof(h_cols)), "async2 malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, sizeof(h_pivot_to_col)),
+                             "async2 malloc pivot_to_col") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)),
+                             "async2 malloc col_pivots") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols),
+                             "async2 malloc new_pivots") &&
+                  check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
+                             "async2 memcpy cols") &&
+                  check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
+                                        cudaMemcpyHostToDevice),
+                             "async2 memcpy pivot_to_col") &&
+                  check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
+                                        cudaMemcpyHostToDevice),
+                             "async2 memcpy col_pivots") &&
+                  check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
+                             "async2 memset new_pivots");
 
         if (!ok)
         {
@@ -1061,9 +1053,8 @@ int main()
             return 1;
         }
 
-        nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                          num_words, num_cols, d_new_pivots, 0,
-                                                          true);
+        nerve::persistence::gpu::launchPipelinedReduction(
+            d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
         if (!check_cuda(cudaDeviceSynchronize(), "async2 sync"))
         {
             cudaFree(d_cols);
@@ -1073,9 +1064,9 @@ int main()
             return 1;
         }
 
-        check_cuda(cudaMemcpy(h_new_pivots, d_new_pivots, sizeof(int) * num_cols,
-                              cudaMemcpyDeviceToHost),
-                   "async2 result");
+        check_cuda(
+            cudaMemcpy(h_new_pivots, d_new_pivots, sizeof(int) * num_cols, cudaMemcpyDeviceToHost),
+            "async2 result");
 
         // Both columns retain original pivots (unclaimed -> break)
         const int expected_pivots[num_cols] = {2, 1};
@@ -1095,8 +1086,7 @@ int main()
 
         // Verify data unchanged
         uint64_t h_result_cols[num_cols * num_words];
-        check_cuda(cudaMemcpy(h_result_cols, d_cols, sizeof(h_result_cols),
-                              cudaMemcpyDeviceToHost),
+        check_cuda(cudaMemcpy(h_result_cols, d_cols, sizeof(h_result_cols), cudaMemcpyDeviceToHost),
                    "async2 cols result");
         for (int i = 0; i < num_cols; ++i)
         {
@@ -1134,8 +1124,8 @@ int main()
         uint64_t h_cols[num_cols * num_words] = {0b100ULL, 0b000ULL, 0b000ULL, 0b001ULL};
         int h_pivot_to_col[128]; // num_words * 64
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[2] = 0;   // col 0 claims pivot 2
-        h_pivot_to_col[64] = 1;  // col 1 claims pivot 64
+        h_pivot_to_col[2] = 0;  // col 0 claims pivot 2
+        h_pivot_to_col[64] = 1; // col 1 claims pivot 64
 
         int h_col_pivots[num_cols] = {2, 64};
 
@@ -1145,24 +1135,23 @@ int main()
         int *d_new_pivots = nullptr;
         int h_new_pivots[num_cols] = {};
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, sizeof(h_cols)), "async3 malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, sizeof(h_pivot_to_col)),
-                       "async3 malloc pivot_to_col") &&
-            check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)),
-                       "async3 malloc col_pivots") &&
-            check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols),
-                       "async3 malloc new_pivots") &&
-            check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
-                       "async3 memcpy cols") &&
-            check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
-                                  cudaMemcpyHostToDevice),
-                       "async3 memcpy pivot_to_col") &&
-            check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
-                                  cudaMemcpyHostToDevice),
-                       "async3 memcpy col_pivots") &&
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
-                       "async3 memset new_pivots");
+        bool ok = check_cuda(cudaMalloc(&d_cols, sizeof(h_cols)), "async3 malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, sizeof(h_pivot_to_col)),
+                             "async3 malloc pivot_to_col") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)),
+                             "async3 malloc col_pivots") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols),
+                             "async3 malloc new_pivots") &&
+                  check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
+                             "async3 memcpy cols") &&
+                  check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
+                                        cudaMemcpyHostToDevice),
+                             "async3 memcpy pivot_to_col") &&
+                  check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
+                                        cudaMemcpyHostToDevice),
+                             "async3 memcpy col_pivots") &&
+                  check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
+                             "async3 memset new_pivots");
 
         if (!ok)
         {
@@ -1174,9 +1163,8 @@ int main()
             return 1;
         }
 
-        nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                          num_words, num_cols, d_new_pivots, 0,
-                                                          true);
+        nerve::persistence::gpu::launchPipelinedReduction(
+            d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
         if (!check_cuda(cudaDeviceSynchronize(), "async3 sync"))
         {
             cudaFree(d_cols);
@@ -1186,9 +1174,9 @@ int main()
             return 1;
         }
 
-        check_cuda(cudaMemcpy(h_new_pivots, d_new_pivots, sizeof(int) * num_cols,
-                              cudaMemcpyDeviceToHost),
-                   "async3 result");
+        check_cuda(
+            cudaMemcpy(h_new_pivots, d_new_pivots, sizeof(int) * num_cols, cudaMemcpyDeviceToHost),
+            "async3 result");
 
         // Both columns should self-clear
         for (int i = 0; i < num_cols; ++i)
@@ -1207,8 +1195,7 @@ int main()
 
         // Verify both words of each column are zeroed
         uint64_t h_result_cols[num_cols * num_words];
-        check_cuda(cudaMemcpy(h_result_cols, d_cols, sizeof(h_result_cols),
-                              cudaMemcpyDeviceToHost),
+        check_cuda(cudaMemcpy(h_result_cols, d_cols, sizeof(h_result_cols), cudaMemcpyDeviceToHost),
                    "async3 cols result");
         for (int i = 0; i < num_cols * num_words; ++i)
         {
@@ -1271,20 +1258,19 @@ int main()
         int *d_col_pivots = nullptr;
         int *d_new_pivots = nullptr;
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, col_bytes), "fallback malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "fallback malloc ptc") &&
-            check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "fallback malloc pivots") &&
-            check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "fallback malloc new") &&
-            check_cuda(cudaMemcpy(d_cols, h_cols.data(), col_bytes, cudaMemcpyHostToDevice),
-                       "fallback memcpy cols") &&
-            check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col.data(), ptc_bytes,
-                                  cudaMemcpyHostToDevice),
-                       "fallback memcpy ptc") &&
-            check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots.data(), idx_bytes,
-                                  cudaMemcpyHostToDevice),
-                       "fallback memcpy pivots") &&
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "fallback memset new");
+        bool ok = check_cuda(cudaMalloc(&d_cols, col_bytes), "fallback malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "fallback malloc ptc") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "fallback malloc pivots") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "fallback malloc new") &&
+                  check_cuda(cudaMemcpy(d_cols, h_cols.data(), col_bytes, cudaMemcpyHostToDevice),
+                             "fallback memcpy cols") &&
+                  check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col.data(), ptc_bytes,
+                                        cudaMemcpyHostToDevice),
+                             "fallback memcpy ptc") &&
+                  check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots.data(), idx_bytes,
+                                        cudaMemcpyHostToDevice),
+                             "fallback memcpy pivots") &&
+                  check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "fallback memset new");
 
         if (!ok)
         {
@@ -1297,9 +1283,8 @@ int main()
         }
 
         // use_async_copy=true but will fall back because shared mem exceeds 64KB
-        nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                          num_words, num_cols, d_new_pivots, 0,
-                                                          true);
+        nerve::persistence::gpu::launchPipelinedReduction(
+            d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
         if (!check_cuda(cudaDeviceSynchronize(), "fallback sync"))
         {
             cudaFree(d_cols);
@@ -1309,8 +1294,7 @@ int main()
             return 1;
         }
 
-        check_cuda(cudaMemcpy(h_new_pivots.data(), d_new_pivots, idx_bytes,
-                              cudaMemcpyDeviceToHost),
+        check_cuda(cudaMemcpy(h_new_pivots.data(), d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
                    "fallback result");
 
         // All columns should self-clear (pivot = -1)
@@ -1360,7 +1344,7 @@ int main()
         // pivot_to_col: col 1 claims pivot 2; pivots 0,1 unclaimed
         int h_pivot_to_col[64];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[2] = 1;  // col 1 claims pivot 2
+        h_pivot_to_col[2] = 1; // col 1 claims pivot 2
         // pivot_to_col[0] stays -1 (unclaimed)
         // pivot_to_col[1] stays -1 (unclaimed)
 
@@ -1381,10 +1365,8 @@ int main()
             check_cuda(cudaMalloc(&d_cols, sizeof(h_cols_initial)), "cmp malloc cols") &&
             check_cuda(cudaMalloc(&d_pivot_to_col, sizeof(h_pivot_to_col)),
                        "cmp malloc pivot_to_col") &&
-            check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)),
-                       "cmp malloc col_pivots") &&
-            check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols),
-                       "cmp malloc new_pivots");
+            check_cuda(cudaMalloc(&d_col_pivots, sizeof(h_col_pivots)), "cmp malloc col_pivots") &&
+            check_cuda(cudaMalloc(&d_new_pivots, sizeof(int) * num_cols), "cmp malloc new_pivots");
 
         if (!ok)
         {
@@ -1398,9 +1380,9 @@ int main()
 
         // Run with use_async_copy=false
         {
-            check_cuda(cudaMemcpy(d_cols, h_cols_initial, sizeof(h_cols_initial),
-                                  cudaMemcpyHostToDevice),
-                       "cmp memcpy cols (reg)");
+            check_cuda(
+                cudaMemcpy(d_cols, h_cols_initial, sizeof(h_cols_initial), cudaMemcpyHostToDevice),
+                "cmp memcpy cols (reg)");
             check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
                                   cudaMemcpyHostToDevice),
                        "cmp memcpy pivot_to_col (reg)");
@@ -1411,8 +1393,7 @@ int main()
                        "cmp memset new_pivots (reg)");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0, false);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             if (!check_cuda(cudaDeviceSynchronize(), "cmp sync (reg)"))
             {
                 cudaFree(d_cols);
@@ -1425,8 +1406,7 @@ int main()
             // Read back results into staging buffers
             uint64_t h_reg_data[num_cols * num_words];
             int h_reg_pivots[num_cols];
-            check_cuda(cudaMemcpy(h_reg_data, d_cols, sizeof(h_reg_data),
-                                  cudaMemcpyDeviceToHost),
+            check_cuda(cudaMemcpy(h_reg_data, d_cols, sizeof(h_reg_data), cudaMemcpyDeviceToHost),
                        "cmp d2h reg cols");
             check_cuda(cudaMemcpy(h_reg_pivots, d_new_pivots, sizeof(h_reg_pivots),
                                   cudaMemcpyDeviceToHost),
@@ -1437,9 +1417,8 @@ int main()
             {
                 if (h_reg_data[i] != expected_data[i])
                 {
-                    std::cerr << "FAIL: async_vs_regular regular col " << i
-                              << " data=0x" << std::hex << h_reg_data[i]
-                              << std::dec << " expected 0x" << std::hex
+                    std::cerr << "FAIL: async_vs_regular regular col " << i << " data=0x"
+                              << std::hex << h_reg_data[i] << std::dec << " expected 0x" << std::hex
                               << expected_data[i] << std::dec << "\n";
                     cudaFree(d_cols);
                     cudaFree(d_pivot_to_col);
@@ -1450,8 +1429,8 @@ int main()
                 if (h_reg_pivots[i] != expected_pivots[i])
                 {
                     std::cerr << "FAIL: async_vs_regular regular col " << i
-                              << " pivot=" << h_reg_pivots[i] << " expected "
-                              << expected_pivots[i] << "\n";
+                              << " pivot=" << h_reg_pivots[i] << " expected " << expected_pivots[i]
+                              << "\n";
                     cudaFree(d_cols);
                     cudaFree(d_pivot_to_col);
                     cudaFree(d_col_pivots);
@@ -1463,9 +1442,9 @@ int main()
 
         // Run with use_async_copy=true on the same data
         {
-            check_cuda(cudaMemcpy(d_cols, h_cols_initial, sizeof(h_cols_initial),
-                                  cudaMemcpyHostToDevice),
-                       "cmp memcpy cols (async)");
+            check_cuda(
+                cudaMemcpy(d_cols, h_cols_initial, sizeof(h_cols_initial), cudaMemcpyHostToDevice),
+                "cmp memcpy cols (async)");
             check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
                                   cudaMemcpyHostToDevice),
                        "cmp memcpy pivot_to_col (async)");
@@ -1476,8 +1455,7 @@ int main()
                        "cmp memset new_pivots (async)");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0, true);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             if (!check_cuda(cudaDeviceSynchronize(), "cmp sync (async)"))
             {
                 cudaFree(d_cols);
@@ -1490,9 +1468,9 @@ int main()
             // Read back results
             uint64_t h_async_data[num_cols * num_words];
             int h_async_pivots[num_cols];
-            check_cuda(cudaMemcpy(h_async_data, d_cols, sizeof(h_async_data),
-                                  cudaMemcpyDeviceToHost),
-                       "cmp d2h async cols");
+            check_cuda(
+                cudaMemcpy(h_async_data, d_cols, sizeof(h_async_data), cudaMemcpyDeviceToHost),
+                "cmp d2h async cols");
             check_cuda(cudaMemcpy(h_async_pivots, d_new_pivots, sizeof(h_async_pivots),
                                   cudaMemcpyDeviceToHost),
                        "cmp d2h async pivots");
@@ -1503,9 +1481,8 @@ int main()
             {
                 if (h_async_data[i] != expected_data[i])
                 {
-                    std::cerr << "FAIL: async_vs_regular async col " << i
-                              << " data=0x" << std::hex << h_async_data[i]
-                              << std::dec << " expected 0x" << std::hex
+                    std::cerr << "FAIL: async_vs_regular async col " << i << " data=0x" << std::hex
+                              << h_async_data[i] << std::dec << " expected 0x" << std::hex
                               << expected_data[i] << std::dec << "\n";
                     cudaFree(d_cols);
                     cudaFree(d_pivot_to_col);
@@ -1558,8 +1535,8 @@ int main()
 
         int h_pivot_to_col[64];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[2] = 1;  // col 1 claims pivot 2
-        h_pivot_to_col[1] = 2;  // col 2 claims pivot 1
+        h_pivot_to_col[2] = 1; // col 1 claims pivot 2
+        h_pivot_to_col[1] = 2; // col 2 claims pivot 1
         // pivot_to_col[0] stays -1 (unclaimed)
 
         uint64_t *d_cols = nullptr;
@@ -1575,45 +1552,54 @@ int main()
 
         if (!ok)
         {
-            cudaFree(d_cols); cudaFree(d_pivot_to_col);
-            cudaFree(d_col_pivots); cudaFree(d_new_pivots);
-            std::cerr << "FAIL: xref_cross_col setup\n"; return 1;
+            cudaFree(d_cols);
+            cudaFree(d_pivot_to_col);
+            cudaFree(d_col_pivots);
+            cudaFree(d_new_pivots);
+            std::cerr << "FAIL: xref_cross_col setup\n";
+            return 1;
         }
 
         // Helper to upload initial data
         auto upload_data = [&]() -> bool {
-            return check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols),
-                                          cudaMemcpyHostToDevice), "xref memcpy cols") &&
+            return check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
+                              "xref memcpy cols") &&
                    check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
-                                          cudaMemcpyHostToDevice), "xref memcpy ptc") &&
+                                         cudaMemcpyHostToDevice),
+                              "xref memcpy ptc") &&
                    check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
-                                          cudaMemcpyHostToDevice), "xref memcpy cp");
+                                         cudaMemcpyHostToDevice),
+                              "xref memcpy cp");
         };
 
         // single-warp reference (sequential, race-free)
         int ref_pivots[num_cols] = {};
         {
-            if (!upload_data()) { goto xref_cleanup; }
+            if (!upload_data())
+            {
+                goto xref_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
                        "xref memset np (ref)");
 
-            singleWarpReductionRef<<<1, 32>>>(
-                d_cols, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols,
+                                              d_new_pivots);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
                 std::cerr << "FAIL: xref_cross_col ref kernel launch failed\n";
                 goto xref_cleanup;
             }
 
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "xref d2h ref pivots");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "xref d2h ref pivots");
 
             for (int i = 0; i < num_cols; ++i)
             {
                 if (ref_pivots[i] < 0)
                 {
-                    std::cerr << "FAIL: xref_cross_col ref pivot[" << i << "]="
-                              << ref_pivots[i] << " expected >=0\n";
+                    std::cerr << "FAIL: xref_cross_col ref pivot[" << i << "]=" << ref_pivots[i]
+                              << " expected >=0\n";
                     goto xref_cleanup;
                 }
             }
@@ -1623,13 +1609,16 @@ int main()
         {
             for (int run = 0; run < 5; ++run)
             {
-                if (!upload_data()) { goto xref_cleanup; }
+                if (!upload_data())
+                {
+                    goto xref_cleanup;
+                }
                 check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
                            "xref memset np (reg)");
 
-                nerve::persistence::gpu::launchPipelinedReduction(
-                    d_cols, d_col_pivots, d_pivot_to_col,
-                    num_words, num_cols, d_new_pivots, 0, false);
+                nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots,
+                                                                  d_pivot_to_col, num_words,
+                                                                  num_cols, d_new_pivots, 0, false);
                 if (cudaDeviceSynchronize() != cudaSuccess)
                 {
                     std::cerr << "FAIL: xref_cross_col reg run " << run << " launch failed\n";
@@ -1638,15 +1627,16 @@ int main()
 
                 int run_pivots[num_cols] = {};
                 check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                      cudaMemcpyDeviceToHost), "xref d2h reg pivots");
+                                      cudaMemcpyDeviceToHost),
+                           "xref d2h reg pivots");
 
                 for (int i = 0; i < num_cols; ++i)
                 {
                     if (run_pivots[i] != ref_pivots[i])
                     {
-                        std::cerr << "FAIL: xref_cross_col reg run " << run
-                                  << " col " << i << " pivot=" << run_pivots[i]
-                                  << " != ref " << ref_pivots[i] << "\n";
+                        std::cerr << "FAIL: xref_cross_col reg run " << run << " col " << i
+                                  << " pivot=" << run_pivots[i] << " != ref " << ref_pivots[i]
+                                  << "\n";
                         goto xref_cleanup;
                     }
                 }
@@ -1657,13 +1647,16 @@ int main()
         {
             for (int run = 0; run < 5; ++run)
             {
-                if (!upload_data()) { goto xref_cleanup; }
+                if (!upload_data())
+                {
+                    goto xref_cleanup;
+                }
                 check_cuda(cudaMemset(d_new_pivots, 0xFF, sizeof(int) * num_cols),
                            "xref memset np (async)");
 
-                nerve::persistence::gpu::launchPipelinedReduction(
-                    d_cols, d_col_pivots, d_pivot_to_col,
-                    num_words, num_cols, d_new_pivots, 0, true);
+                nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots,
+                                                                  d_pivot_to_col, num_words,
+                                                                  num_cols, d_new_pivots, 0, true);
                 if (cudaDeviceSynchronize() != cudaSuccess)
                 {
                     std::cerr << "FAIL: xref_cross_col async run " << run << " launch failed\n";
@@ -1672,15 +1665,16 @@ int main()
 
                 int run_pivots[num_cols] = {};
                 check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                      cudaMemcpyDeviceToHost), "xref d2h async pivots");
+                                      cudaMemcpyDeviceToHost),
+                           "xref d2h async pivots");
 
                 for (int i = 0; i < num_cols; ++i)
                 {
                     if (run_pivots[i] != ref_pivots[i])
                     {
-                        std::cerr << "FAIL: xref_cross_col async run " << run
-                                  << " col " << i << " pivot=" << run_pivots[i]
-                                  << " != ref " << ref_pivots[i] << "\n";
+                        std::cerr << "FAIL: xref_cross_col async run " << run << " col " << i
+                                  << " pivot=" << run_pivots[i] << " != ref " << ref_pivots[i]
+                                  << "\n";
                         goto xref_cleanup;
                     }
                 }
@@ -1688,17 +1682,20 @@ int main()
         }
 
         // All runs succeeded: free and continue to return 0
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto xref_done;
 
-    xref_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+xref_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    xref_done:
-        ;
+xref_done:;
     }
 
     // Multi-word (2-word) cross-column reduction: single-warp reference
@@ -1719,9 +1716,9 @@ int main()
 
         // Column data: stored as [col0_w0, col0_w1, col1_w0, col1_w1, col2_w0, col2_w1]
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000ULL, 0b100ULL,      // col 0: pivot=66 (word 1, bit 2)
-            0b010ULL,  0x0000ULL,     // col 1: pivot=1 (word 0, bit 1)
-            0x0000ULL, 0b001ULL       // col 2: pivot=64 (word 1, bit 0), unclaimed
+            0x0000ULL, 0b100ULL,  // col 0: pivot=66 (word 1, bit 2)
+            0b010ULL,  0x0000ULL, // col 1: pivot=1 (word 0, bit 1)
+            0x0000ULL, 0b001ULL   // col 2: pivot=64 (word 1, bit 0), unclaimed
         };
 
         const int h_col_pivots[num_cols] = {66, 1, 64};
@@ -1729,8 +1726,8 @@ int main()
         // pivot_to_col sized for 2 words * 64 = 128 possible pivots
         int h_pivot_to_col[128];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[66] = 1;  // col 1 claims pivot 66 (tells col 0 to XOR with col 1)
-        h_pivot_to_col[1]  = 2;  // col 2 claims pivot 1 (tells col 1 to XOR with col 2)
+        h_pivot_to_col[66] = 1; // col 1 claims pivot 66 (tells col 0 to XOR with col 1)
+        h_pivot_to_col[1] = 2;  // col 2 claims pivot 1 (tells col 1 to XOR with col 2)
         // pivot_to_col[64] stays -1 (unclaimed)
 
         // Expected: col 1's pivot changes to 64 after XOR, then breaks.
@@ -1745,17 +1742,19 @@ int main()
         std::size_t ptc_bytes = sizeof(h_pivot_to_col);
         std::size_t idx_bytes = static_cast<std::size_t>(num_cols) * sizeof(int);
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, col_bytes), "mw2 malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw2 malloc ptc") &&
-            check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw2 malloc cp") &&
-            check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw2 malloc np");
+        bool ok = check_cuda(cudaMalloc(&d_cols, col_bytes), "mw2 malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw2 malloc ptc") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw2 malloc cp") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw2 malloc np");
 
         if (!ok)
         {
-            cudaFree(d_cols); cudaFree(d_pivot_to_col);
-            cudaFree(d_col_pivots); cudaFree(d_new_pivots);
-            std::cerr << "FAIL: mw2_cross_col setup\n"; return 1;
+            cudaFree(d_cols);
+            cudaFree(d_pivot_to_col);
+            cudaFree(d_col_pivots);
+            cudaFree(d_new_pivots);
+            std::cerr << "FAIL: mw2_cross_col setup\n";
+            return 1;
         }
 
         // Upload helper
@@ -1763,19 +1762,24 @@ int main()
             return check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
                               "mw2 memcpy cols") &&
                    check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                                          cudaMemcpyHostToDevice), "mw2 memcpy ptc") &&
-                   check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes,
-                                          cudaMemcpyHostToDevice), "mw2 memcpy cp");
+                                         cudaMemcpyHostToDevice),
+                              "mw2 memcpy ptc") &&
+                   check_cuda(
+                       cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                       "mw2 memcpy cp");
         };
 
         // single-warp reference
         int ref_pivots_mw2[num_cols] = {};
         {
-            if (!upload_mw2()) { goto mw2_cleanup; }
+            if (!upload_mw2())
+            {
+                goto mw2_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw2 memset np (ref)");
 
-            singleWarpReductionRef<<<1, 32>>>(
-                d_cols, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols,
+                                              d_new_pivots);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
                 std::cerr << "FAIL: mw2_cross_col ref kernel launch failed\n";
@@ -1783,14 +1787,15 @@ int main()
             }
 
             check_cuda(cudaMemcpy(ref_pivots_mw2, d_new_pivots, sizeof(ref_pivots_mw2),
-                                  cudaMemcpyDeviceToHost), "mw2 d2h ref pivots");
+                                  cudaMemcpyDeviceToHost),
+                       "mw2 d2h ref pivots");
 
             for (int i = 0; i < num_cols; ++i)
             {
                 if (ref_pivots_mw2[i] < 0)
                 {
-                    std::cerr << "FAIL: mw2_cross_col ref pivot[" << i << "]="
-                              << ref_pivots_mw2[i] << " expected >=0\n";
+                    std::cerr << "FAIL: mw2_cross_col ref pivot[" << i << "]=" << ref_pivots_mw2[i]
+                              << " expected >=0\n";
                     goto mw2_cleanup;
                 }
             }
@@ -1800,12 +1805,15 @@ int main()
         {
             for (int run = 0; run < 5; ++run)
             {
-                if (!upload_mw2()) { goto mw2_cleanup; }
+                if (!upload_mw2())
+                {
+                    goto mw2_cleanup;
+                }
                 check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw2 memset np (reg)");
 
-                nerve::persistence::gpu::launchPipelinedReduction(
-                    d_cols, d_col_pivots, d_pivot_to_col,
-                    num_words, num_cols, d_new_pivots, 0, false);
+                nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots,
+                                                                  d_pivot_to_col, num_words,
+                                                                  num_cols, d_new_pivots, 0, false);
                 if (cudaDeviceSynchronize() != cudaSuccess)
                 {
                     std::cerr << "FAIL: mw2_cross_col reg run " << run << " launch failed\n";
@@ -1814,15 +1822,16 @@ int main()
 
                 int run_pivots_mw2[num_cols] = {};
                 check_cuda(cudaMemcpy(run_pivots_mw2, d_new_pivots, sizeof(run_pivots_mw2),
-                                      cudaMemcpyDeviceToHost), "mw2 d2h reg pivots");
+                                      cudaMemcpyDeviceToHost),
+                           "mw2 d2h reg pivots");
 
                 for (int i = 0; i < num_cols; ++i)
                 {
                     if (run_pivots_mw2[i] != ref_pivots_mw2[i])
                     {
-                        std::cerr << "FAIL: mw2_cross_col reg run " << run
-                                  << " col " << i << " pivot=" << run_pivots_mw2[i]
-                                  << " != ref " << ref_pivots_mw2[i] << "\n";
+                        std::cerr << "FAIL: mw2_cross_col reg run " << run << " col " << i
+                                  << " pivot=" << run_pivots_mw2[i] << " != ref "
+                                  << ref_pivots_mw2[i] << "\n";
                         goto mw2_cleanup;
                     }
                 }
@@ -1833,12 +1842,15 @@ int main()
         {
             for (int run = 0; run < 5; ++run)
             {
-                if (!upload_mw2()) { goto mw2_cleanup; }
+                if (!upload_mw2())
+                {
+                    goto mw2_cleanup;
+                }
                 check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw2 memset np (async)");
 
-                nerve::persistence::gpu::launchPipelinedReduction(
-                    d_cols, d_col_pivots, d_pivot_to_col,
-                    num_words, num_cols, d_new_pivots, 0, true);
+                nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots,
+                                                                  d_pivot_to_col, num_words,
+                                                                  num_cols, d_new_pivots, 0, true);
                 if (cudaDeviceSynchronize() != cudaSuccess)
                 {
                     std::cerr << "FAIL: mw2_cross_col async run " << run << " launch failed\n";
@@ -1847,32 +1859,36 @@ int main()
 
                 int run_pivots_mw2[num_cols] = {};
                 check_cuda(cudaMemcpy(run_pivots_mw2, d_new_pivots, sizeof(run_pivots_mw2),
-                                      cudaMemcpyDeviceToHost), "mw2 d2h async pivots");
+                                      cudaMemcpyDeviceToHost),
+                           "mw2 d2h async pivots");
 
                 for (int i = 0; i < num_cols; ++i)
                 {
                     if (run_pivots_mw2[i] != ref_pivots_mw2[i])
                     {
-                        std::cerr << "FAIL: mw2_cross_col async run " << run
-                                  << " col " << i << " pivot=" << run_pivots_mw2[i]
-                                  << " != ref " << ref_pivots_mw2[i] << "\n";
+                        std::cerr << "FAIL: mw2_cross_col async run " << run << " col " << i
+                                  << " pivot=" << run_pivots_mw2[i] << " != ref "
+                                  << ref_pivots_mw2[i] << "\n";
                         goto mw2_cleanup;
                     }
                 }
             }
         }
 
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto mw2_done;
 
-    mw2_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+mw2_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    mw2_done:
-        ;
+mw2_done:;
     }
 
     // __syncthreads-barrier reduction vs single-warp ref vs production kernels
@@ -1906,8 +1922,8 @@ int main()
 
         int h_pivot_to_col[64];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[2] = 1;  // col 1 claims pivot 2
-        h_pivot_to_col[1] = 2;  // col 2 claims pivot 1
+        h_pivot_to_col[2] = 1; // col 1 claims pivot 2
+        h_pivot_to_col[1] = 2; // col 2 claims pivot 1
         // pivot_to_col[0] stays -1 (unclaimed)
 
         uint64_t *d_cols = nullptr;
@@ -1924,65 +1940,77 @@ int main()
 
         if (!ok)
         {
-            cudaFree(d_cols); cudaFree(d_pivot_to_col);
-            cudaFree(d_col_pivots); cudaFree(d_new_pivots);
-            std::cerr << "FAIL: syncthreads_cross_col setup\n"; return 1;
+            cudaFree(d_cols);
+            cudaFree(d_pivot_to_col);
+            cudaFree(d_col_pivots);
+            cudaFree(d_new_pivots);
+            std::cerr << "FAIL: syncthreads_cross_col setup\n";
+            return 1;
         }
 
         // Upload helper
         auto upload_sync = [&]() -> bool {
-            return check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols),
-                                          cudaMemcpyHostToDevice), "sync memcpy cols") &&
+            return check_cuda(cudaMemcpy(d_cols, h_cols, sizeof(h_cols), cudaMemcpyHostToDevice),
+                              "sync memcpy cols") &&
                    check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, sizeof(h_pivot_to_col),
-                                          cudaMemcpyHostToDevice), "sync memcpy ptc") &&
+                                         cudaMemcpyHostToDevice),
+                              "sync memcpy ptc") &&
                    check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, sizeof(h_col_pivots),
-                                          cudaMemcpyHostToDevice), "sync memcpy cp");
+                                         cudaMemcpyHostToDevice),
+                              "sync memcpy cp");
         };
 
         // single-warp reference (sequential, race-free)
         int ref_pivots[num_cols] = {};
         {
-            if (!upload_sync()) { goto sync_cleanup; }
+            if (!upload_sync())
+            {
+                goto sync_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sync memset np (sw ref)");
 
-            singleWarpReductionRef<<<1, 32>>>(
-                d_cols, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols,
+                                              d_new_pivots);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
                 std::cerr << "FAIL: syncthreads_cross_col sw ref launch failed\n";
                 goto sync_cleanup;
             }
 
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "sync d2h sw ref");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "sync d2h sw ref");
         }
 
         // syncthreads-barrier reference (block-synchronized, race-free)
         {
-
-        int st_pivots[num_cols] = {};
-            if (!upload_sync()) { goto sync_cleanup; }
+            int st_pivots[num_cols] = {};
+            if (!upload_sync())
+            {
+                goto sync_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sync memset np (st ref)");
 
             const int block_threads = max(32, num_cols * 32);
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
                 std::cerr << "FAIL: syncthreads_cross_col st ref launch failed\n";
                 goto sync_cleanup;
             }
 
-            check_cuda(cudaMemcpy(st_pivots, d_new_pivots, sizeof(st_pivots),
-                                  cudaMemcpyDeviceToHost), "sync d2h st ref");
+            check_cuda(
+                cudaMemcpy(st_pivots, d_new_pivots, sizeof(st_pivots), cudaMemcpyDeviceToHost),
+                "sync d2h st ref");
 
             // Verify syncthreads ref matches single-warp ref
             for (int i = 0; i < num_cols; ++i)
             {
                 if (st_pivots[i] != ref_pivots[i])
                 {
-                    std::cerr << "FAIL: syncthreads_cross_col st pivot[" << i << "]="
-                              << st_pivots[i] << " != sw ref " << ref_pivots[i] << "\n";
+                    std::cerr << "FAIL: syncthreads_cross_col st pivot[" << i
+                              << "]=" << st_pivots[i] << " != sw ref " << ref_pivots[i] << "\n";
                     goto sync_cleanup;
                 }
             }
@@ -1992,13 +2020,15 @@ int main()
         {
             for (int run = 0; run < 5; ++run)
             {
-                if (!upload_sync()) { goto sync_cleanup; }
-                check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                           "sync memset np (reg)");
+                if (!upload_sync())
+                {
+                    goto sync_cleanup;
+                }
+                check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sync memset np (reg)");
 
-                nerve::persistence::gpu::launchPipelinedReduction(
-                    d_cols, d_col_pivots, d_pivot_to_col,
-                    num_words, num_cols, d_new_pivots, 0, false);
+                nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots,
+                                                                  d_pivot_to_col, num_words,
+                                                                  num_cols, d_new_pivots, 0, false);
                 if (cudaDeviceSynchronize() != cudaSuccess)
                 {
                     std::cerr << "FAIL: syncthreads_cross_col reg run " << run
@@ -2008,15 +2038,16 @@ int main()
 
                 int run_pivots[num_cols] = {};
                 check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                      cudaMemcpyDeviceToHost), "sync d2h reg");
+                                      cudaMemcpyDeviceToHost),
+                           "sync d2h reg");
 
                 for (int i = 0; i < num_cols; ++i)
                 {
                     if (run_pivots[i] != ref_pivots[i])
                     {
-                        std::cerr << "FAIL: syncthreads_cross_col reg run " << run
-                                  << " col " << i << " pivot=" << run_pivots[i]
-                                  << " != ref " << ref_pivots[i] << "\n";
+                        std::cerr << "FAIL: syncthreads_cross_col reg run " << run << " col " << i
+                                  << " pivot=" << run_pivots[i] << " != ref " << ref_pivots[i]
+                                  << "\n";
                         goto sync_cleanup;
                     }
                 }
@@ -2027,13 +2058,15 @@ int main()
         {
             for (int run = 0; run < 5; ++run)
             {
-                if (!upload_sync()) { goto sync_cleanup; }
-                check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                           "sync memset np (async)");
+                if (!upload_sync())
+                {
+                    goto sync_cleanup;
+                }
+                check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sync memset np (async)");
 
-                nerve::persistence::gpu::launchPipelinedReduction(
-                    d_cols, d_col_pivots, d_pivot_to_col,
-                    num_words, num_cols, d_new_pivots, 0, true);
+                nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots,
+                                                                  d_pivot_to_col, num_words,
+                                                                  num_cols, d_new_pivots, 0, true);
                 if (cudaDeviceSynchronize() != cudaSuccess)
                 {
                     std::cerr << "FAIL: syncthreads_cross_col async run " << run
@@ -2043,32 +2076,36 @@ int main()
 
                 int run_pivots[num_cols] = {};
                 check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                      cudaMemcpyDeviceToHost), "sync d2h async");
+                                      cudaMemcpyDeviceToHost),
+                           "sync d2h async");
 
                 for (int i = 0; i < num_cols; ++i)
                 {
                     if (run_pivots[i] != ref_pivots[i])
                     {
-                        std::cerr << "FAIL: syncthreads_cross_col async run " << run
-                                  << " col " << i << " pivot=" << run_pivots[i]
-                                  << " != ref " << ref_pivots[i] << "\n";
+                        std::cerr << "FAIL: syncthreads_cross_col async run " << run << " col " << i
+                                  << " pivot=" << run_pivots[i] << " != ref " << ref_pivots[i]
+                                  << "\n";
                         goto sync_cleanup;
                     }
                 }
             }
         }
 
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sync_done;
 
-    sync_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sync_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sync_done:
-        ;
+sync_done:;
     }
 
     // Async-copy cross-column determinism: 10 runs, identical results each time
@@ -2096,8 +2133,8 @@ int main()
 
         int h_pivot_to_col[64];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[2] = 1;  // col 1 claims pivot 2
-        h_pivot_to_col[1] = 2;  // col 2 claims pivot 1
+        h_pivot_to_col[2] = 1; // col 1 claims pivot 2
+        h_pivot_to_col[1] = 2; // col 2 claims pivot 1
         // pivot_to_col[0] stays -1 (unclaimed)
 
         uint64_t *d_cols = nullptr;
@@ -2108,28 +2145,34 @@ int main()
         std::size_t ptc_bytes = sizeof(h_pivot_to_col);
         std::size_t idx_bytes = static_cast<std::size_t>(num_cols) * sizeof(int);
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, col_bytes), "det malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "det malloc ptc") &&
-            check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "det malloc cp") &&
-            check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "det malloc np");
+        bool ok = check_cuda(cudaMalloc(&d_cols, col_bytes), "det malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "det malloc ptc") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "det malloc cp") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "det malloc np");
 
         if (!ok)
         {
-            cudaFree(d_cols); cudaFree(d_pivot_to_col);
-            cudaFree(d_col_pivots); cudaFree(d_new_pivots);
-            std::cerr << "FAIL: async_cross_col_determinism setup\n"; return 1;
+            cudaFree(d_cols);
+            cudaFree(d_pivot_to_col);
+            cudaFree(d_col_pivots);
+            cudaFree(d_new_pivots);
+            std::cerr << "FAIL: async_cross_col_determinism setup\n";
+            return 1;
         }
 
         // Upload initial data (shared across all runs)
-        if (!check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                                     cudaMemcpyHostToDevice), "det memcpy ptc") ||
-            !check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes,
-                                     cudaMemcpyHostToDevice), "det memcpy cp"))
+        if (!check_cuda(
+                cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                "det memcpy ptc") ||
+            !check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                        "det memcpy cp"))
         {
-            cudaFree(d_cols); cudaFree(d_pivot_to_col);
-            cudaFree(d_col_pivots); cudaFree(d_new_pivots);
-            std::cerr << "FAIL: async_cross_col_determinism upload ptc/cp\n"; return 1;
+            cudaFree(d_cols);
+            cudaFree(d_pivot_to_col);
+            cudaFree(d_col_pivots);
+            cudaFree(d_new_pivots);
+            std::cerr << "FAIL: async_cross_col_determinism upload ptc/cp\n";
+            return 1;
         }
 
         // Run 0: store reference results
@@ -2138,22 +2181,24 @@ int main()
         {
             if (!check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
                             "det memcpy cols (run 0)"))
-                { goto det_cleanup; }
+            {
+                goto det_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "det memset np (run 0)");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0, true);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
                 std::cerr << "FAIL: async_cross_col_determinism run 0 launch failed\n";
                 goto det_cleanup;
             }
 
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "det d2h pivots (run 0)");
-            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data),
-                                  cudaMemcpyDeviceToHost), "det d2h cols (run 0)");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "det d2h pivots (run 0)");
+            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data), cudaMemcpyDeviceToHost),
+                       "det d2h cols (run 0)");
         }
 
         // Runs 1..num_runs-1: compare against reference
@@ -2161,34 +2206,34 @@ int main()
         {
             if (!check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
                             "det memcpy cols"))
-                { goto det_cleanup; }
+            {
+                goto det_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "det memset np");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0, true);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
-                std::cerr << "FAIL: async_cross_col_determinism run " << run
-                          << " launch failed\n";
+                std::cerr << "FAIL: async_cross_col_determinism run " << run << " launch failed\n";
                 goto det_cleanup;
             }
 
             int run_pivots[num_cols] = {};
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "det d2h pivots");
-            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "det d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "det d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "det d2h cols");
 
             // Compare pivots
             for (int i = 0; i < num_cols; ++i)
             {
                 if (run_pivots[i] != ref_pivots[i])
                 {
-                    std::cerr << "FAIL: async_cross_col_determinism run " << run
-                              << " col " << i << " pivot=" << run_pivots[i]
-                              << " != ref " << ref_pivots[i] << "\n";
+                    std::cerr << "FAIL: async_cross_col_determinism run " << run << " col " << i
+                              << " pivot=" << run_pivots[i] << " != ref " << ref_pivots[i] << "\n";
                     goto det_cleanup;
                 }
             }
@@ -2198,26 +2243,28 @@ int main()
             {
                 if (run_data[i] != ref_data[i])
                 {
-                    std::cerr << "FAIL: async_cross_col_determinism run " << run
-                              << " element " << i << " data=0x" << std::hex << run_data[i]
-                              << std::dec << " != ref 0x" << std::hex << ref_data[i]
-                              << std::dec << "\n";
+                    std::cerr << "FAIL: async_cross_col_determinism run " << run << " element " << i
+                              << " data=0x" << std::hex << run_data[i] << std::dec << " != ref 0x"
+                              << std::hex << ref_data[i] << std::dec << "\n";
                     goto det_cleanup;
                 }
             }
         }
 
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto det_done;
 
-    det_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+det_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    det_done:
-        ;
+det_done:;
     }
 
     // 3-word cross-column reduction: single-warp ref vs syncthreads vs
@@ -2246,9 +2293,9 @@ int main()
 
         // Column data: stored as [col0_w0, col0_w1, col0_w2, col1_w0, ...]
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000ULL, 0x0000ULL, 0b100ULL,      // col 0: pivot=130 (word 2, bit 2)
-            0x0000ULL, 0b100ULL,  0x0000ULL,     // col 1: pivot=66 (word 1, bit 2)
-            0b001ULL,  0x0000ULL, 0x0000ULL       // col 2: pivot=0 (word 0, bit 0), unclaimed
+            0x0000ULL, 0x0000ULL, 0b100ULL,  // col 0: pivot=130 (word 2, bit 2)
+            0x0000ULL, 0b100ULL,  0x0000ULL, // col 1: pivot=66 (word 1, bit 2)
+            0b001ULL,  0x0000ULL, 0x0000ULL  // col 2: pivot=0 (word 0, bit 0), unclaimed
         };
 
         const int h_col_pivots[num_cols] = {130, 66, 0};
@@ -2256,8 +2303,8 @@ int main()
         // pivot_to_col sized for 3 words * 64 = 192 possible pivots
         int h_pivot_to_col[192];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[130] = 1;  // col 1 claims pivot 130 (tells col 0 to XOR with col 1)
-        h_pivot_to_col[66]  = 2;  // col 2 claims pivot 66 (tells col 1 to XOR with col 2)
+        h_pivot_to_col[130] = 1; // col 1 claims pivot 130 (tells col 0 to XOR with col 1)
+        h_pivot_to_col[66] = 2;  // col 2 claims pivot 66 (tells col 1 to XOR with col 2)
         // pivot_to_col[0] stays -1 (unclaimed leaf)
 
         uint64_t *d_cols = nullptr;
@@ -2269,17 +2316,19 @@ int main()
         std::size_t ptc_bytes = sizeof(h_pivot_to_col);
         std::size_t idx_bytes = static_cast<std::size_t>(num_cols) * sizeof(int);
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, col_bytes), "mw3 malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw3 malloc ptc") &&
-            check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw3 malloc cp") &&
-            check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw3 malloc np");
+        bool ok = check_cuda(cudaMalloc(&d_cols, col_bytes), "mw3 malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw3 malloc ptc") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw3 malloc cp") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw3 malloc np");
 
         if (!ok)
         {
-            cudaFree(d_cols); cudaFree(d_pivot_to_col);
-            cudaFree(d_col_pivots); cudaFree(d_new_pivots);
-            std::cerr << "FAIL: mw3_cross_col setup\n"; return 1;
+            cudaFree(d_cols);
+            cudaFree(d_pivot_to_col);
+            cudaFree(d_col_pivots);
+            cudaFree(d_new_pivots);
+            std::cerr << "FAIL: mw3_cross_col setup\n";
+            return 1;
         }
 
         // Upload helper
@@ -2287,46 +2336,52 @@ int main()
             return check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
                               "mw3 memcpy cols") &&
                    check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                                          cudaMemcpyHostToDevice), "mw3 memcpy ptc") &&
-                   check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes,
-                                          cudaMemcpyHostToDevice), "mw3 memcpy cp");
+                                         cudaMemcpyHostToDevice),
+                              "mw3 memcpy ptc") &&
+                   check_cuda(
+                       cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                       "mw3 memcpy cp");
         };
 
         // Expected pivots and column data (verified manually for all models)
         const int expected_pivots[num_cols] = {130, 66, 0};
         const uint64_t expected_data[num_cols * num_words] = {
-            0x0000ULL, 0x0000ULL, 0b100ULL,   // col 0
-            0x0000ULL, 0b100ULL,  0x0000ULL,  // col 1
-            0b001ULL,  0x0000ULL, 0x0000ULL   // col 2
+            0x0000ULL, 0x0000ULL, 0b100ULL,  // col 0
+            0x0000ULL, 0b100ULL,  0x0000ULL, // col 1
+            0b001ULL,  0x0000ULL, 0x0000ULL  // col 2
         };
 
         // single-warp reference (sequential, race-free)
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
         {
-            if (!upload_mw3()) { goto mw3_cleanup; }
+            if (!upload_mw3())
+            {
+                goto mw3_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw3 memset np (ref)");
 
-            singleWarpReductionRef<<<1, 32>>>(
-                d_cols, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols,
+                                              d_new_pivots);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
                 std::cerr << "FAIL: mw3_cross_col ref kernel launch failed\n";
                 goto mw3_cleanup;
             }
 
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "mw3 d2h ref pivots");
-            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data),
-                                  cudaMemcpyDeviceToHost), "mw3 d2h ref cols");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "mw3 d2h ref pivots");
+            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data), cudaMemcpyDeviceToHost),
+                       "mw3 d2h ref cols");
 
             // Verify reference matches expected
             for (int i = 0; i < num_cols; ++i)
             {
                 if (ref_pivots[i] != expected_pivots[i])
                 {
-                    std::cerr << "FAIL: mw3_cross_col ref pivot[" << i << "]="
-                              << ref_pivots[i] << " != expected " << expected_pivots[i] << "\n";
+                    std::cerr << "FAIL: mw3_cross_col ref pivot[" << i << "]=" << ref_pivots[i]
+                              << " != expected " << expected_pivots[i] << "\n";
                     goto mw3_cleanup;
                 }
             }
@@ -2344,12 +2399,15 @@ int main()
 
         // syncthreads-barrier reference
         {
-            if (!upload_mw3()) { goto mw3_cleanup; }
+            if (!upload_mw3())
+            {
+                goto mw3_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw3 memset np (st)");
 
             const int block_threads = max(32, num_cols * 32);
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
                 std::cerr << "FAIL: mw3_cross_col st ref launch failed\n";
@@ -2357,15 +2415,16 @@ int main()
             }
 
             int st_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(st_pivots, d_new_pivots, sizeof(st_pivots),
-                                  cudaMemcpyDeviceToHost), "mw3 d2h st pivots");
+            check_cuda(
+                cudaMemcpy(st_pivots, d_new_pivots, sizeof(st_pivots), cudaMemcpyDeviceToHost),
+                "mw3 d2h st pivots");
 
             for (int i = 0; i < num_cols; ++i)
             {
                 if (st_pivots[i] != ref_pivots[i])
                 {
-                    std::cerr << "FAIL: mw3_cross_col st pivot[" << i << "]="
-                              << st_pivots[i] << " != ref " << ref_pivots[i] << "\n";
+                    std::cerr << "FAIL: mw3_cross_col st pivot[" << i << "]=" << st_pivots[i]
+                              << " != ref " << ref_pivots[i] << "\n";
                     goto mw3_cleanup;
                 }
             }
@@ -2375,12 +2434,15 @@ int main()
         {
             for (int run = 0; run < 5; ++run)
             {
-                if (!upload_mw3()) { goto mw3_cleanup; }
+                if (!upload_mw3())
+                {
+                    goto mw3_cleanup;
+                }
                 check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw3 memset np (reg)");
 
-                nerve::persistence::gpu::launchPipelinedReduction(
-                    d_cols, d_col_pivots, d_pivot_to_col,
-                    num_words, num_cols, d_new_pivots, 0, false);
+                nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots,
+                                                                  d_pivot_to_col, num_words,
+                                                                  num_cols, d_new_pivots, 0, false);
                 if (cudaDeviceSynchronize() != cudaSuccess)
                 {
                     std::cerr << "FAIL: mw3_cross_col reg run " << run << " launch failed\n";
@@ -2389,15 +2451,16 @@ int main()
 
                 int run_pivots[num_cols] = {};
                 check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                      cudaMemcpyDeviceToHost), "mw3 d2h reg pivots");
+                                      cudaMemcpyDeviceToHost),
+                           "mw3 d2h reg pivots");
 
                 for (int i = 0; i < num_cols; ++i)
                 {
                     if (run_pivots[i] != ref_pivots[i])
                     {
-                        std::cerr << "FAIL: mw3_cross_col reg run " << run
-                                  << " col " << i << " pivot=" << run_pivots[i]
-                                  << " != ref " << ref_pivots[i] << "\n";
+                        std::cerr << "FAIL: mw3_cross_col reg run " << run << " col " << i
+                                  << " pivot=" << run_pivots[i] << " != ref " << ref_pivots[i]
+                                  << "\n";
                         goto mw3_cleanup;
                     }
                 }
@@ -2408,12 +2471,15 @@ int main()
         {
             for (int run = 0; run < 5; ++run)
             {
-                if (!upload_mw3()) { goto mw3_cleanup; }
+                if (!upload_mw3())
+                {
+                    goto mw3_cleanup;
+                }
                 check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw3 memset np (async)");
 
-                nerve::persistence::gpu::launchPipelinedReduction(
-                    d_cols, d_col_pivots, d_pivot_to_col,
-                    num_words, num_cols, d_new_pivots, 0, true);
+                nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots,
+                                                                  d_pivot_to_col, num_words,
+                                                                  num_cols, d_new_pivots, 0, true);
                 if (cudaDeviceSynchronize() != cudaSuccess)
                 {
                     std::cerr << "FAIL: mw3_cross_col async run " << run << " launch failed\n";
@@ -2422,34 +2488,37 @@ int main()
 
                 int run_pivots[num_cols] = {};
                 check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                      cudaMemcpyDeviceToHost), "mw3 d2h async pivots");
+                                      cudaMemcpyDeviceToHost),
+                           "mw3 d2h async pivots");
 
                 for (int i = 0; i < num_cols; ++i)
                 {
                     if (run_pivots[i] != ref_pivots[i])
                     {
-                        std::cerr << "FAIL: mw3_cross_col async run " << run
-                                  << " col " << i << " pivot=" << run_pivots[i]
-                                  << " != ref " << ref_pivots[i] << "\n";
+                        std::cerr << "FAIL: mw3_cross_col async run " << run << " col " << i
+                                  << " pivot=" << run_pivots[i] << " != ref " << ref_pivots[i]
+                                  << "\n";
                         goto mw3_cleanup;
                     }
                 }
             }
         }
 
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto mw3_done;
 
-    mw3_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+mw3_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    mw3_done:
-        ;
+mw3_done:;
     }
-
 
     // Multi-word (2-word) self-clearing: single-warp ref vs syncthreads
     // vs regular (5x) vs async (5x)
@@ -2468,19 +2537,19 @@ int main()
 
         // Column data: [col0_w0, col0_w1, col1_w0, col1_w1, col2_w0, col2_w1]
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000ULL,  // col 0: pivot=2 (word 0, bit 2)
+            0b100ULL,  0x0000ULL, // col 0: pivot=2 (word 0, bit 2)
             0x0000ULL, 0b001ULL,  // col 1: pivot=64 (word 1, bit 0)
-            0b010ULL, 0x0000ULL   // col 2: pivot=1 (word 0, bit 1)
+            0b010ULL,  0x0000ULL  // col 2: pivot=1 (word 0, bit 1)
         };
 
         const int h_col_pivots[num_cols] = {2, 64, 1};
 
         // Each column claims its own pivot
-        int h_pivot_to_col[128];  // num_words * 64 = 2 * 64 = 128
+        int h_pivot_to_col[128]; // num_words * 64 = 2 * 64 = 128
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[2]  = 0;   // col 0 claims pivot 2
-        h_pivot_to_col[64] = 1;   // col 1 claims pivot 64
-        h_pivot_to_col[1]  = 2;   // col 2 claims pivot 1
+        h_pivot_to_col[2] = 0;  // col 0 claims pivot 2
+        h_pivot_to_col[64] = 1; // col 1 claims pivot 64
+        h_pivot_to_col[1] = 2;  // col 2 claims pivot 1
 
         uint64_t *d_cols = nullptr;
         int *d_pivot_to_col = nullptr;
@@ -2491,17 +2560,19 @@ int main()
         std::size_t ptc_bytes = sizeof(h_pivot_to_col);
         std::size_t idx_bytes = static_cast<std::size_t>(num_cols) * sizeof(int);
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, col_bytes), "sc2 malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sc2 malloc ptc") &&
-            check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sc2 malloc cp") &&
-            check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sc2 malloc np");
+        bool ok = check_cuda(cudaMalloc(&d_cols, col_bytes), "sc2 malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sc2 malloc ptc") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sc2 malloc cp") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sc2 malloc np");
 
         if (!ok)
         {
-            cudaFree(d_cols); cudaFree(d_pivot_to_col);
-            cudaFree(d_col_pivots); cudaFree(d_new_pivots);
-            std::cerr << "FAIL: self_clear_2word setup\n"; return 1;
+            cudaFree(d_cols);
+            cudaFree(d_pivot_to_col);
+            cudaFree(d_col_pivots);
+            cudaFree(d_new_pivots);
+            std::cerr << "FAIL: self_clear_2word setup\n";
+            return 1;
         }
 
         // Upload helper
@@ -2509,41 +2580,47 @@ int main()
             return check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
                               "sc2 memcpy cols") &&
                    check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                                          cudaMemcpyHostToDevice), "sc2 memcpy ptc") &&
-                   check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes,
-                                          cudaMemcpyHostToDevice), "sc2 memcpy cp");
+                                         cudaMemcpyHostToDevice),
+                              "sc2 memcpy ptc") &&
+                   check_cuda(
+                       cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                       "sc2 memcpy cp");
         };
 
         // Expected: all zeroed, all pivots = -1
         const int expected_pivots[num_cols] = {-1, -1, -1};
-        
+
         // single-warp reference (sequential, race-free)
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
         {
-            if (!upload_sc2()) { goto sc2_cleanup; }
+            if (!upload_sc2())
+            {
+                goto sc2_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc2 memset np (ref)");
 
-            singleWarpReductionRef<<<1, 32>>>(
-                d_cols, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols,
+                                              d_new_pivots);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
                 std::cerr << "FAIL: self_clear_2word ref kernel launch failed\n";
                 goto sc2_cleanup;
             }
 
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "sc2 d2h ref pivots");
-            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data),
-                                  cudaMemcpyDeviceToHost), "sc2 d2h ref cols");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "sc2 d2h ref pivots");
+            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data), cudaMemcpyDeviceToHost),
+                       "sc2 d2h ref cols");
 
             // Verify reference matches expected
             for (int i = 0; i < num_cols; ++i)
             {
                 if (ref_pivots[i] != expected_pivots[i])
                 {
-                    std::cerr << "FAIL: self_clear_2word ref pivot[" << i << "]="
-                              << ref_pivots[i] << " != expected -1\n";
+                    std::cerr << "FAIL: self_clear_2word ref pivot[" << i << "]=" << ref_pivots[i]
+                              << " != expected -1\n";
                     goto sc2_cleanup;
                 }
             }
@@ -2551,8 +2628,8 @@ int main()
             {
                 if (ref_data[i] != 0)
                 {
-                    std::cerr << "FAIL: self_clear_2word ref elem " << i << "=0x"
-                              << std::hex << ref_data[i] << std::dec << " != 0\n";
+                    std::cerr << "FAIL: self_clear_2word ref elem " << i << "=0x" << std::hex
+                              << ref_data[i] << std::dec << " != 0\n";
                     goto sc2_cleanup;
                 }
             }
@@ -2560,12 +2637,15 @@ int main()
 
         // syncthreads-barrier reference
         {
-            if (!upload_sc2()) { goto sc2_cleanup; }
+            if (!upload_sc2())
+            {
+                goto sc2_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc2 memset np (st)");
 
             const int block_threads = max(32, num_cols * 32);
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
                 std::cerr << "FAIL: self_clear_2word st ref launch failed\n";
@@ -2573,15 +2653,16 @@ int main()
             }
 
             int st_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(st_pivots, d_new_pivots, sizeof(st_pivots),
-                                  cudaMemcpyDeviceToHost), "sc2 d2h st pivots");
+            check_cuda(
+                cudaMemcpy(st_pivots, d_new_pivots, sizeof(st_pivots), cudaMemcpyDeviceToHost),
+                "sc2 d2h st pivots");
 
             for (int i = 0; i < num_cols; ++i)
             {
                 if (st_pivots[i] != ref_pivots[i])
                 {
-                    std::cerr << "FAIL: self_clear_2word st pivot[" << i << "]="
-                              << st_pivots[i] << " != ref " << ref_pivots[i] << "\n";
+                    std::cerr << "FAIL: self_clear_2word st pivot[" << i << "]=" << st_pivots[i]
+                              << " != ref " << ref_pivots[i] << "\n";
                     goto sc2_cleanup;
                 }
             }
@@ -2591,30 +2672,33 @@ int main()
         {
             for (int run = 0; run < 5; ++run)
             {
-                if (!upload_sc2()) { goto sc2_cleanup; }
+                if (!upload_sc2())
+                {
+                    goto sc2_cleanup;
+                }
                 check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc2 memset np (reg)");
 
-                nerve::persistence::gpu::launchPipelinedReduction(
-                    d_cols, d_col_pivots, d_pivot_to_col,
-                    num_words, num_cols, d_new_pivots, 0, false);
+                nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots,
+                                                                  d_pivot_to_col, num_words,
+                                                                  num_cols, d_new_pivots, 0, false);
                 if (cudaDeviceSynchronize() != cudaSuccess)
                 {
-                    std::cerr << "FAIL: self_clear_2word reg run " << run
-                              << " launch failed\n";
+                    std::cerr << "FAIL: self_clear_2word reg run " << run << " launch failed\n";
                     goto sc2_cleanup;
                 }
 
                 int run_pivots[num_cols] = {};
                 check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                      cudaMemcpyDeviceToHost), "sc2 d2h reg pivots");
+                                      cudaMemcpyDeviceToHost),
+                           "sc2 d2h reg pivots");
 
                 for (int i = 0; i < num_cols; ++i)
                 {
                     if (run_pivots[i] != ref_pivots[i])
                     {
-                        std::cerr << "FAIL: self_clear_2word reg run " << run
-                                  << " col " << i << " pivot=" << run_pivots[i]
-                                  << " != ref " << ref_pivots[i] << "\n";
+                        std::cerr << "FAIL: self_clear_2word reg run " << run << " col " << i
+                                  << " pivot=" << run_pivots[i] << " != ref " << ref_pivots[i]
+                                  << "\n";
                         goto sc2_cleanup;
                     }
                 }
@@ -2625,47 +2709,53 @@ int main()
         {
             for (int run = 0; run < 5; ++run)
             {
-                if (!upload_sc2()) { goto sc2_cleanup; }
+                if (!upload_sc2())
+                {
+                    goto sc2_cleanup;
+                }
                 check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc2 memset np (async)");
 
-                nerve::persistence::gpu::launchPipelinedReduction(
-                    d_cols, d_col_pivots, d_pivot_to_col,
-                    num_words, num_cols, d_new_pivots, 0, true);
+                nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots,
+                                                                  d_pivot_to_col, num_words,
+                                                                  num_cols, d_new_pivots, 0, true);
                 if (cudaDeviceSynchronize() != cudaSuccess)
                 {
-                    std::cerr << "FAIL: self_clear_2word async run " << run
-                              << " launch failed\n";
+                    std::cerr << "FAIL: self_clear_2word async run " << run << " launch failed\n";
                     goto sc2_cleanup;
                 }
 
                 int run_pivots[num_cols] = {};
                 check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                      cudaMemcpyDeviceToHost), "sc2 d2h async pivots");
+                                      cudaMemcpyDeviceToHost),
+                           "sc2 d2h async pivots");
 
                 for (int i = 0; i < num_cols; ++i)
                 {
                     if (run_pivots[i] != ref_pivots[i])
                     {
-                        std::cerr << "FAIL: self_clear_2word async run " << run
-                                  << " col " << i << " pivot=" << run_pivots[i]
-                                  << " != ref " << ref_pivots[i] << "\n";
+                        std::cerr << "FAIL: self_clear_2word async run " << run << " col " << i
+                                  << " pivot=" << run_pivots[i] << " != ref " << ref_pivots[i]
+                                  << "\n";
                         goto sc2_cleanup;
                     }
                 }
             }
         }
 
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sc2_done;
 
-    sc2_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sc2_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sc2_done:
-        ;
+sc2_done:;
     }
 
     // Regular kernel cross-column determinism: 10 runs, identical results
@@ -2690,8 +2780,8 @@ int main()
 
         int h_pivot_to_col[64];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[2] = 1;  // col 1 claims pivot 2
-        h_pivot_to_col[1] = 2;  // col 2 claims pivot 1
+        h_pivot_to_col[2] = 1; // col 1 claims pivot 2
+        h_pivot_to_col[1] = 2; // col 2 claims pivot 1
         // pivot_to_col[0] stays -1 (unclaimed)
 
         uint64_t *d_cols = nullptr;
@@ -2702,28 +2792,34 @@ int main()
         std::size_t ptc_bytes = sizeof(h_pivot_to_col);
         std::size_t idx_bytes = static_cast<std::size_t>(num_cols) * sizeof(int);
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, col_bytes), "reg_det malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "reg_det malloc ptc") &&
-            check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "reg_det malloc cp") &&
-            check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "reg_det malloc np");
+        bool ok = check_cuda(cudaMalloc(&d_cols, col_bytes), "reg_det malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "reg_det malloc ptc") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "reg_det malloc cp") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "reg_det malloc np");
 
         if (!ok)
         {
-            cudaFree(d_cols); cudaFree(d_pivot_to_col);
-            cudaFree(d_col_pivots); cudaFree(d_new_pivots);
-            std::cerr << "FAIL: reg_cross_col_determinism setup\n"; return 1;
+            cudaFree(d_cols);
+            cudaFree(d_pivot_to_col);
+            cudaFree(d_col_pivots);
+            cudaFree(d_new_pivots);
+            std::cerr << "FAIL: reg_cross_col_determinism setup\n";
+            return 1;
         }
 
         // Upload initial data (shared across all runs)
-        if (!check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                                     cudaMemcpyHostToDevice), "reg_det memcpy ptc") ||
-            !check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes,
-                                     cudaMemcpyHostToDevice), "reg_det memcpy cp"))
+        if (!check_cuda(
+                cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                "reg_det memcpy ptc") ||
+            !check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                        "reg_det memcpy cp"))
         {
-            cudaFree(d_cols); cudaFree(d_pivot_to_col);
-            cudaFree(d_col_pivots); cudaFree(d_new_pivots);
-            std::cerr << "FAIL: reg_cross_col_determinism upload ptc/cp\n"; return 1;
+            cudaFree(d_cols);
+            cudaFree(d_pivot_to_col);
+            cudaFree(d_col_pivots);
+            cudaFree(d_new_pivots);
+            std::cerr << "FAIL: reg_cross_col_determinism upload ptc/cp\n";
+            return 1;
         }
 
         // Run 0: store reference results
@@ -2732,22 +2828,24 @@ int main()
         {
             if (!check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
                             "reg_det memcpy cols (run 0)"))
-                { goto reg_det_cleanup; }
+            {
+                goto reg_det_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "reg_det memset np (run 0)");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0, false);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
                 std::cerr << "FAIL: reg_cross_col_determinism run 0 launch failed\n";
                 goto reg_det_cleanup;
             }
 
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "reg_det d2h pivots (run 0)");
-            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data),
-                                  cudaMemcpyDeviceToHost), "reg_det d2h cols (run 0)");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "reg_det d2h pivots (run 0)");
+            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data), cudaMemcpyDeviceToHost),
+                       "reg_det d2h cols (run 0)");
         }
 
         // Runs 1..num_runs-1: compare against reference
@@ -2755,34 +2853,34 @@ int main()
         {
             if (!check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
                             "reg_det memcpy cols"))
-                { goto reg_det_cleanup; }
+            {
+                goto reg_det_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "reg_det memset np");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0, false);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
-                std::cerr << "FAIL: reg_cross_col_determinism run " << run
-                          << " launch failed\n";
+                std::cerr << "FAIL: reg_cross_col_determinism run " << run << " launch failed\n";
                 goto reg_det_cleanup;
             }
 
             int run_pivots[num_cols] = {};
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "reg_det d2h pivots");
-            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "reg_det d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "reg_det d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "reg_det d2h cols");
 
             // Compare pivots
             for (int i = 0; i < num_cols; ++i)
             {
                 if (run_pivots[i] != ref_pivots[i])
                 {
-                    std::cerr << "FAIL: reg_cross_col_determinism run " << run
-                              << " col " << i << " pivot=" << run_pivots[i]
-                              << " != ref " << ref_pivots[i] << "\n";
+                    std::cerr << "FAIL: reg_cross_col_determinism run " << run << " col " << i
+                              << " pivot=" << run_pivots[i] << " != ref " << ref_pivots[i] << "\n";
                     goto reg_det_cleanup;
                 }
             }
@@ -2792,26 +2890,28 @@ int main()
             {
                 if (run_data[i] != ref_data[i])
                 {
-                    std::cerr << "FAIL: reg_cross_col_determinism run " << run
-                              << " element " << i << " data=0x" << std::hex << run_data[i]
-                              << std::dec << " != ref 0x" << std::hex << ref_data[i]
-                              << std::dec << "\n";
+                    std::cerr << "FAIL: reg_cross_col_determinism run " << run << " element " << i
+                              << " data=0x" << std::hex << run_data[i] << std::dec << " != ref 0x"
+                              << std::hex << ref_data[i] << std::dec << "\n";
                     goto reg_det_cleanup;
                 }
             }
         }
 
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto reg_det_done;
 
-    reg_det_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+reg_det_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    reg_det_done:
-        ;
+reg_det_done:;
     }
 
     // Multi-word (2-word) async-copy determinism: 10 runs, identical results
@@ -2834,17 +2934,17 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000ULL, 0b100ULL,      // col 0: pivot=66 (word 1, bit 2)
-            0b010ULL,  0x0000ULL,     // col 1: pivot=1 (word 0, bit 1)
-            0x0000ULL, 0b001ULL       // col 2: pivot=64 (word 1, bit 0), unclaimed
+            0x0000ULL, 0b100ULL,  // col 0: pivot=66 (word 1, bit 2)
+            0b010ULL,  0x0000ULL, // col 1: pivot=1 (word 0, bit 1)
+            0x0000ULL, 0b001ULL   // col 2: pivot=64 (word 1, bit 0), unclaimed
         };
 
         const int h_col_pivots[num_cols] = {66, 1, 64};
 
-        int h_pivot_to_col[128];  // num_words * 64 = 2 * 64 = 128
+        int h_pivot_to_col[128]; // num_words * 64 = 2 * 64 = 128
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[66] = 1;  // col 1 claims pivot 66
-        h_pivot_to_col[1]  = 2;  // col 2 claims pivot 1
+        h_pivot_to_col[66] = 1; // col 1 claims pivot 66
+        h_pivot_to_col[1] = 2;  // col 2 claims pivot 1
         // pivot_to_col[64] stays -1 (unclaimed leaf)
 
         uint64_t *d_cols = nullptr;
@@ -2855,28 +2955,34 @@ int main()
         std::size_t ptc_bytes = sizeof(h_pivot_to_col);
         std::size_t idx_bytes = static_cast<std::size_t>(num_cols) * sizeof(int);
 
-        bool ok =
-            check_cuda(cudaMalloc(&d_cols, col_bytes), "mw2_det malloc cols") &&
-            check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw2_det malloc ptc") &&
-            check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw2_det malloc cp") &&
-            check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw2_det malloc np");
+        bool ok = check_cuda(cudaMalloc(&d_cols, col_bytes), "mw2_det malloc cols") &&
+                  check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw2_det malloc ptc") &&
+                  check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw2_det malloc cp") &&
+                  check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw2_det malloc np");
 
         if (!ok)
         {
-            cudaFree(d_cols); cudaFree(d_pivot_to_col);
-            cudaFree(d_col_pivots); cudaFree(d_new_pivots);
-            std::cerr << "FAIL: mw2_async_determinism setup\n"; return 1;
+            cudaFree(d_cols);
+            cudaFree(d_pivot_to_col);
+            cudaFree(d_col_pivots);
+            cudaFree(d_new_pivots);
+            std::cerr << "FAIL: mw2_async_determinism setup\n";
+            return 1;
         }
 
         // Upload initial data (shared across all runs)
-        if (!check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                                     cudaMemcpyHostToDevice), "mw2_det memcpy ptc") ||
-            !check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes,
-                                     cudaMemcpyHostToDevice), "mw2_det memcpy cp"))
+        if (!check_cuda(
+                cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                "mw2_det memcpy ptc") ||
+            !check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                        "mw2_det memcpy cp"))
         {
-            cudaFree(d_cols); cudaFree(d_pivot_to_col);
-            cudaFree(d_col_pivots); cudaFree(d_new_pivots);
-            std::cerr << "FAIL: mw2_async_determinism upload ptc/cp\n"; return 1;
+            cudaFree(d_cols);
+            cudaFree(d_pivot_to_col);
+            cudaFree(d_col_pivots);
+            cudaFree(d_new_pivots);
+            std::cerr << "FAIL: mw2_async_determinism upload ptc/cp\n";
+            return 1;
         }
 
         // Run 0: store reference results
@@ -2885,22 +2991,24 @@ int main()
         {
             if (!check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
                             "mw2_det memcpy cols (run 0)"))
-                { goto mw2_det_cleanup; }
+            {
+                goto mw2_det_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw2_det memset np (run 0)");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0, true);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
                 std::cerr << "FAIL: mw2_async_determinism run 0 launch failed\n";
                 goto mw2_det_cleanup;
             }
 
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "mw2_det d2h pivots (run 0)");
-            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data),
-                                  cudaMemcpyDeviceToHost), "mw2_det d2h cols (run 0)");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "mw2_det d2h pivots (run 0)");
+            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data), cudaMemcpyDeviceToHost),
+                       "mw2_det d2h cols (run 0)");
         }
 
         // Runs 1..num_runs-1: compare against reference
@@ -2908,34 +3016,34 @@ int main()
         {
             if (!check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
                             "mw2_det memcpy cols"))
-                { goto mw2_det_cleanup; }
+            {
+                goto mw2_det_cleanup;
+            }
             check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw2_det memset np");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0, true);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             if (cudaDeviceSynchronize() != cudaSuccess)
             {
-                std::cerr << "FAIL: mw2_async_determinism run " << run
-                          << " launch failed\n";
+                std::cerr << "FAIL: mw2_async_determinism run " << run << " launch failed\n";
                 goto mw2_det_cleanup;
             }
 
             int run_pivots[num_cols] = {};
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "mw2_det d2h pivots");
-            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "mw2_det d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "mw2_det d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "mw2_det d2h cols");
 
             // Compare pivots
             for (int i = 0; i < num_cols; ++i)
             {
                 if (run_pivots[i] != ref_pivots[i])
                 {
-                    std::cerr << "FAIL: mw2_async_determinism run " << run
-                              << " col " << i << " pivot=" << run_pivots[i]
-                              << " != ref " << ref_pivots[i] << "\n";
+                    std::cerr << "FAIL: mw2_async_determinism run " << run << " col " << i
+                              << " pivot=" << run_pivots[i] << " != ref " << ref_pivots[i] << "\n";
                     goto mw2_det_cleanup;
                 }
             }
@@ -2945,26 +3053,28 @@ int main()
             {
                 if (run_data[i] != ref_data[i])
                 {
-                    std::cerr << "FAIL: mw2_async_determinism run " << run
-                              << " element " << i << " data=0x" << std::hex << run_data[i]
-                              << std::dec << " != ref 0x" << std::hex << ref_data[i]
-                              << std::dec << "\n";
+                    std::cerr << "FAIL: mw2_async_determinism run " << run << " element " << i
+                              << " data=0x" << std::hex << run_data[i] << std::dec << " != ref 0x"
+                              << std::hex << ref_data[i] << std::dec << "\n";
                     goto mw2_det_cleanup;
                 }
             }
         }
 
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto mw2_det_done;
 
-    mw2_det_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+mw2_det_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    mw2_det_done:
-        ;
+mw2_det_done:;
     }
     return 0;
 
@@ -2990,45 +3100,45 @@ int main()
         // Column data: [col0_w0, col0_w1, col1_w0, col1_w1, col2_w0, col2_w1]
         const uint64_t h_cols[num_cols * num_words] = {
             0b100ULL, 0x0000,   // Col 0: pivot=2
-            0x0000,    0b001ULL,  // Col 1: pivot=64 (unclaimed)
+            0x0000,   0b001ULL, // Col 1: pivot=64 (unclaimed)
             0b001ULL, 0x0000    // Col 2: pivot=0  (unclaimed)
         };
         const int h_pivot_to_col[128] = {};
         // Set only the entries used by this test
-        const_cast<int*>(h_pivot_to_col)[2]  = 1;   // Col 0's pivot -> Col 1
-        const_cast<int*>(h_pivot_to_col)[64] = -1;  // Col 1's pivot -> unclaimed
-        const_cast<int*>(h_pivot_to_col)[0]  = -1;  // Col 2's pivot -> unclaimed
+        const_cast<int *>(h_pivot_to_col)[2] = 1;   // Col 0's pivot -> Col 1
+        const_cast<int *>(h_pivot_to_col)[64] = -1; // Col 1's pivot -> unclaimed
+        const_cast<int *>(h_pivot_to_col)[0] = -1;  // Col 2's pivot -> unclaimed
         const int h_col_pivots[num_cols] = {2, 64, 0};
 
         const int expected_pivots[num_cols] = {64, 64, 0};
         const uint64_t expected_data[num_cols * num_words] = {
-            0b100ULL, 0b001ULL,   // Col 0 after XOR
-            0x0000,    0b001ULL,   // Col 1 unchanged
-            0b001ULL, 0x0000      // Col 2 unchanged
+            0b100ULL, 0b001ULL, // Col 0 after XOR
+            0x0000,   0b001ULL, // Col 1 unchanged
+            0b001ULL, 0x0000    // Col 2 unchanged
         };
 
-        const size_t col_bytes  = sizeof(h_cols);
-        const size_t ptc_bytes  = sizeof(h_pivot_to_col);
-        const size_t idx_bytes  = num_cols * sizeof(int);
+        const size_t col_bytes = sizeof(h_cols);
+        const size_t ptc_bytes = sizeof(h_pivot_to_col);
+        const size_t idx_bytes = num_cols * sizeof(int);
         const int block_threads = max(32, num_cols * 32);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "uc2 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "uc2 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "uc2 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "uc2 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "uc2 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "uc2 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "uc2 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "uc2 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "uc2 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "uc2 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "uc2 h2d cp");
 
         auto upload_data = [&]() -> bool {
             bool ok = true;
-            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                        cudaMemcpyHostToDevice), "uc2 h2d cols");
-            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                             "uc2 memset new_pivots");
+            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                             "uc2 h2d cols");
+            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "uc2 memset new_pivots");
             return ok;
         };
 
@@ -3036,100 +3146,122 @@ int main()
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
         {
-            if (!upload_data()) goto uc2_cleanup;
-            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            if (!upload_data())
+                goto uc2_cleanup;
+            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols,
+                                              d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "uc2 ref sync");
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "uc2 ref d2h pivots");
-            check_cuda(cudaMemcpy(ref_data,   d_cols,       sizeof(ref_data),
-                                  cudaMemcpyDeviceToHost), "uc2 ref d2h data");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "uc2 ref d2h pivots");
+            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data), cudaMemcpyDeviceToHost),
+                       "uc2 ref d2h data");
 
             // Validate reference against expected
             bool ref_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (ref_pivots[i] != expected_pivots[i]) {
-                    fprintf(stderr, "uc2 ref pivot[%d] = %d, expected %d\n",
-                            i, ref_pivots[i], expected_pivots[i]);
+                if (ref_pivots[i] != expected_pivots[i])
+                {
+                    fprintf(stderr, "uc2 ref pivot[%d] = %d, expected %d\n", i, ref_pivots[i],
+                            expected_pivots[i]);
                     ref_ok = false;
                 }
             for (int i = 0; i < num_cols * num_words; ++i)
-                if (ref_data[i] != expected_data[i]) {
-                    fprintf(stderr, "uc2 ref data[%d] = 0x%lx, expected 0x%lx\n",
-                            i, ref_data[i], expected_data[i]);
+                if (ref_data[i] != expected_data[i])
+                {
+                    fprintf(stderr, "uc2 ref data[%d] = 0x%lx, expected 0x%lx\n", i, ref_data[i],
+                            expected_data[i]);
                     ref_ok = false;
                 }
-            if (!ref_ok) goto uc2_cleanup;
+            if (!ref_ok)
+                goto uc2_cleanup;
         }
 
         // syncthreads reference
         {
-            if (!upload_data()) goto uc2_cleanup;
-            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots,
-                                                          d_pivot_to_col, num_words, num_cols,
-                                                          d_new_pivots);
+            if (!upload_data())
+                goto uc2_cleanup;
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "uc2 sync sync");
             int sync_pivots[num_cols];
-            check_cuda(cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots),
-                                  cudaMemcpyDeviceToHost), "uc2 sync d2h");
+            check_cuda(
+                cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots), cudaMemcpyDeviceToHost),
+                "uc2 sync d2h");
             bool sync_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (sync_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "uc2 sync pivot[%d] = %d, ref %d\n",
-                            i, sync_pivots[i], ref_pivots[i]);
+                if (sync_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "uc2 sync pivot[%d] = %d, ref %d\n", i, sync_pivots[i],
+                            ref_pivots[i]);
                     sync_ok = false;
                 }
-            if (!sync_ok) goto uc2_cleanup;
+            if (!sync_ok)
+                goto uc2_cleanup;
         }
 
         // regular kernel (use_async_copy=false) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto uc2_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, false);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto uc2_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "uc2 reg d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "uc2 reg d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "uc2 reg[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "uc2 reg[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto uc2_cleanup;
+            if (!run_ok)
+                goto uc2_cleanup;
         }
 
         // async kernel (use_async_copy=true) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto uc2_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, true);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto uc2_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "uc2 async d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "uc2 async d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "uc2 async[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "uc2 async[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto uc2_cleanup;
+            if (!run_ok)
+                goto uc2_cleanup;
         }
 
         // All passed
         printf("  PASSED: (multi-word unclaimed pivot)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto uc2_done;
 
-    uc2_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+uc2_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    uc2_done:
-        ;
+uc2_done:;
     }
 
     // Multi-word (3-word) self-clearing: single-warp ref vs syncthreads
@@ -3149,42 +3281,42 @@ int main()
 
         // Column data: [col0_w0..w2, col1_w0..w2, col2_w0..w2]
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000, 0x0000,   // Col 0: pivot=2
-            0x0000,    0b001ULL, 0x0000,  // Col 1: pivot=64
-            0x0000,    0x0000,    0b010ULL    // Col 2: pivot=128
+            0b100ULL, 0x0000,   0x0000,  // Col 0: pivot=2
+            0x0000,   0b001ULL, 0x0000,  // Col 1: pivot=64
+            0x0000,   0x0000,   0b010ULL // Col 2: pivot=128
         };
         // pivot_to_col: 192 entries (3 words * 64)
         const int h_pivot_to_col[192] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 0;   // Col 0 self
-        const_cast<int*>(h_pivot_to_col)[64]  = 1;   // Col 1 self
-        const_cast<int*>(h_pivot_to_col)[128] = 2;   // Col 2 self
+        const_cast<int *>(h_pivot_to_col)[2] = 0;   // Col 0 self
+        const_cast<int *>(h_pivot_to_col)[64] = 1;  // Col 1 self
+        const_cast<int *>(h_pivot_to_col)[128] = 2; // Col 2 self
         const int h_col_pivots[num_cols] = {2, 64, 128};
 
         const int expected_pivots[num_cols] = {-1, -1, -1};
         const uint64_t expected_data[num_cols * num_words] = {0};
 
-        const size_t col_bytes  = sizeof(h_cols);
-        const size_t ptc_bytes  = sizeof(h_pivot_to_col);
-        const size_t idx_bytes  = num_cols * sizeof(int);
+        const size_t col_bytes = sizeof(h_cols);
+        const size_t ptc_bytes = sizeof(h_pivot_to_col);
+        const size_t idx_bytes = num_cols * sizeof(int);
         const int block_threads = max(32, num_cols * 32);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "sc3 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "sc3 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sc3 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "sc3 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "sc3 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "sc3 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "sc3 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sc3 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sc3 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "sc3 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "sc3 h2d cp");
 
         auto upload_data = [&]() -> bool {
             bool ok = true;
-            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                        cudaMemcpyHostToDevice), "sc3 h2d cols");
-            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                             "sc3 memset new_pivots");
+            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                             "sc3 h2d cols");
+            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc3 memset new_pivots");
             return ok;
         };
 
@@ -3192,100 +3324,122 @@ int main()
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
         {
-            if (!upload_data()) goto sc3_cleanup;
-            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            if (!upload_data())
+                goto sc3_cleanup;
+            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols,
+                                              d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "sc3 ref sync");
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "sc3 ref d2h pivots");
-            check_cuda(cudaMemcpy(ref_data,   d_cols,       sizeof(ref_data),
-                                  cudaMemcpyDeviceToHost), "sc3 ref d2h data");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "sc3 ref d2h pivots");
+            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data), cudaMemcpyDeviceToHost),
+                       "sc3 ref d2h data");
 
             // Validate reference against expected
             bool ref_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (ref_pivots[i] != expected_pivots[i]) {
-                    fprintf(stderr, "sc3 ref pivot[%d] = %d, expected %d\n",
-                            i, ref_pivots[i], expected_pivots[i]);
+                if (ref_pivots[i] != expected_pivots[i])
+                {
+                    fprintf(stderr, "sc3 ref pivot[%d] = %d, expected %d\n", i, ref_pivots[i],
+                            expected_pivots[i]);
                     ref_ok = false;
                 }
             for (int i = 0; i < num_cols * num_words; ++i)
-                if (ref_data[i] != expected_data[i]) {
-                    fprintf(stderr, "sc3 ref data[%d] = 0x%lx, expected 0x%lx\n",
-                            i, ref_data[i], expected_data[i]);
+                if (ref_data[i] != expected_data[i])
+                {
+                    fprintf(stderr, "sc3 ref data[%d] = 0x%lx, expected 0x%lx\n", i, ref_data[i],
+                            expected_data[i]);
                     ref_ok = false;
                 }
-            if (!ref_ok) goto sc3_cleanup;
+            if (!ref_ok)
+                goto sc3_cleanup;
         }
 
         // syncthreads reference
         {
-            if (!upload_data()) goto sc3_cleanup;
-            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots,
-                                                          d_pivot_to_col, num_words, num_cols,
-                                                          d_new_pivots);
+            if (!upload_data())
+                goto sc3_cleanup;
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "sc3 sync sync");
             int sync_pivots[num_cols];
-            check_cuda(cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots),
-                                  cudaMemcpyDeviceToHost), "sc3 sync d2h");
+            check_cuda(
+                cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots), cudaMemcpyDeviceToHost),
+                "sc3 sync d2h");
             bool sync_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (sync_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "sc3 sync pivot[%d] = %d, ref %d\n",
-                            i, sync_pivots[i], ref_pivots[i]);
+                if (sync_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "sc3 sync pivot[%d] = %d, ref %d\n", i, sync_pivots[i],
+                            ref_pivots[i]);
                     sync_ok = false;
                 }
-            if (!sync_ok) goto sc3_cleanup;
+            if (!sync_ok)
+                goto sc3_cleanup;
         }
 
         // regular kernel (use_async_copy=false) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto sc3_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, false);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto sc3_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "sc3 reg d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "sc3 reg d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "sc3 reg[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "sc3 reg[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto sc3_cleanup;
+            if (!run_ok)
+                goto sc3_cleanup;
         }
 
         // async kernel (use_async_copy=true) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto sc3_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, true);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto sc3_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "sc3 async d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "sc3 async d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "sc3 async[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "sc3 async[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto sc3_cleanup;
+            if (!run_ok)
+                goto sc3_cleanup;
         }
 
         // All passed
         printf("  PASSED: (3-word self-clearing)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sc3_done;
 
-    sc3_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sc3_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sc3_done:
-        ;
+sc3_done:;
     }
 
     return 0;
@@ -3308,9 +3462,9 @@ int main()
 
         const uint64_t h_cols[num_cols] = {0b110ULL, 0b010ULL, 0b001ULL};
         const int h_pivot_to_col[64] = {};
-        const_cast<int*>(h_pivot_to_col)[0] = -1;
-        const_cast<int*>(h_pivot_to_col)[1] = 2;
-        const_cast<int*>(h_pivot_to_col)[2] = 1;
+        const_cast<int *>(h_pivot_to_col)[0] = -1;
+        const_cast<int *>(h_pivot_to_col)[1] = 2;
+        const_cast<int *>(h_pivot_to_col)[2] = 1;
         const int h_col_pivots[num_cols] = {2, 1, 0};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -3319,75 +3473,87 @@ int main()
         const int block_threads = max(32, num_cols * 32);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "sdet d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "sdet d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sdet d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "sdet d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "sdet d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "sdet h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "sdet h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sdet d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sdet d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "sdet h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "sdet h2d cp");
 
         // Reference storage (from run 0)
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols];
 
-        for (int run = 0; run < num_runs; ++run) {
+        for (int run = 0; run < num_runs; ++run)
+        {
             // Upload fresh data before each run
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "sdet h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "sdet memset new_pivots");
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "sdet h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sdet memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots,
-                                                          d_pivot_to_col, num_words, num_cols,
-                                                          d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "sdet sync");
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "sdet d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "sdet d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "sdet d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "sdet d2h cols");
 
-            if (run == 0) {
+            if (run == 0)
+            {
                 // Store reference
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols; ++i) ref_data[i]   = run_data[i];
-            } else {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 // Compare against reference
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "sdet[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "sdet[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "sdet[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "sdet[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto sdet_cleanup;
+                if (!ok)
+                    goto sdet_cleanup;
             }
         }
 
         // All passed
         printf("  PASSED: (syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sdet_done;
 
-    sdet_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sdet_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sdet_done:
-        ;
+sdet_done:;
     }
 
     // Multi-word (4-word) cross-column reduction: single-warp ref vs
@@ -3414,44 +3580,43 @@ int main()
         // Column data: [col0_w0..w3, col1_w0..w3, col2_w0..w3]
         const uint64_t h_cols[num_cols * num_words] = {
             // Col 0: pivot=194 (word 3, bit 2)
-            0x0000,       0x0000,       0x0000,       0b100ULL,
+            0x0000, 0x0000, 0x0000, 0b100ULL,
             // Col 1: pivot=65  (word 1, bit 1)
-            0x0000,       0b010ULL,     0x0000,       0x0000,
+            0x0000, 0b010ULL, 0x0000, 0x0000,
             // Col 2: pivot=0   (word 0, bit 0) -- unclaimed leaf
-            0b001ULL,     0x0000,       0x0000,       0x0000
-        };
+            0b001ULL, 0x0000, 0x0000, 0x0000};
         // pivot_to_col: 256 entries (4 words * 64)
         const int h_pivot_to_col[256] = {};
-        const_cast<int*>(h_pivot_to_col)[0]   = -1;  // Col 2 unclaimed
-        const_cast<int*>(h_pivot_to_col)[65]  = 2;   // Col 1 -> Col 2
-        const_cast<int*>(h_pivot_to_col)[194] = 1;   // Col 0 -> Col 1
+        const_cast<int *>(h_pivot_to_col)[0] = -1;  // Col 2 unclaimed
+        const_cast<int *>(h_pivot_to_col)[65] = 2;  // Col 1 -> Col 2
+        const_cast<int *>(h_pivot_to_col)[194] = 1; // Col 0 -> Col 1
         const int h_col_pivots[num_cols] = {194, 65, 0};
 
         const int expected_pivots[num_cols] = {194, 65, 0};
         // Expected data equals initial (converges back after even iterations)
 
-        const size_t col_bytes  = sizeof(h_cols);
-        const size_t ptc_bytes  = sizeof(h_pivot_to_col);
-        const size_t idx_bytes  = num_cols * sizeof(int);
+        const size_t col_bytes = sizeof(h_cols);
+        const size_t ptc_bytes = sizeof(h_pivot_to_col);
+        const size_t idx_bytes = num_cols * sizeof(int);
         const int block_threads = max(32, num_cols * 32);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "mw4 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "mw4 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw4 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "mw4 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "mw4 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "mw4 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "mw4 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw4 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw4 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "mw4 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "mw4 h2d cp");
 
         auto upload_data = [&]() -> bool {
             bool ok = true;
-            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                        cudaMemcpyHostToDevice), "mw4 h2d cols");
-            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                             "mw4 memset new_pivots");
+            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                             "mw4 h2d cols");
+            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw4 memset new_pivots");
             return ok;
         };
 
@@ -3459,100 +3624,122 @@ int main()
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
         {
-            if (!upload_data()) goto mw4_cleanup;
-            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            if (!upload_data())
+                goto mw4_cleanup;
+            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols,
+                                              d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "mw4 ref sync");
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "mw4 ref d2h pivots");
-            check_cuda(cudaMemcpy(ref_data,   d_cols,       sizeof(ref_data),
-                                  cudaMemcpyDeviceToHost), "mw4 ref d2h data");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "mw4 ref d2h pivots");
+            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data), cudaMemcpyDeviceToHost),
+                       "mw4 ref d2h data");
 
             // Validate reference against expected
             bool ref_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (ref_pivots[i] != expected_pivots[i]) {
-                    fprintf(stderr, "mw4 ref pivot[%d] = %d, expected %d\n",
-                            i, ref_pivots[i], expected_pivots[i]);
+                if (ref_pivots[i] != expected_pivots[i])
+                {
+                    fprintf(stderr, "mw4 ref pivot[%d] = %d, expected %d\n", i, ref_pivots[i],
+                            expected_pivots[i]);
                     ref_ok = false;
                 }
             for (int i = 0; i < num_cols * num_words; ++i)
-                if (ref_data[i] != h_cols[i]) {
-                    fprintf(stderr, "mw4 ref data[%d] = 0x%lx, expected 0x%lx\n",
-                            i, ref_data[i], h_cols[i]);
+                if (ref_data[i] != h_cols[i])
+                {
+                    fprintf(stderr, "mw4 ref data[%d] = 0x%lx, expected 0x%lx\n", i, ref_data[i],
+                            h_cols[i]);
                     ref_ok = false;
                 }
-            if (!ref_ok) goto mw4_cleanup;
+            if (!ref_ok)
+                goto mw4_cleanup;
         }
 
         // syncthreads reference
         {
-            if (!upload_data()) goto mw4_cleanup;
-            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots,
-                                                          d_pivot_to_col, num_words, num_cols,
-                                                          d_new_pivots);
+            if (!upload_data())
+                goto mw4_cleanup;
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "mw4 sync sync");
             int sync_pivots[num_cols];
-            check_cuda(cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots),
-                                  cudaMemcpyDeviceToHost), "mw4 sync d2h");
+            check_cuda(
+                cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots), cudaMemcpyDeviceToHost),
+                "mw4 sync d2h");
             bool sync_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (sync_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "mw4 sync pivot[%d] = %d, ref %d\n",
-                            i, sync_pivots[i], ref_pivots[i]);
+                if (sync_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "mw4 sync pivot[%d] = %d, ref %d\n", i, sync_pivots[i],
+                            ref_pivots[i]);
                     sync_ok = false;
                 }
-            if (!sync_ok) goto mw4_cleanup;
+            if (!sync_ok)
+                goto mw4_cleanup;
         }
 
         // regular kernel (use_async_copy=false) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto mw4_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, false);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto mw4_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "mw4 reg d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "mw4 reg d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "mw4 reg[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "mw4 reg[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto mw4_cleanup;
+            if (!run_ok)
+                goto mw4_cleanup;
         }
 
         // async kernel (use_async_copy=true) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto mw4_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, true);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto mw4_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "mw4 async d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "mw4 async d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "mw4 async[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "mw4 async[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto mw4_cleanup;
+            if (!run_ok)
+                goto mw4_cleanup;
         }
 
         // All passed
         printf("  PASSED: (4-word cross-column reduction)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto mw4_done;
 
-    mw4_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+mw4_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    mw4_done:
-        ;
+mw4_done:;
     }
 
     // 3-word syncthreads determinism: 10 runs, identical results
@@ -3573,14 +3760,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000,  0x0000,   0b100ULL,  // Col 0: pivot=130
-            0x0000,  0b100ULL, 0x0000,    // Col 1: pivot=66
-            0b001ULL, 0x0000,  0x0000     // Col 2: pivot=0  (unclaimed)
+            0x0000,   0x0000,   0b100ULL, // Col 0: pivot=130
+            0x0000,   0b100ULL, 0x0000,   // Col 1: pivot=66
+            0b001ULL, 0x0000,   0x0000    // Col 2: pivot=0  (unclaimed)
         };
         const int h_pivot_to_col[192] = {};
-        const_cast<int*>(h_pivot_to_col)[0]   = -1;
-        const_cast<int*>(h_pivot_to_col)[66]  = 2;
-        const_cast<int*>(h_pivot_to_col)[130] = 1;
+        const_cast<int *>(h_pivot_to_col)[0] = -1;
+        const_cast<int *>(h_pivot_to_col)[66] = 2;
+        const_cast<int *>(h_pivot_to_col)[130] = 1;
         const int h_col_pivots[num_cols] = {130, 66, 0};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -3589,75 +3776,87 @@ int main()
         const int block_threads = max(32, num_cols * 32);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "mw3s d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "mw3s d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw3s d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "mw3s d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "mw3s d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "mw3s h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "mw3s h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw3s d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw3s d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "mw3s h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "mw3s h2d cp");
 
         // Reference storage (from run 0)
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
 
-        for (int run = 0; run < num_runs; ++run) {
+        for (int run = 0; run < num_runs; ++run)
+        {
             // Upload fresh data before each run
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "mw3s h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "mw3s memset new_pivots");
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "mw3s h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw3s memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots,
-                                                          d_pivot_to_col, num_words, num_cols,
-                                                          d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "mw3s sync");
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "mw3s d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "mw3s d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "mw3s d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "mw3s d2h cols");
 
-            if (run == 0) {
+            if (run == 0)
+            {
                 // Store reference
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 // Compare against reference
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "mw3s[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "mw3s[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "mw3s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "mw3s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto mw3s_cleanup;
+                if (!ok)
+                    goto mw3s_cleanup;
             }
         }
 
         // All passed
         printf("  PASSED: (3-word syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto mw3s_done;
 
-    mw3s_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+mw3s_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    mw3s_done:
-        ;
+mw3s_done:;
     }
 
     // Multi-word (2-word) unclaimed pivot cross-column chain
@@ -3685,45 +3884,45 @@ int main()
 
         // Column data: [col0_w0, col0_w1, col1_w0, col1_w1, col2_w0, col2_w1]
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000,    // Col 0: pivot=2
-            0b010ULL, 0x0000,    // Col 1: pivot=1
-            0x0000,   0b001ULL    // Col 2: pivot=64 (unclaimed)
+            0b100ULL, 0x0000,  // Col 0: pivot=2
+            0b010ULL, 0x0000,  // Col 1: pivot=1
+            0x0000,   0b001ULL // Col 2: pivot=64 (unclaimed)
         };
         const int h_pivot_to_col[128] = {};
-        const_cast<int*>(h_pivot_to_col)[2]  = 1;   // Col 0 -> Col 1
-        const_cast<int*>(h_pivot_to_col)[1]  = 2;   // Col 1 -> Col 2
-        const_cast<int*>(h_pivot_to_col)[64] = -1;  // Col 2 unclaimed
+        const_cast<int *>(h_pivot_to_col)[2] = 1;   // Col 0 -> Col 1
+        const_cast<int *>(h_pivot_to_col)[1] = 2;   // Col 1 -> Col 2
+        const_cast<int *>(h_pivot_to_col)[64] = -1; // Col 2 unclaimed
         const int h_col_pivots[num_cols] = {2, 1, 64};
 
         const int expected_pivots[num_cols] = {64, 64, 64};
         const uint64_t expected_data[num_cols * num_words] = {
-            0b110ULL, 0b001ULL,   // Col 0 after XOR
-            0b010ULL, 0b001ULL,   // Col 1 after XOR
-            0x0000,   0b001ULL    // Col 2 unchanged
+            0b110ULL, 0b001ULL, // Col 0 after XOR
+            0b010ULL, 0b001ULL, // Col 1 after XOR
+            0x0000,   0b001ULL  // Col 2 unchanged
         };
 
-        const size_t col_bytes  = sizeof(h_cols);
-        const size_t ptc_bytes  = sizeof(h_pivot_to_col);
-        const size_t idx_bytes  = num_cols * sizeof(int);
+        const size_t col_bytes = sizeof(h_cols);
+        const size_t ptc_bytes = sizeof(h_pivot_to_col);
+        const size_t idx_bytes = num_cols * sizeof(int);
         const int block_threads = max(32, num_cols * 32);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "ucx d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "ucx d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "ucx d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "ucx d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "ucx d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "ucx h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "ucx h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "ucx d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "ucx d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "ucx h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "ucx h2d cp");
 
         auto upload_data = [&]() -> bool {
             bool ok = true;
-            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                        cudaMemcpyHostToDevice), "ucx h2d cols");
-            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                             "ucx memset new_pivots");
+            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                             "ucx h2d cols");
+            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "ucx memset new_pivots");
             return ok;
         };
 
@@ -3731,100 +3930,122 @@ int main()
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
         {
-            if (!upload_data()) goto ucx_cleanup;
-            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            if (!upload_data())
+                goto ucx_cleanup;
+            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols,
+                                              d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "ucx ref sync");
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "ucx ref d2h pivots");
-            check_cuda(cudaMemcpy(ref_data,   d_cols,       sizeof(ref_data),
-                                  cudaMemcpyDeviceToHost), "ucx ref d2h data");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "ucx ref d2h pivots");
+            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data), cudaMemcpyDeviceToHost),
+                       "ucx ref d2h data");
 
             // Validate reference against expected
             bool ref_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (ref_pivots[i] != expected_pivots[i]) {
-                    fprintf(stderr, "ucx ref pivot[%d] = %d, expected %d\n",
-                            i, ref_pivots[i], expected_pivots[i]);
+                if (ref_pivots[i] != expected_pivots[i])
+                {
+                    fprintf(stderr, "ucx ref pivot[%d] = %d, expected %d\n", i, ref_pivots[i],
+                            expected_pivots[i]);
                     ref_ok = false;
                 }
             for (int i = 0; i < num_cols * num_words; ++i)
-                if (ref_data[i] != expected_data[i]) {
-                    fprintf(stderr, "ucx ref data[%d] = 0x%lx, expected 0x%lx\n",
-                            i, ref_data[i], expected_data[i]);
+                if (ref_data[i] != expected_data[i])
+                {
+                    fprintf(stderr, "ucx ref data[%d] = 0x%lx, expected 0x%lx\n", i, ref_data[i],
+                            expected_data[i]);
                     ref_ok = false;
                 }
-            if (!ref_ok) goto ucx_cleanup;
+            if (!ref_ok)
+                goto ucx_cleanup;
         }
 
         // syncthreads reference
         {
-            if (!upload_data()) goto ucx_cleanup;
-            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots,
-                                                          d_pivot_to_col, num_words, num_cols,
-                                                          d_new_pivots);
+            if (!upload_data())
+                goto ucx_cleanup;
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "ucx sync sync");
             int sync_pivots[num_cols];
-            check_cuda(cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots),
-                                  cudaMemcpyDeviceToHost), "ucx sync d2h");
+            check_cuda(
+                cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots), cudaMemcpyDeviceToHost),
+                "ucx sync d2h");
             bool sync_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (sync_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "ucx sync pivot[%d] = %d, ref %d\n",
-                            i, sync_pivots[i], ref_pivots[i]);
+                if (sync_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "ucx sync pivot[%d] = %d, ref %d\n", i, sync_pivots[i],
+                            ref_pivots[i]);
                     sync_ok = false;
                 }
-            if (!sync_ok) goto ucx_cleanup;
+            if (!sync_ok)
+                goto ucx_cleanup;
         }
 
         // regular kernel (use_async_copy=false) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto ucx_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, false);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto ucx_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "ucx reg d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "ucx reg d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "ucx reg[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "ucx reg[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto ucx_cleanup;
+            if (!run_ok)
+                goto ucx_cleanup;
         }
 
         // async kernel (use_async_copy=true) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto ucx_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, true);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto ucx_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "ucx async d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "ucx async d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "ucx async[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "ucx async[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto ucx_cleanup;
+            if (!run_ok)
+                goto ucx_cleanup;
         }
 
         // All passed
         printf("  PASSED: (2-word unclaimed pivot cross-column chain)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto ucx_done;
 
-    ucx_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+ucx_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    ucx_done:
-        ;
+ucx_done:;
     }
 
     // 4-word async-copy determinism: 10 runs, identical results
@@ -3846,14 +4067,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000,       0x0000,       0x0000,       0b100ULL,   // Col 0: pivot=194
-            0x0000,       0b010ULL,     0x0000,       0x0000,     // Col 1: pivot=65
-            0b001ULL,     0x0000,       0x0000,       0x0000      // Col 2: pivot=0  (unclaimed)
+            0x0000,   0x0000,   0x0000, 0b100ULL, // Col 0: pivot=194
+            0x0000,   0b010ULL, 0x0000, 0x0000,   // Col 1: pivot=65
+            0b001ULL, 0x0000,   0x0000, 0x0000    // Col 2: pivot=0  (unclaimed)
         };
         const int h_pivot_to_col[256] = {};
-        const_cast<int*>(h_pivot_to_col)[0]   = -1;
-        const_cast<int*>(h_pivot_to_col)[65]  = 2;
-        const_cast<int*>(h_pivot_to_col)[194] = 1;
+        const_cast<int *>(h_pivot_to_col)[0] = -1;
+        const_cast<int *>(h_pivot_to_col)[65] = 2;
+        const_cast<int *>(h_pivot_to_col)[194] = 1;
         const int h_col_pivots[num_cols] = {194, 65, 0};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -3861,73 +4082,86 @@ int main()
         const size_t idx_bytes = num_cols * sizeof(int);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "mw4d d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "mw4d d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw4d d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "mw4d d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "mw4d d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "mw4d h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "mw4d h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw4d d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw4d d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "mw4d h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "mw4d h2d cp");
 
         // Reference storage (from run 0)
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
 
-        for (int run = 0; run < num_runs; ++run) {
+        for (int run = 0; run < num_runs; ++run)
+        {
             // Upload fresh data before each run
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "mw4d h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "mw4d memset new_pivots");
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "mw4d h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw4d memset new_pivots");
 
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, true);
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "mw4d d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "mw4d d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "mw4d d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "mw4d d2h cols");
 
-            if (run == 0) {
+            if (run == 0)
+            {
                 // Store reference
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 // Compare against reference
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "mw4d[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "mw4d[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "mw4d[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "mw4d[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto mw4d_cleanup;
+                if (!ok)
+                    goto mw4d_cleanup;
             }
         }
 
         // All passed
         printf("  PASSED: (4-word async determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto mw4d_done;
 
-    mw4d_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+mw4d_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    mw4d_done:
-        ;
+mw4d_done:;
     }
 
     // Multi-word (4-word) self-clearing: single-warp ref vs syncthreads
@@ -3947,42 +4181,42 @@ int main()
 
         // Column data: [col0_w0..w3, col1_w0..w3, col2_w0..w3]
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000,   0x0000,   0x0000,    // Col 0: pivot=2   (word 0)
-            0x0000,   0x0000,   0x0000,   0b001ULL,  // Col 1: pivot=192 (word 3)
-            0x0000,   0x0000,   0b010ULL, 0x0000     // Col 2: pivot=128 (word 2)
+            0b100ULL, 0x0000, 0x0000,   0x0000,   // Col 0: pivot=2   (word 0)
+            0x0000,   0x0000, 0x0000,   0b001ULL, // Col 1: pivot=192 (word 3)
+            0x0000,   0x0000, 0b010ULL, 0x0000    // Col 2: pivot=128 (word 2)
         };
         // pivot_to_col: 256 entries (4 words * 64)
         const int h_pivot_to_col[256] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 0;   // Col 0 self
-        const_cast<int*>(h_pivot_to_col)[192] = 1;   // Col 1 self
-        const_cast<int*>(h_pivot_to_col)[128] = 2;   // Col 2 self
+        const_cast<int *>(h_pivot_to_col)[2] = 0;   // Col 0 self
+        const_cast<int *>(h_pivot_to_col)[192] = 1; // Col 1 self
+        const_cast<int *>(h_pivot_to_col)[128] = 2; // Col 2 self
         const int h_col_pivots[num_cols] = {2, 192, 128};
 
         const int expected_pivots[num_cols] = {-1, -1, -1};
         const uint64_t expected_data[num_cols * num_words] = {0};
 
-        const size_t col_bytes  = sizeof(h_cols);
-        const size_t ptc_bytes  = sizeof(h_pivot_to_col);
-        const size_t idx_bytes  = num_cols * sizeof(int);
+        const size_t col_bytes = sizeof(h_cols);
+        const size_t ptc_bytes = sizeof(h_pivot_to_col);
+        const size_t idx_bytes = num_cols * sizeof(int);
         const int block_threads = max(32, num_cols * 32);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "sc4 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "sc4 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sc4 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "sc4 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "sc4 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "sc4 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "sc4 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sc4 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sc4 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "sc4 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "sc4 h2d cp");
 
         auto upload_data = [&]() -> bool {
             bool ok = true;
-            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                        cudaMemcpyHostToDevice), "sc4 h2d cols");
-            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                             "sc4 memset new_pivots");
+            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                             "sc4 h2d cols");
+            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc4 memset new_pivots");
             return ok;
         };
 
@@ -3990,100 +4224,122 @@ int main()
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
         {
-            if (!upload_data()) goto sc4_cleanup;
-            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            if (!upload_data())
+                goto sc4_cleanup;
+            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols,
+                                              d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "sc4 ref sync");
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "sc4 ref d2h pivots");
-            check_cuda(cudaMemcpy(ref_data,   d_cols,       sizeof(ref_data),
-                                  cudaMemcpyDeviceToHost), "sc4 ref d2h data");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "sc4 ref d2h pivots");
+            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data), cudaMemcpyDeviceToHost),
+                       "sc4 ref d2h data");
 
             // Validate reference against expected
             bool ref_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (ref_pivots[i] != expected_pivots[i]) {
-                    fprintf(stderr, "sc4 ref pivot[%d] = %d, expected %d\n",
-                            i, ref_pivots[i], expected_pivots[i]);
+                if (ref_pivots[i] != expected_pivots[i])
+                {
+                    fprintf(stderr, "sc4 ref pivot[%d] = %d, expected %d\n", i, ref_pivots[i],
+                            expected_pivots[i]);
                     ref_ok = false;
                 }
             for (int i = 0; i < num_cols * num_words; ++i)
-                if (ref_data[i] != expected_data[i]) {
-                    fprintf(stderr, "sc4 ref data[%d] = 0x%lx, expected 0x%lx\n",
-                            i, ref_data[i], expected_data[i]);
+                if (ref_data[i] != expected_data[i])
+                {
+                    fprintf(stderr, "sc4 ref data[%d] = 0x%lx, expected 0x%lx\n", i, ref_data[i],
+                            expected_data[i]);
                     ref_ok = false;
                 }
-            if (!ref_ok) goto sc4_cleanup;
+            if (!ref_ok)
+                goto sc4_cleanup;
         }
 
         // syncthreads reference
         {
-            if (!upload_data()) goto sc4_cleanup;
-            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots,
-                                                          d_pivot_to_col, num_words, num_cols,
-                                                          d_new_pivots);
+            if (!upload_data())
+                goto sc4_cleanup;
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "sc4 sync sync");
             int sync_pivots[num_cols];
-            check_cuda(cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots),
-                                  cudaMemcpyDeviceToHost), "sc4 sync d2h");
+            check_cuda(
+                cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots), cudaMemcpyDeviceToHost),
+                "sc4 sync d2h");
             bool sync_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (sync_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "sc4 sync pivot[%d] = %d, ref %d\n",
-                            i, sync_pivots[i], ref_pivots[i]);
+                if (sync_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "sc4 sync pivot[%d] = %d, ref %d\n", i, sync_pivots[i],
+                            ref_pivots[i]);
                     sync_ok = false;
                 }
-            if (!sync_ok) goto sc4_cleanup;
+            if (!sync_ok)
+                goto sc4_cleanup;
         }
 
         // regular kernel (use_async_copy=false) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto sc4_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, false);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto sc4_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "sc4 reg d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "sc4 reg d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "sc4 reg[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "sc4 reg[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto sc4_cleanup;
+            if (!run_ok)
+                goto sc4_cleanup;
         }
 
         // async kernel (use_async_copy=true) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto sc4_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, true);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto sc4_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "sc4 async d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "sc4 async d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "sc4 async[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "sc4 async[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto sc4_cleanup;
+            if (!run_ok)
+                goto sc4_cleanup;
         }
 
         // All passed
         printf("  PASSED: (4-word self-clearing)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sc4_done;
 
-    sc4_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sc4_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sc4_done:
-        ;
+sc4_done:;
     }
 
     // 4-word async-copy determinism (test 25's pattern): 10 runs, identical
@@ -4104,14 +4360,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b110ULL, 0x0000, 0x0000, 0x0000,   // Col 0: pivot=2
-            0b010ULL, 0x0000, 0x0000, 0x0000,   // Col 1: pivot=1
-            0b001ULL, 0x0000, 0x0000, 0x0000    // Col 2: pivot=0 (unclaimed)
+            0b110ULL, 0x0000, 0x0000, 0x0000, // Col 0: pivot=2
+            0b010ULL, 0x0000, 0x0000, 0x0000, // Col 1: pivot=1
+            0b001ULL, 0x0000, 0x0000, 0x0000  // Col 2: pivot=0 (unclaimed)
         };
         const int h_pivot_to_col[256] = {};
-        const_cast<int*>(h_pivot_to_col)[0] = -1;
-        const_cast<int*>(h_pivot_to_col)[1] = 2;
-        const_cast<int*>(h_pivot_to_col)[2] = 1;
+        const_cast<int *>(h_pivot_to_col)[0] = -1;
+        const_cast<int *>(h_pivot_to_col)[1] = 2;
+        const_cast<int *>(h_pivot_to_col)[2] = 1;
         const int h_col_pivots[num_cols] = {2, 1, 0};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -4119,73 +4375,86 @@ int main()
         const size_t idx_bytes = num_cols * sizeof(int);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "mw4t d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "mw4t d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw4t d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "mw4t d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "mw4t d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "mw4t h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "mw4t h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw4t d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw4t d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "mw4t h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "mw4t h2d cp");
 
         // Reference storage (from run 0)
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
 
-        for (int run = 0; run < num_runs; ++run) {
+        for (int run = 0; run < num_runs; ++run)
+        {
             // Upload fresh data before each run
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "mw4t h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "mw4t memset new_pivots");
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "mw4t h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw4t memset new_pivots");
 
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                     num_words, num_cols, d_new_pivots, 0, true);
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "mw4t d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "mw4t d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "mw4t d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "mw4t d2h cols");
 
-            if (run == 0) {
+            if (run == 0)
+            {
                 // Store reference
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 // Compare against reference
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "mw4t[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "mw4t[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "mw4t[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "mw4t[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto mw4t_cleanup;
+                if (!ok)
+                    goto mw4t_cleanup;
             }
         }
 
         // All passed
         printf("  PASSED: (4-word async determinism, test 25 pattern)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto mw4t_done;
 
-    mw4t_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+mw4t_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    mw4t_done:
-        ;
+mw4t_done:;
     }
 
     // 4-word syncthreads determinism: 10 runs, identical results
@@ -4206,14 +4475,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000,       0x0000,       0x0000,       0b100ULL,   // Col 0
-            0x0000,       0b010ULL,     0x0000,       0x0000,     // Col 1
-            0b001ULL,     0x0000,       0x0000,       0x0000      // Col 2
+            0x0000,   0x0000,   0x0000, 0b100ULL, // Col 0
+            0x0000,   0b010ULL, 0x0000, 0x0000,   // Col 1
+            0b001ULL, 0x0000,   0x0000, 0x0000    // Col 2
         };
         const int h_pivot_to_col[256] = {};
-        const_cast<int*>(h_pivot_to_col)[0]   = -1;
-        const_cast<int*>(h_pivot_to_col)[65]  = 2;
-        const_cast<int*>(h_pivot_to_col)[194] = 1;
+        const_cast<int *>(h_pivot_to_col)[0] = -1;
+        const_cast<int *>(h_pivot_to_col)[65] = 2;
+        const_cast<int *>(h_pivot_to_col)[194] = 1;
         const int h_col_pivots[num_cols] = {194, 65, 0};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -4221,70 +4490,82 @@ int main()
         const size_t idx_bytes = num_cols * sizeof(int);
         const int block_threads = max(32, num_cols * 32);
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "mw4s d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "mw4s d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw4s d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "mw4s d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "mw4s d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "mw4s h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "mw4s h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw4s d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw4s d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "mw4s h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "mw4s h2d cp");
 
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "mw4s h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "mw4s memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "mw4s h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw4s memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots,
-                                                          d_pivot_to_col, num_words, num_cols,
-                                                          d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "mw4s sync");
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "mw4s d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "mw4s d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "mw4s d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "mw4s d2h cols");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "mw4s[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "mw4s[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "mw4s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "mw4s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto mw4s_cleanup;
+                if (!ok)
+                    goto mw4s_cleanup;
             }
         }
 
         printf("  PASSED: (4-word syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto mw4s_done;
 
-    mw4s_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+mw4s_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    mw4s_done:
-        ;
+mw4s_done:;
     }
 
     // Multi-word (4-word) unclaimed pivot cross-column chain
@@ -4312,45 +4593,45 @@ int main()
 
         // Column data: [col0_w0..w3, col1_w0..w3, col2_w0..w3]
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000, 0x0000,   0x0000,     // Col 0: pivot=2
-            0x0000,   0x0000, 0b010ULL, 0x0000,     // Col 1: pivot=128
-            0x0000,   0x0000, 0x0000,   0b001ULL     // Col 2: pivot=192 (unclaimed)
+            0b100ULL, 0x0000, 0x0000,   0x0000,  // Col 0: pivot=2
+            0x0000,   0x0000, 0b010ULL, 0x0000,  // Col 1: pivot=128
+            0x0000,   0x0000, 0x0000,   0b001ULL // Col 2: pivot=192 (unclaimed)
         };
         const int h_pivot_to_col[256] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 1;   // Col 0 -> Col 1
-        const_cast<int*>(h_pivot_to_col)[128] = 2;   // Col 1 -> Col 2
-        const_cast<int*>(h_pivot_to_col)[192] = -1;  // Col 2 unclaimed
+        const_cast<int *>(h_pivot_to_col)[2] = 1;    // Col 0 -> Col 1
+        const_cast<int *>(h_pivot_to_col)[128] = 2;  // Col 1 -> Col 2
+        const_cast<int *>(h_pivot_to_col)[192] = -1; // Col 2 unclaimed
         const int h_col_pivots[num_cols] = {2, 128, 192};
 
         const int expected_pivots[num_cols] = {192, 192, 192};
         const uint64_t expected_data[num_cols * num_words] = {
-            0b100ULL, 0x0000, 0b010ULL, 0b001ULL,   // Col 0 after XOR
-            0x0000,   0x0000, 0b010ULL, 0b001ULL,   // Col 1 after XOR
-            0x0000,   0x0000, 0x0000,   0b001ULL     // Col 2 unchanged
+            0b100ULL, 0x0000, 0b010ULL, 0b001ULL, // Col 0 after XOR
+            0x0000,   0x0000, 0b010ULL, 0b001ULL, // Col 1 after XOR
+            0x0000,   0x0000, 0x0000,   0b001ULL  // Col 2 unchanged
         };
 
-        const size_t col_bytes  = sizeof(h_cols);
-        const size_t ptc_bytes  = sizeof(h_pivot_to_col);
-        const size_t idx_bytes  = num_cols * sizeof(int);
+        const size_t col_bytes = sizeof(h_cols);
+        const size_t ptc_bytes = sizeof(h_pivot_to_col);
+        const size_t idx_bytes = num_cols * sizeof(int);
         const int block_threads = max(32, num_cols * 32);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "uc4 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "uc4 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "uc4 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "uc4 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "uc4 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "uc4 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "uc4 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "uc4 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "uc4 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "uc4 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "uc4 h2d cp");
 
         auto upload_data = [&]() -> bool {
             bool ok = true;
-            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                        cudaMemcpyHostToDevice), "uc4 h2d cols");
-            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                             "uc4 memset new_pivots");
+            ok &= check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                             "uc4 h2d cols");
+            ok &= check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "uc4 memset new_pivots");
             return ok;
         };
 
@@ -4358,102 +4639,122 @@ int main()
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
         {
-            if (!upload_data()) goto uc4_cleanup;
-            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols, d_new_pivots);
+            if (!upload_data())
+                goto uc4_cleanup;
+            singleWarpReductionRef<<<1, 32>>>(d_cols, d_pivot_to_col, num_words, num_cols,
+                                              d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "uc4 ref sync");
-            check_cuda(cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots),
-                                  cudaMemcpyDeviceToHost), "uc4 ref d2h pivots");
-            check_cuda(cudaMemcpy(ref_data,   d_cols,       sizeof(ref_data),
-                                  cudaMemcpyDeviceToHost), "uc4 ref d2h data");
+            check_cuda(
+                cudaMemcpy(ref_pivots, d_new_pivots, sizeof(ref_pivots), cudaMemcpyDeviceToHost),
+                "uc4 ref d2h pivots");
+            check_cuda(cudaMemcpy(ref_data, d_cols, sizeof(ref_data), cudaMemcpyDeviceToHost),
+                       "uc4 ref d2h data");
 
             // Validate reference against expected
             bool ref_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (ref_pivots[i] != expected_pivots[i]) {
-                    fprintf(stderr, "uc4 ref pivot[%d] = %d, expected %d\n",
-                            i, ref_pivots[i], expected_pivots[i]);
+                if (ref_pivots[i] != expected_pivots[i])
+                {
+                    fprintf(stderr, "uc4 ref pivot[%d] = %d, expected %d\n", i, ref_pivots[i],
+                            expected_pivots[i]);
                     ref_ok = false;
                 }
             for (int i = 0; i < num_cols * num_words; ++i)
-                if (ref_data[i] != expected_data[i]) {
-                    fprintf(stderr, "uc4 ref data[%d] = 0x%lx, expected 0x%lx\n",
-                            i, ref_data[i], expected_data[i]);
+                if (ref_data[i] != expected_data[i])
+                {
+                    fprintf(stderr, "uc4 ref data[%d] = 0x%lx, expected 0x%lx\n", i, ref_data[i],
+                            expected_data[i]);
                     ref_ok = false;
                 }
-            if (!ref_ok) goto uc4_cleanup;
+            if (!ref_ok)
+                goto uc4_cleanup;
         }
 
         // syncthreads reference
         {
-            if (!upload_data()) goto uc4_cleanup;
-            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots,
-                                                          d_pivot_to_col, num_words, num_cols,
-                                                          d_new_pivots);
+            if (!upload_data())
+                goto uc4_cleanup;
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "uc4 sync sync");
             int sync_pivots[num_cols];
-            check_cuda(cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots),
-                                  cudaMemcpyDeviceToHost), "uc4 sync d2h");
+            check_cuda(
+                cudaMemcpy(sync_pivots, d_new_pivots, sizeof(sync_pivots), cudaMemcpyDeviceToHost),
+                "uc4 sync d2h");
             bool sync_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (sync_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "uc4 sync pivot[%d] = %d, ref %d\n",
-                            i, sync_pivots[i], ref_pivots[i]);
+                if (sync_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "uc4 sync pivot[%d] = %d, ref %d\n", i, sync_pivots[i],
+                            ref_pivots[i]);
                     sync_ok = false;
                 }
-            if (!sync_ok) goto uc4_cleanup;
+            if (!sync_ok)
+                goto uc4_cleanup;
         }
 
         // regular kernel (use_async_copy=false) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto uc4_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                              num_words, num_cols, d_new_pivots, 0,
-                                                              false);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto uc4_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "uc4 reg d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "uc4 reg d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "uc4 reg[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "uc4 reg[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto uc4_cleanup;
+            if (!run_ok)
+                goto uc4_cleanup;
         }
 
         // async kernel (use_async_copy=true) 5x
-        for (int run = 0; run < 5; ++run) {
-            if (!upload_data()) goto uc4_cleanup;
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                              num_words, num_cols, d_new_pivots, 0,
-                                                              true);
+        for (int run = 0; run < 5; ++run)
+        {
+            if (!upload_data())
+                goto uc4_cleanup;
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             int run_pivots[num_cols];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "uc4 async d2h");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "uc4 async d2h");
             bool run_ok = true;
             for (int i = 0; i < num_cols; ++i)
-                if (run_pivots[i] != ref_pivots[i]) {
-                    fprintf(stderr, "uc4 async[run=%d] pivot[%d] = %d, ref %d\n",
-                            run, i, run_pivots[i], ref_pivots[i]);
+                if (run_pivots[i] != ref_pivots[i])
+                {
+                    fprintf(stderr, "uc4 async[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                            run_pivots[i], ref_pivots[i]);
                     run_ok = false;
                 }
-            if (!run_ok) goto uc4_cleanup;
+            if (!run_ok)
+                goto uc4_cleanup;
         }
 
         // All passed
         printf("  PASSED: (4-word unclaimed pivot cross-column chain)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto uc4_done;
 
-    uc4_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+uc4_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    uc4_done:
-        ;
+uc4_done:;
     }
 
     // 2-word unclaimed pivot cross-column determinism: 10 async runs
@@ -4475,14 +4776,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000,    // Col 0: pivot=2
-            0b010ULL, 0x0000,    // Col 1: pivot=1
-            0x0000,   0b001ULL    // Col 2: pivot=64 (unclaimed)
+            0b100ULL, 0x0000,  // Col 0: pivot=2
+            0b010ULL, 0x0000,  // Col 1: pivot=1
+            0x0000,   0b001ULL // Col 2: pivot=64 (unclaimed)
         };
         const int h_pivot_to_col[128] = {};
-        const_cast<int*>(h_pivot_to_col)[2]  = 1;
-        const_cast<int*>(h_pivot_to_col)[1]  = 2;
-        const_cast<int*>(h_pivot_to_col)[64] = -1;
+        const_cast<int *>(h_pivot_to_col)[2] = 1;
+        const_cast<int *>(h_pivot_to_col)[1] = 2;
+        const_cast<int *>(h_pivot_to_col)[64] = -1;
         const int h_col_pivots[num_cols] = {2, 1, 64};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -4490,71 +4791,83 @@ int main()
         const size_t idx_bytes = num_cols * sizeof(int);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "ucd d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "ucd d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "ucd d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "ucd d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "ucd d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "ucd h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "ucd h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "ucd d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "ucd d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "ucd h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "ucd h2d cp");
 
         // Reference storage (from run 0)
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "ucd h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "ucd memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "ucd h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "ucd memset new_pivots");
 
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                              num_words, num_cols, d_new_pivots, 0,
-                                                              true);
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "ucd d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "ucd d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "ucd d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "ucd d2h cols");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "ucd[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "ucd[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "ucd[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "ucd[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto ucd_cleanup;
+                if (!ok)
+                    goto ucd_cleanup;
             }
         }
 
         // All passed
         printf("  PASSED: (2-word unclaimed pivot async determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto ucd_done;
 
-    ucd_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+ucd_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    ucd_done:
-        ;
+ucd_done:;
     }
 
     // 2-word self-clearing async determinism: 10 runs, identical results
@@ -4575,14 +4888,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000,    // Col 0: pivot=2
-            0x0000,   0b001ULL,  // Col 1: pivot=64
-            0b010ULL, 0x0000     // Col 2: pivot=1
+            0b100ULL, 0x0000,   // Col 0: pivot=2
+            0x0000,   0b001ULL, // Col 1: pivot=64
+            0b010ULL, 0x0000    // Col 2: pivot=1
         };
         const int h_pivot_to_col[128] = {};
-        const_cast<int*>(h_pivot_to_col)[2]  = 0;
-        const_cast<int*>(h_pivot_to_col)[64] = 1;
-        const_cast<int*>(h_pivot_to_col)[1]  = 2;
+        const_cast<int *>(h_pivot_to_col)[2] = 0;
+        const_cast<int *>(h_pivot_to_col)[64] = 1;
+        const_cast<int *>(h_pivot_to_col)[1] = 2;
         const int h_col_pivots[num_cols] = {2, 64, 1};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -4590,71 +4903,83 @@ int main()
         const size_t idx_bytes = num_cols * sizeof(int);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "scd d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "scd d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "scd d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "scd d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "scd d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "scd h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "scd h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "scd d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "scd d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "scd h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "scd h2d cp");
 
         // Reference storage (from run 0)
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "scd h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "scd memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "scd h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "scd memset new_pivots");
 
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                              num_words, num_cols, d_new_pivots, 0,
-                                                              true);
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "scd d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "scd d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "scd d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "scd d2h cols");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "scd[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "scd[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "scd[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "scd[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto scd_cleanup;
+                if (!ok)
+                    goto scd_cleanup;
             }
         }
 
         // All passed
         printf("  PASSED: (2-word self-clearing async determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto scd_done;
 
-    scd_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+scd_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    scd_done:
-        ;
+scd_done:;
     }
 
     // 4-word regular kernel determinism (test 33's chain): 10 runs
@@ -4676,14 +5001,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000,       0x0000,       0x0000,       0b100ULL,   // Col 0: pivot=194
-            0x0000,       0b010ULL,     0x0000,       0x0000,     // Col 1: pivot=65
-            0b001ULL,     0x0000,       0x0000,       0x0000      // Col 2: pivot=0  (unclaimed)
+            0x0000,   0x0000,   0x0000, 0b100ULL, // Col 0: pivot=194
+            0x0000,   0b010ULL, 0x0000, 0x0000,   // Col 1: pivot=65
+            0b001ULL, 0x0000,   0x0000, 0x0000    // Col 2: pivot=0  (unclaimed)
         };
         const int h_pivot_to_col[256] = {};
-        const_cast<int*>(h_pivot_to_col)[0]   = -1;
-        const_cast<int*>(h_pivot_to_col)[65]  = 2;
-        const_cast<int*>(h_pivot_to_col)[194] = 1;
+        const_cast<int *>(h_pivot_to_col)[0] = -1;
+        const_cast<int *>(h_pivot_to_col)[65] = 2;
+        const_cast<int *>(h_pivot_to_col)[194] = 1;
         const int h_col_pivots[num_cols] = {194, 65, 0};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -4691,71 +5016,83 @@ int main()
         const size_t idx_bytes = num_cols * sizeof(int);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "mw4r d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "mw4r d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw4r d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "mw4r d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "mw4r d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "mw4r h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "mw4r h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw4r d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw4r d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "mw4r h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "mw4r h2d cp");
 
         // Reference storage (from run 0)
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "mw4r h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "mw4r memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "mw4r h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw4r memset new_pivots");
 
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                              num_words, num_cols, d_new_pivots, 0,
-                                                              false);
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "mw4r d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "mw4r d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "mw4r d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "mw4r d2h cols");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "mw4r[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "mw4r[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "mw4r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "mw4r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto mw4r_cleanup;
+                if (!ok)
+                    goto mw4r_cleanup;
             }
         }
 
         // All passed
         printf("  PASSED: (4-word regular kernel determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto mw4r_done;
 
-    mw4r_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+mw4r_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    mw4r_done:
-        ;
+mw4r_done:;
     }
 
     // 2-word unclaimed pivot regular kernel determinism: 10 runs
@@ -4777,14 +5114,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000,    // Col 0: pivot=2
-            0b010ULL, 0x0000,    // Col 1: pivot=1
-            0x0000,   0b001ULL    // Col 2: pivot=64 (unclaimed)
+            0b100ULL, 0x0000,  // Col 0: pivot=2
+            0b010ULL, 0x0000,  // Col 1: pivot=1
+            0x0000,   0b001ULL // Col 2: pivot=64 (unclaimed)
         };
         const int h_pivot_to_col[128] = {};
-        const_cast<int*>(h_pivot_to_col)[2]  = 1;
-        const_cast<int*>(h_pivot_to_col)[1]  = 2;
-        const_cast<int*>(h_pivot_to_col)[64] = -1;
+        const_cast<int *>(h_pivot_to_col)[2] = 1;
+        const_cast<int *>(h_pivot_to_col)[1] = 2;
+        const_cast<int *>(h_pivot_to_col)[64] = -1;
         const int h_col_pivots[num_cols] = {2, 1, 64};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -4792,71 +5129,83 @@ int main()
         const size_t idx_bytes = num_cols * sizeof(int);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "ucr d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "ucr d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "ucr d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "ucr d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "ucr d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "ucr h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "ucr h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "ucr d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "ucr d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "ucr h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "ucr h2d cp");
 
         // Reference storage (from run 0)
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "ucr h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "ucr memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "ucr h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "ucr memset new_pivots");
 
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                              num_words, num_cols, d_new_pivots, 0,
-                                                              false);
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "ucr d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "ucr d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "ucr d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "ucr d2h cols");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "ucr[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "ucr[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "ucr[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "ucr[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto ucr_cleanup;
+                if (!ok)
+                    goto ucr_cleanup;
             }
         }
 
         // All passed
         printf("  PASSED: (2-word unclaimed pivot regular kernel determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto ucr_done;
 
-    ucr_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+ucr_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    ucr_done:
-        ;
+ucr_done:;
     }
 
     // 3-word async determinism (test 26's chain): 10 runs, identical results
@@ -4878,14 +5227,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000ULL, 0x0000ULL, 0b100ULL,     // Col 0: pivot=130
-            0x0000ULL, 0b100ULL,  0x0000ULL,    // Col 1: pivot=66
-            0b001ULL,  0x0000ULL, 0x0000ULL     // Col 2: pivot=0 (unclaimed)
+            0x0000ULL, 0x0000ULL, 0b100ULL,  // Col 0: pivot=130
+            0x0000ULL, 0b100ULL,  0x0000ULL, // Col 1: pivot=66
+            0b001ULL,  0x0000ULL, 0x0000ULL  // Col 2: pivot=0 (unclaimed)
         };
         const int h_pivot_to_col[192] = {};
-        const_cast<int*>(h_pivot_to_col)[0]   = -1;
-        const_cast<int*>(h_pivot_to_col)[66]  = 2;
-        const_cast<int*>(h_pivot_to_col)[130] = 1;
+        const_cast<int *>(h_pivot_to_col)[0] = -1;
+        const_cast<int *>(h_pivot_to_col)[66] = 2;
+        const_cast<int *>(h_pivot_to_col)[130] = 1;
         const int h_col_pivots[num_cols] = {130, 66, 0};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -4893,69 +5242,81 @@ int main()
         const size_t idx_bytes = num_cols * sizeof(int);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "mw3a d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "mw3a d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw3a d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "mw3a d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "mw3a d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "mw3a h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "mw3a h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw3a d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw3a d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "mw3a h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "mw3a h2d cp");
 
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "mw3a h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "mw3a memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "mw3a h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw3a memset new_pivots");
 
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                              num_words, num_cols, d_new_pivots, 0,
-                                                              true);
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "mw3a d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "mw3a d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "mw3a d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "mw3a d2h cols");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "mw3a[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "mw3a[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "mw3a[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "mw3a[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto mw3a_cleanup;
+                if (!ok)
+                    goto mw3a_cleanup;
             }
         }
 
         printf("  PASSED: (3-word async determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto mw3a_done;
 
-    mw3a_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+mw3a_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    mw3a_done:
-        ;
+mw3a_done:;
     }
 
     // 3-word regular kernel determinism (test 26's chain): 10 runs
@@ -4977,14 +5338,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000,       0x0000,       0b100ULL,      // Col 0: pivot=130
-            0x0000,       0b100ULL,     0x0000,        // Col 1: pivot=66
-            0b001ULL,     0x0000,       0x0000         // Col 2: pivot=0  (unclaimed)
+            0x0000,   0x0000,   0b100ULL, // Col 0: pivot=130
+            0x0000,   0b100ULL, 0x0000,   // Col 1: pivot=66
+            0b001ULL, 0x0000,   0x0000    // Col 2: pivot=0  (unclaimed)
         };
         const int h_pivot_to_col[192] = {};
-        const_cast<int*>(h_pivot_to_col)[0]   = -1;  // unclaimed leaf (already -1 by {})
-        const_cast<int*>(h_pivot_to_col)[66]  = 2;   // col 2 claims pivot 66
-        const_cast<int*>(h_pivot_to_col)[130] = 1;   // col 1 claims pivot 130
+        const_cast<int *>(h_pivot_to_col)[0] = -1;  // unclaimed leaf (already -1 by {})
+        const_cast<int *>(h_pivot_to_col)[66] = 2;  // col 2 claims pivot 66
+        const_cast<int *>(h_pivot_to_col)[130] = 1; // col 1 claims pivot 130
         const int h_col_pivots[num_cols] = {130, 66, 0};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -4992,71 +5353,83 @@ int main()
         const size_t idx_bytes = num_cols * sizeof(int);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "mw3r d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "mw3r d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "mw3r d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "mw3r d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "mw3r d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "mw3r h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "mw3r h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "mw3r d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "mw3r d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "mw3r h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "mw3r h2d cp");
 
         // Reference storage (from run 0)
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "mw3r h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "mw3r memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "mw3r h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "mw3r memset new_pivots");
 
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                              num_words, num_cols, d_new_pivots, 0,
-                                                              false);
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "mw3r d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "mw3r d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "mw3r d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "mw3r d2h cols");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "mw3r[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "mw3r[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "mw3r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "mw3r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto mw3r_cleanup;
+                if (!ok)
+                    goto mw3r_cleanup;
             }
         }
 
         // All passed
         printf("  PASSED: (3-word regular kernel determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto mw3r_done;
 
-    mw3r_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+mw3r_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    mw3r_done:
-        ;
+mw3r_done:;
     }
     // 2-word cross-column syncthreads determinism (test 23's chain): 10 runs
     //
@@ -5077,14 +5450,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000ULL, 0b100ULL,      // Col 0: pivot=66
-            0b010ULL,  0x0000ULL,     // Col 1: pivot=1
-            0x0000ULL, 0b001ULL       // Col 2: pivot=64 (unclaimed)
+            0x0000ULL, 0b100ULL,  // Col 0: pivot=66
+            0b010ULL,  0x0000ULL, // Col 1: pivot=1
+            0x0000ULL, 0b001ULL   // Col 2: pivot=64 (unclaimed)
         };
         const int h_col_pivots[num_cols] = {66, 1, 64};
         const int h_pivot_to_col[128] = {};
-        const_cast<int*>(h_pivot_to_col)[66] = 1;   // col 1 claims pivot 66
-        const_cast<int*>(h_pivot_to_col)[1]  = 2;   // col 2 claims pivot 1
+        const_cast<int *>(h_pivot_to_col)[66] = 1; // col 1 claims pivot 66
+        const_cast<int *>(h_pivot_to_col)[1] = 2;  // col 2 claims pivot 1
         // pivot_to_col[64] stays -1 (unclaimed)
 
         const size_t col_bytes = sizeof(h_cols);
@@ -5092,15 +5465,16 @@ int main()
         const size_t idx_bytes = num_cols * sizeof(int);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "sd2 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "sd2 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sd2 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "sd2 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "sd2 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "sd2 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "sd2 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sd2 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sd2 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "sd2 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "sd2 h2d cp");
 
         // Reference storage (from run 0)
         int ref_pivots[num_cols];
@@ -5108,57 +5482,68 @@ int main()
 
         const int block_threads = max(32, num_cols * 32);
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "sd2 h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "sd2 memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "sd2 h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sd2 memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "sd2 sync");
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "sd2 d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "sd2 d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "sd2 d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "sd2 d2h cols");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "sd2[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "sd2[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "sd2[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "sd2[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto sd2_cleanup;
+                if (!ok)
+                    goto sd2_cleanup;
             }
         }
 
         printf("  PASSED: (2-word cross-column syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sd2_done;
 
-    sd2_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sd2_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sd2_done:
-        ;
+sd2_done:;
     }
     // 4-word unclaimed pivot regular kernel determinism (test 40's chain): 10 runs
     //
@@ -5179,14 +5564,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000, 0x0000, 0x0000,   // Col 0: pivot=2
-            0x0000,   0x0000, 0b010ULL, 0x0000,   // Col 1: pivot=128
-            0x0000,   0x0000, 0x0000,   0b001ULL    // Col 2: pivot=192 (unclaimed)
+            0b100ULL, 0x0000, 0x0000,   0x0000,  // Col 0: pivot=2
+            0x0000,   0x0000, 0b010ULL, 0x0000,  // Col 1: pivot=128
+            0x0000,   0x0000, 0x0000,   0b001ULL // Col 2: pivot=192 (unclaimed)
         };
         const int h_pivot_to_col[256] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 1;
-        const_cast<int*>(h_pivot_to_col)[128] = 2;
-        const_cast<int*>(h_pivot_to_col)[192] = -1;
+        const_cast<int *>(h_pivot_to_col)[2] = 1;
+        const_cast<int *>(h_pivot_to_col)[128] = 2;
+        const_cast<int *>(h_pivot_to_col)[192] = -1;
         const int h_col_pivots[num_cols] = {2, 128, 192};
 
         const size_t col_bytes = sizeof(h_cols);
@@ -5194,70 +5579,82 @@ int main()
         const size_t idx_bytes = num_cols * sizeof(int);
 
         // Device allocations
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "uc4r d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "uc4r d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "uc4r d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "uc4r d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "uc4r d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "uc4r h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "uc4r h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "uc4r d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "uc4r d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "uc4r h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "uc4r h2d cp");
 
         // Reference storage (from run 0)
         int ref_pivots[num_cols];
         uint64_t ref_data[num_cols * num_words];
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "uc4r h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "uc4r memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "uc4r h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "uc4r memset new_pivots");
 
-            nerve::persistence::gpu::launchPipelinedReduction(d_cols, d_col_pivots, d_pivot_to_col,
-                                                              num_words, num_cols, d_new_pivots, 0,
-                                                              false);
+            nerve::persistence::gpu::launchPipelinedReduction(
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
 
             int run_pivots[num_cols];
             uint64_t run_data[num_cols * num_words];
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots),
-                                  cudaMemcpyDeviceToHost), "uc4r d2h pivots");
-            check_cuda(cudaMemcpy(run_data,   d_cols,       sizeof(run_data),
-                                  cudaMemcpyDeviceToHost), "uc4r d2h cols");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_new_pivots, sizeof(run_pivots), cudaMemcpyDeviceToHost),
+                "uc4r d2h pivots");
+            check_cuda(cudaMemcpy(run_data, d_cols, sizeof(run_data), cudaMemcpyDeviceToHost),
+                       "uc4r d2h cols");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "uc4r[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "uc4r[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "uc4r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "uc4r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto uc4r_cleanup;
+                if (!ok)
+                    goto uc4r_cleanup;
             }
         }
 
         printf("  PASSED: (4-word unclaimed pivot regular kernel determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto uc4r_done;
 
-    uc4r_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+uc4r_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    uc4r_done:
-        ;
+uc4r_done:;
     }
     // 2-word unclaimed pivot syncthreads determinism (test 35's chain): 10 runs
     //
@@ -5279,14 +5676,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000,    // Col 0: pivot=2
-            0b010ULL, 0x0000,    // Col 1: pivot=1
-            0x0000,   0b001ULL    // Col 2: pivot=64 (unclaimed)
+            0b100ULL, 0x0000,  // Col 0: pivot=2
+            0b010ULL, 0x0000,  // Col 1: pivot=1
+            0x0000,   0b001ULL // Col 2: pivot=64 (unclaimed)
         };
         const int h_pivot_to_col[128] = {};
-        const_cast<int*>(h_pivot_to_col)[2]  = 1;
-        const_cast<int*>(h_pivot_to_col)[1]  = 2;
-        const_cast<int*>(h_pivot_to_col)[64] = -1;
+        const_cast<int *>(h_pivot_to_col)[2] = 1;
+        const_cast<int *>(h_pivot_to_col)[1] = 2;
+        const_cast<int *>(h_pivot_to_col)[64] = -1;
         const int h_col_pivots[num_cols] = {2, 1, 64};
 
         const int block_threads = (32 > num_cols * 32) ? 32 : num_cols * 32;
@@ -5294,71 +5691,82 @@ int main()
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "uc2s d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "uc2s d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "uc2s d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "uc2s d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "uc2s d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "uc2s h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "uc2s h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "uc2s d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "uc2s d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "uc2s h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "uc2s h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "uc2s h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "uc2s memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "uc2s h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "uc2s memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "uc2s sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "uc2s d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "uc2s d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "uc2s d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "uc2s d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "uc2s[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "uc2s[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "uc2s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "uc2s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto uc2s_cleanup;
+                if (!ok)
+                    goto uc2s_cleanup;
             }
         }
 
         printf("  PASSED: (2-word unclaimed pivot syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto uc2s_done;
 
-    uc2s_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+uc2s_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    uc2s_done:
-        ;
+uc2s_done:;
     }
     // 3-word cross-column syncthreads determinism (test 26's chain): 10 runs
     //
@@ -5379,13 +5787,13 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000ULL, 0x0000ULL, 0b100ULL,      // col 0: pivot=130
-            0x0000ULL, 0b100ULL,  0x0000ULL,     // col 1: pivot=66
-            0b001ULL,  0x0000ULL, 0x0000ULL       // col 2: pivot=0
+            0x0000ULL, 0x0000ULL, 0b100ULL,  // col 0: pivot=130
+            0x0000ULL, 0b100ULL,  0x0000ULL, // col 1: pivot=66
+            0b001ULL,  0x0000ULL, 0x0000ULL  // col 2: pivot=0
         };
         const int h_pivot_to_col[192] = {};
-        const_cast<int*>(h_pivot_to_col)[130] = 1;
-        const_cast<int*>(h_pivot_to_col)[66]  = 2;
+        const_cast<int *>(h_pivot_to_col)[130] = 1;
+        const_cast<int *>(h_pivot_to_col)[66] = 2;
         const int h_col_pivots[num_cols] = {130, 66, 0};
 
         const int block_threads = (32 > num_cols * 32) ? 32 : num_cols * 32;
@@ -5393,71 +5801,82 @@ int main()
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "xc3 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "xc3 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "xc3 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "xc3 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "xc3 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "xc3 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "xc3 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "xc3 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "xc3 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "xc3 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "xc3 h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "xc3 h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "xc3 memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "xc3 h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "xc3 memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "xc3 sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "xc3 d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "xc3 d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "xc3 d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "xc3 d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "xc3[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "xc3[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "xc3[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "xc3[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto xc3_cleanup;
+                if (!ok)
+                    goto xc3_cleanup;
             }
         }
 
         printf("  PASSED: (3-word cross-column syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto xc3_done;
 
-    xc3_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+xc3_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    xc3_done:
-        ;
+xc3_done:;
     }
     // 2-word self-clearing syncthreads determinism (test 27's chain): 10 runs
     //
@@ -5478,15 +5897,15 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000ULL,  // col 0: pivot=2
+            0b100ULL,  0x0000ULL, // col 0: pivot=2
             0x0000ULL, 0b001ULL,  // col 1: pivot=64
-            0b010ULL, 0x0000ULL   // col 2: pivot=1
+            0b010ULL,  0x0000ULL  // col 2: pivot=1
         };
         int h_pivot_to_col[128];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[2]  = 0;
+        h_pivot_to_col[2] = 0;
         h_pivot_to_col[64] = 1;
-        h_pivot_to_col[1]  = 2;
+        h_pivot_to_col[1] = 2;
         const int h_col_pivots[num_cols] = {2, 64, 1};
 
         const int block_threads = (32 > num_cols * 32) ? 32 : num_cols * 32;
@@ -5494,71 +5913,82 @@ int main()
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "sc2s d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "sc2s d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sc2s d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "sc2s d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "sc2s d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "sc2s h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "sc2s h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sc2s d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sc2s d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "sc2s h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "sc2s h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "sc2s h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "sc2s memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "sc2s h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc2s memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "sc2s sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "sc2s d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "sc2s d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "sc2s d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "sc2s d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "sc2s[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "sc2s[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "sc2s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "sc2s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto sc2s_cleanup;
+                if (!ok)
+                    goto sc2s_cleanup;
             }
         }
 
         printf("  PASSED: (2-word self-clearing syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sc2s_done;
 
-    sc2s_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sc2s_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sc2s_done:
-        ;
+sc2s_done:;
     }
     // 2-word self-clearing regular kernel determinism (test 27's chain): 10 runs
     //
@@ -5580,87 +6010,97 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000ULL,  // col 0: pivot=2
+            0b100ULL,  0x0000ULL, // col 0: pivot=2
             0x0000ULL, 0b001ULL,  // col 1: pivot=64
-            0b010ULL, 0x0000ULL   // col 2: pivot=1
+            0b010ULL,  0x0000ULL  // col 2: pivot=1
         };
         int h_pivot_to_col[128];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[2]  = 0;
+        h_pivot_to_col[2] = 0;
         h_pivot_to_col[64] = 1;
-        h_pivot_to_col[1]  = 2;
+        h_pivot_to_col[1] = 2;
         const int h_col_pivots[num_cols] = {2, 64, 1};
 
         const size_t col_bytes = sizeof(h_cols);
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "sc2r d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "sc2r d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sc2r d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "sc2r d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "sc2r d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "sc2r h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "sc2r h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sc2r d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sc2r d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "sc2r h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "sc2r h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "sc2r h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "sc2r memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "sc2r h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc2r memset new_pivots");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0,
-                false);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             check_cuda(cudaDeviceSynchronize(), "sc2r sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "sc2r d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "sc2r d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "sc2r d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "sc2r d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "sc2r[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "sc2r[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "sc2r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "sc2r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto sc2r_cleanup;
+                if (!ok)
+                    goto sc2r_cleanup;
             }
         }
 
         printf("  PASSED: (2-word self-clearing regular kernel determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sc2r_done;
 
-    sc2r_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sc2r_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sc2r_done:
-        ;
+sc2r_done:;
     }
     // 3-word self-clearing syncthreads determinism (test 31's chain): 10 runs
     //
@@ -5681,14 +6121,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000, 0x0000,   // col 0: pivot=2
+            0b100ULL, 0x0000,   0x0000,  // col 0: pivot=2
             0x0000,   0b001ULL, 0x0000,  // col 1: pivot=64
-            0x0000,   0x0000,   0b010ULL  // col 2: pivot=128
+            0x0000,   0x0000,   0b010ULL // col 2: pivot=128
         };
         const int h_pivot_to_col[192] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 0;
-        const_cast<int*>(h_pivot_to_col)[64]  = 1;
-        const_cast<int*>(h_pivot_to_col)[128] = 2;
+        const_cast<int *>(h_pivot_to_col)[2] = 0;
+        const_cast<int *>(h_pivot_to_col)[64] = 1;
+        const_cast<int *>(h_pivot_to_col)[128] = 2;
         const int h_col_pivots[num_cols] = {2, 64, 128};
 
         const int block_threads = (32 > num_cols * 32) ? 32 : num_cols * 32;
@@ -5696,71 +6136,82 @@ int main()
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "sc3s d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "sc3s d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sc3s d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "sc3s d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "sc3s d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "sc3s h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "sc3s h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sc3s d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sc3s d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "sc3s h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "sc3s h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "sc3s h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "sc3s memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "sc3s h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc3s memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "sc3s sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "sc3s d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "sc3s d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "sc3s d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "sc3s d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "sc3s[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "sc3s[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "sc3s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "sc3s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto sc3s_cleanup;
+                if (!ok)
+                    goto sc3s_cleanup;
             }
         }
 
         printf("  PASSED: (3-word self-clearing syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sc3s_done;
 
-    sc3s_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sc3s_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sc3s_done:
-        ;
+sc3s_done:;
     }
     // 2-word cross-column regular kernel determinism (test 23's chain): 10 runs
     //
@@ -5782,85 +6233,95 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000ULL, 0b100ULL,   // col 0: pivot=66
-            0b010ULL,  0x0000ULL,  // col 1: pivot=1
-            0x0000ULL, 0b001ULL    // col 2: pivot=64 (unclaimed)
+            0x0000ULL, 0b100ULL,  // col 0: pivot=66
+            0b010ULL,  0x0000ULL, // col 1: pivot=1
+            0x0000ULL, 0b001ULL   // col 2: pivot=64 (unclaimed)
         };
         const int h_pivot_to_col[128] = {};
-        const_cast<int*>(h_pivot_to_col)[66] = 1;
-        const_cast<int*>(h_pivot_to_col)[1]  = 2;
+        const_cast<int *>(h_pivot_to_col)[66] = 1;
+        const_cast<int *>(h_pivot_to_col)[1] = 2;
         const int h_col_pivots[num_cols] = {66, 1, 64};
 
         const size_t col_bytes = sizeof(h_cols);
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "xc2 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "xc2 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "xc2 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "xc2 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "xc2 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "xc2 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "xc2 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "xc2 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "xc2 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "xc2 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "xc2 h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "xc2 h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "xc2 memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "xc2 h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "xc2 memset new_pivots");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0,
-                false);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             check_cuda(cudaDeviceSynchronize(), "xc2 sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "xc2 d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "xc2 d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "xc2 d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "xc2 d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "xc2[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "xc2[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "xc2[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "xc2[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto xc2_cleanup;
+                if (!ok)
+                    goto xc2_cleanup;
             }
         }
 
         printf("  PASSED: (2-word cross-column regular kernel determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto xc2_done;
 
-    xc2_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+xc2_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    xc2_done:
-        ;
+xc2_done:;
     }
     // 4-word self-clearing syncthreads determinism (test 37's chain): 10 runs
     //
@@ -5881,14 +6342,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000,   0x0000,   0x0000,    // col 0: pivot=2
-            0x0000,   0x0000,   0x0000,   0b001ULL,  // col 1: pivot=192
-            0x0000,   0x0000,   0b010ULL, 0x0000     // col 2: pivot=128
+            0b100ULL, 0x0000, 0x0000,   0x0000,   // col 0: pivot=2
+            0x0000,   0x0000, 0x0000,   0b001ULL, // col 1: pivot=192
+            0x0000,   0x0000, 0b010ULL, 0x0000    // col 2: pivot=128
         };
         const int h_pivot_to_col[256] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 0;
-        const_cast<int*>(h_pivot_to_col)[192] = 1;
-        const_cast<int*>(h_pivot_to_col)[128] = 2;
+        const_cast<int *>(h_pivot_to_col)[2] = 0;
+        const_cast<int *>(h_pivot_to_col)[192] = 1;
+        const_cast<int *>(h_pivot_to_col)[128] = 2;
         const int h_col_pivots[num_cols] = {2, 192, 128};
 
         const int block_threads = (32 > num_cols * 32) ? 32 : num_cols * 32;
@@ -5896,71 +6357,82 @@ int main()
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "sc4s d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "sc4s d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sc4s d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "sc4s d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "sc4s d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "sc4s h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "sc4s h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sc4s d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sc4s d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "sc4s h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "sc4s h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "sc4s h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "sc4s memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "sc4s h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc4s memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "sc4s sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "sc4s d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "sc4s d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "sc4s d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "sc4s d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "sc4s[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "sc4s[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "sc4s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "sc4s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto sc4s_cleanup;
+                if (!ok)
+                    goto sc4s_cleanup;
             }
         }
 
         printf("  PASSED: (4-word self-clearing syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sc4s_done;
 
-    sc4s_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sc4s_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sc4s_done:
-        ;
+sc4s_done:;
     }
     // 4-word self-clearing regular kernel determinism (test 37's chain): 10 runs
     //
@@ -5982,86 +6454,96 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000,   0x0000,   0x0000,    // col 0: pivot=2
-            0x0000,   0x0000,   0x0000,   0b001ULL,  // col 1: pivot=192
-            0x0000,   0x0000,   0b010ULL, 0x0000     // col 2: pivot=128
+            0b100ULL, 0x0000, 0x0000,   0x0000,   // col 0: pivot=2
+            0x0000,   0x0000, 0x0000,   0b001ULL, // col 1: pivot=192
+            0x0000,   0x0000, 0b010ULL, 0x0000    // col 2: pivot=128
         };
         const int h_pivot_to_col[256] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 0;
-        const_cast<int*>(h_pivot_to_col)[192] = 1;
-        const_cast<int*>(h_pivot_to_col)[128] = 2;
+        const_cast<int *>(h_pivot_to_col)[2] = 0;
+        const_cast<int *>(h_pivot_to_col)[192] = 1;
+        const_cast<int *>(h_pivot_to_col)[128] = 2;
         const int h_col_pivots[num_cols] = {2, 192, 128};
 
         const size_t col_bytes = sizeof(h_cols);
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "sc4r d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "sc4r d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sc4r d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "sc4r d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "sc4r d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "sc4r h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "sc4r h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sc4r d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sc4r d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "sc4r h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "sc4r h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "sc4r h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "sc4r memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "sc4r h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc4r memset new_pivots");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0,
-                false);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             check_cuda(cudaDeviceSynchronize(), "sc4r sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "sc4r d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "sc4r d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "sc4r d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "sc4r d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "sc4r[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "sc4r[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "sc4r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "sc4r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto sc4r_cleanup;
+                if (!ok)
+                    goto sc4r_cleanup;
             }
         }
 
         printf("  PASSED: (4-word self-clearing regular kernel determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sc4r_done;
 
-    sc4r_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sc4r_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sc4r_done:
-        ;
+sc4r_done:;
     }
     // 4-word cross-column regular kernel determinism (test 33's chain): 10 runs
     //
@@ -6082,86 +6564,96 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000, 0x0000, 0x0000, 0b100ULL,   // col 0: pivot=194
-            0x0000, 0b010ULL, 0x0000, 0x0000,   // col 1: pivot=65
-            0b001ULL, 0x0000, 0x0000, 0x0000    // col 2: pivot=0
+            0x0000,   0x0000,   0x0000, 0b100ULL, // col 0: pivot=194
+            0x0000,   0b010ULL, 0x0000, 0x0000,   // col 1: pivot=65
+            0b001ULL, 0x0000,   0x0000, 0x0000    // col 2: pivot=0
         };
         int h_pivot_to_col[256];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
         h_pivot_to_col[194] = 1;
-        h_pivot_to_col[65]  = 2;
+        h_pivot_to_col[65] = 2;
         const int h_col_pivots[num_cols] = {194, 65, 0};
 
         const size_t col_bytes = sizeof(h_cols);
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "xc4 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "xc4 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "xc4 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "xc4 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "xc4 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "xc4 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "xc4 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "xc4 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "xc4 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "xc4 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "xc4 h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "xc4 h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "xc4 memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "xc4 h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "xc4 memset new_pivots");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0,
-                false);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             check_cuda(cudaDeviceSynchronize(), "xc4 sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "xc4 d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "xc4 d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "xc4 d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "xc4 d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "xc4[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "xc4[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "xc4[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "xc4[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto xc4_cleanup;
+                if (!ok)
+                    goto xc4_cleanup;
             }
         }
 
         printf("  PASSED: (4-word cross-column regular kernel determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto xc4_done;
 
-    xc4_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+xc4_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    xc4_done:
-        ;
+xc4_done:;
     }
     // 3-word cross-column regular kernel determinism (test 26's chain): 10 runs
     //
@@ -6183,85 +6675,95 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000ULL, 0x0000ULL, 0b100ULL,      // col 0: pivot=130
-            0x0000ULL, 0b100ULL,  0x0000ULL,     // col 1: pivot=66
-            0b001ULL,  0x0000ULL, 0x0000ULL       // col 2: pivot=0
+            0x0000ULL, 0x0000ULL, 0b100ULL,  // col 0: pivot=130
+            0x0000ULL, 0b100ULL,  0x0000ULL, // col 1: pivot=66
+            0b001ULL,  0x0000ULL, 0x0000ULL  // col 2: pivot=0
         };
         const int h_pivot_to_col[192] = {};
-        const_cast<int*>(h_pivot_to_col)[130] = 1;
-        const_cast<int*>(h_pivot_to_col)[66]  = 2;
+        const_cast<int *>(h_pivot_to_col)[130] = 1;
+        const_cast<int *>(h_pivot_to_col)[66] = 2;
         const int h_col_pivots[num_cols] = {130, 66, 0};
 
         const size_t col_bytes = sizeof(h_cols);
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "xc3r d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "xc3r d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "xc3r d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "xc3r d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "xc3r d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "xc3r h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "xc3r h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "xc3r d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "xc3r d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "xc3r h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "xc3r h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "xc3r h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "xc3r memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "xc3r h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "xc3r memset new_pivots");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0,
-                false);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             check_cuda(cudaDeviceSynchronize(), "xc3r sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "xc3r d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "xc3r d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "xc3r d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "xc3r d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "xc3r[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "xc3r[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "xc3r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "xc3r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto xc3r_cleanup;
+                if (!ok)
+                    goto xc3r_cleanup;
             }
         }
 
         printf("  PASSED: (3-word cross-column regular kernel determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto xc3r_done;
 
-    xc3r_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+xc3r_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    xc3r_done:
-        ;
+xc3r_done:;
     }
     // 4-word unclaimed pivot syncthreads determinism (test 40's chain): 10 runs
     //
@@ -6282,14 +6784,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000, 0x0000, 0x0000,   // col 0: pivot=2
+            0b100ULL, 0x0000, 0x0000,   0x0000,  // col 0: pivot=2
             0x0000,   0x0000, 0b010ULL, 0x0000,  // col 1: pivot=128
-            0x0000,   0x0000, 0x0000,   0b001ULL  // col 2: pivot=192 (unclaimed)
+            0x0000,   0x0000, 0x0000,   0b001ULL // col 2: pivot=192 (unclaimed)
         };
         const int h_pivot_to_col[256] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 1;
-        const_cast<int*>(h_pivot_to_col)[128] = 2;
-        const_cast<int*>(h_pivot_to_col)[192] = -1;
+        const_cast<int *>(h_pivot_to_col)[2] = 1;
+        const_cast<int *>(h_pivot_to_col)[128] = 2;
+        const_cast<int *>(h_pivot_to_col)[192] = -1;
         const int h_col_pivots[num_cols] = {2, 128, 192};
 
         const int block_threads = (32 > num_cols * 32) ? 32 : num_cols * 32;
@@ -6297,71 +6799,82 @@ int main()
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "uc4s d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "uc4s d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "uc4s d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "uc4s d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "uc4s d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "uc4s h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "uc4s h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "uc4s d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "uc4s d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "uc4s h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "uc4s h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "uc4s h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "uc4s memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "uc4s h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "uc4s memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "uc4s sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "uc4s d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "uc4s d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "uc4s d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "uc4s d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "uc4s[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "uc4s[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "uc4s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "uc4s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto uc4s_cleanup;
+                if (!ok)
+                    goto uc4s_cleanup;
             }
         }
 
         printf("  PASSED: (4-word unclaimed pivot syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto uc4s_done;
 
-    uc4s_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+uc4s_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    uc4s_done:
-        ;
+uc4s_done:;
     }
     // 3-word self-clearing regular kernel determinism (test 31's chain): 10 runs
     //
@@ -6383,86 +6896,96 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000, 0x0000,   // col 0: pivot=2
+            0b100ULL, 0x0000,   0x0000,  // col 0: pivot=2
             0x0000,   0b001ULL, 0x0000,  // col 1: pivot=64
-            0x0000,   0x0000,   0b010ULL  // col 2: pivot=128
+            0x0000,   0x0000,   0b010ULL // col 2: pivot=128
         };
         const int h_pivot_to_col[192] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 0;
-        const_cast<int*>(h_pivot_to_col)[64]  = 1;
-        const_cast<int*>(h_pivot_to_col)[128] = 2;
+        const_cast<int *>(h_pivot_to_col)[2] = 0;
+        const_cast<int *>(h_pivot_to_col)[64] = 1;
+        const_cast<int *>(h_pivot_to_col)[128] = 2;
         const int h_col_pivots[num_cols] = {2, 64, 128};
 
         const size_t col_bytes = sizeof(h_cols);
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "sc3r d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "sc3r d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sc3r d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "sc3r d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "sc3r d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "sc3r h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "sc3r h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sc3r d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sc3r d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "sc3r h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "sc3r h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "sc3r h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "sc3r memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "sc3r h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sc3r memset new_pivots");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0,
-                false);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             check_cuda(cudaDeviceSynchronize(), "sc3r sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "sc3r d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "sc3r d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "sc3r d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "sc3r d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "sc3r[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "sc3r[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "sc3r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "sc3r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto sc3r_cleanup;
+                if (!ok)
+                    goto sc3r_cleanup;
             }
         }
 
         printf("  PASSED: (3-word self-clearing regular kernel determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sc3r_done;
 
-    sc3r_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sc3r_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sc3r_done:
-        ;
+sc3r_done:;
     }
     // 4-word cross-column syncthreads determinism (test 33's chain): 10 runs
     //
@@ -6482,14 +7005,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000, 0x0000, 0x0000, 0b100ULL,   // col 0: pivot=194
-            0x0000, 0b010ULL, 0x0000, 0x0000,   // col 1: pivot=65
-            0b001ULL, 0x0000, 0x0000, 0x0000    // col 2: pivot=0
+            0x0000,   0x0000,   0x0000, 0b100ULL, // col 0: pivot=194
+            0x0000,   0b010ULL, 0x0000, 0x0000,   // col 1: pivot=65
+            0b001ULL, 0x0000,   0x0000, 0x0000    // col 2: pivot=0
         };
         int h_pivot_to_col[256];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
         h_pivot_to_col[194] = 1;
-        h_pivot_to_col[65]  = 2;
+        h_pivot_to_col[65] = 2;
         const int h_col_pivots[num_cols] = {194, 65, 0};
 
         const int block_threads = (32 > num_cols * 32) ? 32 : num_cols * 32;
@@ -6497,71 +7020,82 @@ int main()
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "xc4s d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "xc4s d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "xc4s d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "xc4s d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "xc4s d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "xc4s h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "xc4s h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "xc4s d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "xc4s d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "xc4s h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "xc4s h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "xc4s h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "xc4s memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "xc4s h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "xc4s memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "xc4s sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "xc4s d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "xc4s d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "xc4s d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "xc4s d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "xc4s[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "xc4s[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "xc4s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "xc4s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto xc4s_cleanup;
+                if (!ok)
+                    goto xc4s_cleanup;
             }
         }
 
         printf("  PASSED: (4-word cross-column syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto xc4s_done;
 
-    xc4s_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+xc4s_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    xc4s_done:
-        ;
+xc4s_done:;
     }
     // 3-word unclaimed pivot syncthreads determinism: 10 runs
     //
@@ -6581,14 +7115,14 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000, 0x0000,   // col 0: pivot=2
+            0b100ULL, 0x0000,   0x0000,  // col 0: pivot=2
             0x0000,   0b010ULL, 0x0000,  // col 1: pivot=65
-            0x0000,   0x0000,   0b001ULL  // col 2: pivot=128 (unclaimed)
+            0x0000,   0x0000,   0b001ULL // col 2: pivot=128 (unclaimed)
         };
         const int h_pivot_to_col[192] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 1;
-        const_cast<int*>(h_pivot_to_col)[65]  = 2;
-        const_cast<int*>(h_pivot_to_col)[128] = -1;
+        const_cast<int *>(h_pivot_to_col)[2] = 1;
+        const_cast<int *>(h_pivot_to_col)[65] = 2;
+        const_cast<int *>(h_pivot_to_col)[128] = -1;
         const int h_col_pivots[num_cols] = {2, 65, 128};
 
         const int block_threads = (32 > num_cols * 32) ? 32 : num_cols * 32;
@@ -6596,71 +7130,82 @@ int main()
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "uc3s d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "uc3s d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "uc3s d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "uc3s d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "uc3s d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "uc3s h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "uc3s h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "uc3s d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "uc3s d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "uc3s h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "uc3s h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "uc3s h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "uc3s memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "uc3s h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "uc3s memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "uc3s sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "uc3s d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "uc3s d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "uc3s d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "uc3s d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "uc3s[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "uc3s[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "uc3s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "uc3s[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto uc3s_cleanup;
+                if (!ok)
+                    goto uc3s_cleanup;
             }
         }
 
         printf("  PASSED: (3-word unclaimed pivot syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto uc3s_done;
 
-    uc3s_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+uc3s_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    uc3s_done:
-        ;
+uc3s_done:;
     }
     // 3-word unclaimed pivot regular kernel determinism: 10 runs
     //
@@ -6681,86 +7226,96 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000, 0x0000,   // col 0: pivot=2
+            0b100ULL, 0x0000,   0x0000,  // col 0: pivot=2
             0x0000,   0b010ULL, 0x0000,  // col 1: pivot=65
-            0x0000,   0x0000,   0b001ULL  // col 2: pivot=128 (unclaimed)
+            0x0000,   0x0000,   0b001ULL // col 2: pivot=128 (unclaimed)
         };
         const int h_pivot_to_col[192] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 1;
-        const_cast<int*>(h_pivot_to_col)[65]  = 2;
-        const_cast<int*>(h_pivot_to_col)[128] = -1;
+        const_cast<int *>(h_pivot_to_col)[2] = 1;
+        const_cast<int *>(h_pivot_to_col)[65] = 2;
+        const_cast<int *>(h_pivot_to_col)[128] = -1;
         const int h_col_pivots[num_cols] = {2, 65, 128};
 
         const size_t col_bytes = sizeof(h_cols);
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "uc3r d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "uc3r d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "uc3r d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "uc3r d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "uc3r d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "uc3r h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "uc3r h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "uc3r d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "uc3r d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "uc3r h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "uc3r h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "uc3r h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "uc3r memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "uc3r h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "uc3r memset new_pivots");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0,
-                false);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, false);
             check_cuda(cudaDeviceSynchronize(), "uc3r sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "uc3r d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "uc3r d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "uc3r d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "uc3r d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "uc3r[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "uc3r[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "uc3r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "uc3r[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto uc3r_cleanup;
+                if (!ok)
+                    goto uc3r_cleanup;
             }
         }
 
         printf("  PASSED: (3-word unclaimed pivot regular kernel determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto uc3r_done;
 
-    uc3r_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+uc3r_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    uc3r_done:
-        ;
+uc3r_done:;
     }
     // 2-word cross-column async determinism (test 23's chain): 10 runs
     //
@@ -6780,85 +7335,95 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0x0000ULL, 0b100ULL,   // col 0: pivot=66
-            0b010ULL,  0x0000ULL,  // col 1: pivot=1
-            0x0000ULL, 0b001ULL    // col 2: pivot=64 (unclaimed)
+            0x0000ULL, 0b100ULL,  // col 0: pivot=66
+            0b010ULL,  0x0000ULL, // col 1: pivot=1
+            0x0000ULL, 0b001ULL   // col 2: pivot=64 (unclaimed)
         };
         const int h_pivot_to_col[128] = {};
-        const_cast<int*>(h_pivot_to_col)[66] = 1;
-        const_cast<int*>(h_pivot_to_col)[1]  = 2;
+        const_cast<int *>(h_pivot_to_col)[66] = 1;
+        const_cast<int *>(h_pivot_to_col)[1] = 2;
         const int h_col_pivots[num_cols] = {66, 1, 64};
 
         const size_t col_bytes = sizeof(h_cols);
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "xca d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "xca d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "xca d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "xca d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "xca d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "xca h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "xca h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "xca d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "xca d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "xca h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "xca h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "xca h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "xca memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "xca h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "xca memset new_pivots");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0,
-                true);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             check_cuda(cudaDeviceSynchronize(), "xca sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "xca d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "xca d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "xca d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "xca d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "xca[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "xca[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "xca[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "xca[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto xca_cleanup;
+                if (!ok)
+                    goto xca_cleanup;
             }
         }
 
         printf("  PASSED: (2-word cross-column async determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto xca_done;
 
-    xca_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+xca_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    xca_done:
-        ;
+xca_done:;
     }
     // 2-word self-clearing async determinism (test 27's chain): 10 runs
     //
@@ -6879,87 +7444,97 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000ULL,  // col 0: pivot=2
+            0b100ULL,  0x0000ULL, // col 0: pivot=2
             0x0000ULL, 0b001ULL,  // col 1: pivot=64
-            0b010ULL, 0x0000ULL   // col 2: pivot=1
+            0b010ULL,  0x0000ULL  // col 2: pivot=1
         };
         int h_pivot_to_col[128];
         std::memset(h_pivot_to_col, 0xFF, sizeof(h_pivot_to_col));
-        h_pivot_to_col[2]  = 0;
+        h_pivot_to_col[2] = 0;
         h_pivot_to_col[64] = 1;
-        h_pivot_to_col[1]  = 2;
+        h_pivot_to_col[1] = 2;
         const int h_col_pivots[num_cols] = {2, 64, 1};
 
         const size_t col_bytes = sizeof(h_cols);
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "sca d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "sca d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "sca d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "sca d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "sca d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "sca h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "sca h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "sca d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "sca d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "sca h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "sca h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "sca h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "sca memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "sca h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "sca memset new_pivots");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0,
-                true);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             check_cuda(cudaDeviceSynchronize(), "sca sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "sca d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "sca d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "sca d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "sca d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "sca[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "sca[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "sca[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "sca[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto sca_cleanup;
+                if (!ok)
+                    goto sca_cleanup;
             }
         }
 
         printf("  PASSED: (2-word self-clearing async determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto sca_done;
 
-    sca_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+sca_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    sca_done:
-        ;
+sca_done:;
     }
     // 2-word unclaimed pivot async determinism (test 35's chain): 10 runs
     //
@@ -6980,86 +7555,96 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000,    // col 0: pivot=2
-            0b010ULL, 0x0000,    // col 1: pivot=1
-            0x0000,   0b001ULL    // col 2: pivot=64 (unclaimed)
+            0b100ULL, 0x0000,  // col 0: pivot=2
+            0b010ULL, 0x0000,  // col 1: pivot=1
+            0x0000,   0b001ULL // col 2: pivot=64 (unclaimed)
         };
         const int h_pivot_to_col[128] = {};
-        const_cast<int*>(h_pivot_to_col)[2]  = 1;
-        const_cast<int*>(h_pivot_to_col)[1]  = 2;
-        const_cast<int*>(h_pivot_to_col)[64] = -1;
+        const_cast<int *>(h_pivot_to_col)[2] = 1;
+        const_cast<int *>(h_pivot_to_col)[1] = 2;
+        const_cast<int *>(h_pivot_to_col)[64] = -1;
         const int h_col_pivots[num_cols] = {2, 1, 64};
 
         const size_t col_bytes = sizeof(h_cols);
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "uca d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "uca d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "uca d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "uca d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "uca d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "uca h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "uca h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "uca d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "uca d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "uca h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "uca h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "uca h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "uca memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "uca h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "uca memset new_pivots");
 
             nerve::persistence::gpu::launchPipelinedReduction(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots, 0,
-                true);
+                d_cols, d_col_pivots, d_pivot_to_col, num_words, num_cols, d_new_pivots, 0, true);
             check_cuda(cudaDeviceSynchronize(), "uca sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "uca d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "uca d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "uca d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "uca d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "uca[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "uca[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "uca[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "uca[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto uca_cleanup;
+                if (!ok)
+                    goto uca_cleanup;
             }
         }
 
         printf("  PASSED: (2-word unclaimed pivot async determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto uca_done;
 
-    uca_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+uca_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    uca_done:
-        ;
+uca_done:;
     }
     // Column Add determinism (2 words): 10 runs
     //
@@ -7071,64 +7656,77 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_dest[num_cols * num_words] = {
-            0b100ULL, 0x0000,  // col 0
-            0b010ULL, 0x0000,  // col 1
-            0b001ULL, 0x0000   // col 2
+            0b100ULL, 0x0000, // col 0
+            0b010ULL, 0x0000, // col 1
+            0b001ULL, 0x0000  // col 2
         };
         const uint64_t h_src[num_cols * num_words] = {
-            0b010ULL, 0x0000,  // col 0 src
-            0b001ULL, 0x0000,  // col 1 src
-            0b100ULL, 0x0000   // col 2 src
+            0b010ULL, 0x0000, // col 0 src
+            0b001ULL, 0x0000, // col 1 src
+            0b100ULL, 0x0000  // col 2 src
         };
         const int h_col_sizes[num_cols] = {num_words, num_words, num_words};
 
         const size_t col_bytes = sizeof(h_dest);
 
-        uint64_t *d_dest, *d_src; int *d_col_sizes;
-        check_cuda(cudaMalloc(&d_dest,      col_bytes), "ca2 d_dest");
-        check_cuda(cudaMalloc(&d_src,       col_bytes), "ca2 d_src");
+        uint64_t *d_dest, *d_src;
+        int *d_col_sizes;
+        check_cuda(cudaMalloc(&d_dest, col_bytes), "ca2 d_dest");
+        check_cuda(cudaMalloc(&d_src, col_bytes), "ca2 d_src");
         check_cuda(cudaMalloc(&d_col_sizes, sizeof(h_col_sizes)), "ca2 d_sizes");
-        check_cuda(cudaMemcpy(d_src,       h_src,       col_bytes, cudaMemcpyHostToDevice), "ca2 h2d src");
-        check_cuda(cudaMemcpy(d_col_sizes, h_col_sizes, sizeof(h_col_sizes), cudaMemcpyHostToDevice), "ca2 h2d sizes");
+        check_cuda(cudaMemcpy(d_src, h_src, col_bytes, cudaMemcpyHostToDevice), "ca2 h2d src");
+        check_cuda(
+            cudaMemcpy(d_col_sizes, h_col_sizes, sizeof(h_col_sizes), cudaMemcpyHostToDevice),
+            "ca2 h2d sizes");
 
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_dest, h_dest, col_bytes,
-                                  cudaMemcpyHostToDevice), "ca2 h2d dest");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_dest, h_dest, col_bytes, cudaMemcpyHostToDevice),
+                       "ca2 h2d dest");
 
-            nerve::persistence::gpu::launchWarpSpecializedColumnAdd(
-                d_dest, d_src, d_col_sizes, num_words, num_cols);
+            nerve::persistence::gpu::launchWarpSpecializedColumnAdd(d_dest, d_src, d_col_sizes,
+                                                                    num_words, num_cols);
             check_cuda(cudaDeviceSynchronize(), "ca2 sync");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_dest, col_bytes,
-                                  cudaMemcpyDeviceToHost), "ca2 d2h data");
+            check_cuda(cudaMemcpy(run_data, d_dest, col_bytes, cudaMemcpyDeviceToHost),
+                       "ca2 d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "ca2[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "ca2[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto ca2_cleanup;
+                if (!ok)
+                    goto ca2_cleanup;
             }
         }
 
         printf("  PASSED: (Column Add 2w determinism)\n");
-        cudaFree(d_dest); cudaFree(d_src); cudaFree(d_col_sizes);
+        cudaFree(d_dest);
+        cudaFree(d_src);
+        cudaFree(d_col_sizes);
         goto ca2_done;
 
-    ca2_cleanup:
-        cudaFree(d_dest); cudaFree(d_src); cudaFree(d_col_sizes);
+ca2_cleanup:
+        cudaFree(d_dest);
+        cudaFree(d_src);
+        cudaFree(d_col_sizes);
         return 1;
 
-    ca2_done:
-        ;
+ca2_done:;
     }
     // Column Add determinism (3 words): 10 runs
     //
@@ -7138,65 +7736,72 @@ int main()
         constexpr int num_cols = 3;
         constexpr int num_runs = 10;
 
-        const uint64_t h_dest[num_cols * num_words] = {
-            0b100ULL, 0x0000, 0x0000,
-            0x0000,   0b010ULL, 0x0000,
-            0x0000,   0x0000,   0b001ULL
-        };
-        const uint64_t h_src[num_cols * num_words] = {
-            0b010ULL, 0x0000, 0x0000,
-            0x0000,   0b001ULL, 0x0000,
-            0x0000,   0x0000,   0b100ULL
-        };
+        const uint64_t h_dest[num_cols * num_words] = {0b100ULL, 0x0000, 0x0000, 0x0000,  0b010ULL,
+                                                       0x0000,   0x0000, 0x0000, 0b001ULL};
+        const uint64_t h_src[num_cols * num_words] = {0b010ULL, 0x0000, 0x0000, 0x0000,  0b001ULL,
+                                                      0x0000,   0x0000, 0x0000, 0b100ULL};
         const int h_col_sizes[num_cols] = {num_words, num_words, num_words};
 
         const size_t col_bytes = sizeof(h_dest);
 
-        uint64_t *d_dest, *d_src; int *d_col_sizes;
-        check_cuda(cudaMalloc(&d_dest,      col_bytes), "ca3 d_dest");
-        check_cuda(cudaMalloc(&d_src,       col_bytes), "ca3 d_src");
+        uint64_t *d_dest, *d_src;
+        int *d_col_sizes;
+        check_cuda(cudaMalloc(&d_dest, col_bytes), "ca3 d_dest");
+        check_cuda(cudaMalloc(&d_src, col_bytes), "ca3 d_src");
         check_cuda(cudaMalloc(&d_col_sizes, sizeof(h_col_sizes)), "ca3 d_sizes");
-        check_cuda(cudaMemcpy(d_src,       h_src,       col_bytes, cudaMemcpyHostToDevice), "ca3 h2d src");
-        check_cuda(cudaMemcpy(d_col_sizes, h_col_sizes, sizeof(h_col_sizes), cudaMemcpyHostToDevice), "ca3 h2d sizes");
+        check_cuda(cudaMemcpy(d_src, h_src, col_bytes, cudaMemcpyHostToDevice), "ca3 h2d src");
+        check_cuda(
+            cudaMemcpy(d_col_sizes, h_col_sizes, sizeof(h_col_sizes), cudaMemcpyHostToDevice),
+            "ca3 h2d sizes");
 
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_dest, h_dest, col_bytes,
-                                  cudaMemcpyHostToDevice), "ca3 h2d dest");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_dest, h_dest, col_bytes, cudaMemcpyHostToDevice),
+                       "ca3 h2d dest");
 
-            nerve::persistence::gpu::launchWarpSpecializedColumnAdd(
-                d_dest, d_src, d_col_sizes, num_words, num_cols);
+            nerve::persistence::gpu::launchWarpSpecializedColumnAdd(d_dest, d_src, d_col_sizes,
+                                                                    num_words, num_cols);
             check_cuda(cudaDeviceSynchronize(), "ca3 sync");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_dest, col_bytes,
-                                  cudaMemcpyDeviceToHost), "ca3 d2h data");
+            check_cuda(cudaMemcpy(run_data, d_dest, col_bytes, cudaMemcpyDeviceToHost),
+                       "ca3 d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "ca3[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "ca3[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto ca3_cleanup;
+                if (!ok)
+                    goto ca3_cleanup;
             }
         }
 
         printf("  PASSED: (Column Add 3w determinism)\n");
-        cudaFree(d_dest); cudaFree(d_src); cudaFree(d_col_sizes);
+        cudaFree(d_dest);
+        cudaFree(d_src);
+        cudaFree(d_col_sizes);
         goto ca3_done;
 
-    ca3_cleanup:
-        cudaFree(d_dest); cudaFree(d_src); cudaFree(d_col_sizes);
+ca3_cleanup:
+        cudaFree(d_dest);
+        cudaFree(d_src);
+        cudaFree(d_col_sizes);
         return 1;
 
-    ca3_done:
-        ;
+ca3_done:;
     }
     // Pivot Find determinism (2 words): 10 runs
     //
@@ -7208,58 +7813,72 @@ int main()
 
         const uint64_t h_cols[num_cols * num_words] = {
             0b100ULL, 0x0000,   // col 0: pivot=2
-            0x0000,   0b001ULL,  // col 1: pivot=64
+            0x0000,   0b001ULL, // col 1: pivot=64
             0b010ULL, 0x0000    // col 2: pivot=1
         };
         const int h_col_sizes[num_cols] = {num_words, num_words, num_words};
 
         const size_t col_bytes = sizeof(h_cols);
 
-        uint64_t *d_cols; int *d_col_sizes, *d_pivots;
-        check_cuda(cudaMalloc(&d_cols,      col_bytes), "pf2 d_cols");
+        uint64_t *d_cols;
+        int *d_col_sizes, *d_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "pf2 d_cols");
         check_cuda(cudaMalloc(&d_col_sizes, sizeof(h_col_sizes)), "pf2 d_sizes");
-        check_cuda(cudaMalloc(&d_pivots,    sizeof(int) * num_cols), "pf2 d_pivots");
-        check_cuda(cudaMemcpy(d_col_sizes, h_col_sizes, sizeof(h_col_sizes), cudaMemcpyHostToDevice), "pf2 h2d sizes");
+        check_cuda(cudaMalloc(&d_pivots, sizeof(int) * num_cols), "pf2 d_pivots");
+        check_cuda(
+            cudaMemcpy(d_col_sizes, h_col_sizes, sizeof(h_col_sizes), cudaMemcpyHostToDevice),
+            "pf2 h2d sizes");
 
         int ref_pivots[num_cols] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "pf2 h2d cols");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "pf2 h2d cols");
             check_cuda(cudaMemset(d_pivots, 0xFF, sizeof(int) * num_cols), "pf2 memset");
 
-            nerve::persistence::gpu::launchWarpSpecializedPivotFind(
-                d_cols, d_col_sizes, num_words, num_cols, d_pivots);
+            nerve::persistence::gpu::launchWarpSpecializedPivotFind(d_cols, d_col_sizes, num_words,
+                                                                    num_cols, d_pivots);
             check_cuda(cudaDeviceSynchronize(), "pf2 sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_pivots, sizeof(int) * num_cols,
-                                  cudaMemcpyDeviceToHost), "pf2 d2h pivots");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_pivots, sizeof(int) * num_cols, cudaMemcpyDeviceToHost),
+                "pf2 d2h pivots");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "pf2[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "pf2[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
-                if (!ok) goto pf2_cleanup;
+                if (!ok)
+                    goto pf2_cleanup;
             }
         }
 
         printf("  PASSED: (Pivot Find 2w determinism)\n");
-        cudaFree(d_cols); cudaFree(d_col_sizes); cudaFree(d_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_col_sizes);
+        cudaFree(d_pivots);
         goto pf2_done;
 
-    pf2_cleanup:
-        cudaFree(d_cols); cudaFree(d_col_sizes); cudaFree(d_pivots);
+pf2_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_col_sizes);
+        cudaFree(d_pivots);
         return 1;
 
-    pf2_done:
-        ;
+pf2_done:;
     }
     // Pivot Find determinism (3 words): 10 runs
     {
@@ -7268,59 +7887,73 @@ int main()
         constexpr int num_runs = 10;
 
         const uint64_t h_cols[num_cols * num_words] = {
-            0b100ULL, 0x0000, 0x0000,   // col 0: pivot=2
+            0b100ULL, 0x0000,   0x0000,  // col 0: pivot=2
             0x0000,   0b001ULL, 0x0000,  // col 1: pivot=64
-            0x0000,   0x0000,   0b010ULL  // col 2: pivot=128
+            0x0000,   0x0000,   0b010ULL // col 2: pivot=128
         };
         const int h_col_sizes[num_cols] = {num_words, num_words, num_words};
 
         const size_t col_bytes = sizeof(h_cols);
 
-        uint64_t *d_cols; int *d_col_sizes, *d_pivots;
-        check_cuda(cudaMalloc(&d_cols,      col_bytes), "pf3 d_cols");
+        uint64_t *d_cols;
+        int *d_col_sizes, *d_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "pf3 d_cols");
         check_cuda(cudaMalloc(&d_col_sizes, sizeof(h_col_sizes)), "pf3 d_sizes");
-        check_cuda(cudaMalloc(&d_pivots,    sizeof(int) * num_cols), "pf3 d_pivots");
-        check_cuda(cudaMemcpy(d_col_sizes, h_col_sizes, sizeof(h_col_sizes), cudaMemcpyHostToDevice), "pf3 h2d sizes");
+        check_cuda(cudaMalloc(&d_pivots, sizeof(int) * num_cols), "pf3 d_pivots");
+        check_cuda(
+            cudaMemcpy(d_col_sizes, h_col_sizes, sizeof(h_col_sizes), cudaMemcpyHostToDevice),
+            "pf3 h2d sizes");
 
         int ref_pivots[num_cols] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "pf3 h2d cols");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "pf3 h2d cols");
             check_cuda(cudaMemset(d_pivots, 0xFF, sizeof(int) * num_cols), "pf3 memset");
 
-            nerve::persistence::gpu::launchWarpSpecializedPivotFind(
-                d_cols, d_col_sizes, num_words, num_cols, d_pivots);
+            nerve::persistence::gpu::launchWarpSpecializedPivotFind(d_cols, d_col_sizes, num_words,
+                                                                    num_cols, d_pivots);
             check_cuda(cudaDeviceSynchronize(), "pf3 sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_pivots, sizeof(int) * num_cols,
-                                  cudaMemcpyDeviceToHost), "pf3 d2h pivots");
+            check_cuda(
+                cudaMemcpy(run_pivots, d_pivots, sizeof(int) * num_cols, cudaMemcpyDeviceToHost),
+                "pf3 d2h pivots");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "pf3[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "pf3[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
-                if (!ok) goto pf3_cleanup;
+                if (!ok)
+                    goto pf3_cleanup;
             }
         }
 
         printf("  PASSED: (Pivot Find 3w determinism)\n");
-        cudaFree(d_cols); cudaFree(d_col_sizes); cudaFree(d_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_col_sizes);
+        cudaFree(d_pivots);
         goto pf3_done;
 
-    pf3_cleanup:
-        cudaFree(d_cols); cudaFree(d_col_sizes); cudaFree(d_pivots);
+pf3_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_col_sizes);
+        cudaFree(d_pivots);
         return 1;
 
-    pf3_done:
-        ;
+pf3_done:;
     }
     // 8-word self-clearing syncthreads determinism: 10 runs
     //
@@ -7332,14 +7965,14 @@ int main()
         constexpr int num_runs = 10;
 
         uint64_t h_cols[num_cols * num_words] = {};
-        h_cols[0] = 0b100ULL;                    // col 0: pivot=2   (word 0, bit 2)
-        h_cols[num_words + 4] = 0b001ULL;        // col 1: pivot=256 (word 4, bit 0)
-        h_cols[2 * num_words + 7] = 0b010ULL;    // col 2: pivot=449 (word 7, bit 1)
+        h_cols[0] = 0b100ULL;                 // col 0: pivot=2   (word 0, bit 2)
+        h_cols[num_words + 4] = 0b001ULL;     // col 1: pivot=256 (word 4, bit 0)
+        h_cols[2 * num_words + 7] = 0b010ULL; // col 2: pivot=449 (word 7, bit 1)
 
         const int h_pivot_to_col[512] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 0;
-        const_cast<int*>(h_pivot_to_col)[256] = 1;
-        const_cast<int*>(h_pivot_to_col)[449] = 2;
+        const_cast<int *>(h_pivot_to_col)[2] = 0;
+        const_cast<int *>(h_pivot_to_col)[256] = 1;
+        const_cast<int *>(h_pivot_to_col)[449] = 2;
         const int h_col_pivots[num_cols] = {2, 256, 449};
 
         const int block_threads = (32 > num_cols * 32) ? 32 : num_cols * 32;
@@ -7347,71 +7980,82 @@ int main()
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "lw8 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "lw8 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "lw8 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "lw8 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "lw8 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "lw8 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "lw8 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "lw8 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "lw8 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "lw8 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "lw8 h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "lw8 h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "lw8 memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "lw8 h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "lw8 memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "lw8 sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "lw8 d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "lw8 d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "lw8 d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "lw8 d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "lw8[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "lw8[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "lw8[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "lw8[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto lw8_cleanup;
+                if (!ok)
+                    goto lw8_cleanup;
             }
         }
 
         printf("  PASSED: (8-word self-clearing syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto lw8_done;
 
-    lw8_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+lw8_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    lw8_done:
-        ;
+lw8_done:;
     }
     // 8-word unclaimed pivot syncthreads determinism: 10 runs
     {
@@ -7420,14 +8064,14 @@ int main()
         constexpr int num_runs = 10;
 
         uint64_t h_cols[num_cols * num_words] = {};
-        h_cols[0] = 0b100ULL;                    // col 0: pivot=2   -> col 1
-        h_cols[num_words + 4] = 0b001ULL;        // col 1: pivot=256 -> col 2
-        h_cols[2 * num_words + 7] = 0b010ULL;    // col 2: pivot=449 (unclaimed)
+        h_cols[0] = 0b100ULL;                 // col 0: pivot=2   -> col 1
+        h_cols[num_words + 4] = 0b001ULL;     // col 1: pivot=256 -> col 2
+        h_cols[2 * num_words + 7] = 0b010ULL; // col 2: pivot=449 (unclaimed)
 
         const int h_pivot_to_col[512] = {};
-        const_cast<int*>(h_pivot_to_col)[2]   = 1;
-        const_cast<int*>(h_pivot_to_col)[256] = 2;
-        const_cast<int*>(h_pivot_to_col)[449] = -1;
+        const_cast<int *>(h_pivot_to_col)[2] = 1;
+        const_cast<int *>(h_pivot_to_col)[256] = 2;
+        const_cast<int *>(h_pivot_to_col)[449] = -1;
         const int h_col_pivots[num_cols] = {2, 256, 449};
 
         const int block_threads = (32 > num_cols * 32) ? 32 : num_cols * 32;
@@ -7435,71 +8079,82 @@ int main()
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "lu8 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "lu8 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "lu8 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "lu8 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "lu8 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "lu8 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "lu8 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "lu8 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "lu8 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "lu8 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "lu8 h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "lu8 h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "lu8 memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "lu8 h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "lu8 memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "lu8 sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "lu8 d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "lu8 d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "lu8 d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "lu8 d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "lu8[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "lu8[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "lu8[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "lu8[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto lu8_cleanup;
+                if (!ok)
+                    goto lu8_cleanup;
             }
         }
 
         printf("  PASSED: (8-word unclaimed pivot syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto lu8_done;
 
-    lu8_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+lu8_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    lu8_done:
-        ;
+lu8_done:;
     }
     // 16-column self-clearing syncthreads determinism: 10 runs
     //
@@ -7513,9 +8168,10 @@ int main()
         uint64_t h_cols[num_cols * num_words] = {};
         int h_pivot_to_col[128] = {};
         int h_col_pivots[num_cols] = {};
-        for (int c = 0; c < num_cols; ++c) {
-            h_cols[c * num_words] = (1ULL << c);              // each col has bit c
-            h_pivot_to_col[c] = c;                             // self-claim pivot c
+        for (int c = 0; c < num_cols; ++c)
+        {
+            h_cols[c * num_words] = (1ULL << c); // each col has bit c
+            h_pivot_to_col[c] = c;               // self-claim pivot c
             h_col_pivots[c] = c;
         }
 
@@ -7524,71 +8180,82 @@ int main()
         const size_t ptc_bytes = sizeof(h_pivot_to_col);
         const size_t idx_bytes = sizeof(int) * num_cols;
 
-        uint64_t *d_cols; int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
-        check_cuda(cudaMalloc(&d_cols,         col_bytes), "lc16 d_cols");
+        uint64_t *d_cols;
+        int *d_pivot_to_col, *d_col_pivots, *d_new_pivots;
+        check_cuda(cudaMalloc(&d_cols, col_bytes), "lc16 d_cols");
         check_cuda(cudaMalloc(&d_pivot_to_col, ptc_bytes), "lc16 d_ptc");
-        check_cuda(cudaMalloc(&d_col_pivots,   idx_bytes), "lc16 d_cp");
-        check_cuda(cudaMalloc(&d_new_pivots,   idx_bytes), "lc16 d_np");
-        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes,
-                              cudaMemcpyHostToDevice), "lc16 h2d ptc");
-        check_cuda(cudaMemcpy(d_col_pivots,   h_col_pivots,   idx_bytes,
-                              cudaMemcpyHostToDevice), "lc16 h2d cp");
+        check_cuda(cudaMalloc(&d_col_pivots, idx_bytes), "lc16 d_cp");
+        check_cuda(cudaMalloc(&d_new_pivots, idx_bytes), "lc16 d_np");
+        check_cuda(cudaMemcpy(d_pivot_to_col, h_pivot_to_col, ptc_bytes, cudaMemcpyHostToDevice),
+                   "lc16 h2d ptc");
+        check_cuda(cudaMemcpy(d_col_pivots, h_col_pivots, idx_bytes, cudaMemcpyHostToDevice),
+                   "lc16 h2d cp");
 
         int ref_pivots[num_cols] = {};
         uint64_t ref_data[num_cols * num_words] = {};
 
-        for (int run = 0; run < num_runs; ++run) {
-            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes,
-                                  cudaMemcpyHostToDevice), "lc16 h2d cols");
-            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes),
-                       "lc16 memset new_pivots");
+        for (int run = 0; run < num_runs; ++run)
+        {
+            check_cuda(cudaMemcpy(d_cols, h_cols, col_bytes, cudaMemcpyHostToDevice),
+                       "lc16 h2d cols");
+            check_cuda(cudaMemset(d_new_pivots, 0xFF, idx_bytes), "lc16 memset new_pivots");
 
-            syncthreadsReductionRef<<<1, block_threads>>>(
-                d_cols, d_col_pivots, d_pivot_to_col,
-                num_words, num_cols, d_new_pivots);
+            syncthreadsReductionRef<<<1, block_threads>>>(d_cols, d_col_pivots, d_pivot_to_col,
+                                                          num_words, num_cols, d_new_pivots);
             check_cuda(cudaDeviceSynchronize(), "lc16 sync");
 
             int run_pivots[num_cols] = {};
-            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes,
-                                  cudaMemcpyDeviceToHost), "lc16 d2h pivots");
+            check_cuda(cudaMemcpy(run_pivots, d_new_pivots, idx_bytes, cudaMemcpyDeviceToHost),
+                       "lc16 d2h pivots");
 
             uint64_t run_data[num_cols * num_words] = {};
-            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes,
-                                  cudaMemcpyDeviceToHost), "lc16 d2h data");
+            check_cuda(cudaMemcpy(run_data, d_cols, col_bytes, cudaMemcpyDeviceToHost),
+                       "lc16 d2h data");
 
-            if (run == 0) {
-                for (int i = 0; i < num_cols; ++i) ref_pivots[i] = run_pivots[i];
-                for (int i = 0; i < num_cols * num_words; ++i) ref_data[i] = run_data[i];
-            } else {
+            if (run == 0)
+            {
+                for (int i = 0; i < num_cols; ++i)
+                    ref_pivots[i] = run_pivots[i];
+                for (int i = 0; i < num_cols * num_words; ++i)
+                    ref_data[i] = run_data[i];
+            }
+            else
+            {
                 bool ok = true;
                 for (int i = 0; i < num_cols; ++i)
-                    if (run_pivots[i] != ref_pivots[i]) {
-                        fprintf(stderr, "lc16[run=%d] pivot[%d] = %d, ref %d\n",
-                                run, i, run_pivots[i], ref_pivots[i]);
+                    if (run_pivots[i] != ref_pivots[i])
+                    {
+                        fprintf(stderr, "lc16[run=%d] pivot[%d] = %d, ref %d\n", run, i,
+                                run_pivots[i], ref_pivots[i]);
                         ok = false;
                     }
                 for (int i = 0; i < num_cols * num_words; ++i)
-                    if (run_data[i] != ref_data[i]) {
-                        fprintf(stderr, "lc16[run=%d] data[%d] = 0x%lx, ref 0x%lx\n",
-                                run, i, run_data[i], ref_data[i]);
+                    if (run_data[i] != ref_data[i])
+                    {
+                        fprintf(stderr, "lc16[run=%d] data[%d] = 0x%lx, ref 0x%lx\n", run, i,
+                                run_data[i], ref_data[i]);
                         ok = false;
                     }
-                if (!ok) goto lc16_cleanup;
+                if (!ok)
+                    goto lc16_cleanup;
             }
         }
 
         printf("  PASSED: (16-column self-clearing syncthreads determinism)\n");
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         goto lc16_done;
 
-    lc16_cleanup:
-        cudaFree(d_cols); cudaFree(d_pivot_to_col);
-        cudaFree(d_col_pivots); cudaFree(d_new_pivots);
+lc16_cleanup:
+        cudaFree(d_cols);
+        cudaFree(d_pivot_to_col);
+        cudaFree(d_col_pivots);
+        cudaFree(d_new_pivots);
         return 1;
 
-    lc16_done:
-        ;
+lc16_done:;
     }
     return 0;
 }

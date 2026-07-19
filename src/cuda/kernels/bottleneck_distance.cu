@@ -61,10 +61,10 @@ __device__ __forceinline__ T linf_distance(T x1, T y1, T x2, T y2)
 }
 
 template <typename T>
-__global__ __launch_bounds__(256)
-    void build_candidate_epsilon_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
-                                        const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
-                                        T *__restrict__ candidates, int *__restrict__ candidate_count)
+__global__ __launch_bounds__(256) void build_candidate_epsilon_kernel(
+    const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1, const T *__restrict__ d2_x,
+    const T *__restrict__ d2_y, int n2, T *__restrict__ candidates,
+    int *__restrict__ candidate_count)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int total_pairs = n1 * n2;
@@ -98,11 +98,10 @@ __global__ __launch_bounds__(256)
 }
 
 template <typename T>
-__global__ __launch_bounds__(256)
-    void build_adjacency_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
-                                const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
-                                T epsilon, int *__restrict__ adj_offsets, int *__restrict__ adj_data,
-                                int max_degree)
+__global__ __launch_bounds__(256) void build_adjacency_kernel(
+    const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1, const T *__restrict__ d2_x,
+    const T *__restrict__ d2_y, int n2, T epsilon, int *__restrict__ adj_offsets,
+    int *__restrict__ adj_data, int max_degree)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= n1)
@@ -132,11 +131,10 @@ __global__ __launch_bounds__(256)
 }
 
 template <typename T>
-__global__ __launch_bounds__(256)
-    void greedy_matching_kernel(const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1,
-                                const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
-                                T epsilon, int *__restrict__ match_l, int *__restrict__ match_r,
-                                int *__restrict__ matched_count)
+__global__ __launch_bounds__(256) void greedy_matching_kernel(
+    const T *__restrict__ d1_x, const T *__restrict__ d1_y, int n1, const T *__restrict__ d2_x,
+    const T *__restrict__ d2_y, int n2, T epsilon, int *__restrict__ match_l,
+    int *__restrict__ match_r, int *__restrict__ matched_count)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= n1)
@@ -177,9 +175,11 @@ __global__ __launch_bounds__(256)
 }
 
 template <typename T>
-__global__ __launch_bounds__(256)
-    void greedy_matching_kernel_d2(const T *__restrict__ d2_x, const T *__restrict__ d2_y, int n2,
-                                   T epsilon, int *__restrict__ match_r, int *__restrict__ matched_count)
+__global__ __launch_bounds__(256) void greedy_matching_kernel_d2(const T *__restrict__ d2_x,
+                                                                 const T *__restrict__ d2_y, int n2,
+                                                                 T epsilon,
+                                                                 int *__restrict__ match_r,
+                                                                 int *__restrict__ matched_count)
 {
     int j = blockIdx.x * blockDim.x + threadIdx.x;
     if (j >= n2)
@@ -197,9 +197,9 @@ __global__ __launch_bounds__(256)
 }
 
 template <typename T>
-__global__ __launch_bounds__(256)
-    void check_convergence_kernel(int *__restrict__ matched_count, int *__restrict__ converged,
-                                  int target_count)
+__global__ __launch_bounds__(256) void check_convergence_kernel(int *__restrict__ matched_count,
+                                                                int *__restrict__ converged,
+                                                                int target_count)
 {
     if (blockIdx.x == 0 && threadIdx.x == 0)
     {

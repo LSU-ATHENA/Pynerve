@@ -5,10 +5,10 @@
 namespace nerve::persistence::accelerated
 {
 
-errors::ErrorResult<std::vector<Pair>>
-reduceHybridExact(core::BufferView<const double>points, size_t point_dim,
-                  const HeterogeneousFastVR::Config &config,
-                  const core::DeterminismContract &contract)
+errors::ErrorResult<std::vector<Pair>> reduceHybridExact(core::BufferView<const double> points,
+                                                         size_t point_dim,
+                                                         const HeterogeneousFastVR::Config &config,
+                                                         const core::DeterminismContract &contract)
 {
     auto engine_result = HeterogeneousFastVR::create(config);
     if (engine_result.isError())

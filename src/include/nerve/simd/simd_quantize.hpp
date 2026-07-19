@@ -1,5 +1,7 @@
 #pragma once
 #include "nerve/simd/simd_base.hpp"
+
+#include <algorithm>
 #include <cstdint>
 
 namespace nerve::simd

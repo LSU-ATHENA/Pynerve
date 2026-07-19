@@ -14,7 +14,6 @@
 namespace
 {
 
-
 constexpr double kTol = 1e-10;
 
 bool check_same_seed_same_sequence()

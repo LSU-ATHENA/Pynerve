@@ -13,8 +13,8 @@ int main()
     {
         auto info = nerve::gpu::blackwell::getBlackwellInfo();
         assert(info.compute_capability_major > 0);
-        std::cout << "PASSED: getBlackwellInfo (cc=" << info.compute_capability_major
-                  << "." << info.compute_capability_minor << " gen=" << info.generation
+        std::cout << "PASSED: getBlackwellInfo (cc=" << info.compute_capability_major << "."
+                  << info.compute_capability_minor << " gen=" << info.generation
                   << " tma=" << info.supports_tma << " wgmma=" << info.supports_wgmma << ")\n";
     }
 
@@ -22,8 +22,8 @@ int main()
     {
         bool hopper = nerve::gpu::blackwell::isHopperAvailable();
         bool blackwell = nerve::gpu::blackwell::isBlackwellAvailable();
-        std::cout << "PASSED: blackwell detection (Hopper=" << hopper
-                  << " Blackwell=" << blackwell << ")\n";
+        std::cout << "PASSED: blackwell detection (Hopper=" << hopper << " Blackwell=" << blackwell
+                  << ")\n";
     }
 
     // Blackwell: recommended precision mode

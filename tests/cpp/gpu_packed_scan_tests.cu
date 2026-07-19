@@ -28,8 +28,8 @@ int main()
     nerve::Size n_rows = 4;
     nerve::Size n_cols = 3;
 
-    auto mat_result = nerve::formats::PackedBoundaryMatrix::fromCoo(
-        n_rows, n_cols, row_indices, col_indices);
+    auto mat_result =
+        nerve::formats::PackedBoundaryMatrix::fromCoo(n_rows, n_cols, row_indices, col_indices);
     assert(mat_result.has_value());
 
     auto &mat = mat_result.value();
@@ -46,16 +46,15 @@ int main()
     assert(!layout.column_offsets.empty());
 
     std::cout << "PASS: built GpuPackedLayout (cols=" << layout.num_columns
-              << " rows=" << layout.num_rows
-              << " max_words=" << layout.max_words_per_column
+              << " rows=" << layout.num_rows << " max_words=" << layout.max_words_per_column
               << " total_bytes=" << layout.total_packed_bytes << ")" << std::endl;
 
     // Run the GPU packed scan
     cudaStream_t stream = nullptr;
     cudaStreamCreate(&stream);
 
-    auto scan_result = nerve::formats::gpu::launchPackedScan(
-        layout, static_cast<void *>(stream), 0);
+    auto scan_result =
+        nerve::formats::gpu::launchPackedScan(layout, static_cast<void *>(stream), 0);
 
     cudaStreamSynchronize(stream);
     cudaStreamDestroy(stream);

@@ -497,7 +497,8 @@ int main()
             bool cuda_utils_memory_pressure_checked = false;
             try
             {
-                const double pressure = nerve::persistence::accelerated::cuda_utils::getMemoryPressure();
+                const double pressure =
+                    nerve::persistence::accelerated::cuda_utils::getMemoryPressure();
                 assert(std::isfinite(pressure));
                 assert(pressure >= 0.0);
                 assert(pressure <= 1.0);

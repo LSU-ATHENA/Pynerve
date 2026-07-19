@@ -136,8 +136,9 @@ T EuclideanMetric<T>::compute(std::span<const T> a, std::span<const T> b) const
     }
     else if constexpr (std::is_same_v<T, float>)
     {
-        return checked_distance_result(static_cast<T>(nerve::simd::simd_euclidean_f32(a.data(), b.data(), dim)),
-                                       "euclidean distance");
+        return checked_distance_result(
+            static_cast<T>(nerve::simd::simd_euclidean_f32(a.data(), b.data(), dim)),
+            "euclidean distance");
     }
     else
     {
@@ -164,8 +165,9 @@ T EuclideanMetric<T>::compute_simd(std::span<const T> a, std::span<const T> b)
     }
     else if constexpr (std::is_same_v<T, float>)
     {
-        return checked_distance_result(static_cast<T>(nerve::simd::simd_euclidean_f32(a.data(), b.data(), dim)),
-                                       "euclidean distance");
+        return checked_distance_result(
+            static_cast<T>(nerve::simd::simd_euclidean_f32(a.data(), b.data(), dim)),
+            "euclidean distance");
     }
     else
     {
@@ -190,7 +192,7 @@ std::vector<T> EuclideanMetric<T>::compute_matrix(std::span<const T> points, siz
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         for (size_t j = i + 1; j < n_points; ++j)
         {
@@ -220,8 +222,9 @@ T ManhattanMetric<T>::compute(std::span<const T> a, std::span<const T> b) const
     }
     else if constexpr (std::is_same_v<T, float>)
     {
-        return checked_distance_result(static_cast<T>(nerve::simd::simd_manhattan_f32(a.data(), b.data(), dim)),
-                                       "manhattan distance");
+        return checked_distance_result(
+            static_cast<T>(nerve::simd::simd_manhattan_f32(a.data(), b.data(), dim)),
+            "manhattan distance");
     }
     else
     {
@@ -245,7 +248,7 @@ std::vector<T> ManhattanMetric<T>::compute_matrix(std::span<const T> points, siz
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         for (size_t j = i + 1; j < n_points; ++j)
         {
@@ -274,8 +277,9 @@ T CosineMetric<T>::compute(std::span<const T> a, std::span<const T> b) const
     }
     else if constexpr (std::is_same_v<T, float>)
     {
-        return checked_distance_result(static_cast<T>(nerve::simd::simd_cosine_f32(a.data(), b.data(), dim)),
-                                       "cosine distance");
+        return checked_distance_result(
+            static_cast<T>(nerve::simd::simd_cosine_f32(a.data(), b.data(), dim)),
+            "cosine distance");
     }
     else
     {
@@ -294,7 +298,7 @@ std::vector<T> CosineMetric<T>::compute_matrix(std::span<const T> points, size_t
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         for (size_t j = i + 1; j < n_points; ++j)
         {
@@ -338,7 +342,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute(std::span<const T> points, siz
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) if (config_.use_openmp)
 #endif
-            for (size_t i = 0; i < n_points; ++i)
+            for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
             {
                 for (size_t j = i + 1; j < n_points; ++j)
                 {
@@ -371,9 +375,9 @@ std::vector<T> DistanceMatrixComputer<T>::compute_pairwise(std::span<const T> se
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) if (config_.use_openmp)
 #endif
-    for (size_t i = 0; i < n_a; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_a); ++i)
     {
-        const T* a_row = &set_a[i * dim];
+        const T *a_row = &set_a[i * dim];
         for (size_t j = 0; j < n_b; ++j)
         {
             distances[i * n_b + j] = compute_single(a_row, &set_b[j * dim], dim);
@@ -391,7 +395,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute_symmetric(std::span<const T> p
     packed.reserve(checked_upper_triangle_count(n_points, "packed distance matrix"));
     for (size_t i = 0; i < n_points; ++i)
     {
-        const T* a_row = &points[i * dim];
+        const T *a_row = &points[i * dim];
         for (size_t j = i + 1; j < n_points; ++j)
         {
             packed.push_back(compute_single(a_row, &points[j * dim], dim));
@@ -421,7 +425,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute_chunked(std::span<const T> poi
             const size_t j1 = std::min(n_points, j0 + chunk_size);
             for (size_t i = i0; i < i1; ++i)
             {
-                const T* a_row = &points[i * dim];
+                const T *a_row = &points[i * dim];
                 for (size_t j = std::max(i, j0); j < j1; ++j)
                 {
                     const T dist = compute_single(a_row, &points[j * dim], dim);
@@ -445,7 +449,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute_euclidean(std::span<const T> p
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) if (config_.use_openmp)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         for (size_t j = i; j < n_points; ++j)
         {
@@ -458,9 +462,9 @@ std::vector<T> DistanceMatrixComputer<T>::compute_euclidean(std::span<const T> p
             }
             else if constexpr (std::is_same_v<T, float>)
             {
-                dist = checked_distance_result(
-                    static_cast<T>(nerve::simd::simd_euclidean_f32(&points[i * dim], &points[j * dim], dim)),
-                    "euclidean distance");
+                dist = checked_distance_result(static_cast<T>(nerve::simd::simd_euclidean_f32(
+                                                   &points[i * dim], &points[j * dim], dim)),
+                                               "euclidean distance");
             }
             else
             {
@@ -495,7 +499,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute_manhattan(std::span<const T> p
 #ifdef NERVE_USE_OPENMP
 #pragma omp parallel for schedule(dynamic) if (config_.use_openmp)
 #endif
-    for (size_t i = 0; i < n_points; ++i)
+    for (std::ptrdiff_t i = 0; i < static_cast<std::ptrdiff_t>(n_points); ++i)
     {
         for (size_t j = i; j < n_points; ++j)
         {
@@ -508,9 +512,9 @@ std::vector<T> DistanceMatrixComputer<T>::compute_manhattan(std::span<const T> p
             }
             else if constexpr (std::is_same_v<T, float>)
             {
-                dist = checked_distance_result(
-                    static_cast<T>(nerve::simd::simd_manhattan_f32(&points[i * dim], &points[j * dim], dim)),
-                    "manhattan distance");
+                dist = checked_distance_result(static_cast<T>(nerve::simd::simd_manhattan_f32(
+                                                   &points[i * dim], &points[j * dim], dim)),
+                                               "manhattan distance");
             }
             else
             {
@@ -534,7 +538,7 @@ std::vector<T> DistanceMatrixComputer<T>::compute_manhattan(std::span<const T> p
 }
 
 template <Numeric T>
-T DistanceMatrixComputer<T>::compute_single(const T* a, const T* b, size_t dim) const
+T DistanceMatrixComputer<T>::compute_single(const T *a, const T *b, size_t dim) const
 {
     if constexpr (std::is_same_v<T, double>)
     {
@@ -567,8 +571,7 @@ T DistanceMatrixComputer<T>::compute_single(const T* a, const T* b, size_t dim) 
                     "manhattan distance");
             case Config::Metric::COSINE:
                 return checked_distance_result(
-                    static_cast<T>(nerve::simd::simd_cosine_f32(a, b, dim)),
-                    "cosine distance");
+                    static_cast<T>(nerve::simd::simd_cosine_f32(a, b, dim)), "cosine distance");
             default:
                 return distance_from_matrix_metric(a, b, dim, config_.metric);
         }

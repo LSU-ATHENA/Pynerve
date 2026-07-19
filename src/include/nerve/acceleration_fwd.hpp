@@ -1,8 +1,6 @@
 #pragma once
 #include "nerve/types.hpp"
 
-#include <cuda_runtime.h>
-
 #include <cstddef>
 #include <cstdint>
 #if defined(NERVE_HAS_MPI) && NERVE_HAS_MPI
@@ -10,6 +8,8 @@
 #else
 using MPI_Comm = int;
 #endif
+
+#include <cuda_runtime.h>
 
 namespace nerve::algorithms::multi_gpu
 {

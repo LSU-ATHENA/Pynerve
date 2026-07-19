@@ -13,7 +13,6 @@
 namespace
 {
 
-
 constexpr double kTol = 1e-10;
 
 bool check_autodiff_scalar_construction()

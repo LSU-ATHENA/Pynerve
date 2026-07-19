@@ -97,6 +97,7 @@ macro(nerve_configure_arm_simd_support)
         set(NERVE_SAVED_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
 
         # Check NEON (available on all ARMv8-A)
+        set(CMAKE_REQUIRED_FLAGS "-march=armv8-a+fp+simd")
         check_cxx_source_compiles(
             "#include <arm_neon.h>\nint main() { float64x2_t v = vdupq_n_f64(1.0); return (int)vgetq_lane_f64(v, 0); }"
             NERVE_HAS_NEON)

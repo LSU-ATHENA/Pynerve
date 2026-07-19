@@ -2,6 +2,10 @@
 #include "nerve/persistence/memory/numa_memory_optimizer.hpp"
 #include "nerve/platform.hpp"
 
+#ifdef _WIN32
+#include <malloc.h>
+#endif
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -217,7 +221,11 @@ void *allocateHugePages(size_t size)
         return nullptr;
     }
     const size_t alloc_size = roundUp(size, kHugePageSize);
+#ifdef _WIN32
+    void *ptr = _aligned_malloc(alloc_size, kHugePageSize);
+#else
     void *ptr = std::aligned_alloc(kHugePageSize, alloc_size);
+#endif
     if (ptr == nullptr)
     {
         ptr = std::malloc(size);

@@ -61,9 +61,7 @@ errors::ErrorCode mapErrorCode(cudaError_t error_code)
 } // namespace
 
 namespace cuda_utils
-{
-
-} // namespace cuda_utils
+{} // namespace cuda_utils
 
 namespace cuda_error_handling
 {

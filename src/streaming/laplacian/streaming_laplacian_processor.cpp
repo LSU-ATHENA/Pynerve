@@ -1,5 +1,5 @@
-#include "nerve/streaming/streaming_laplacian.hpp"
 #include "nerve/simd/simd_base.hpp"
+#include "nerve/streaming/streaming_laplacian.hpp"
 
 #include <algorithm>
 #include <cmath>

@@ -50,7 +50,7 @@ struct SheafLearningResult
     std::vector<Eigen::MatrixXd> restriction_maps;
     double final_total_variation;
     int iterations_used;
-    bool converged;
+    bool converged = false;
     double compute_time_ms;
 
     [[nodiscard]] bool isValid() const noexcept;

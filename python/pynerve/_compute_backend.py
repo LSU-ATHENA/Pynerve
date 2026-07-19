@@ -87,16 +87,6 @@ _DEVICE_TO_BACKEND = {
 
 def _resolve_device_to_backend(device: str) -> Any:
     base = device.split(":", 1)[0]
-    if base == "cuda":
-        try:
-            import torch as _t
-        except ImportError:
-            _t = None
-        if _t is None or not _t.cuda.is_available():
-            raise RuntimeError(
-                f"Device {device!r} requires CUDA, but CUDA is not available. "
-                f"Use 'cpu' instead."
-            )
     backend_name = _DEVICE_TO_BACKEND.get(base)
     if backend_name is not None:
         return getattr(PersistenceBackend, backend_name)

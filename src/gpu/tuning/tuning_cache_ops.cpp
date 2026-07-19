@@ -6,8 +6,8 @@
 #include <chrono>
 #include <fstream>
 #include <iomanip>
-#include <set>
 #include <nlohmann/json.hpp>
+#include <set>
 #include <sstream>
 
 namespace nerve::gpu::tuning
@@ -308,7 +308,8 @@ GpuSignature GpuTuningDatabase::detectCurrentGpu(int deviceId)
             std::stringstream ss;
             for (int i = 0; i < 16; ++i)
             {
-                ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(uuid.bytes[i]);
+                ss << std::hex << std::setw(2) << std::setfill('0')
+                   << static_cast<unsigned int>(uuid.bytes[i]);
             }
             sig.uuid = ss.str();
         }

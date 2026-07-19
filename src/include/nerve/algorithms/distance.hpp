@@ -157,7 +157,7 @@ private:
     [[nodiscard]] std::vector<T> compute_blocked(std::span<const T> points, size_t n_points,
                                                  size_t dim, size_t block_size) const;
 
-    [[nodiscard]] T compute_single(const T* a, const T* b, size_t dim) const;
+    [[nodiscard]] T compute_single(const T *a, const T *b, size_t dim) const;
 };
 
 template <Numeric T = float>

@@ -48,8 +48,9 @@ int main()
         // row index (row - dimension_offsets[row_dim]).  For dim 1 the single
         // edge has local_row = 0, so the boundary data MUST sit at indices
         // [0, 1] in the flat row_ptr array.
-        std::vector<int> boundary_row_ptr = {0, 2,   // dim 1: 1 edge,   2 nnz
-                                              0, 0, 0}; // dim 0: 2 vertices, 0 nnz (unused by kernel)
+        std::vector<int> boundary_row_ptr = {0, 2, // dim 1: 1 edge,   2 nnz
+                                             0, 0,
+                                             0}; // dim 0: 2 vertices, 0 nnz (unused by kernel)
         std::vector<int> boundary_col_idx = {0, 1};
         std::vector<float> boundary_values = {-1.0f, 1.0f};
 
@@ -57,8 +58,8 @@ int main()
         // d*_0 = transpose(d_1).
         // Stored with vertices as rows (2 rows): col(edge)=0 for both,
         // values {-1, +1} (= transpose of d_1: v0->edge, v1->edge)
-        std::vector<int> coboundary_row_ptr = {0, 1, 2,  // dim 0: 2 rows, 1 nnz each
-                                                0, 0};    // dim 1: 1 row,  0 nnz
+        std::vector<int> coboundary_row_ptr = {0, 1, 2, // dim 0: 2 rows, 1 nnz each
+                                               0, 0};   // dim 1: 1 row,  0 nnz
         std::vector<int> coboundary_col_idx = {0, 0};
         std::vector<float> coboundary_values = {-1.0f, 1.0f};
 
@@ -67,7 +68,7 @@ int main()
         // build Dirac + Laplacian
         nerve::spectral::gpu::GPUDiracOperator dirac(max_dim, dim_sizes);
         dirac.buildDiracOperator(boundary_row_ptr, boundary_col_idx, boundary_values,
-                                  coboundary_row_ptr, coboundary_col_idx, coboundary_values);
+                                 coboundary_row_ptr, coboundary_col_idx, coboundary_values);
         std::cout << "PASS: buildDiracOperator completed" << std::endl;
 
         dirac.computeLaplacian();
@@ -114,8 +115,7 @@ int main()
         // 4. dim-0 Laplacian = graph Laplacian of a single edge:
         //    L_0 = d_1 * d*_0 = [[ 1, -1],
         //                        [-1,  1]]
-        float expected_l0[2][2] = {{1.0f, -1.0f},
-                                    {-1.0f, 1.0f}};
+        float expected_l0[2][2] = {{1.0f, -1.0f}, {-1.0f, 1.0f}};
         for (int i = 0; i < 2; ++i)
         {
             for (int j = 0; j < 2; ++j)

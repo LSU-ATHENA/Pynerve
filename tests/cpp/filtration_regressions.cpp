@@ -23,7 +23,6 @@ using nerve::core::DeterminismContract;
 using nerve::filtration::VietorisRips;
 using namespace nerve::test;
 
-
 bool check_vietoris_rips_construction()
 {
     VietorisRips vr(2.0);

@@ -20,7 +20,6 @@ using nerve::algebra::SimplicialComplex;
 using nerve::spectral::Laplacian;
 using namespace nerve::test;
 
-
 bool check_laplacian_construction()
 {
     SimplicialComplex complex;

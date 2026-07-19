@@ -20,7 +20,6 @@ namespace
 using nerve::threading::ThreadPool;
 using namespace nerve::test;
 
-
 bool check_thread_pool_construction()
 {
     ThreadPool pool(2);

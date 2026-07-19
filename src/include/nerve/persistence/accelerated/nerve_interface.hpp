@@ -33,7 +33,7 @@ public:
     }
 
     errors::ErrorResult<std::vector<Pair>>
-    computeVrPersistence(core::BufferView<const double>points, size_t point_dim,
+    computeVrPersistence(core::BufferView<const double> points, size_t point_dim,
                          const core::DeterminismContract &contract = {})
     {
         if (points.size() == 0 || point_dim == 0 || points.size() % point_dim != 0)
@@ -73,7 +73,7 @@ public:
         return computeVrPersistence(buffer_view, point_dim, contract);
     }
 
-    bool validateDeterministicInput(core::BufferView<const double>points, size_t point_dim,
+    bool validateDeterministicInput(core::BufferView<const double> points, size_t point_dim,
                                     const core::DeterminismContract &contract)
     {
         if (points.size() == 0 || point_dim == 0)
@@ -106,7 +106,7 @@ private:
     {}
 
     errors::ErrorResult<std::vector<Pair>>
-    computeVrPersistenceNerve(core::BufferView<const double>points, size_t point_dim,
+    computeVrPersistenceNerve(core::BufferView<const double> points, size_t point_dim,
                               const core::DeterminismContract &contract);
 
     VRConfig config_;

@@ -1,6 +1,6 @@
 #include "nerve/sheaf/sheaf_laplacian.hpp"
-#include "sheaf_laplacian_detail.hpp"
 #include "nerve/simd/simd_base.hpp"
+#include "sheaf_laplacian_detail.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -145,14 +145,14 @@ Eigen::SparseMatrix<double> SheafLaplacianRuntime::buildAttributeLaplacian()
                 {
                     const double similarity = exp_args[k] * config_.attribute_weight;
                     const Size j = i + 1 + k;
-                    triplets.emplace_back(static_cast<Eigen::Index>(i), static_cast<Eigen::Index>(j),
-                                          -similarity);
-                    triplets.emplace_back(static_cast<Eigen::Index>(j), static_cast<Eigen::Index>(i),
-                                          -similarity);
-                    triplets.emplace_back(static_cast<Eigen::Index>(i), static_cast<Eigen::Index>(i),
-                                          similarity);
-                    triplets.emplace_back(static_cast<Eigen::Index>(j), static_cast<Eigen::Index>(j),
-                                          similarity);
+                    triplets.emplace_back(static_cast<Eigen::Index>(i),
+                                          static_cast<Eigen::Index>(j), -similarity);
+                    triplets.emplace_back(static_cast<Eigen::Index>(j),
+                                          static_cast<Eigen::Index>(i), -similarity);
+                    triplets.emplace_back(static_cast<Eigen::Index>(i),
+                                          static_cast<Eigen::Index>(i), similarity);
+                    triplets.emplace_back(static_cast<Eigen::Index>(j),
+                                          static_cast<Eigen::Index>(j), similarity);
                 }
             }
         }

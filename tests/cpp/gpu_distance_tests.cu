@@ -48,9 +48,7 @@ int main()
         std::vector<std::pair<float, float>> diagram1 = {{0.0f, 0.5f}, {0.1f, 0.3f}, {0.2f, 1.0f}};
 
         std::vector<std::pair<float, float>> diagram2 = {
-            {0.0f, 0.4f},
-            {0.15f, 0.35f},
-            {0.2f, 0.9f}};
+            {0.0f, 0.4f}, {0.15f, 0.35f}, {0.2f, 0.9f}};
 
         double distance =
             nerve::metrics::bottleneck::adaptiveBottleneckDistance(diagram1, diagram2);
@@ -88,9 +86,7 @@ int main()
         std::vector<std::pair<float, float>> diagram1 = {{0.0f, 0.5f}, {0.1f, 0.8f}, {0.3f, 0.6f}};
 
         std::vector<std::pair<float, float>> diagram2 = {
-            {0.05f, 0.45f},
-            {0.15f, 0.75f},
-            {0.25f, 0.55f}};
+            {0.05f, 0.45f}, {0.15f, 0.75f}, {0.25f, 0.55f}};
 
         nerve::metrics::sinkhorn::SinkhornConfig config;
         config.epsilon = 0.1;
