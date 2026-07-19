@@ -1,0 +1,78 @@
+# Actions Runner Controller (ARC) — GPU Runner Scale Set
+# Deploy with:
+#   helm repo add actions-runner-controller https://actions-runner-controller.github.io/helm-charts
+#   helm upgrade --install arc-runner-set \
+#     --namespace arc-runners --create-namespace \
+#     --values .github/arc/values.yaml \
+#     oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+
+# Deploy with:: "https://github.com/LSU-ATHENA/Pynerve"
+githubConfigSecret: github-token
+
+# Scale settings
+minRunners: 0
+maxRunners: 8
+
+# Runner pod template
+template:
+  spec:
+    # Target GPU nodes only
+    nodeSelector:
+      accelerator: nvidia-gpu
+
+    # Tolerate GPU node taints (common on GPU clusters)
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Exists"
+        effect: "NoSchedule"
+
+    containers:
+      - name: runner
+        # Use the pre-built CUDA CI image for zero-warmup builds
+        image: ghcr.io/lsu-athena/pynerve-ci:cuda12.4
+        imagePullPolicy: IfNotPresent
+
+        # Request a full GPU
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+            memory: "32Gi"
+            cpu: "8"
+          requests:
+            nvidia.com/gpu: 1
+            memory: "16Gi"
+            cpu: "4"
+
+        # GPU runner environment
+        env:
+          - name: CUDA_HOME
+            value: "/usr/local/cuda"
+          - name: NVIDIA_VISIBLE_DEVICES
+            value: "all"
+          - name: NVIDIA_DRIVER_CAPABILITIES
+            value: "compute,utility"
+          - name: NERVE_TEST_CUDA
+            value: "1"
+          - name: CMAKE_BUILD_PARALLEL_LEVEL
+            value: "8"
+          - name: CTEST_PARALLEL_LEVEL
+            value: "4"
+
+    # Ephemeral runner — self-destructs after one job for security and clean state
+    ephemeral: true
+
+# Docker-in-Docker for containerized builds (optional)
+# Uncomment if your CI jobs need to build Docker images
+#   - name: dind
+#     image: docker:24-dind
+#     securityContext:
+#       privileged: true
+#     env:
+#       - name: DOCKER_TLS_CERTDIR
+#         value: ""
+#     volumeMounts:
+#       - name: dind-storage
+#         mountPath: /var/lib/docker
+#   volumes:
+#     - name: dind-storage
+#       emptyDir: {}

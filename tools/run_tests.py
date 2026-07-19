@@ -101,6 +101,12 @@ def main() -> int:
     parser.add_argument("--changed-from")
     parser.add_argument("--changed-file", action="append", default=[])
     parser.add_argument("--require-hardware", action="store_true")
+    parser.add_argument(
+        "--flaky-report",
+        type=str,
+        default=None,
+        help="Pass --flaky-report to pytest for flaky test tracking in CI",
+    )
     args = parser.parse_args()
 
     if not args.label:
@@ -159,6 +165,8 @@ def main() -> int:
         ]
         if args.label:
             pytest.extend(["-m", _pytest_marker_expression(args.label)])
+        if args.flaky_report:
+            pytest.extend(["--flaky-report", args.flaky_report])
         commands.append(pytest)
 
     for command in commands:
