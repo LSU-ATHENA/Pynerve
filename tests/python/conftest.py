@@ -76,6 +76,13 @@ def pytest_configure(config: pytest.Config) -> None:
         "generated",
         "cpu",
         "cuda",
+        "gpu_smoke",
+        "gpu_slow",
+        "gpu_multi",
+        "gpu_benchmark",
+        "sm75",
+        "sm80",
+        "sm90",
         "gradient",
         "autograd",
         "operators",
@@ -119,6 +126,34 @@ def generated_cases(request):  # noqa: N803
     return cases
 
 
+def _cuda_available() -> bool:
+    """Check whether CUDA is available via PyTorch."""
+    try:
+        import torch
+
+        return torch.cuda.is_available()
+    except ImportError:
+        return False
+
+
+def _cuda_compute_capability() -> tuple[int, int] | None:
+    """Return CUDA compute capability as (major, minor), or None if unavailable."""
+    if not _cuda_available():
+        return None
+    import torch
+
+    return torch.cuda.get_device_capability(0)
+
+
+def _cuda_device_count() -> int:
+    """Return number of CUDA devices, or 0 if unavailable."""
+    if not _cuda_available():
+        return 0
+    import torch
+
+    return torch.cuda.device_count()
+
+
 @pytest.fixture(scope="session")
 def torch():
     """Skip test if torch is not available."""
@@ -126,3 +161,24 @@ def torch():
     import torch as _torch
 
     return _torch
+
+
+@pytest.fixture(scope="session")
+def cuda_device():
+    """Skip test if CUDA is not available. Returns torch.cuda module."""
+    if not _cuda_available():
+        pytest.skip("CUDA device not available")
+    import torch
+
+    return torch.cuda
+
+
+@pytest.fixture(scope="session")
+def multi_gpu():
+    """Skip test if fewer than 2 CUDA devices are available."""
+    count = _cuda_device_count()
+    if count < 2:
+        pytest.skip(f"Multi-GPU test requires at least 2 CUDA devices, found {count}")
+    import torch
+
+    return torch.cuda
