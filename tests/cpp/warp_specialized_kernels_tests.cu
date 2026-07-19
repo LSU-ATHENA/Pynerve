@@ -166,7 +166,7 @@ __global__ void syncthreadsReductionRef(uint64_t *columns, const int * /*col_piv
 
     for (int it = 0; it < iter_limit; ++it)
     {
-        // Phase 1: Check pivot state, handle self-clears
+        // Check pivot state, handle self-clears
         if (active)
         {
             if (pivot < 0)
@@ -196,7 +196,7 @@ __global__ void syncthreadsReductionRef(uint64_t *columns, const int * /*col_piv
 
         __syncthreads(); // Self-clears visible before XOR reads
 
-        // Phase 2: XOR with source column, find new pivot
+        // XOR with source column, find new pivot
         if (active)
         {
             int src_col = pivot_to_col[pivot];
