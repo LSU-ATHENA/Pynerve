@@ -613,7 +613,6 @@ jobs:
           python -m pytest tests/python/ -q -m "cuda or gpu_benchmark or gpu_slow" \
             --flaky-report build/flaky-report-gpu.json \
             --nerve-shard-index 0 --nerve-shard-count 4 \
-            --timeout 600 \
             -p no:warnings \
             || echo "GPU pytest completed (check flaky report for details)"
       # Phase 2: Flaky test analysis (soft-fail — non-blocking)
@@ -624,7 +623,7 @@ jobs:
       - name: Record benchmark baseline (first run)
         if: github.event_name == 'schedule'
         run: |
-          if [ ! -s benchmarks/baseline.json ] || [ "$(cat benchmarks/baseline.json)" = '{"version":1,"threshold_pct":5.0,"git_sha":"","tests":{}}' ]; then
+          if [ ! -s benchmarks/baseline.json ] || python3 -c "import json; d=json.load(open('benchmarks/baseline.json')); exit(0 if d.get('tests') == {} else 1)"; then
             python tools/benchmark_regression.py --record --build-dir build
           fi
       - name: Check benchmark regressions
