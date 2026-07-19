@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Pynerve GPU Self-Hosted Runner Setup
 # Turns a fresh Ubuntu machine with an NVIDIA GPU into a GitHub Actions
 # self-hosted runner for the LSU-ATHENA/Pynerve repository.
 #
@@ -26,7 +25,6 @@
 
 set -euo pipefail
 
-# Defaults
 LABELS="gpu"
 CUDA_VERSION="12.4"
 CUDA_VERSION_SHORT="${CUDA_VERSION//./-}"
@@ -34,7 +32,6 @@ RUNNER_VERSION="latest"
 EPHEMERAL=""
 DRY_RUN=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --labels)
@@ -74,7 +71,6 @@ echo "CUDA:        ${CUDA_VERSION}"
 echo "Ephemeral:   ${EPHEMERAL:-false}"
 echo ""
 
-# 1. Verify NVIDIA GPU
 echo "[1/6] Verifying NVIDIA GPU..."
 if ! command -v nvidia-smi &>/dev/null; then
     echo "ERROR: nvidia-smi not found. Install NVIDIA drivers first:"
@@ -83,7 +79,6 @@ if ! command -v nvidia-smi &>/dev/null; then
 fi
 $DRY_RUN nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv,noheader
 
-# 2. Install CUDA toolkit (if needed)
 echo "[2/6] Checking CUDA ${CUDA_VERSION}..."
 if ! command -v nvcc &>/dev/null || ! nvcc --version | grep -q "release ${CUDA_VERSION}"; then
     echo "Installing CUDA ${CUDA_VERSION}..."
@@ -101,7 +96,6 @@ if [ -z "$DRY_RUN" ]; then
 fi
 $DRY_RUN nvcc --version
 
-# 3. Install system build dependencies
 echo "[3/6] Installing build dependencies..."
 $DRY_RUN sudo apt-get update
 $DRY_RUN sudo apt-get install -y --no-install-recommends \
@@ -115,7 +109,6 @@ $DRY_RUN sudo apt-get install -y --no-install-recommends \
 $DRY_RUN sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
 $DRY_RUN sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
 
-# 4. Install Python dependencies
 echo "[4/6] Installing Python dependencies..."
 $DRY_RUN python3.11 -m pip install --no-cache-dir -U pip
 $DRY_RUN python3.11 -m pip install --no-cache-dir \
@@ -126,7 +119,6 @@ $DRY_RUN python3.11 -m pip install --no-cache-dir \
     pytest pytest-xdist pytest-asyncio pytest-cov pytest-benchmark hypothesis \
     psutil scikit-learn numba networkx matplotlib build
 
-# 5. Download and configure Actions Runner
 echo "[5/6] Downloading GitHub Actions runner..."
 RUNNER_DIR="$HOME/actions-runner"
 if [ ! -d "$RUNNER_DIR" ]; then
@@ -143,7 +135,6 @@ if [ ! -d "$RUNNER_DIR" ]; then
     $DRY_RUN rm actions-runner-linux-x64.tar.gz
 fi
 
-# 6. Print registration instructions
 echo ""
 echo "=== [6/6] Runner downloaded — now register it ==="
 echo ""

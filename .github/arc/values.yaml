@@ -6,15 +6,14 @@
 #     --values .github/arc/values.yaml \
 #     oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
 
-# GitHub configuration
-githubConfigUrl: "https://github.com/LSU-ATHENA/Pynerve"
-githubConfigSecret: github-token  # Secret name containing a GitHub PAT or app token
+# Deploy with:: "https://github.com/LSU-ATHENA/Pynerve"
+githubConfigSecret: github-token
 
-# Scale settings — scale to zero when no GPU jobs are queued
+# Scale settings
 minRunners: 0
 maxRunners: 8
 
-# Runner pod template — GPU-optimized
+# Runner pod template
 template:
   spec:
     # Target GPU nodes only

@@ -18,7 +18,6 @@ ENV CUDA_HOME=/usr/local/cuda
 ENV PATH="${CUDA_HOME}/bin:${PATH}"
 ENV LD_LIBRARY_PATH="${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}"
 
-# System build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Build toolchain
     build-essential \
@@ -59,7 +58,6 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 \
     && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100 \
     && update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-13 100
 
-# Python environment
 RUN python3.11 -m pip install --no-cache-dir -U pip setuptools wheel
 
 # Install PyTorch with CUDA 12.4 support
@@ -92,14 +90,12 @@ RUN python3.11 -m pip install --no-cache-dir \
 RUN python3.11 -m pip install --no-cache-dir \
     gudhi ripser dionysus tensorboard 2>/dev/null || true
 
-# ccache configuration
 ENV CCACHE_DIR=/ccache
 ENV CCACHE_MAXSIZE=10G
 ENV CMAKE_C_COMPILER_LAUNCHER=ccache
 ENV CMAKE_CXX_COMPILER_LAUNCHER=ccache
 ENV CMAKE_CUDA_COMPILER_LAUNCHER=ccache
 
-# Verify installation
 RUN nvcc --version && \
     gcc --version && \
     python3.11 -c "import torch; print(f'PyTorch {torch.__version__}, CUDA {torch.version.cuda}, GPUs: {torch.cuda.device_count()}')" && \
