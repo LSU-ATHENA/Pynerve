@@ -24,7 +24,6 @@ if str(TOOLS_ROOT) not in sys.path:
 
 
 def _nerve_core_available() -> bool:
-    """Check whether nerve_internal (C++ extension) is available."""
     try:
         import pynerve
 
@@ -41,7 +40,6 @@ def nerve_root() -> Path:
 
 @pytest.fixture(scope="session")
 def nerve_core() -> None:
-    """Skip test if nerve_internal (C++ extension) is not available."""
     if not _nerve_core_available():
         pytest.skip(
             "nerve_internal C++ extension not available; "
@@ -163,7 +161,6 @@ def generated_cases(request):  # noqa: N803
 
 
 def _cuda_available() -> bool:
-    """Check whether CUDA is available via PyTorch."""
     try:
         import torch
 
@@ -173,7 +170,6 @@ def _cuda_available() -> bool:
 
 
 def _cuda_compute_capability() -> tuple[int, int] | None:
-    """Return CUDA compute capability as (major, minor), or None if unavailable."""
     if not _cuda_available():
         return None
     import torch
@@ -182,7 +178,6 @@ def _cuda_compute_capability() -> tuple[int, int] | None:
 
 
 def _cuda_device_count() -> int:
-    """Return number of CUDA devices, or 0 if unavailable."""
     if not _cuda_available():
         return 0
     import torch
@@ -192,7 +187,6 @@ def _cuda_device_count() -> int:
 
 @pytest.fixture(scope="session")
 def torch():
-    """Skip test if torch is not available."""
     pytest.importorskip("torch")
     import torch as _torch
 
@@ -201,7 +195,6 @@ def torch():
 
 @pytest.fixture(scope="session")
 def cuda_device():
-    """Skip test if CUDA is not available. Returns torch.cuda module."""
     if not _cuda_available():
         pytest.skip("CUDA device not available")
     import torch
@@ -211,7 +204,6 @@ def cuda_device():
 
 @pytest.fixture(scope="session")
 def multi_gpu():
-    """Skip test if fewer than 2 CUDA devices are available."""
     count = _cuda_device_count()
     if count < 2:
         pytest.skip(f"Multi-GPU test requires at least 2 CUDA devices, found {count}")
