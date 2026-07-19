@@ -212,9 +212,7 @@ def multi_gpu():
     return torch.cuda
 
 
-# ---------------------------------------------------------------------------
 # Flaky test tracking — CI integration for GPU test reliability monitoring
-# ---------------------------------------------------------------------------
 
 _flaky_results: list[dict[str, object]] = []
 
