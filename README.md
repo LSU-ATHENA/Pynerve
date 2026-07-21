@@ -1,5 +1,10 @@
 # Pynerve
 
+[![CI](https://github.com/LSU-ATHENA/Pynerve/actions/workflows/ci.yml/badge.svg)](https://github.com/LSU-ATHENA/Pynerve/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/pynerve.svg)](https://pypi.org/project/pynerve/)
+[![Python](https://img.shields.io/pypi/pyversions/pynerve.svg)](https://pypi.org/project/pynerve/)
+[![License](https://img.shields.io/pypi/l/pynerve.svg)](https://github.com/LSU-ATHENA/Pynerve/blob/main/LICENSE)
+
 **Topological Data Analysis for Python and C++.**
 
 Pynerve is a high-performance framework for Topological Data Analysis (TDA), providing persistent homology, filtration construction, topological feature extraction, differentiable topology, and large-scale computational pipelines through a unified Python and C++ interface.
