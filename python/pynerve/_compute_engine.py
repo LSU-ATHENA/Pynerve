@@ -38,7 +38,7 @@ def _auto_select_engine(
     - APPROX mode: PH5
     """
     if device and device.startswith("cuda"):
-        import torch as _t
+        import torch as _t  # noqa: PLC0415
 
         if not _t.cuda.is_available():
             raise RuntimeError("CUDA device requested but CUDA is not available")
