@@ -143,11 +143,7 @@ public:
         pairs.reserve(backend_pairs.size());
         for (const auto &pair : backend_pairs)
         {
-            pairs.push_back(nerve::Pair{
-                .birth = pair.birth,
-                .death = pair.death,
-                .dimension = pair.dimension,
-            });
+            pairs.push_back(nerve::Pair(pair.birth, pair.death, pair.dimension));
         }
         return nerve::error::Result<std::vector<nerve::Pair>>::ok(std::move(pairs));
     }
