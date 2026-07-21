@@ -8,7 +8,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     if (size < 16) return 0;
 
-    // Fuzz distance matrix computation
     const size_t n = (size % 32) + 2;
     const size_t dim = (data[0] % 5) + 1;
     const size_t total = n * dim;
