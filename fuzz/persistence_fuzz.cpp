@@ -8,7 +8,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     if (size < 8) return 0;
 
-    // Fuzz persistence computation with random point data
     const size_t num_points = (size % 64) + 1;
     const size_t dim = 3;
 
@@ -21,12 +20,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
     try
     {
-        // Attempt to run basic distance computations
         nerve::core::BufferView<const double> view(points.data(), points.size());
     }
     catch (...)
     {
-        // Fuzzing — intentionally swallow all exceptions
     }
 
     return 0;
