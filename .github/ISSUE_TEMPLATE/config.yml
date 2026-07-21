@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: GitHub Discussions
+    url: https://github.com/LSU-ATHENA/Pynerve/discussions
+    about: Ask questions, share ideas, or discuss TDA workflows with the community.
   - name: Security Vulnerability
     url: https://github.com/LSU-ATHENA/Pynerve/security/advisories/new
     about: Report a security vulnerability privately.
