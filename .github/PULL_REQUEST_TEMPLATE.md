@@ -1,22 +1,22 @@
 ## Description
-<!-- Briefly describe the change and why it's needed -->
+
+<!-- Describe the change and link to the related issue. -->
+
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Performance improvement
 - [ ] Documentation update
-- [ ] CI/infrastructure change
-
-## Testing
-- [ ] All existing tests pass
-- [ ] New tests added for the change
-- [ ] `make lint` and `make format` pass
-- [ ] `make coverage` passes (>=80%)
+- [ ] CI / build system
+- [ ] Refactoring
 
 ## Checklist
-- [ ] No TODOs, stubs, or placeholder code
-- [ ] Edge cases handled (null, empty, NaN, Inf)
-- [ ] Error messages are actionable
-- [ ] Public API is documented
-- [ ] Changelog entry added (if applicable)
+
+- [ ] Tests pass locally (`make test-quick` or `pytest tests/python/`)
+- [ ] Linting passes (`make quality`)
+- [ ] Pre-commit hooks pass (`pre-commit run --all-files`)
+- [ ] API documentation is updated if public interfaces changed
+- [ ] New tests added for new functionality
+- [ ] GPU/MPI/torch-dependent tests are properly marked with pytest markers

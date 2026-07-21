@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use pynerve in your research, please cite it as described below."
+title: "Pynerve"
+version: 1.0.4
+date-released: 2026-07-19
+url: "https://github.com/LSU-ATHENA/Pynerve"
+authors:
+  - family-names: "Debnath"
+    given-names: "Pradip"
+  - family-names: "Mills"
+    given-names: "Keith G."
+repository-code: "https://github.com/LSU-ATHENA/Pynerve"
+license: MIT
+keywords:
+  - topological-data-analysis
+  - persistent-homology
+  - tda
+  - computational-topology
+  - vietoris-rips
+  - persistence-diagrams
+  - machine-learning
+  - gpu-computing
+abstract: "High-performance framework for Topological Data Analysis (TDA), providing persistent homology, filtration construction, topological feature extraction, differentiable topology, and large-scale computational pipelines through a unified Python and C++ interface."
