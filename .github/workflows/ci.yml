@@ -74,12 +74,6 @@ jobs:
       - run: python -m pytest tests/python/ --cov=python/pynerve --cov-branch --cov-report=term-missing
         continue-on-error: true
       - run: python -m coverage report --fail-under=80
-      - run: python -m coverage xml
-      - uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.xml
-          fail_ci_if_error: false
 
   simd-modes:
     runs-on: ubuntu-24.04
