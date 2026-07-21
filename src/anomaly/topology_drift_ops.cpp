@@ -1623,7 +1623,7 @@ bool AnomalyDetectionManager::sendAlerts(const std::vector<std::string> &alerts)
 
     for (const auto &alert : alerts)
     {
-        std::cerr << "[nerve::anomaly] " << alert << std::endl;
+        std::cerr << "[nerve::anomaly] " << alert << '\n';
     }
 
     return true;
