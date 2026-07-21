@@ -24,6 +24,7 @@ CTest's Test.xml output, and compares wall-clock times.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import os
 import subprocess
@@ -42,7 +43,7 @@ REGRESSION_THRESHOLD_PCT = float(
 
 def _run(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
     print("+", " ".join(command), flush=True)
-    return subprocess.run(command, cwd=ROOT, text=True, capture_output=True, **kwargs)
+    return subprocess.run(command, cwd=ROOT, text=True, capture_output=True, check=False, **kwargs)
 
 
 def _parse_ctest_timing(build_dir: str) -> dict[str, float]:
@@ -81,10 +82,8 @@ def _parse_ctest_timing(build_dir: str) -> dict[str, float]:
             named_measurements = test_el.find("Results/NamedMeasurement")
             if named_measurements is not None:
                 value = named_measurements.findtext("Value", "0")
-                try:
+                with contextlib.suppress(ValueError):
                     timing[name] = float(value)
-                except ValueError:
-                    pass
             else:
                 # Fall back to Execution Time from the test element
                 exec_time = test_el.findtext(
@@ -195,7 +194,7 @@ def check_regressions(build_dir: str) -> int:
     RESULTS_PATH.write_text(json.dumps(report, indent=2), encoding="utf-8")
 
     # Print summary
-    print(f"\n=== Benchmark Regression Report ===")
+    print("\n=== Benchmark Regression Report ===")
     print(f"Tests:          {len(timing)}")
     print(f"Regressions:    {len(regressions)}  (>{threshold_pct}% slower)")
     print(f"Improvements:   {len(improvements)}  (>{threshold_pct}% faster)")
