@@ -87,6 +87,7 @@ set(NERVE_CORE_SOURCES
     persistence/accelerated/thread_safe_allocator.cpp
     persistence/accelerated/nerve_interface.cpp
     persistence/accelerated/validation.cpp
+    persistence/accelerated/heterogeneous_fast_vr.cpp
     persistence/acceleration_runtime/acceleration_runtime_engine.cpp
     persistence/adaptive_acceleration/adaptive_acceleration_engine.cpp
     persistence/adaptive_acceleration/adaptive_acceleration_problem_analysis.cpp
@@ -355,7 +356,6 @@ set(NERVE_CUDA_CORE_SOURCES
     persistence/accelerated/fast_vr_gpu_integration.cpp
     persistence/accelerated/gpu_memory_monitor.cpp
     persistence/accelerated/gpu_reduction_engine.cpp
-    persistence/accelerated/heterogeneous_fast_vr.cpp
     persistence/accelerated/hybrid_reduction_engine.cpp
     persistence/adaptive_acceleration/cuda/hybrid_algorithms.cpp
     persistence/adaptive_acceleration/cuda/tensor_core_optimizer.cpp
