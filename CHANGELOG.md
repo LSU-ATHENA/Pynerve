@@ -7,28 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Linker error: `heterogeneous_fast_vr.cpp` moved from CUDA_CORE to CORE sources for CPU-only builds
-- Pair designated initializer replaced with positional constructor (GCC 13+ compatibility)
-- Ruff SIM105, B603, F541, and PLC0415 lint violations resolved across tools and Python modules
-- clang-tidy `performance-avoid-endl` in anomaly detection module
-- `simd-arm (neon)` and `native-arch` jobs marked `continue-on-error: true` to prevent infra-related false failures
-
-### Changed
-- CI test-coverage `--fail-under` threshold raised from 5 to 80
-- Dependabot: bumped 5 GitHub Actions (download-artifact v4→v8, docker/setup-buildx-action v3→v4, docker/login-action v3→v4, softprops/action-gh-release v2→v3, docker/metadata-action v5→v6)
-- Branch protection: @spinxog added as sole bypass user on `main` and `development`
-- Author email removed from `pyproject.toml`
-
-### Added
-- README badges: CI status, PyPI version, Python versions, license
-- Issue templates: bug report and feature request (YAML forms)
-- Pull request template with checklist
-- CITATION.cff for academic citations
-- CHANGELOG.md (Keep a Changelog format)
-- API stability policy in CONTRIBUTING.md
-- MkDocs GitHub Pages deployment workflow
-
 ## [1.0.4] — 2026-07-19
 
 ### Added
