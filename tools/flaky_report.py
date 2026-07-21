@@ -47,7 +47,7 @@ def print_report(report_path: str) -> dict:
     failures = data.get("failures", 0)
     rate = _flaky_rate(data)
 
-    print(f"Flaky Test Report")
+    print("Flaky Test Report")
     print(f"  File:            {path}")
     print(f"  Total tracked:   {total}")
     print(f"  Failures:        {failures}")
