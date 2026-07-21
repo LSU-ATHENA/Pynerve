@@ -2,11 +2,20 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in Pynerve, please report it privately using GitHub Security Advisories.
+**Preferred: GitHub Private Vulnerability Reporting**
+
+Report vulnerabilities privately at:
+https://github.com/LSU-ATHENA/Pynerve/security/advisories/new
+
+This creates a private advisory visible only to maintainers. We aim to acknowledge reports within 48 hours and provide a fix timeline within 5 business days.
 
 Do NOT open a public GitHub issue for security-related reports.
 
-If GitHub advisories are not suitable, you may contact the maintainers directly via the security contact listed in the repository.
+**Alternative: Email**
+
+If GitHub advisories are not suitable, contact the maintainers at:
+
+Security contact: pynerve.security@proton.me
 
 Please include:
 - Description of the issue
@@ -15,5 +24,3 @@ Please include:
 - Relevant logs or proof-of-concept (if applicable)
 
 We will respond as quickly as possible to validate and address the report.
-
-Security contact: pynerve.security@proton.me

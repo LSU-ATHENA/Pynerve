@@ -139,8 +139,28 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -U pip sigstore
+      - name: Sign wheels with sigstore
+        run: |
+          for whl in *.whl; do
+            python -m sigstore sign "$whl" --output-signature "$whl.sigstore"
+          done
+      - name: Upload sigstore signatures
+        uses: softprops/action-gh-release@v3
+        with:
+          files: "*.sigstore"
       - name: Generate release notes
         id: release_notes
         run: |
