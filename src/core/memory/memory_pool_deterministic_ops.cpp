@@ -119,15 +119,13 @@ void *MemoryPool::allocateFromPoolDeterministic(std::size_t size, std::size_t al
         throw std::bad_alloc();
     }
 
-    void *ptr = alignment <= alignof(std::max_align_t)
-                    ? std::malloc(size)
-                    :
+    void *ptr = alignment <= alignof(std::max_align_t) ? std::malloc(size) :
 #ifdef _WIN32
-                    _aligned_malloc(size, alignment)
+                                                       _aligned_malloc(size, alignment)
 #else
-                    std::aligned_alloc(alignment, size)
+                                                       std::aligned_alloc(alignment, size)
 #endif
-                    ;
+        ;
     if (!ptr)
     {
         throw std::bad_alloc();

@@ -66,15 +66,14 @@ namespace
 
 [[nodiscard]] void *allocateBlock(std::size_t allocation_size, std::size_t alignment)
 {
-    void *ptr = alignment <= alignof(std::max_align_t)
-                    ? std::malloc(allocation_size)
-                    :
+    void *ptr = alignment <= alignof(std::max_align_t) ? std::malloc(allocation_size) :
 #ifdef _WIN32
-                    _aligned_malloc(allocation_size, alignment)
+                                                       _aligned_malloc(allocation_size, alignment)
 #else
-                    std::aligned_alloc(alignment, allocation_size)
+                                                       std::aligned_alloc(alignment,
+                                                                          allocation_size)
 #endif
-                    ;
+        ;
     if (!ptr)
     {
         throw std::bad_alloc();

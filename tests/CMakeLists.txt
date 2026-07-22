@@ -1218,12 +1218,14 @@ if(ENABLE_CUDA AND CMAKE_CUDA_COMPILER)
 endif()
 
 # GPU integration pipeline tests (cross-component, guarded by NERVE_HAS_CUDA)
+if(TARGET CUDA::cudart)
 nerve_add_cpp_test(nerve_cpp_gpu_integration_pipeline_tests cpp/gpu_integration_pipeline_tests.cpp)
 set_tests_properties(nerve_cpp_gpu_integration_pipeline_tests PROPERTIES LABELS "persistence;gpu;cuda;integration" TIMEOUT 600)
 
 # GPU property-based & fuzz tests (guarded by NERVE_HAS_CUDA)
 nerve_add_cpp_test(nerve_cpp_gpu_property_fuzz_tests cpp/gpu_property_fuzz_tests.cpp)
 set_tests_properties(nerve_cpp_gpu_property_fuzz_tests PROPERTIES LABELS "persistence;gpu;cuda;generated;quality" TIMEOUT 300)
+endif()
 
 if(ENABLE_CUDA AND CMAKE_CUDA_COMPILER)
     add_executable(nerve_cpp_hypha_gpu_benchmark cpp/hypha_gpu_benchmark.cpp)
@@ -1436,8 +1438,10 @@ nerve_add_cpp_test(nerve_cpp_vr_h1_reduction_regressions cpp/vr_h1_reduction_reg
 set_tests_properties(nerve_cpp_vr_h1_reduction_regressions PROPERTIES LABELS "persistence;vr;h1;cpu;regression")
 
 # Accelerated detail tests
+if(TARGET CUDA::cudart)
 nerve_add_cpp_test(nerve_cpp_accelerated_gpu_reduction_regressions cpp/accelerated_gpu_reduction_regressions.cpp)
-set_tests_properties(nerve_cpp_accelerated_gpu_reduction_regressions PROPERTIES LABELS "persistence;accelerated;gpu;cpu;regression")
+set_tests_properties(nerve_cpp_accelerated_gpu_reduction_regressions PROPERTIES LABELS "persistence;accelerated;gpu;cuda;regression")
+endif()
 nerve_add_cpp_test(nerve_cpp_accelerated_error_handling_regressions cpp/accelerated_error_handling_regressions.cpp)
 set_tests_properties(nerve_cpp_accelerated_error_handling_regressions PROPERTIES LABELS "persistence;accelerated;errors;cpu;regression")
 nerve_add_cpp_test(nerve_cpp_acceleration_runtime_engine_regressions cpp/acceleration_runtime_engine_regressions.cpp)

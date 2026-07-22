@@ -1,12 +1,13 @@
+#include "nerve/core.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <vector>
 
-#include "nerve/core.hpp"
-
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    if (size < 8) return 0;
+    if (size < 8)
+        return 0;
 
     const size_t num_points = (size % 64) + 1;
     const size_t dim = 3;
@@ -23,8 +24,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         nerve::core::BufferView<const double> view(points.data(), points.size());
     }
     catch (...)
-    {
-    }
+    {}
 
     return 0;
 }
