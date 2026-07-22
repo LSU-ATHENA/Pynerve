@@ -595,13 +595,13 @@ void LifetimeDriftDetector::updateAdaptiveThreshold(double current_drift_score)
 
 // MarketAnomalyDetector
 
-MarketAnomalyDetector::MarketAnomalyDetector(const MarketConfig &config) : config_(config) {}
+MarketAnomalyDetector::MarketAnomalyDetector(const MarketConfig &config)
+    : config_(config)
+{}
 
-std::vector<MarketAnomalyDetector::AnomalyEvent>
-MarketAnomalyDetector::detectAnomalies(const std::vector<int64_t> &timestamps,
-                                       const std::vector<double> &prices,
-                                       const std::vector<float> &volumes,
-                                       const std::vector<std::vector<float>> &topological_features)
+std::vector<MarketAnomalyDetector::AnomalyEvent> MarketAnomalyDetector::detectAnomalies(
+    const std::vector<int64_t> &timestamps, const std::vector<double> &prices,
+    const std::vector<float> &volumes, const std::vector<std::vector<float>> &topological_features)
 {
     // Seed the normal-behaviour models with the first lookback_window points.
     size_t seed_count = std::min(config_.lookback_window, timestamps.size());
@@ -683,11 +683,10 @@ MarketAnomalyDetector::detectSingleAnomaly(int64_t timestamp_ns, double price, f
 }
 
 bool MarketAnomalyDetector::updateAndDetect(int64_t timestamp_ns, double price, float volume,
-                                             const std::vector<float> &topological_features,
-                                             AnomalyEvent &detected_anomaly)
+                                            const std::vector<float> &topological_features,
+                                            AnomalyEvent &detected_anomaly)
 {
-    detected_anomaly =
-        detectSingleAnomaly(timestamp_ns, price, volume, topological_features);
+    detected_anomaly = detectSingleAnomaly(timestamp_ns, price, volume, topological_features);
     price_history_.push_back(price);
     volume_history_.push_back(volume);
     topology_history_.push_back(topological_features);
@@ -705,7 +704,7 @@ bool MarketAnomalyDetector::updateAndDetect(int64_t timestamp_ns, double price, 
 
 MarketAnomalyDetector::AnomalyEvent
 MarketAnomalyDetector::detectPriceAnomaly(double current_price,
-                                           const std::vector<double> &price_history)
+                                          const std::vector<double> &price_history)
 {
     AnomalyEvent ae;
     ae.anomaly_type = "price";
@@ -733,9 +732,8 @@ MarketAnomalyDetector::detectPriceAnomaly(double current_price,
     ae.is_critical = abs_z > 3.0;
     if (ae.anomaly_score > 0.0)
     {
-        ae.description =
-            abs_z > 3.0 ? "Critical price spike (z=" + std::to_string(z) + ")"
-                        : "Price anomaly detected (z=" + std::to_string(z) + ")";
+        ae.description = abs_z > 3.0 ? "Critical price spike (z=" + std::to_string(z) + ")"
+                                     : "Price anomaly detected (z=" + std::to_string(z) + ")";
         ae.contributing_factors = {std::abs(z)};
     }
     else
@@ -747,7 +745,7 @@ MarketAnomalyDetector::detectPriceAnomaly(double current_price,
 
 MarketAnomalyDetector::AnomalyEvent
 MarketAnomalyDetector::detectVolumeAnomaly(float current_volume,
-                                            const std::vector<float> &volume_history)
+                                           const std::vector<float> &volume_history)
 {
     AnomalyEvent ae;
     ae.anomaly_type = "volume";
@@ -775,9 +773,8 @@ MarketAnomalyDetector::detectVolumeAnomaly(float current_volume,
     ae.is_critical = abs_z > 3.0;
     if (ae.anomaly_score > 0.0)
     {
-        ae.description =
-            abs_z > 3.0 ? "Critical volume spike (z=" + std::to_string(z) + ")"
-                        : "Volume anomaly detected (z=" + std::to_string(z) + ")";
+        ae.description = abs_z > 3.0 ? "Critical volume spike (z=" + std::to_string(z) + ")"
+                                     : "Volume anomaly detected (z=" + std::to_string(z) + ")";
         ae.contributing_factors = {static_cast<double>(std::abs(z))};
     }
     else
@@ -788,9 +785,8 @@ MarketAnomalyDetector::detectVolumeAnomaly(float current_volume,
 }
 
 MarketAnomalyDetector::AnomalyEvent
-MarketAnomalyDetector::detectTopologyAnomaly(
-    const std::vector<float> &current_features,
-    const std::vector<std::vector<float>> &feature_history)
+MarketAnomalyDetector::detectTopologyAnomaly(const std::vector<float> &current_features,
+                                             const std::vector<std::vector<float>> &feature_history)
 {
     AnomalyEvent ae;
     ae.anomaly_type = "topology";
@@ -821,8 +817,8 @@ MarketAnomalyDetector::detectTopologyAnomaly(
     ae.is_critical = score > config_.topology_anomaly_threshold * 1.5;
     if (ae.anomaly_score > 0.0)
     {
-        ae.description = ae.is_critical ? "Critical topological anomaly"
-                                        : "Topological anomaly detected";
+        ae.description =
+            ae.is_critical ? "Critical topological anomaly" : "Topological anomaly detected";
         ae.contributing_factors = {score};
     }
     else
@@ -832,8 +828,9 @@ MarketAnomalyDetector::detectTopologyAnomaly(
     return ae;
 }
 
-MarketAnomalyDetector::AnomalyEvent MarketAnomalyDetector::detectCombinedAnomaly(
-    const std::vector<double> &factor_scores, const std::vector<std::string> &factor_names)
+MarketAnomalyDetector::AnomalyEvent
+MarketAnomalyDetector::detectCombinedAnomaly(const std::vector<double> &factor_scores,
+                                             const std::vector<std::string> &factor_names)
 {
     AnomalyEvent ae;
     ae.anomaly_type = "combined";
@@ -853,8 +850,7 @@ MarketAnomalyDetector::AnomalyEvent MarketAnomalyDetector::detectCombinedAnomaly
     ae.anomaly_score = (sum + max_s) / 2.0;
     ae.p_value = std::exp(-ae.anomaly_score);
     ae.is_critical = max_s > 0.8;
-    ae.description =
-        "Combined anomaly (factors: " + std::to_string(factor_scores.size()) + ")";
+    ae.description = "Combined anomaly (factors: " + std::to_string(factor_scores.size()) + ")";
     ae.contributing_factors = factor_scores;
     return ae;
 }
@@ -921,8 +917,8 @@ double MarketAnomalyDetector::computeVolumeZscore(float current_volume) const
     return (static_cast<double>(current_volume) - mean) / std::sqrt(var);
 }
 
-double MarketAnomalyDetector::computeTopologyAnomalyScore(
-    const std::vector<float> &current_features) const
+double
+MarketAnomalyDetector::computeTopologyAnomalyScore(const std::vector<float> &current_features) const
 {
     if (topology_history_.empty())
         return 0.0;
@@ -966,7 +962,9 @@ MarketAnomalyDetector::normalizeFeatures(const std::vector<double> &features) co
 
 // OnlinePValueCalculator
 
-OnlinePValueCalculator::OnlinePValueCalculator(const PValueConfig &config) : config_(config) {}
+OnlinePValueCalculator::OnlinePValueCalculator(const PValueConfig &config)
+    : config_(config)
+{}
 
 double OnlinePValueCalculator::computePValue(double test_statistic,
                                              const std::vector<double> &null_distribution)
@@ -974,8 +972,9 @@ double OnlinePValueCalculator::computePValue(double test_statistic,
     return computeTwoSidedPValue(test_statistic, null_distribution);
 }
 
-double OnlinePValueCalculator::computeEmpiricalPValue(
-    double test_statistic, const std::vector<double> &sample_distribution)
+double
+OnlinePValueCalculator::computeEmpiricalPValue(double test_statistic,
+                                               const std::vector<double> &sample_distribution)
 {
     if (sample_distribution.empty())
         return 1.0;
@@ -1094,8 +1093,8 @@ double OnlinePValueCalculator::computeConfidenceInterval(const std::vector<doubl
     return z * se;
 }
 
-double OnlinePValueCalculator::computeTwoSidedPValue(
-    double test_statistic, const std::vector<double> &distribution) const
+double OnlinePValueCalculator::computeTwoSidedPValue(double test_statistic,
+                                                     const std::vector<double> &distribution) const
 {
     if (distribution.empty())
         return 1.0;
@@ -1111,7 +1110,9 @@ double OnlinePValueCalculator::computeTwoSidedPValue(
 
 // RegimeChangeDetector
 
-RegimeChangeDetector::RegimeChangeDetector(const RegimeConfig &config) : config_(config) {}
+RegimeChangeDetector::RegimeChangeDetector(const RegimeConfig &config)
+    : config_(config)
+{}
 
 std::vector<RegimeChangeDetector::Regime>
 RegimeChangeDetector::detectRegimes(const std::vector<std::vector<float>> &topological_features,
@@ -1164,7 +1165,9 @@ RegimeChangeDetector::detectRegimes(const std::vector<std::vector<float>> &topol
                     topological_features.begin() + static_cast<ptrdiff_t>(i)));
                 r.characteristic_features = features;
                 r.stability_score =
-                    1.0 - std::min(1.0, min_dist / (static_cast<double>(topological_features[i].size()) + 1e-10));
+                    1.0 -
+                    std::min(1.0, min_dist / (static_cast<double>(topological_features[i].size()) +
+                                              1e-10));
                 r.description = characterizeRegime(features);
                 regimes.push_back(std::move(r));
             }
@@ -1198,8 +1201,7 @@ RegimeChangeDetector::detectRegimes(const std::vector<std::vector<float>> &topol
     return regimes;
 }
 
-std::vector<RegimeChangeDetector::RegimeChange>
-RegimeChangeDetector::detectRegimeChanges(
+std::vector<RegimeChangeDetector::RegimeChange> RegimeChangeDetector::detectRegimeChanges(
     const std::vector<std::vector<float>> &topological_features,
     const std::vector<int64_t> &timestamps)
 {
@@ -1214,20 +1216,18 @@ RegimeChangeDetector::detectRegimeChanges(
         rc.timestamp_ns = regimes[i].start_timestamp_ns;
         rc.from_regime_id = regimes[i - 1].regime_id;
         rc.to_regime_id = regimes[i].regime_id;
-        rc.change_confidence =
-            computeRegimeSimilarity(regimes[i - 1].characteristic_features,
-                                    regimes[i].characteristic_features);
+        rc.change_confidence = computeRegimeSimilarity(regimes[i - 1].characteristic_features,
+                                                       regimes[i].characteristic_features);
         rc.change_confidence = 1.0 - rc.change_confidence;
-        rc.change_description =
-            "Regime " + std::to_string(regimes[i - 1].regime_id) + " -> " +
-            std::to_string(regimes[i].regime_id);
+        rc.change_description = "Regime " + std::to_string(regimes[i - 1].regime_id) + " -> " +
+                                std::to_string(regimes[i].regime_id);
         changes.push_back(std::move(rc));
     }
     return changes;
 }
 
 bool RegimeChangeDetector::updateAndDetect(const std::vector<float> &new_features,
-                                            int64_t timestamp_ns, RegimeChange &detected_change)
+                                           int64_t timestamp_ns, RegimeChange &detected_change)
 {
     feature_history_.push_back(new_features);
     timestamp_history_.push_back(timestamp_ns);
@@ -1339,13 +1339,15 @@ RegimeChangeDetector::trainHmm(const std::vector<std::vector<float>> &features,
         total_count += c;
     for (size_t r = 0; r < n_states; ++r)
         model.initial_probabilities[r] =
-            total_count > 0 ? static_cast<double>(counts[r]) / static_cast<double>(total_count) : 1.0 / static_cast<double>(n_states);
+            total_count > 0 ? static_cast<double>(counts[r]) / static_cast<double>(total_count)
+                            : 1.0 / static_cast<double>(n_states);
 
     return model;
 }
 
-std::vector<int> RegimeChangeDetector::predictRegimesHmm(
-    const HMMModel &model, const std::vector<std::vector<float>> &features)
+std::vector<int>
+RegimeChangeDetector::predictRegimesHmm(const HMMModel &model,
+                                        const std::vector<std::vector<float>> &features)
 {
     if (features.empty() || model.emission_means.empty())
         return {};
@@ -1378,7 +1380,7 @@ std::vector<int> RegimeChangeDetector::predictRegimesHmm(
 }
 
 double RegimeChangeDetector::computeRegimeSimilarity(const std::vector<double> &features1,
-                                                      const std::vector<double> &features2)
+                                                     const std::vector<double> &features2)
 {
     if (features1.empty() || features2.empty())
         return 0.0;
@@ -1397,7 +1399,7 @@ double RegimeChangeDetector::computeRegimeSimilarity(const std::vector<double> &
 
 std::vector<std::vector<float>>
 RegimeChangeDetector::clusterFeatures(const std::vector<std::vector<float>> &features,
-                                       size_t num_clusters)
+                                      size_t num_clusters)
 {
     if (features.empty() || num_clusters == 0)
         return {};
@@ -1484,15 +1486,13 @@ void AnomalyDetectionManager::setMarketDetectorConfig(
     market_detector_ = std::make_shared<MarketAnomalyDetector>(config);
 }
 
-void AnomalyDetectionManager::setPvalueConfig(
-    const OnlinePValueCalculator::PValueConfig &config)
+void AnomalyDetectionManager::setPvalueConfig(const OnlinePValueCalculator::PValueConfig &config)
 {
     std::unique_lock lock(mutex_);
     pvalue_calculator_ = std::make_shared<OnlinePValueCalculator>(config);
 }
 
-void AnomalyDetectionManager::setRegimeConfig(
-    const RegimeChangeDetector::RegimeConfig &config)
+void AnomalyDetectionManager::setRegimeConfig(const RegimeChangeDetector::RegimeConfig &config)
 {
     std::unique_lock lock(mutex_);
     regime_detector_ = std::make_shared<RegimeChangeDetector>(config);
@@ -1545,8 +1545,7 @@ std::shared_ptr<RegimeChangeDetector> AnomalyDetectionManager::getRegimeDetector
 
 AnomalyDetectionManager::AnomalyReport AnomalyDetectionManager::detectAllAnomalies(
     const std::vector<int64_t> &timestamps, const std::vector<double> &prices,
-    const std::vector<float> &volumes,
-    const std::vector<std::vector<double>> &betti_sequences,
+    const std::vector<float> &volumes, const std::vector<std::vector<double>> &betti_sequences,
     const std::vector<std::vector<float>> &lifetime_sequences,
     const std::vector<std::vector<float>> &topological_features)
 {
@@ -1558,7 +1557,8 @@ AnomalyDetectionManager::AnomalyReport AnomalyDetectionManager::detectAllAnomali
 
     report.betti_changes = betti->detectChanges(betti_sequences, timestamps);
     report.drift_points = drift->detectDrift(lifetime_sequences, timestamps);
-    report.market_anomalies = market->detectAnomalies(timestamps, prices, volumes, topological_features);
+    report.market_anomalies =
+        market->detectAnomalies(timestamps, prices, volumes, topological_features);
     report.regime_changes = regime->detectRegimeChanges(topological_features, timestamps);
 
     // Overall anomaly score: weighted average of per-detector event scores.
@@ -1589,8 +1589,7 @@ AnomalyDetectionManager::AnomalyReport AnomalyDetectionManager::detectAllAnomali
     return report;
 }
 
-std::vector<std::string>
-AnomalyDetectionManager::generateAlerts(const AnomalyReport &report)
+std::vector<std::string> AnomalyDetectionManager::generateAlerts(const AnomalyReport &report)
 {
     std::vector<std::string> alerts;
     if (report.overall_anomaly_score > 0.5)
@@ -1600,11 +1599,9 @@ AnomalyDetectionManager::generateAlerts(const AnomalyReport &report)
         alerts.push_back("MEDIUM: Overall anomaly score " +
                          std::to_string(report.overall_anomaly_score));
     if (!report.betti_changes.empty())
-        alerts.push_back("Betti changes detected: " +
-                         std::to_string(report.betti_changes.size()));
+        alerts.push_back("Betti changes detected: " + std::to_string(report.betti_changes.size()));
     if (!report.drift_points.empty())
-        alerts.push_back("Lifetime drift detected: " +
-                         std::to_string(report.drift_points.size()));
+        alerts.push_back("Lifetime drift detected: " + std::to_string(report.drift_points.size()));
     if (!report.market_anomalies.empty())
         alerts.push_back("Market anomalies detected: " +
                          std::to_string(report.market_anomalies.size()));
@@ -1629,16 +1626,14 @@ bool AnomalyDetectionManager::sendAlerts(const std::vector<std::string> &alerts)
     return true;
 }
 
-std::string
-AnomalyDetectionManager::generateSummaryReport(const AnomalyReport &report)
+std::string AnomalyDetectionManager::generateSummaryReport(const AnomalyReport &report)
 {
     std::string summary = "Anomaly Report\n";
     summary += "  Betti changes: " + std::to_string(report.betti_changes.size()) + "\n";
     summary += "  Drift points: " + std::to_string(report.drift_points.size()) + "\n";
     summary += "  Market anomalies: " + std::to_string(report.market_anomalies.size()) + "\n";
     summary += "  Regime changes: " + std::to_string(report.regime_changes.size()) + "\n";
-    summary +=
-        "  Overall score: " + std::to_string(report.overall_anomaly_score);
+    summary += "  Overall score: " + std::to_string(report.overall_anomaly_score);
     return summary;
 }
 

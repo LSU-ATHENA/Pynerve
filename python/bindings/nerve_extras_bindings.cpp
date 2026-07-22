@@ -594,7 +594,6 @@ PYBIND11_MODULE(nerve_extras, m)
             .def("reset_reference", &nerve::anomaly::LifetimeDriftDetector::resetReference,
                  "Reset the reference distribution");
 
-
         // MarketAnomalyDetector
         py::class_<nerve::anomaly::MarketAnomalyDetector::MarketConfig>(anomaly, "MarketConfig")
             .def(py::init<>())

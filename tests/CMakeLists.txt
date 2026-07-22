@@ -1436,8 +1436,10 @@ nerve_add_cpp_test(nerve_cpp_vr_h1_reduction_regressions cpp/vr_h1_reduction_reg
 set_tests_properties(nerve_cpp_vr_h1_reduction_regressions PROPERTIES LABELS "persistence;vr;h1;cpu;regression")
 
 # Accelerated detail tests
+if(TARGET CUDA::cudart)
 nerve_add_cpp_test(nerve_cpp_accelerated_gpu_reduction_regressions cpp/accelerated_gpu_reduction_regressions.cpp)
-set_tests_properties(nerve_cpp_accelerated_gpu_reduction_regressions PROPERTIES LABELS "persistence;accelerated;gpu;cpu;regression")
+set_tests_properties(nerve_cpp_accelerated_gpu_reduction_regressions PROPERTIES LABELS "persistence;accelerated;gpu;cuda;regression")
+endif()
 nerve_add_cpp_test(nerve_cpp_accelerated_error_handling_regressions cpp/accelerated_error_handling_regressions.cpp)
 set_tests_properties(nerve_cpp_accelerated_error_handling_regressions PROPERTIES LABELS "persistence;accelerated;errors;cpu;regression")
 nerve_add_cpp_test(nerve_cpp_acceleration_runtime_engine_regressions cpp/acceleration_runtime_engine_regressions.cpp)
