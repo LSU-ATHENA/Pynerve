@@ -282,7 +282,12 @@ class TestMapperFromFilterValues:
         pc = torch.randn(10, 2, dtype=torch.float32)
         fv = torch.randn(10, 1, dtype=torch.float32)
         result = _mapper_from_filter_values(pc, fv, 3, 0.5, "dbscan", 1.0, 2, True)
-        assert "graph" in result or "graph" not in result  # depends on networkx
+        # graph is included only if networkx is installed
+        from importlib.util import find_spec
+        if find_spec("networkx"):
+            assert "graph" in result
+        else:
+            assert "graph" not in result
 
     def test_connected_clusterer(self):
         pc = torch.randn(10, 2, dtype=torch.float32)

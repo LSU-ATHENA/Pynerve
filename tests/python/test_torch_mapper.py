@@ -117,23 +117,16 @@ class TestMapperTransformer:
         assert mt.cover_resolution == 5
         assert mt.cover_overlap == 0.1
 
-    def test_fit_requires_tensor(self):
-        mt = MapperTransformer(cover_resolution=2, dbscan_eps=1.0)
-
     def test_transform_not_fitted_raises(self):
         mt = MapperTransformer()
         pc = torch.randn(5, 3, dtype=torch.float32)
         with pytest.raises(ValidationError, match="not fitted"):
             mt.transform(pc)
 
-    def test_mapper_result_none_initially(self):
-        mt = MapperTransformer()
-        assert mt.mapper_result_ is None
-        assert mt.training_filter_values_ is None
-
     def test_initial_state(self):
         mt = MapperTransformer()
         assert mt.mapper_result_ is None
+        assert mt.training_filter_values_ is None
 
     def test_custom_params_persist(self):
         mt = MapperTransformer(cover_resolution=42)

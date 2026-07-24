@@ -142,8 +142,8 @@ class TestLogStatistics:
         writer = MockWriter()
         d = torch.tensor([[0.0, 1.0, 0], [1.0, 3.0, 1]], dtype=torch.float32)
         log_statistics(writer, d, step=0, dims=[0, 1])
-        # total, mean, max, num, entropy × 2 dims = 10 scalars
-        assert len(writer.scalars) >= 5
+        # 5 stats (total, mean, max, num, entropy) × 2 dims = 10 scalars
+        assert len(writer.scalars) == 10
 
 
 # ── DiagramSummaryWriter ───────────────────────────────────────────────────
