@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
+from pynerve.exceptions._validation import DtypeError, ShapeError
 from pynerve.torch._vectorization_basis import (
     _finite_birth_death,
     _validate_diagram,
@@ -28,15 +29,15 @@ class TestValidateDiagram:
 
     def test_not_tensor_raises(self):
         import numpy as np
-        with pytest.raises(Exception, match="torch.Tensor"):
+        with pytest.raises(DtypeError, match="torch.Tensor"):
             _validate_diagram(np.array([[0.0, 1.0, 0]]))  # type: ignore[arg-type]
 
     def test_1d_raises(self):
-        with pytest.raises(Exception, match="2D"):
+        with pytest.raises(ShapeError, match="2D"):
             _validate_diagram(torch.tensor([0.0, 1.0], dtype=torch.float32))
 
     def test_wrong_dtype_raises(self):
-        with pytest.raises(Exception, match="floating-point"):
+        with pytest.raises(DtypeError, match="floating-point"):
             _validate_diagram(torch.tensor([[0, 1, 0]]))
 
     def test_empty(self):

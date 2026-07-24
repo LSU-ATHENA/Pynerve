@@ -5,6 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
+from pynerve.exceptions._base import NerveError
+from pynerve.exceptions._validation import ShapeError, ValidationError
 from pynerve.torch._diagram import PersistenceDiagram, batch_diagrams, unbatch_diagrams
 from pynerve.torch._persistence_validators import (
     _validate_image_resolution,
@@ -153,12 +155,12 @@ class TestPersistenceDiagram:
 
     def test_construction_wrong_last_dim_raises(self):
         d = torch.tensor([[[0.0, 1.0]]], dtype=torch.float32)
-        with pytest.raises(Exception, match="last dimension"):
+        with pytest.raises(ShapeError, match="last dimension"):
             PersistenceDiagram(d)
 
     def test_construction_wrong_dim_raises(self):
         d = torch.tensor([1.0, 2.0, 3.0], dtype=torch.float32)
-        with pytest.raises(Exception, match="2D or 3D"):
+        with pytest.raises(ShapeError, match="2D or 3D"):
             PersistenceDiagram(d)
 
     def test_construction_with_mask(self):
@@ -219,7 +221,7 @@ class TestPersistenceDiagram:
     def test_to_dtype_non_float_raises(self):
         d = torch.tensor([[[0.0, 1.0, 0]]], dtype=torch.float32)
         pd = PersistenceDiagram(d)
-        with pytest.raises(Exception, match="floating-point"):
+        with pytest.raises(ValidationError, match="floating-point"):
             pd.to_dtype(torch.int64)
 
     def test_get_batch_item(self):
@@ -250,7 +252,7 @@ class TestPersistenceDiagram:
     def test_filter_by_dimension_negative_raises(self):
         d = torch.tensor([[[0.0, 1.0, 0]]], dtype=torch.float32)
         pd = PersistenceDiagram(d)
-        with pytest.raises(Exception, match="non-negative"):
+        with pytest.raises(ValidationError, match="non-negative"):
             pd.filter_by_dimension(-1)
 
     def test_repr(self):
@@ -272,17 +274,17 @@ class TestPersistenceDiagram:
 
     def test_invalid_dim_finite(self):
         d = torch.tensor([[[0.0, 1.0, float("nan")]]], dtype=torch.float32)
-        with pytest.raises(Exception, match="finite"):
+        with pytest.raises(ValidationError, match="finite"):
             PersistenceDiagram(d)
 
     def test_negative_dim(self):
         d = torch.tensor([[[0.0, 1.0, -1.0]]], dtype=torch.float32)
-        with pytest.raises(Exception, match="non-negative"):
+        with pytest.raises(ValidationError, match="non-negative"):
             PersistenceDiagram(d)
 
     def test_non_integer_dim(self):
         d = torch.tensor([[[0.0, 1.0, 0.5]]], dtype=torch.float32)
-        with pytest.raises(Exception, match="integers"):
+        with pytest.raises(ValidationError, match="integers"):
             PersistenceDiagram(d)
 
 
@@ -312,7 +314,7 @@ class TestBatchDiagrams:
         assert result.max_pairs == 2
 
     def test_empty_list_raises(self):
-        with pytest.raises(Exception, match="empty"):
+        with pytest.raises(ValidationError, match="empty"):
             batch_diagrams([])
 
     def test_different_devices_raises(self):
@@ -323,7 +325,7 @@ class TestBatchDiagrams:
             d2 = PersistenceDiagram(
                 torch.tensor([[[2.0, 3.0, 0]]], dtype=torch.float32, device="cuda")
             )
-            with pytest.raises(Exception, match="same device"):
+            with pytest.raises(ValidationError, match="same device"):
                 batch_diagrams([d1, d2])  # type: ignore[list-item]
 
     def test_with_num_pairs(self):

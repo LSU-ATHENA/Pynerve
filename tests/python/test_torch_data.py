@@ -255,7 +255,7 @@ class TestPointCloudDataset:
 
     def test_invalid_point_cloud_raises(self):
         pcs = [torch.tensor([0.0, 1.0], dtype=torch.float32)]  # 1D
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError, match="2D"):
             PointCloudDataset(pcs)
 
 
@@ -286,7 +286,7 @@ class TestCreateDataloader:
     def test_invalid_batch_size_raises(self):
         pcs = [torch.tensor([[0.0, 1.0]], dtype=torch.float32)]
         ds = PointCloudDataset(pcs)
-        with pytest.raises((ValueError, TypeError)):
+        with pytest.raises(ValueError, match="batch_size"):
             create_dataloader(ds, batch_size=0)
 
     def test_negative_num_workers_raises(self):
