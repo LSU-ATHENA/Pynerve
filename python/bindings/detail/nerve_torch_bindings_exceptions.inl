@@ -4,7 +4,7 @@ namespace
 template <typename Exception>
 void set_registered_exception(const py::exception<Exception> &exception_type, const char *message)
 {
-    py::set_error(exception_type.ptr(), message);
+    PyErr_SetString(exception_type.ptr(), message);
 }
 
 } // namespace
