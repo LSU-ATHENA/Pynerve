@@ -12,8 +12,10 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <windows.h>
+// clang-format off
+#include <windows.h>   // must precede psapi.h on MinGW
 #include <psapi.h>
+// clang-format on
 #elif defined(__linux__)
 #include <malloc.h>
 #include <unistd.h>
