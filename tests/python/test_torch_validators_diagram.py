@@ -5,7 +5,6 @@ from __future__ import annotations
 import pytest
 import torch
 
-from pynerve.exceptions._base import NerveError
 from pynerve.exceptions._validation import ShapeError, ValidationError
 from pynerve.torch._diagram import PersistenceDiagram, batch_diagrams, unbatch_diagrams
 from pynerve.torch._persistence_validators import (

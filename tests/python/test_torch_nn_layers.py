@@ -114,12 +114,14 @@ class TestDiagramPooling:
         x = torch.tensor([[[0.0, 1.0], [2.0, 3.0]], [[4.0, 5.0], [6.0, 7.0]]], dtype=torch.float32)
         result = pool(x)
         assert result.shape == (2, 2)
+        assert torch.allclose(result, x.max(dim=0).values)
 
     def test_forward_sum(self):
         pool = DiagramPooling(method="sum", dim=0)
         x = torch.tensor([[[0.0, 1.0]], [[2.0, 3.0]]], dtype=torch.float32)
         result = pool(x)
         assert result.shape == (1, 2)
+        assert torch.allclose(result, x.sum(dim=0))
 
     def test_forward_attention(self):
         pool = DiagramPooling(method="attention", dim=0)
@@ -155,6 +157,11 @@ class TestPersistenceReadout:
 
     def test_construction_with_dropout(self):
         readout = PersistenceReadout(in_features=10, out_features=2, hidden_dims=(64,), dropout=0.3)
+        assert isinstance(readout, nn.Module)
+
+    def test_construction_activation_relu(self):
+        """Test default relu activation explicitly."""
+        readout = PersistenceReadout(in_features=10, out_features=2, activation="relu")
         assert isinstance(readout, nn.Module)
 
     def test_construction_activation_gelu(self):
