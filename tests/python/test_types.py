@@ -23,7 +23,7 @@ from pynerve._types import (
 )
 
 
-# ── Type aliases exist ─────────────────────────────────────────────────────
+# Type aliases exist 
 
 
 class TestTypeAliases:
@@ -43,7 +43,7 @@ class TestTypeAliases:
         assert PersistencePair is not None
 
 
-# ── PersistenceDiagramLike Protocol ────────────────────────────────────────
+# PersistenceDiagramLike Protocol 
 
 
 class TestPersistenceDiagramLike:
@@ -79,7 +79,7 @@ class TestPersistenceDiagramLike:
         assert not isinstance(42, PersistenceDiagramLike)
 
 
-# ── FilterFunction Protocol ────────────────────────────────────────────────
+# FilterFunction Protocol 
 
 
 class TestFilterFunction:
@@ -93,7 +93,7 @@ class TestFilterFunction:
         assert not isinstance(42, FilterFunction)
 
 
-# ── ClusteringAlgorithm Protocol ───────────────────────────────────────────
+# ClusteringAlgorithm Protocol 
 
 
 class TestClusteringAlgorithm:
@@ -107,7 +107,7 @@ class TestClusteringAlgorithm:
         assert not isinstance("not callable", ClusteringAlgorithm)
 
 
-# ── DistanceMetric Protocol ────────────────────────────────────────────────
+# DistanceMetric Protocol 
 
 
 class TestDistanceMetric:
@@ -118,7 +118,7 @@ class TestDistanceMetric:
         assert isinstance(my_dist, DistanceMetric)
 
 
-# ── VectorizationMethod Protocol ───────────────────────────────────────────
+# VectorizationMethod Protocol 
 
 
 class TestVectorizationMethod:
@@ -129,7 +129,7 @@ class TestVectorizationMethod:
         assert isinstance(my_vec, VectorizationMethod)
 
 
-# ── PersistenceComputer Protocol ───────────────────────────────────────────
+# PersistenceComputer Protocol 
 
 
 class TestPersistenceComputer:
@@ -147,7 +147,7 @@ class TestPersistenceComputer:
         assert not isinstance(BadComputer(), PersistenceComputer)
 
 
-# ── AsyncIterable Protocol ─────────────────────────────────────────────────
+# AsyncIterable Protocol 
 
 
 class TestAsyncIterable:
@@ -170,7 +170,7 @@ class TestAsyncIterable:
         assert not isinstance([1, 2, 3], AsyncIterable)
 
 
-# ── PersistenceConfig Protocol ─────────────────────────────────────────────
+# PersistenceConfig Protocol 
 
 
 class TestPersistenceConfig:
@@ -192,7 +192,7 @@ class TestPersistenceConfig:
         assert not isinstance(BadConfig(), PersistenceConfig)
 
 
-# ── MapperConfig Protocol ──────────────────────────────────────────────────
+# MapperConfig Protocol 
 
 
 class TestMapperConfig:

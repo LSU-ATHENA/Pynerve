@@ -18,7 +18,7 @@ from pynerve.torch._vectorization_basis import (
 )
 
 
-# ── _validate_diagram ──────────────────────────────────────────────────────
+# _validate_diagram 
 
 
 class TestValidateDiagram:
@@ -46,7 +46,7 @@ class TestValidateDiagram:
         assert result.numel() == 0
 
 
-# ── _validate_positive_finite ──────────────────────────────────────────────
+# _validate_positive_finite 
 
 
 class TestValidatePositiveFinite:
@@ -62,7 +62,7 @@ class TestValidatePositiveFinite:
             _validate_positive_finite(float("nan"), "x")
 
 
-# ── _validate_range ────────────────────────────────────────────────────────
+# _validate_range 
 
 
 class TestValidateRange:
@@ -85,7 +85,7 @@ class TestValidateRange:
             _validate_range((float("inf"), 10.0), "x")
 
 
-# ── _finite_birth_death ────────────────────────────────────────────────────
+# _finite_birth_death 
 
 
 class TestFiniteBirthDeath:
@@ -106,7 +106,7 @@ class TestFiniteBirthDeath:
         assert births.numel() == 0
 
 
-# ── persistence_image ──────────────────────────────────────────────────────
+# persistence_image 
 
 
 class TestPersistenceImage:
@@ -160,7 +160,7 @@ class TestPersistenceImage:
         assert result.shape == (2, 8, 8)
 
 
-# ── adaptive_persistence_image ─────────────────────────────────────────────
+# adaptive_persistence_image 
 
 
 class TestAdaptivePersistenceImage:
@@ -193,7 +193,7 @@ class TestAdaptivePersistenceImage:
             adaptive_persistence_image(d, min_sigma=5.0, max_sigma=0.5)
 
 
-# ── persistence_landscape ──────────────────────────────────────────────────
+# persistence_landscape 
 
 
 class TestPersistenceLandscape:
@@ -226,7 +226,7 @@ class TestPersistenceLandscape:
         assert result.shape[1] == 100
 
 
-# ── persistence_silhouette ─────────────────────────────────────────────────
+# persistence_silhouette 
 
 
 class TestPersistenceSilhouette:

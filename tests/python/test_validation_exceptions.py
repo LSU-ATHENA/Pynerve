@@ -22,7 +22,7 @@ from pynerve.exceptions._validation import (
 )
 
 
-# ── ValidationError ────────────────────────────────────────────────────────
+# ValidationError 
 
 
 class TestValidationError:
@@ -77,7 +77,7 @@ class TestValidationError:
         assert e.parameter is None
 
 
-# ── ShapeError ─────────────────────────────────────────────────────────────
+# ShapeError 
 
 
 class TestShapeError:
@@ -122,7 +122,7 @@ class TestShapeError:
         assert e.parameter == "tensor"
 
 
-# ── DtypeError ─────────────────────────────────────────────────────────────
+# DtypeError 
 
 
 class TestDtypeError:
@@ -155,7 +155,7 @@ class TestDtypeError:
         assert e.expected_dtypes == []
 
 
-# ── DeviceError ────────────────────────────────────────────────────────────
+# DeviceError 
 
 
 class TestDeviceError:
@@ -195,7 +195,7 @@ class TestDeviceError:
         assert e.available_devices == []
 
 
-# ── BackendRequiredError ───────────────────────────────────────────────────
+# BackendRequiredError 
 
 
 class TestBackendRequiredError:

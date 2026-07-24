@@ -24,7 +24,7 @@ from pynerve.torch._viz_data import (
 from pynerve.torch.viz_impl import get_plot_limits
 
 
-# ── _to_numpy ──────────────────────────────────────────────────────────────
+# _to_numpy 
 
 
 class TestToNumpy:
@@ -35,7 +35,7 @@ class TestToNumpy:
         assert np.allclose(result, np.array([1.0, 2.0, 3.0]))
 
 
-# ── _validate_optional_dim ─────────────────────────────────────────────────
+# _validate_optional_dim 
 
 
 class TestValidateOptionalDim:
@@ -51,7 +51,7 @@ class TestValidateOptionalDim:
             _validate_optional_dim(-1)
 
 
-# ── _validate_viz_tensor ──────────────────────────────────────────────────
+# _validate_viz_tensor 
 
 
 class TestValidateVizTensor:
@@ -66,7 +66,7 @@ class TestValidateVizTensor:
             _validate_viz_tensor(d)
 
 
-# ── _as_tensor / _as_plot_tensor ───────────────────────────────────────────
+# _as_tensor / _as_plot_tensor 
 
 
 class TestAsTensor:
@@ -123,7 +123,7 @@ class TestAsSingleTensor:
             _as_single_tensor(pd)
 
 
-# ── get_plot_limits ────────────────────────────────────────────────────────
+# get_plot_limits 
 
 
 class TestGetPlotLimits:
@@ -157,7 +157,7 @@ class TestGetPlotLimits:
         assert len(result) == 4
 
 
-# ── diagram_to_scatter_data ────────────────────────────────────────────────
+# diagram_to_scatter_data 
 
 
 class TestDiagramToScatterData:
@@ -186,7 +186,7 @@ class TestDiagramToScatterData:
         assert len(result["births"]) == 0
 
 
-# ── diagram_to_histogram_data ──────────────────────────────────────────────
+# diagram_to_histogram_data 
 
 
 class TestDiagramToHistogramData:
@@ -213,7 +213,7 @@ class TestDiagramToHistogramData:
             diagram_to_histogram_data(d, num_bins=0)
 
 
-# ── diagram_to_image_data ─────────────────────────────────────────────────
+# diagram_to_image_data 
 
 
 class TestDiagramToImageData:
@@ -236,7 +236,7 @@ class TestDiagramToImageData:
             diagram_to_image_data(d)
 
 
-# ── diagram_to_landscape_data ──────────────────────────────────────────────
+# diagram_to_landscape_data 
 
 
 class TestDiagramToLandscapeData:
@@ -254,7 +254,7 @@ class TestDiagramToLandscapeData:
             diagram_to_landscape_data(d, num_samples=0)
 
 
-# ── diagram_to_betti_data ──────────────────────────────────────────────────
+# diagram_to_betti_data 
 
 
 class TestDiagramToBettiData:
@@ -271,7 +271,7 @@ class TestDiagramToBettiData:
         assert len(result["betti_numbers"]) == 100
 
 
-# ── diagram_to_heatmap_data ────────────────────────────────────────────────
+# diagram_to_heatmap_data 
 
 
 class TestDiagramToHeatmapData:

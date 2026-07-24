@@ -21,7 +21,7 @@ from pynerve.torch._mapper_impl import (
 )
 
 
-# ── Constants ──────────────────────────────────────────────────────────────
+# Constants 
 
 
 class TestConstants:
@@ -35,7 +35,7 @@ class TestConstants:
         assert "connected" in _CLUSTERERS
 
 
-# ── _validate_mapper_inputs ────────────────────────────────────────────────
+# _validate_mapper_inputs 
 
 
 class TestValidateMapperInputs:
@@ -85,7 +85,7 @@ class TestValidateMapperInputs:
             _validate_mapper_inputs(pc, 10, 0.25, 0.5, 0)
 
 
-# ── _filter_pca_python ────────────────────────────────────────────────────
+# _filter_pca_python 
 
 
 class TestFilterPcaPython:
@@ -110,7 +110,7 @@ class TestFilterPcaPython:
             _filter_pca_python(pc, 1)
 
 
-# ── _filter_eccentricity_python ────────────────────────────────────────────
+# _filter_eccentricity_python 
 
 
 class TestFilterEccentricityPython:
@@ -125,7 +125,7 @@ class TestFilterEccentricityPython:
         assert result.item() == 0.0
 
 
-# ── _build_1d_cover ───────────────────────────────────────────────────────
+_build_1d_cover 
 
 
 class TestBuild1dCover:
@@ -148,7 +148,7 @@ class TestBuild1dCover:
             assert "center" in cover[0]
 
 
-# ── _dbscan_python ────────────────────────────────────────────────────────
+# _dbscan_python 
 
 
 class TestDbscanPython:
@@ -171,7 +171,7 @@ class TestDbscanPython:
         assert labels.numel() == 0
 
 
-# ── _single_linkage_python ────────────────────────────────────────────────
+# _single_linkage_python 
 
 
 class TestSingleLinkagePython:
@@ -192,7 +192,7 @@ class TestSingleLinkagePython:
         assert labels.numel() == 0
 
 
-# ── _build_edges_from_nodes ───────────────────────────────────────────────
+# _build_edges_from_nodes 
 
 
 class TestBuildEdgesFromNodes:
@@ -223,7 +223,7 @@ class TestBuildEdgesFromNodes:
         assert edges[0]["weight"] == 1.0
 
 
-# ── _create_grid_cover ────────────────────────────────────────────────────
+# _create_grid_cover 
 
 
 class TestCreateGridCover:
@@ -243,7 +243,7 @@ class TestCreateGridCover:
             _create_grid_cover(fv, resolution=2, overlap=0.1)
 
 
-# ── _validate_filter_vals ─────────────────────────────────────────────────
+# _validate_filter_vals 
 
 
 class TestValidateFilterVals:
@@ -266,7 +266,7 @@ class TestValidateFilterVals:
             _validate_filter_vals(fv, pc)
 
 
-# ── _mapper_from_filter_values ────────────────────────────────────────────
+# _mapper_from_filter_values 
 
 
 class TestMapperFromFilterValues:

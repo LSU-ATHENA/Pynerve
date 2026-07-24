@@ -24,7 +24,7 @@ from pynerve.exceptions._numerical import (
 )
 
 
-# ── NerveError base ────────────────────────────────────────────────────────
+# NerveError base 
 
 
 class TestNerveError:
@@ -91,7 +91,7 @@ class TestNerveError:
         assert e.details["c"] == [3]
 
 
-# ── Memory exceptions ──────────────────────────────────────────────────────
+# Memory exceptions 
 
 
 class TestMemoryErrors:
@@ -124,7 +124,7 @@ class TestMemoryErrors:
         assert "bad alloc" in str(e)
 
 
-# ── Numerical exceptions ───────────────────────────────────────────────────
+# Numerical exceptions 
 
 
 class TestNumericalErrors:

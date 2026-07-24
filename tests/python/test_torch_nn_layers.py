@@ -18,7 +18,7 @@ from pynerve.torch.nn_layers_impl import (
 )
 
 
-# ── _validate_probability ──────────────────────────────────────────────────
+# _validate_probability 
 
 
 class TestValidateProbability:
@@ -48,7 +48,7 @@ class TestValidateProbability:
             _validate_probability("dropout", float("inf"))
 
 
-# ── _validate_positive_dims ────────────────────────────────────────────────
+# _validate_positive_dims 
 
 
 class TestValidatePositiveDims:
@@ -73,7 +73,7 @@ class TestValidatePositiveDims:
             _validate_positive_dims("hidden_dims", (-1, 128))
 
 
-# ── DiagramPooling ─────────────────────────────────────────────────────────
+# DiagramPooling 
 
 
 class TestDiagramPooling:
@@ -143,7 +143,7 @@ class TestDiagramPooling:
             pool(x)
 
 
-# ── PersistenceReadout ─────────────────────────────────────────────────────
+# PersistenceReadout 
 
 
 class TestPersistenceReadout:

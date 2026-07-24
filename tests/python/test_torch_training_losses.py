@@ -15,7 +15,7 @@ from pynerve.torch.training_utils_impl import (
 )
 
 
-# ── _validate_finite_scalar ────────────────────────────────────────────────
+# _validate_finite_scalar 
 
 
 class TestValidateFiniteScalar:
@@ -31,7 +31,7 @@ class TestValidateFiniteScalar:
             _validate_finite_scalar(float("inf"), "x")
 
 
-# ── _validate_nonnegative_finite ───────────────────────────────────────────
+# _validate_nonnegative_finite 
 
 
 class TestValidateNonnegativeFinite:
@@ -48,7 +48,7 @@ class TestValidateNonnegativeFinite:
             _validate_nonnegative_finite(float("nan"), "x")
 
 
-# ── _validate_finite_mapping ───────────────────────────────────────────────
+# _validate_finite_mapping 
 
 
 class TestValidateFiniteMapping:
@@ -77,7 +77,7 @@ class TestValidateFiniteMapping:
             _validate_finite_mapping({"a": -1.0}, "x", nonnegative=True)
 
 
-# ── DiagramDistanceLoss ────────────────────────────────────────────────────
+# DiagramDistanceLoss 
 
 
 class TestDiagramDistanceLoss:
@@ -112,7 +112,7 @@ class TestDiagramDistanceLoss:
             assert loss.reduction == r
 
 
-# ── TopologicalRegularization ──────────────────────────────────────────────
+# TopologicalRegularization 
 
 
 class TestTopologicalRegularization:
@@ -173,7 +173,7 @@ class TestTopologicalRegularization:
         assert result.item() == pytest.approx(9604.0)
 
 
-# ── PersistenceCrossEntropy ────────────────────────────────────────────────
+# PersistenceCrossEntropy 
 
 
 class TestPersistenceCrossEntropy:

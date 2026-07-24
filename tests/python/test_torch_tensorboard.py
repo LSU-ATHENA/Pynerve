@@ -15,7 +15,7 @@ from pynerve.torch.tensorboard import (
 )
 
 
-# ── Mock writer ────────────────────────────────────────────────────────────
+# Mock writer 
 
 
 class MockWriter:
@@ -39,7 +39,7 @@ class MockWriter:
         pass
 
 
-# ── log_diagram ────────────────────────────────────────────────────────────
+# log_diagram 
 
 
 class TestLogDiagram:
@@ -81,7 +81,7 @@ class TestLogDiagram:
         assert writer.images[0][0] == "custom"
 
 
-# ── log_landscape ──────────────────────────────────────────────────────────
+# log_landscape 
 
 
 class TestLogLandscape:
@@ -105,7 +105,7 @@ class TestLogLandscape:
         assert len(writer.scalars) > 0
 
 
-# ── log_betti_curve ────────────────────────────────────────────────────────
+# log_betti_curve 
 
 
 class TestLogBettiCurve:
@@ -128,7 +128,7 @@ class TestLogBettiCurve:
         assert len(writer.scalars) > 0
 
 
-# ── log_statistics ─────────────────────────────────────────────────────────
+# log_statistics 
 
 
 class TestLogStatistics:
@@ -146,7 +146,7 @@ class TestLogStatistics:
         assert len(writer.scalars) == 10
 
 
-# ── DiagramSummaryWriter ───────────────────────────────────────────────────
+# DiagramSummaryWriter 
 
 
 class TestDiagramSummaryWriter:

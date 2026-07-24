@@ -17,7 +17,7 @@ from pynerve.torch.data import (
 from pynerve.torch._diagram import PersistenceDiagram
 
 
-# ── _validate_single_point_cloud ───────────────────────────────────────────
+# _validate_single_point_cloud 
 
 
 class TestValidateSinglePointCloud:
@@ -70,7 +70,7 @@ class TestValidateSinglePointCloud:
             _validate_single_point_cloud(pc, dim=2, device=pc.device, dtype=pc.dtype)
 
 
-# ── _validate_point_cloud_batch ────────────────────────────────────────────
+# _validate_point_cloud_batch 
 
 
 class TestValidatePointCloudBatch:
@@ -105,7 +105,7 @@ class TestValidatePointCloudBatch:
             _validate_point_cloud_batch(batch)
 
 
-# ── _pad_point_clouds ──────────────────────────────────────────────────────
+# _pad_point_clouds 
 
 
 class TestPadPointClouds:
@@ -150,7 +150,7 @@ class TestPadPointClouds:
         assert result.shape == (1, 1, 3)
 
 
-# ── collate_point_clouds ───────────────────────────────────────────────────
+# collate_point_clouds 
 
 
 class TestCollatePointClouds:
@@ -186,7 +186,7 @@ class TestCollatePointClouds:
             collate_point_clouds(batch)  # type: ignore[list-item]
 
 
-# ── collate_diagrams ───────────────────────────────────────────────────────
+# collate_diagrams 
 
 
 class TestCollateDiagrams:
@@ -220,7 +220,7 @@ class TestCollateDiagrams:
         assert result.batch_size == 0
 
 
-# ── PointCloudDataset ──────────────────────────────────────────────────────
+# PointCloudDataset 
 
 
 class TestPointCloudDataset:
@@ -259,7 +259,7 @@ class TestPointCloudDataset:
             PointCloudDataset(pcs)
 
 
-# ── create_dataloader ──────────────────────────────────────────────────────
+# create_dataloader 
 
 
 class TestCreateDataloader:

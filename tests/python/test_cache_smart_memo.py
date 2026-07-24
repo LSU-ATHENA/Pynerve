@@ -22,7 +22,7 @@ except ImportError:
     HAS_DISKCACHE = False
 
 
-# ── _validate_ignore_args ──────────────────────────────────────────────────
+# _validate_ignore_args 
 
 
 class TestValidateIgnoreArgs:
@@ -50,7 +50,7 @@ class TestValidateIgnoreArgs:
             _validate_ignore_args("not_a_list")  # type: ignore[arg-type]
 
 
-# ── SmartCache ─────────────────────────────────────────────────────────────
+# SmartCache 
 
 
 class TestSmartCacheBasics:
@@ -132,7 +132,7 @@ class TestSmartCachePromotion:
         cache.memory_cache.close()
 
 
-# ── get_cache_stats ────────────────────────────────────────────────────────
+# get_cache_stats 
 
 
 class TestGetCacheStats:
@@ -158,7 +158,7 @@ class TestGetCacheStats:
             get_cache_stats("not a cache")  # type: ignore[arg-type]
 
 
-# ── MemoizePersistent ──────────────────────────────────────────────────────
+# MemoizePersistent 
 
 
 class TestMemoizePersistent:
@@ -302,7 +302,7 @@ class TestMemoizePersistent:
         assert memo.__wrapped__ is my_func  # type: ignore[attr-defined]
 
 
-# ── memoize_persistent decorator ───────────────────────────────────────────
+# memoize_persistent decorator 
 
 
 class TestMemoizePersistentDecorator:

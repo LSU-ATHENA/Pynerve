@@ -25,7 +25,7 @@ except ImportError:
     HAS_DISKCACHE = False
 
 
-# ── _validate_cache_key ────────────────────────────────────────────────────
+# _validate_cache_key 
 
 
 class TestValidateCacheKey:
@@ -41,7 +41,7 @@ class TestValidateCacheKey:
             _validate_cache_key(123)  # type: ignore[arg-type]
 
 
-# ── DiagramCache ───────────────────────────────────────────────────────────
+# DiagramCache 
 
 
 class TestDiagramCacheBasic:
@@ -239,7 +239,7 @@ class TestDiagramCacheDisk:
                 DiagramCache(use_disk=True)
 
 
-# ── PersistentDiagramCache ─────────────────────────────────────────────────
+# PersistentDiagramCache 
 
 
 class TestPersistentDiagramCache:
@@ -276,7 +276,7 @@ class TestPersistentDiagramCache:
                 PersistentDiagramCache(cache_dir="/tmp/test_cache")
 
 
-# ── cached_persistence decorator ───────────────────────────────────────────
+# cached_persistence decorator 
 
 
 class TestCachedPersistence:

@@ -12,7 +12,7 @@ from pynerve.torch._persistence_helpers import (
 )
 
 
-# ── _build_sorted_edges ────────────────────────────────────────────────────
+# _build_sorted_edges 
 
 
 class TestBuildSortedEdges:
@@ -62,7 +62,7 @@ class TestBuildSortedEdges:
         assert j == 1
 
 
-# ── _diagram_from_backend_parts ────────────────────────────────────────────
+# _diagram_from_backend_parts 
 
 
 class TestDiagramFromBackendParts:

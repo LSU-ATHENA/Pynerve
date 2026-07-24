@@ -16,7 +16,7 @@ from pynerve.torch._persistence_validators import (
 )
 
 
-# ── _validate_max_dim ──────────────────────────────────────────────────────
+# _validate_max_dim 
 
 
 class TestValidateMaxDim:
@@ -37,7 +37,7 @@ class TestValidateMaxDim:
             _validate_max_dim("abc")  # type: ignore[arg-type]
 
 
-# ── _validate_max_radius ───────────────────────────────────────────────────
+# _validate_max_radius 
 
 
 class TestValidateMaxRadius:
@@ -58,7 +58,7 @@ class TestValidateMaxRadius:
             _validate_max_radius(float("nan"))
 
 
-# ── _validate_metric ───────────────────────────────────────────────────────
+# _validate_metric 
 
 
 class TestValidateMetric:
@@ -71,7 +71,7 @@ class TestValidateMetric:
             _validate_metric("minkowski")
 
 
-# ── _validate_image_resolution ─────────────────────────────────────────────
+# _validate_image_resolution 
 
 
 class TestValidateImageResolution:
@@ -91,7 +91,7 @@ class TestValidateImageResolution:
             _validate_image_resolution((-1, 20))
 
 
-# ── _validate_persistence_image_diagram ────────────────────────────────────
+# _validate_persistence_image_diagram 
 
 
 class TestValidatePersistenceImageDiagram:
@@ -136,7 +136,7 @@ class TestValidatePersistenceImageDiagram:
         assert result is d
 
 
-# ── PersistenceDiagram ─────────────────────────────────────────────────────
+# PersistenceDiagram 
 
 
 class TestPersistenceDiagram:
@@ -287,7 +287,7 @@ class TestPersistenceDiagram:
             PersistenceDiagram(d)
 
 
-# ── batch_diagrams ─────────────────────────────────────────────────────────
+# batch_diagrams 
 
 
 class TestBatchDiagrams:
@@ -340,7 +340,7 @@ class TestBatchDiagrams:
         assert result.num_pairs is not None
 
 
-# ── unbatch_diagrams ───────────────────────────────────────────────────────
+# unbatch_diagrams 
 
 
 class TestUnbatchDiagrams:

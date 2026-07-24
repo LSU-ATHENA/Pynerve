@@ -13,7 +13,7 @@ from pynerve.torch._training_callbacks import (
 )
 
 
-# ── _validate_nonnegative_finite ───────────────────────────────────────────
+# _validate_nonnegative_finite 
 
 
 class TestValidateNonnegativeFinite:
@@ -30,7 +30,7 @@ class TestValidateNonnegativeFinite:
             _validate_nonnegative_finite(float("nan"), "x")
 
 
-# ── DiagramVisualizationCallback ───────────────────────────────────────────
+# DiagramVisualizationCallback 
 
 
 class TestDiagramVisualizationCallback:
@@ -88,7 +88,7 @@ class TestDiagramVisualizationCallback:
             cb.on_epoch_end(epoch=-1, diagram=d)
 
 
-# ── TopologicalEarlyStopping ───────────────────────────────────────────────
+# TopologicalEarlyStopping 
 
 
 class TestTopologicalEarlyStopping:

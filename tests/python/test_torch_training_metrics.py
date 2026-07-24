@@ -13,7 +13,7 @@ from pynerve.torch._training_metrics import (
 )
 
 
-# ── _validate_nonnegative_finite ───────────────────────────────────────────
+# _validate_nonnegative_finite 
 
 
 class TestValidateNonnegativeFinite:
@@ -34,7 +34,7 @@ class TestValidateNonnegativeFinite:
             _validate_nonnegative_finite(float("inf"), "x")
 
 
-# ── DiagramMetric ──────────────────────────────────────────────────────────
+# DiagramMetric 
 
 
 class TestDiagramMetric:
@@ -118,7 +118,7 @@ class TestDiagramMetric:
         assert result["diagram_total_std"] == 0.0
 
 
-# ── TopologicalComplexityMetric ────────────────────────────────────────────
+# TopologicalComplexityMetric 
 
 
 class TestTopologicalComplexityMetric:

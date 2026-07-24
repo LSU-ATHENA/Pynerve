@@ -13,7 +13,7 @@ from pynerve.torch.mapper import (
 )
 
 
-# ── _validate_public_point_cloud ───────────────────────────────────────────
+# _validate_public_point_cloud 
 
 
 class TestValidatePublicPointCloud:
@@ -37,7 +37,7 @@ class TestValidatePublicPointCloud:
             _validate_public_point_cloud(pc)
 
 
-# ── _validate_mapper_params ───────────────────────────────────────────────
+# _validate_mapper_params 
 
 
 class TestValidateMapperParams:
@@ -82,7 +82,7 @@ class TestValidateMapperParams:
             _validate_mapper_params(pc, 10, 0.25, 0.5, 5, "dbscan", 123)  # type: ignore[arg-type]
 
 
-# ── MapperTransformer ──────────────────────────────────────────────────────
+# MapperTransformer 
 
 
 class TestMapperTransformer:

@@ -16,7 +16,7 @@ from pynerve.torch.preprocessing import (
 )
 
 
-# ── _pad_diagrams ──────────────────────────────────────────────────────────
+# _pad_diagrams 
 
 
 class TestPadDiagrams:
@@ -59,7 +59,7 @@ class TestPadDiagrams:
         assert result.shape[-1] == 4
 
 
-# ── handle_infinite_deaths ─────────────────────────────────────────────────
+# handle_infinite_deaths 
 
 
 class TestHandleInfiniteDeaths:
@@ -117,7 +117,7 @@ class TestHandleInfiniteDeaths:
             handle_infinite_deaths(d, strategy="max", large_value_factor=-1.0)
 
 
-# ── threshold_diagram ──────────────────────────────────────────────────────
+# threshold_diagram 
 
 
 class TestThresholdDiagram:
@@ -164,7 +164,7 @@ class TestThresholdDiagram:
         assert result.shape[0] == 0
 
 
-# ── normalize_diagram ──────────────────────────────────────────────────────
+# normalize_diagram 
 
 
 class TestNormalizeDiagram:
@@ -214,7 +214,7 @@ class TestNormalizeDiagram:
             normalize_diagram(d, method="minmax")
 
 
-# ── subsample_diagram ──────────────────────────────────────────────────────
+# subsample_diagram 
 
 
 class TestSubsampleDiagram:
@@ -262,7 +262,7 @@ class TestSubsampleDiagram:
         assert result.shape[0] == 0
 
 
-# ── remove_outliers ────────────────────────────────────────────────────────
+# remove_outliers 
 
 
 class TestRemoveOutliers:
@@ -319,7 +319,7 @@ class TestRemoveOutliers:
         assert result.shape[0] >= 1
 
 
-# ── clean_diagram ──────────────────────────────────────────────────────────
+# clean_diagram 
 
 
 class TestCleanDiagram:

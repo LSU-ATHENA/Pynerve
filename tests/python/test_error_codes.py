@@ -69,7 +69,7 @@ from pynerve.exceptions import (
 )
 
 
-# ── ErrorCategory ──────────────────────────────────────────────────────────
+# ErrorCategory 
 
 
 class TestErrorCategory:
@@ -95,7 +95,7 @@ class TestErrorCategory:
         assert ErrorCategory(255) == ErrorCategory.UNKNOWN_CATEGORY
 
 
-# ── ErrorSeverity ──────────────────────────────────────────────────────────
+# ErrorSeverity 
 
 
 class TestErrorSeverity:
@@ -125,7 +125,7 @@ class TestErrorSeverity:
         ]
 
 
-# ── Error code constants ───────────────────────────────────────────────────
+# Error code constants 
 
 
 class TestErrorCodes:
@@ -179,7 +179,7 @@ class TestErrorCodes:
         assert (E90_VALIDATION_ERROR >> 8) & 0xF == ErrorCategory.OPERATIONAL
 
 
-# ── translate_cpp_exception ────────────────────────────────────────────────
+# translate_cpp_exception 
 
 
 class FakeCppException(Exception):
@@ -229,7 +229,7 @@ class TestTranslateCppException:
         with pytest.raises(TypeError, match="must be an Exception"):
             translate_cpp_exception(None)  # type: ignore[arg-type]
 
-    # ── Map each error code to its exception type ──
+    #  Map each error code to its exception type 
 
     def test_e00_io_timeout(self):
         assert isinstance(translate_cpp_exception(FakeCppException("x", E00_IO_TIMEOUT)), NerveIOError)
@@ -324,7 +324,7 @@ class TestTranslateCppException:
     def test_e100_convergence_failure(self):
         assert isinstance(translate_cpp_exception(FakeCppException("x", E100_CONVERGENCE_FAILURE)), ConvergenceError)
 
-    # ── String message preservation ──
+    #  String message preservation 
 
     def test_message_preserved(self):
         ex = FakeCppException("the GPU is on fire", E11_GPU_LAUNCH_FAIL)

@@ -24,7 +24,7 @@ from pynerve.torch._statistics_core import (
 )
 
 
-# ── _validate_stat_diagram ─────────────────────────────────────────────────
+# _validate_stat_diagram 
 
 
 class TestValidateStatDiagram:
@@ -74,7 +74,7 @@ class TestValidateStatDiagram:
         assert result is d
 
 
-# ── _valid_rows ────────────────────────────────────────────────────────────
+# _valid_rows 
 
 
 class TestValidRows:
@@ -108,7 +108,7 @@ class TestValidRows:
         assert result.shape[0] == 0
 
 
-# ── _split_finite_persistence ──────────────────────────────────────────────
+# _split_finite_persistence 
 
 
 class TestSplitFinitePersistence:
@@ -135,7 +135,7 @@ class TestSplitFinitePersistence:
         assert result.numel() == 0
 
 
-# ── _batch_or_scalar ───────────────────────────────────────────────────────
+# _batch_or_scalar 
 
 
 class TestBatchOrScalar:
@@ -154,7 +154,7 @@ class TestBatchOrScalar:
         assert r3d.shape[0] == 2
 
 
-# ── total_persistence ──────────────────────────────────────────────────────
+# total_persistence 
 
 
 class TestTotalPersistence:
@@ -187,7 +187,7 @@ class TestTotalPersistence:
         assert result.item() == 1.0
 
 
-# ── mean_persistence ───────────────────────────────────────────────────────
+# mean_persistence 
 
 
 class TestMeanPersistence:
@@ -202,7 +202,7 @@ class TestMeanPersistence:
         assert result.item() == 0.0
 
 
-# ── max_persistence ────────────────────────────────────────────────────────
+# max_persistence 
 
 
 class TestMaxPersistence:
@@ -217,7 +217,7 @@ class TestMaxPersistence:
         assert result.item() == 0.0
 
 
-# ── persistence_variance ───────────────────────────────────────────────────
+# persistence_variance 
 
 
 class TestPersistenceVariance:
@@ -237,7 +237,7 @@ class TestPersistenceVariance:
         assert result.item() == 0.0
 
 
-# ── persistence_entropy ────────────────────────────────────────────────────
+# persistence_entropy 
 
 
 class TestPersistenceEntropy:
@@ -269,7 +269,7 @@ class TestPersistenceEntropy:
         assert result1.item() > 0
 
 
-# ── number_of_features ─────────────────────────────────────────────────────
+# number_of_features 
 
 
 class TestNumberOfFeatures:
@@ -299,7 +299,7 @@ class TestNumberOfFeatures:
         assert result.item() == 1
 
 
-# ── betti_numbers_at_scale ─────────────────────────────────────────────────
+# betti_numbers_at_scale 
 
 
 class TestBettiNumbersAtScale:
@@ -309,7 +309,7 @@ class TestBettiNumbersAtScale:
         assert result.item() == 2
 
 
-# ── betti_curve ────────────────────────────────────────────────────────────
+# betti_curve 
 
 
 class TestBettiCurve:
@@ -340,7 +340,7 @@ class TestBettiCurve:
             betti_curve(d, num_samples=0)
 
 
-# ── amplitude ──────────────────────────────────────────────────────────────
+# amplitude 
 
 
 class TestAmplitude:
