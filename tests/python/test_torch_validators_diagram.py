@@ -322,12 +322,9 @@ class TestBatchDiagrams:
         )
         if not torch.cuda.is_available():
             pytest.skip("CUDA not available")
-        try:
-            d2 = PersistenceDiagram(
-                torch.tensor([[[2.0, 3.0, 0]]], dtype=torch.float32, device="cuda")
-            )
-        except torch.AcceleratorError:
-            pytest.skip("CUDA device incompatible")
+        d2 = PersistenceDiagram(
+            torch.tensor([[[2.0, 3.0, 0]]], dtype=torch.float32, device="cuda")
+        )
         with pytest.raises(ValidationError, match="same device"):
             batch_diagrams([d1, d2])
 
