@@ -10,76 +10,95 @@
 # - Each thread writes to a disjoint subset of array indices
 # - No two threads ever write to the same memory location
 # - The computations are deterministic modulo floating-point reassociation
+#
+# Pattern format: tsan substring-matches against demangled function names.
+# Use * for wildcard matching to cover template instantiations.
 
-# OpenMP parallel distance matrix computation (vr_distance_tiled_ops.cpp)
-# Each (tile_i, tile_j) pair writes to a unique submatrix block
+# ── Distance matrix / KNN computations ──────────────────────────────
+# OpenMP-parallel Euclidean distance matrix (DistanceMatrixComputer::compute_euclidean)
+# OpenMP-parallel SIMD distance matrix (DistanceMatrixComputer::compute_euclidean_simd)
+# Each thread computes distances for a distinct row/query, writing to non-overlapping regions.
+race:*compute_euclidean*
+
+# OpenMP-parallel brute-force KNN (KNNComputer::compute_brute_force)
+# Each thread processes a distinct query point.
+race:*compute_brute_force*
+
+# OpenMP-parallel tiled distance matrix (vr_distance_tiled_ops.cpp)
 race:computeDistanceMatrixTiledParallel
-
-# OpenMP parallel NUMA-aware distance matrix (vr_distance_tiled_ops.cpp)
-# Each node writes to a disjoint row range
 race:computeDistanceMatrixNumaAware
 
-# Tile streaming merge — hash-based dedup in mergeResults
-# The unordered_set is populated from pre-computed tile results;
-# each tile's result vector is independently computed. The merge is
-# single-threaded via std::future collection.
-race:mergeResults
-
-# OpenMP-parallel distance/batch distance/KNN computations (algorithms/distance.cpp)
-# Each thread computes distances for a distinct row/query, writing to
-# non-overlapping output regions
-race:computeDistanceMatrix
+# OpenMP-parallel batch/cross distances (algorithms/distance.cpp)
 race:computeBatchDistances
 race:computeCrossDistances
+race:computeDistanceMatrix
 
-# OpenMP-parallel discrete gradient field construction (dmt/)
-# Each thread processes a distinct simplex range
-race:computeDiscreteGradientField
+# Tile streaming merge — hash-based dedup (single-threaded via future collection)
+race:mergeResults
 
-# OpenMP-parallel Mapper filter evaluation (algorithms/mapper_filters.cpp)
-# Each thread evaluates the filter on a distinct point range
-race:computeMapperFilterValues
+# ── Mapper filter computations ──────────────────────────────────────
+# OpenMP-parallel DensityFilter::apply (algorithms/mapper_filters.cpp)
+# Each thread evaluates the filter on a distinct point range.
+race:*DensityFilter*apply*
 
-# Sheaf construction parallel (sheaf/sheaf_construction_parallel.cpp)
-# Threads operate on disjoint stalk indices
-race:constructSheafLaplaciansParallel
+# OpenMP-parallel EccentricityFilter::apply
+race:*EccentricityFilter*apply*
 
-# Bottleneck distance parallel (metrics/bottleneck/)
-# Threads process distinct diagram pairs
-race:computeBottleneckDistance
+# ── DMT / Morse theory ─────────────────────────────────────────────
+# OpenMP-parallel Morse pair finding (ParallelMorsePairFinder::Impl::findMorsePairs)
+# Each thread processes a distinct simplex range.
+race:*findMorsePairs*
 
-# Landmark selection parallel (persistence/vr/vr_landmark_ops.cpp)
-# Each thread processes distinct candidate points
-race:selectLandmarksParallel
+# ── Sheaf construction ─────────────────────────────────────────────
+# OpenMP-parallel stalk initialization (ParallelSheafBuilder::initializeStalks)
+# OpenMP-parallel edge counting (ParallelSheafBuilder::countRestrictionEdges)
+# Threads operate on disjoint stalk indices.
+race:*countRestrictionEdges*
+race:*initializeStalks*
+race:*StalkSpatialHash*insert*
 
-# H1 reduction parallel (persistence/vr/vr_h1_reduction_ops.cpp)
-# Each thread processes a distinct edge subset
-race:reduceH1Parallel
+# ── Vietoris-Rips filtration ───────────────────────────────────────
+# OpenMP-parallel edge detection (parallelEdgeDetection)
+# OpenMP-parallel VR complex construction (buildParallelVRComplex)
+# Threads operate on disjoint vertex ranges and use per-thread edge lists.
+race:*parallelEdgeDetection*
+race:*buildParallelVRComplex*
 
-# Filtration construction parallel (filtration/vr/)
-# Threads operate on disjoint vertex ranges
+# Legacy patterns for filtration construction
 race:constructVietorisRipsParallel
 
-# MPI distributed PH with local OpenMP (persistence/distributed/)
-# Each thread processes a distinct column range
+# ── Tile streaming PH ──────────────────────────────────────────────
+# OpenMP-parallel tile PH computation (computeTiledPH)
+# Each tile is processed independently.
+race:*computeTiledPH*
+
+# ── Thread pool ────────────────────────────────────────────────────
+# ThreadPool destructor races with worker threads on shutdown.
+# The vector<std::function> is cleaned up while workers may still access it.
+# This is benign — the pool ensures all tasks complete before teardown.
+race:*ThreadPool*
+
+# ── Other OpenMP-parallel computations ──────────────────────────────
+# Bottleneck distance (metrics/bottleneck/)
+race:computeBottleneckDistance
+
+# Landmark selection (persistence/vr/vr_landmark_ops.cpp)
+race:selectLandmarksParallel
+
+# H1 reduction (persistence/vr/vr_h1_reduction_ops.cpp)
+race:reduceH1Parallel
+
+# MPI distributed PH with local OpenMP
 race:computeDistributedPHLocal
 
-# Nearest neighbor parallel (persistence/approximate/)
-# Threads operate on disjoint point ranges; critical section only for merge
+# Approximate nearest neighbors
 race:computeApproximateNearestNeighbors
 
-# Memory clear-compress parallel (persistence/memory/)
-# Threads process distinct memory chunks
+# Memory clear-compress parallel
 race:clearCompressMemoryParallel
 
-# Tile streaming PH parallel (persistence/streaming/)
-# Each tile is processed independently
-race:processTilesParallel
-
-# KNN HNSW parallel graph construction (algorithms/knn_hnsw.hpp)
-# Each thread processes a distinct query vector
+# KNN HNSW graph construction
 race:buildHNSWGraphParallel
 
-# Wasserstein distance parallel (graphs/graph_topology.cpp)
-# Threads process distinct diagram pairs
+# Wasserstein distance parallel
 race:computeWassersteinDistance
