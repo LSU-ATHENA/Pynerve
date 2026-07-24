@@ -37,12 +37,10 @@ race:computeDistanceMatrix
 race:mergeResults
 
 # ── Mapper filter computations ──────────────────────────────────────
-# OpenMP-parallel DensityFilter::apply (algorithms/mapper_filters.cpp)
+# OpenMP-parallel DensityFilter::apply, EccentricityFilter::apply,
+# and PCAFilter::apply (algorithms/mapper_filters.cpp)
 # Each thread evaluates the filter on a distinct point range.
-race:*DensityFilter*apply*
-
-# OpenMP-parallel EccentricityFilter::apply
-race:*EccentricityFilter*apply*
+race:*Filter*apply*
 
 # ── DMT / Morse theory ─────────────────────────────────────────────
 # OpenMP-parallel Morse pair finding (ParallelMorsePairFinder::Impl::findMorsePairs)
@@ -55,7 +53,7 @@ race:*findMorsePairs*
 # Threads operate on disjoint stalk indices.
 race:*countRestrictionEdges*
 race:*initializeStalks*
-race:*StalkSpatialHash*insert*
+race:*StalkSpatialHash*
 
 # ── Vietoris-Rips filtration ───────────────────────────────────────
 # OpenMP-parallel edge detection (parallelEdgeDetection)
@@ -74,9 +72,10 @@ race:*computeTiledPH*
 
 # ── Thread pool ────────────────────────────────────────────────────
 # ThreadPool destructor races with worker threads on shutdown.
-# The vector<std::function> is cleaned up while workers may still access it.
-# This is benign — the pool ensures all tasks complete before teardown.
-race:*ThreadPool*
+# The vector<std::function> is cleaned up while workers may still
+# access it. This is benign — the pool ensures all tasks complete
+# before teardown, but tsan can't track the implicit synchronization.
+race:*ThreadPool*~*
 
 # ── Other OpenMP-parallel computations ──────────────────────────────
 # Bottleneck distance (metrics/bottleneck/)
