@@ -107,17 +107,16 @@ class TestDiagramFromBackendParts:
             _diagram_from_backend_parts([], [], [], batched=True)
 
     def test_uneven_col_counts(self):
-        """Test diagrams with different column counts are padded properly."""
+        """Test diagrams with different row counts are padded properly."""
         d1 = torch.tensor([[0.0, 1.0, 0]], dtype=torch.float32)
-        d2 = torch.tensor([[2.0, 3.0, 0, 5.0]], dtype=torch.float32)  # 4 cols
+        d2 = torch.tensor([[2.0, 3.0, 0], [4.0, 5.0, 0]], dtype=torch.float32)
         m1 = torch.tensor([True], dtype=torch.bool)
-        m2 = torch.tensor([True], dtype=torch.bool)
+        m2 = torch.tensor([True, True], dtype=torch.bool)
 
-        # The col count is the max across all diagrams
         result = _diagram_from_backend_parts(
-            [d1, d2], [m1, m2], [torch.tensor([1]), torch.tensor([1])], batched=True
+            [d1, d2], [m1, m2], [torch.tensor([1]), torch.tensor([2])], batched=True
         )
-        assert result.tensor().shape[-1] == 4
+        assert result.max_pairs == 2
 
     def test_varying_num_pairs_shapes(self):
         d1 = torch.tensor([[0.0, 1.0, 0]], dtype=torch.float32)

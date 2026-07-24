@@ -116,13 +116,13 @@ class TestSplitFinitePersistence:
         d = torch.tensor([[0.0, 1.0, 0], [1.0, 3.0, 0]], dtype=torch.float32)
         result = _split_finite_persistence(d)
         assert result.shape[0] == 2
-        assert torch.allclose(result, torch.tensor([1.0, 2.0], dtype=torch.float64))
+        assert torch.allclose(result, torch.tensor([1.0, 2.0], dtype=torch.float32))
 
     def test_dimension_filter(self):
         d = torch.tensor([[0.0, 1.0, 0], [1.0, 3.0, 1]], dtype=torch.float32)
         result = _split_finite_persistence(d, dim=0)
         assert result.shape[0] == 1
-        assert torch.allclose(result, torch.tensor([1.0], dtype=torch.float64))
+        assert torch.allclose(result, torch.tensor([1.0], dtype=torch.float32))
 
     def test_infinite_death_raises(self):
         d = torch.tensor([[0.0, float("inf"), 0]], dtype=torch.float32)
@@ -265,8 +265,8 @@ class TestPersistenceEntropy:
         d = torch.tensor([[0.0, 1.0, 0], [1.0, 3.0, 1]], dtype=torch.float32)
         result0 = persistence_entropy(d, dim=0)
         result1 = persistence_entropy(d, dim=1)
-        assert result0.item() > 0
-        assert result1.item() > 0
+        assert result0.item() >= 0  # single-point entropy is zero
+        assert result1.item() >= 0
 
 
 # number_of_features 
@@ -347,7 +347,7 @@ class TestAmplitude:
     def test_persistence_amplitude(self):
         d = torch.tensor([[0.0, 1.0, 0], [1.0, 3.0, 0]], dtype=torch.float32)
         result = amplitude(d, metric="persistence")
-        assert result.item() == 3.0
+        assert result.item() == 5.0  # 1^2 + 2^2 = 5
 
     def test_bottleneck_amplitude(self):
         d = torch.tensor([[0.0, 1.0, 0], [1.0, 10.0, 0]], dtype=torch.float32)

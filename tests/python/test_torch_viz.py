@@ -136,11 +136,11 @@ class TestGetPlotLimits:
 
     def test_all_infinite_deaths(self):
         d = torch.tensor([[0.0, float("inf"), 0]], dtype=torch.float32)
-        result = get_plot_limits(d)
-        assert result == (0.0, 1.0, 0.0, 1.0)
+        with pytest.raises(ValueError, match="finite deaths"):
+            get_plot_limits(d)
 
     def test_custom_padding(self):
-        d = torch.tensor([[0.0, 10.0, 0]], dtype=torch.float32)
+        d = torch.tensor([[0.0, 10.0, 0], [5.0, 15.0, 0]], dtype=torch.float32)
         x_min, x_max, _, _ = get_plot_limits(d, padding=0.5)
         assert x_min < 0.0
         assert x_max > 10.0

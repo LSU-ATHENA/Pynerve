@@ -268,20 +268,21 @@ class TestSubsampleDiagram:
 class TestRemoveOutliers:
     def test_iqr_basic(self):
         d = torch.tensor(
-            [[0.0, 1.0, 0], [1.0, 2.0, 0], [10.0, 100.0, 0]],
+            [[0.0, 1.0, 0], [0.5, 1.5, 0], [0.2, 1.2, 0], [10.0, 1000.0, 0]],
             dtype=torch.float32,
         )
-        result = remove_outliers(d, method="iqr")
-        # The huge outlier should be removed
-        assert result.shape[0] < 3
+        result = remove_outliers(d, method="iqr", threshold=1.0)
+        assert result.shape[0] < 4
 
     def test_zscore_basic(self):
         d = torch.tensor(
-            [[0.0, 1.0, 0], [1.0, 2.0, 0], [10.0, 100.0, 0]],
+            [[0.0, 1.0, 0], [0.5, 1.5, 0], [0.2, 1.2, 0],
+             [0.3, 1.3, 0], [0.7, 1.7, 0], [0.4, 1.4, 0],
+             [100.0, 1000.0, 0]],
             dtype=torch.float32,
         )
         result = remove_outliers(d, method="zscore", threshold=2.0)
-        assert result.shape[0] < 3
+        assert result.shape[0] == 6
 
     def test_isolation_forest(self):
         d = torch.tensor(

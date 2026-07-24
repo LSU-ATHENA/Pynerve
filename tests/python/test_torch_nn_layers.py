@@ -189,7 +189,7 @@ class TestPersistenceReadout:
             PersistenceReadout(in_features=10, out_features=2, dropout=1.0)
 
     def test_forward_basic(self):
-        readout = PersistenceReadout(in_features=4, out_features=2, hidden_dims=())
+        readout = PersistenceReadout(in_features=4, out_features=2, hidden_dims=(8,))
         x = torch.tensor([[1.0, 2.0, 3.0, 4.0]], dtype=torch.float32)
         result = readout(x)
         assert result.shape == (1, 2)

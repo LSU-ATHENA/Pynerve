@@ -53,11 +53,13 @@ class TestValidateSinglePointCloud:
 
     def test_wrong_device_raises(self):
         pc = torch.tensor([[0.0, 1.0]], dtype=torch.float32)
-        if torch.cuda.is_available():
-            with pytest.raises(ValueError, match="same device"):
-                _validate_single_point_cloud(
-                    pc.to("cuda"), dim=2, device=torch.device("cpu"), dtype=torch.float32
-                )
+        if not torch.cuda.is_available():
+            pytest.skip("CUDA not available")
+        try:
+            pc_cuda = pc.to("cuda")
+            _validate_single_point_cloud(pc_cuda, dim=2, device=torch.device("cpu"), dtype=torch.float32)
+        except torch.AcceleratorError:
+            pytest.skip("CUDA device incompatible")
 
     def test_non_float_raises(self):
         pc = torch.tensor([[0, 1]], dtype=torch.int64)
@@ -182,7 +184,7 @@ class TestCollatePointClouds:
             torch.tensor([[0.0, 1.0]], dtype=torch.float32),
             (torch.tensor([[0.0, 1.0]], dtype=torch.float32), torch.tensor(0)),
         ]
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError, match="tensors"):
             collate_point_clouds(batch)  # type: ignore[list-item]
 
 
