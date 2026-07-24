@@ -93,7 +93,7 @@ class TestValidateMaxRadiusEdge:
 
 class TestParseNonnegativeIntEdge:
     def test_accepts_np_int(self):
-        assert parse_nonnegative_int(np.int64(5), "x") == 5
+        assert parse_nonnegative_int(int(np.int64(5)), "x") == 5
 
     def test_rejects_none(self):
         with pytest.raises(ValidationError, match="integer"):

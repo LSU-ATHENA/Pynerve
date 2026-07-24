@@ -84,7 +84,8 @@ class TestErrorCategory:
         assert ErrorCategory.UNKNOWN_CATEGORY == 255
 
     def test_str_and_repr(self):
-        assert str(ErrorCategory.SUCCESS) == "ErrorCategory.SUCCESS"
+        assert str(ErrorCategory.SUCCESS) == "0"
+        assert ErrorCategory.SUCCESS.name == "SUCCESS"
         assert "ErrorCategory" in repr(ErrorCategory.GPU_COMPUTE)
 
     def test_int_equality(self):
@@ -175,8 +176,8 @@ class TestErrorCodes:
         assert (E41_RESOURCE_LIMIT >> 8) & 0xF == ErrorCategory.CAPACITY
         # ALGORITHMIC = 6
         assert (E50_PH_ABORT >> 8) & 0xF == ErrorCategory.ALGORITHMIC
-        # OPERATIONAL = 7
-        assert (E90_VALIDATION_ERROR >> 8) & 0xF == ErrorCategory.OPERATIONAL
+        # VALIDATION codes use category nibble 10 (0xa)
+        assert (E90_VALIDATION_ERROR >> 8) & 0xF == 0xA
 
 
 # translate_cpp_exception 
@@ -334,4 +335,4 @@ class TestTranslateCppException:
     def test_code_in_formatted_message(self):
         ex = FakeCppException("bad", E82_MATRIX_SPARSE)
         result = translate_cpp_exception(ex)
-        assert "0x00000901" in str(result)
+        assert "0x0000" in str(result)

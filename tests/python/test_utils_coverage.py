@@ -195,8 +195,10 @@ class TestValidateDevicesMatch:
         validate_devices_match([t1, t2], ["a", "b"])
 
     def test_mismatched_devices(self):
-        t1 = torch.tensor([1.0])
-        t2 = torch.tensor([2.0])
+        if not torch.cuda.is_available():
+            pytest.skip("CUDA not available for device mismatch test")
+        t1 = torch.tensor([1.0], device="cuda")
+        t2 = torch.tensor([2.0], device="cpu")
         with pytest.raises(DeviceError, match="Device mismatch"):
             validate_devices_match([t1, t2], ["a", "b"])
 
