@@ -73,7 +73,7 @@ jobs:
       - run: python tools/test_matrix.py --label cpu --output build/test-matrix-cpu.json
       - run: python -m pytest tests/python/ --cov=python/pynerve --cov-branch --cov-report=term-missing
         continue-on-error: true
-      - run: python -m coverage report --fail-under=5
+      - run: python -m coverage report --fail-under=80
 
   simd-modes:
     runs-on: ubuntu-24.04

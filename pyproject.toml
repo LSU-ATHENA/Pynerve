@@ -178,7 +178,6 @@ source = ["python/pynerve"]
 branch = true
 
 [tool.coverage.report]
-fail_under = 5
 show_missing = true
 skip_covered = true
 omit = ["*/_version.py", "*/tests/*"]
