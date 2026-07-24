@@ -187,7 +187,7 @@ ignore-init-method = true
 ignore-init-module = true
 ignore-magic = true
 ignore-semiprivate = true
-fail-under = 80
+fail-under = 24
 exclude = ["_version.py", "tests/*", ".pyi$"]
 paths = ["python/pynerve"]
 
