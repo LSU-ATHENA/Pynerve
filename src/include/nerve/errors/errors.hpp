@@ -135,6 +135,16 @@ enum class ErrorCategory : uint8_t
     FEATURE_FLAG = 14,
     UNKNOWN_CATEGORY = 255
 };
+// windows.h defines ERROR as a macro (0), which conflicts with this enumerator.
+// Undefine it so scoped ErrorSeverity::ERROR compiles on all platforms.
+#ifdef ERROR
+#undef ERROR
+#endif
+// windows.h defines ERROR as a macro (0), which conflicts with this enumerator.
+// Undefine it so scoped ErrorSeverity::ERROR compiles on all platforms.
+#ifdef ERROR
+#undef ERROR
+#endif
 enum class ErrorSeverity : uint8_t
 {
     INFO = 0,
