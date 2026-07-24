@@ -265,8 +265,10 @@ def check_build_install_contract() -> list[Finding]:
             findings.append(Finding("build-install-contract", "CMakeLists.txt", description))
 
     src_groups_text = (
-        SRC_CMAKE_PATH.parent / "cmake" / "source_groups.cmake"
-    ).read_text(encoding="utf-8") if (SRC_CMAKE_PATH.parent / "cmake" / "source_groups.cmake").exists() else ""
+        (SRC_CMAKE_PATH.parent / "cmake" / "source_groups.cmake").read_text(encoding="utf-8")
+        if (SRC_CMAKE_PATH.parent / "cmake" / "source_groups.cmake").exists()
+        else ""
+    )
     src_combined = src_text + "\n" + src_groups_text
 
     required_src_fragments = {

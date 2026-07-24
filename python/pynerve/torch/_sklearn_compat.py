@@ -31,8 +31,8 @@ try:
     SKLEARN_AVAILABLE = True
 except ImportError as exc:
     SKLEARN_IMPORT_ERROR = str(exc)
-    BaseEstimator = _FallbackBaseEstimator  # type: ignore[misc,assignment]
-    TransformerMixin = _FallbackTransformerMixin  # type: ignore[misc,assignment]
+    BaseEstimator = _FallbackBaseEstimator
+    TransformerMixin = _FallbackTransformerMixin
 
 
 def _require_non_empty(name: str, values: Sequence[Any]) -> None:

@@ -170,8 +170,8 @@ no_implicit_reexport = false
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
-mypy_path = ["python/pynerve/", "tools/", "tests/"]
-exclude = ['\.pyi$']
+mypy_path = ["python/", "tools/", "tests/"]
+exclude = ['\.pyi$', '^build/', '^_skbuild/', '^dist/', '^python/build/']
 
 [tool.coverage.run]
 source = ["python/pynerve"]

@@ -30,7 +30,7 @@ def pairwise_distances(
 
     if not isinstance(points, np.ndarray) or points.ndim != 2:
         raise ValidationError("points must be a 2-D numpy array", parameter="points")
-    distances = pdist(points, metric=metric)  # type: ignore[call-overload]
+    distances = pdist(points, metric=metric)  # pyright: ignore[reportCallIssue, reportArgumentType]
     return squareform(distances)  # type: ignore[no-any-return]
 
 
@@ -222,7 +222,7 @@ def persistence_heat_vector(
         mid = (b + d) / 2.0
         vec += w * np.exp(-((x - mid) ** 2) / (2.0 * sigma * sigma))
 
-    return np.exp(-t) * vec
+    return np.exp(-t) * vec  # type: ignore[no-any-return]
 
 
 def gaussian_kernel_matrix(
@@ -257,7 +257,7 @@ def gaussian_kernel_matrix(
     d2_ = deaths2[None, :]
     diff_b = (b1 - b2) ** 2
     diff_d = (d1_ - d2_) ** 2
-    return np.exp(-(diff_b + diff_d) / (2.0 * sigma * sigma))
+    return np.exp(-(diff_b + diff_d) / (2.0 * sigma * sigma))  # type: ignore[no-any-return]
 
 
 __all__ = [

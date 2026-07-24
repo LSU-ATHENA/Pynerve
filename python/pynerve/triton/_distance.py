@@ -1,3 +1,4 @@
+# mypy: disallow-untyped-defs=False, disallow-incomplete-defs=False
 """Triton pairwise-distance kernels.
 
 Inline PTX notes:

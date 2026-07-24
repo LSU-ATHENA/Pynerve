@@ -114,4 +114,3 @@ def check_algorithm_bindings_schema() -> list[Finding]:
             )
         )
     return findings
-

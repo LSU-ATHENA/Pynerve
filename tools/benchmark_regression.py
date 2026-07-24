@@ -36,9 +36,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE_PATH = ROOT / "benchmarks" / "baseline.json"
 RESULTS_PATH = ROOT / "benchmarks" / "benchmark-results.json"
-REGRESSION_THRESHOLD_PCT = float(
-    os.environ.get("NERVE_BENCHMARK_REGRESSION_THRESHOLD", "5.0")
-)
+REGRESSION_THRESHOLD_PCT = float(os.environ.get("NERVE_BENCHMARK_REGRESSION_THRESHOLD", "5.0"))
 
 
 def _run(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
@@ -86,9 +84,7 @@ def _parse_ctest_timing(build_dir: str) -> dict[str, float]:
                     timing[name] = float(value)
             else:
                 # Fall back to Execution Time from the test element
-                exec_time = test_el.findtext(
-                    "Results/Measurement/Value", "0"
-                )
+                exec_time = test_el.findtext("Results/Measurement/Value", "0")
                 try:
                     timing[name] = float(exec_time)
                 except ValueError:
@@ -108,9 +104,7 @@ def record_baseline(build_dir: str) -> int:
     baseline = {
         "version": 1,
         "threshold_pct": REGRESSION_THRESHOLD_PCT,
-        "git_sha": _run(
-            ["git", "rev-parse", "HEAD"], check=False
-        ).stdout.strip()[:12],
+        "git_sha": _run(["git", "rev-parse", "HEAD"], check=False).stdout.strip()[:12],
         "tests": timing,
     }
     BASELINE_PATH.write_text(json.dumps(baseline, indent=2), encoding="utf-8")
@@ -127,8 +121,7 @@ def check_regressions(build_dir: str) -> int:
 
     if not BASELINE_PATH.exists():
         print(
-            f"No baseline found at {BASELINE_PATH}. "
-            "Run with --record to create one.",
+            f"No baseline found at {BASELINE_PATH}. Run with --record to create one.",
             file=sys.stderr,
         )
         return 1
@@ -173,9 +166,7 @@ def check_regressions(build_dir: str) -> int:
     # Write results
     report = {
         "version": 1,
-        "git_sha": _run(
-            ["git", "rev-parse", "HEAD"], check=False
-        ).stdout.strip()[:12],
+        "git_sha": _run(["git", "rev-parse", "HEAD"], check=False).stdout.strip()[:12],
         "baseline_sha": baseline.get("git_sha", "unknown"),
         "threshold_pct": threshold_pct,
         "summary": {

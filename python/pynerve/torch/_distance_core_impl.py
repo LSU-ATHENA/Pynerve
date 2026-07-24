@@ -185,7 +185,7 @@ class WassersteinDistance(DistanceMetric):
         return distance.to(device=d1.device, dtype=d1.dtype)
 
     def _compute_core_c(self, d1: Tensor, d2: Tensor) -> Tensor:
-        result: Tensor = torch.ops.pynerve.ph_wasserstein(d1, d2, self.p, self.q)  # type: ignore[valid-type]
+        result: Tensor = torch.ops.pynerve.ph_wasserstein(d1, d2, self.p, self.q)
         return result
 
     def _compute_python(self, d1: Tensor, d2: Tensor) -> Tensor:
@@ -210,7 +210,7 @@ class BottleneckDistance(DistanceMetric):
         return distance.to(device=d1.device, dtype=d1.dtype)
 
     def _compute_core_c(self, d1: Tensor, d2: Tensor) -> Tensor:
-        result: Tensor = torch.ops.pynerve.ph_bottleneck(d1, d2)  # type: ignore[valid-type]
+        result: Tensor = torch.ops.pynerve.ph_bottleneck(d1, d2)
         return result
 
     def _compute_python(self, d1: Tensor, d2: Tensor) -> Tensor:

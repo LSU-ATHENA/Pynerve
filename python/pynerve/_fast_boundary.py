@@ -43,7 +43,7 @@ def column_reduction_sparse(
     filtration_values: np.ndarray,
     row_filtration_values: np.ndarray | None = None,
 ) -> list[tuple[int, int, float, float]]:
-    n_cols = boundary_matrix.shape[1]  # type: ignore[optional]
+    n_cols: int = boundary_matrix.shape[1]  # pyright: ignore[reportOptionalSubscript]
     pivot_rows: dict[int, int] = {}
     persistence_pairs: list[tuple[int, int, float, float]] = []
 

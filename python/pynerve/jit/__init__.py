@@ -119,7 +119,7 @@ def persistence_image(
     if pairs.shape[0] == 0:
         return np.zeros((resolution, resolution), dtype=np.float32)
     if _resolve_device(device):
-        return _jit_persistence_image_gpu(pairs, resolution, sigma)
+        return _jit_persistence_image_gpu(pairs, resolution, sigma)  # type: ignore[no-any-return]
     return _jit_persistence_image_impl(pairs, resolution, sigma)  # type: ignore[no-any-return]
 
 

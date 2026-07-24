@@ -264,8 +264,8 @@ inline EnhancedThreadPool::~EnhancedThreadPool()
 }
 
 template <typename F, typename... Args>
-auto EnhancedThreadPool::submit(F &&f,
-                                Args &&...args) -> std::future<std::invoke_result_t<F, Args...>>
+auto EnhancedThreadPool::submit(F &&f, Args &&...args)
+    -> std::future<std::invoke_result_t<F, Args...>>
 {
     if (stop_flag_.load(std::memory_order_acquire))
     {

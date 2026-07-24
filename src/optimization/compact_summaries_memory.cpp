@@ -12,8 +12,8 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <windows.h>
 #include <psapi.h>
+#include <windows.h>
 #elif defined(__linux__)
 #include <malloc.h>
 #include <unistd.h>

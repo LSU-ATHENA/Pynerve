@@ -93,7 +93,8 @@ public:
         if (col >= n_cols_)
             return -1;
         size_t col_start = col * words_per_col_;
-        for (std::ptrdiff_t word_idx = static_cast<std::ptrdiff_t>(words_per_col_) - 1; word_idx >= 0; --word_idx)
+        for (std::ptrdiff_t word_idx = static_cast<std::ptrdiff_t>(words_per_col_) - 1;
+             word_idx >= 0; --word_idx)
         {
             uint64_t word = data_[col_start + word_idx];
             if (word != 0)

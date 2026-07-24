@@ -1,3 +1,4 @@
+# mypy: disallow-untyped-defs=False, disallow-incomplete-defs=False
 """Triton Mapper kernels.
 
 Covers: density filter, eccentricity filter, k-means assignment, cover binning,
@@ -39,12 +40,10 @@ if _check_triton():
             same = (pid == j) & mask
             dist_sq = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
             for d in range(dim):
-                a = tl.load(
-                    points_ptr + pid * stride_m + d * stride_d, mask=mask, other=0.0
-                ).to(tl.float64)
-                b = tl.load(points_ptr + j * stride_m + d * stride_d, other=0.0).to(
+                a = tl.load(points_ptr + pid * stride_m + d * stride_d, mask=mask, other=0.0).to(
                     tl.float64
                 )
+                b = tl.load(points_ptr + j * stride_m + d * stride_d, other=0.0).to(tl.float64)
                 diff = a - b
                 dist_sq += diff * diff
             dist = tl.sqrt(dist_sq)
@@ -75,12 +74,10 @@ if _check_triton():
             same = (pid == j) & mask
             dist_sq = tl.zeros((BLOCK_SIZE,), dtype=tl.float64)
             for d in range(dim):
-                a = tl.load(
-                    points_ptr + pid * stride_m + d * stride_d, mask=mask, other=0.0
-                ).to(tl.float64)
-                b = tl.load(points_ptr + j * stride_m + d * stride_d, other=0.0).to(
+                a = tl.load(points_ptr + pid * stride_m + d * stride_d, mask=mask, other=0.0).to(
                     tl.float64
                 )
+                b = tl.load(points_ptr + j * stride_m + d * stride_d, other=0.0).to(tl.float64)
                 diff = a - b
                 dist_sq += diff * diff
             max_dist = tl.where(~same & (dist_sq > max_dist), dist_sq, max_dist)
@@ -121,9 +118,7 @@ if _check_triton():
                 dist_sq += diff * diff
             better = dist_sq < best_dist
             best_dist = tl.where(better, dist_sq, best_dist)
-            best_cluster = tl.where(
-                better, tl.full((BLOCK_SIZE,), c, dtype=tl.int32), best_cluster
-            )
+            best_cluster = tl.where(better, tl.full((BLOCK_SIZE,), c, dtype=tl.int32), best_cluster)
         tl.store(labels_ptr + pid, best_cluster, mask=mask)
 
     @triton.jit
@@ -242,24 +237,18 @@ def eccentricity_filter(points: torch.Tensor) -> torch.Tensor:
         stride_m, stride_d = points_c.stride()
         out = torch.empty(n_points, dtype=torch.float32, device=points.device)
         grid = (triton.cdiv(n_points, 256),)
-        _eccentricity_kernel[grid](
-            points_c, out, n_points, dim, stride_m, stride_d, BLOCK_SIZE=256
-        )
+        _eccentricity_kernel[grid](points_c, out, n_points, dim, stride_m, stride_d, BLOCK_SIZE=256)
         return out
     _warn_cpu_fallback("eccentricity_filter")
     return torch.cdist(points, points).max(dim=1).values
 
 
-def kmeans_plusplus_init(
-    points: torch.Tensor, k: int, seed: int = 123456789
-) -> torch.Tensor:
+def kmeans_plusplus_init(points: torch.Tensor, k: int, seed: int = 123456789) -> torch.Tensor:
     """K-means++ centroid initialisation."""
     n_points, _dim = points.shape
     g = torch.Generator(device=points.device)
     g.manual_seed(seed)
-    idx = int(
-        torch.randint(0, n_points, (1,), generator=g, device=points.device).item()
-    )
+    idx = int(torch.randint(0, n_points, (1,), generator=g, device=points.device).item())
     centroids = points[idx : idx + 1].clone()
     min_dists = torch.full((n_points,), float("inf"), device=points.device)
     for _c in range(1, k):
@@ -376,12 +365,8 @@ def compute_nerve_edges(
     """Compute Mapper nerve graph edges. Returns [n_edges, 2]."""
     n_nodes = node_cover_sizes.size(0)
     if _use_triton(node_cover_sets):
-        edge_src = torch.full(
-            (max_edges,), -1, dtype=torch.int32, device=node_cover_sets.device
-        )
-        edge_dst = torch.full(
-            (max_edges,), -1, dtype=torch.int32, device=node_cover_sets.device
-        )
+        edge_src = torch.full((max_edges,), -1, dtype=torch.int32, device=node_cover_sets.device)
+        edge_dst = torch.full((max_edges,), -1, dtype=torch.int32, device=node_cover_sets.device)
         edge_count = torch.zeros(1, dtype=torch.int32, device=node_cover_sets.device)
         n_pairs = n_nodes * (n_nodes - 1) // 2
         grid = (triton.cdiv(n_pairs, 256),)

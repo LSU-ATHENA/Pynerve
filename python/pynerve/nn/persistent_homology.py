@@ -31,7 +31,7 @@ def compute_persistence_diagrams(
         tensor has shape ``(batch, max_pairs, 2)`` with columns (birth, death).
     """
     ph = PersistentHomology(max_dim=max_dim, max_radius=max_radius, metric=metric)
-    return ph(points)
+    return ph(points)  # type: ignore[no-any-return]
 
 
 __all__ = [

@@ -7,7 +7,7 @@ from collections.abc import Callable
 from typing import Any
 
 try:
-    from numba import cuda as _cuda_module  # type: ignore[assignment]
+    from numba import cuda as _cuda_module
     from numba import jit, prange
 
     HAS_NUMBA = True

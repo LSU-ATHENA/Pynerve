@@ -99,7 +99,11 @@ struct Pair
 
     Pair() = default;
     constexpr Pair(Field b, Field d, Dimension dim = 0, Index bi = -1, Index di = -1) noexcept
-        : birth(b), death(d), dimension(dim), birth_index(bi), death_index(di)
+        : birth(b)
+        , death(d)
+        , dimension(dim)
+        , birth_index(bi)
+        , death_index(di)
     {}
 
     [[nodiscard]] constexpr Field lifetime() const noexcept { return death - birth; }

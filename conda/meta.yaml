@@ -14,7 +14,7 @@ build:
 
 requirements:
   build:
-    - {{ compiler('cxx') }}
+    - "{{ compiler('cxx') }}"
     - cmake >=3.20
     - ninja
     - scikit-build-core >=0.8

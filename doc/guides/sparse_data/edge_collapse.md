@@ -46,7 +46,7 @@ Optimal for: dense point clouds where most edges are geometrically redundant
 ```
 Edge e = (u, v) is collapsible if:
   Link(u) AND Link(v) = Link(u AND v)
-  
+
 Where Link(x) is the set of vertices adjacent to x.
 
 If this holds, the homotopy type of the Vietoris-Rips complex

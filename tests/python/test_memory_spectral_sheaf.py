@@ -29,23 +29,26 @@ except ImportError:
 class TestSizeClass:
     """Tests for the SizeClass enum."""
 
-    @pytest.mark.parametrize("enum_name, expected_value", [
-        ("TINY16", 16),
-        ("TINY32", 32),
-        ("TINY64", 64),
-        ("TINY128", 128),
-        ("TINY256", 256),
-        ("SMALL512", 512),
-        ("SMALL1024", 1024),
-        ("SMALL2048", 2048),
-        ("SMALL4096", 4096),
-        ("MEDIUM8192", 8192),
-        ("MEDIUM16384", 16384),
-        ("MEDIUM32768", 32768),
-        ("LARGE65536", 65536),
-        ("LARGE131072", 131072),
-        ("HUGE262144", 262144),
-    ])
+    @pytest.mark.parametrize(
+        "enum_name, expected_value",
+        [
+            ("TINY16", 16),
+            ("TINY32", 32),
+            ("TINY64", 64),
+            ("TINY128", 128),
+            ("TINY256", 256),
+            ("SMALL512", 512),
+            ("SMALL1024", 1024),
+            ("SMALL2048", 2048),
+            ("SMALL4096", 4096),
+            ("MEDIUM8192", 8192),
+            ("MEDIUM16384", 16384),
+            ("MEDIUM32768", 32768),
+            ("LARGE65536", 65536),
+            ("LARGE131072", 131072),
+            ("HUGE262144", 262144),
+        ],
+    )
     def test_enum_values(self, enum_name: str, expected_value: int) -> None:
         cls = nerve_extras.memory.SizeClass
         val = getattr(cls, enum_name)
@@ -272,7 +275,9 @@ class TestLaplacianConfig:
         assert cfg.enable_gpu is True
         assert cfg.threshold == 500
 
-    @pytest.mark.parametrize("field", ["enable_gpu", "threshold", "prefer_tiled_kernels", "max_gpu_memory_mb"])
+    @pytest.mark.parametrize(
+        "field", ["enable_gpu", "threshold", "prefer_tiled_kernels", "max_gpu_memory_mb"]
+    )
     def test_has_fields(self, field: str) -> None:
         cfg = nerve_extras.spectral.LaplacianConfig()
         assert hasattr(cfg, field)
@@ -296,7 +301,9 @@ class TestSpectralConfig:
         assert cfg.num_eigenpairs == 10
         assert cfg.convergence_tolerance == 1e-10
 
-    @pytest.mark.parametrize("field", ["num_eigenpairs", "convergence_tolerance", "max_iterations", "spectral_shift"])
+    @pytest.mark.parametrize(
+        "field", ["num_eigenpairs", "convergence_tolerance", "max_iterations", "spectral_shift"]
+    )
     def test_has_fields(self, field: str) -> None:
         cfg = nerve_extras.spectral.SpectralConfig()
         assert hasattr(cfg, field)
@@ -377,13 +384,16 @@ class TestDiracOperator:
         evecs = dirac.eigenvectors()
         assert isinstance(evecs, list)
 
-    @pytest.mark.parametrize("method", [
-        "get_spinor_laplacian",
-        "get_chirality_operator",
-        "compute_atiyah_singer_index",
-        "compute_analytical_index",
-        "compute_topological_index",
-    ])
+    @pytest.mark.parametrize(
+        "method",
+        [
+            "get_spinor_laplacian",
+            "get_chirality_operator",
+            "compute_atiyah_singer_index",
+            "compute_analytical_index",
+            "compute_topological_index",
+        ],
+    )
     def test_operator_methods(self, method: str) -> None:
         dirac = nerve_extras.spectral.DiracOperator()
         result = getattr(dirac, method)()
