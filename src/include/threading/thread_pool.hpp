@@ -159,8 +159,8 @@ public:
     }
 
     template <typename F, typename... Args>
-    auto submitToQueue(size_t queue_index, F &&f, Args &&...args)
-        -> std::future<std::invoke_result_t<F, Args...>>
+    auto submitToQueue(size_t queue_index, F &&f,
+                       Args &&...args) -> std::future<std::invoke_result_t<F, Args...>>
     {
         if (queue_index >= num_threads_)
         {
