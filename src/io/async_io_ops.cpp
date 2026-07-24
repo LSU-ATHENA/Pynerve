@@ -21,6 +21,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef _WIN32
+#include <sys/stat.h>
+#endif
+
 namespace nerve::io
 {
 
