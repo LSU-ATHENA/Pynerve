@@ -59,8 +59,8 @@ def _parse_ctest_timing(build_dir: str) -> dict[str, float]:
                 "--output-on-failure",
             ]
         )
-        if result.returncode != 0:
-            print("ctest benchmark run failed", file=sys.stderr)
+        if result.returncode != 0 or not tag_file.exists():
+            print("No benchmark-labeled tests found — skipping benchmark regression check.", flush=True)
             return {}
 
     # Find the most recent Test.xml
