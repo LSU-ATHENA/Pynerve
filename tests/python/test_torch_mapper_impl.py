@@ -6,8 +6,8 @@ import pytest
 import torch
 
 from pynerve.torch._mapper_impl import (
-    CLUSTERERS,
-    FILTER_FUNCTIONS,
+    _CLUSTERERS,
+    _FILTER_FUNCTIONS,
     _build_1d_cover,
     _build_edges_from_nodes,
     _create_grid_cover,
@@ -26,13 +26,13 @@ from pynerve.torch._mapper_impl import (
 
 class TestConstants:
     def test_filter_functions_set(self):
-        assert "pca_2d" in FILTER_FUNCTIONS
-        assert "eccentricity" in FILTER_FUNCTIONS
+        assert "pca_2d" in _FILTER_FUNCTIONS
+        assert "eccentricity" in _FILTER_FUNCTIONS
 
     def test_clusterers_set(self):
-        assert "dbscan" in CLUSTERERS
-        assert "single_linkage" in CLUSTERERS
-        assert "connected" in CLUSTERERS
+        assert "dbscan" in _CLUSTERERS
+        assert "single_linkage" in _CLUSTERERS
+        assert "connected" in _CLUSTERERS
 
 
 # ── _validate_mapper_inputs ────────────────────────────────────────────────
