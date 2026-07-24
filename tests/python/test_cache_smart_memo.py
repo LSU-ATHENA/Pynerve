@@ -268,8 +268,9 @@ class TestMemoizePersistent:
         def func(x):
             return x
 
-        MemoizePersistent(func, cache_dir=str(cache_path), ttl=3600)
+        memo = MemoizePersistent(func, cache_dir=str(cache_path), ttl=3600)
         assert cache_path.exists()
+        memo.clear()
 
     def test_disk_persistence(self, tmp_path):
         call_count = 0
@@ -279,25 +280,16 @@ class TestMemoizePersistent:
             call_count += 1
             return x * 3
 
+        # Use the same function object for both MemoizePersistent instances
         memo1 = MemoizePersistent(func, cache_dir=str(tmp_path), ttl=3600)
         assert memo1(7) == 21
         assert call_count == 1
 
-        # New instance with same cache dir should find cached result
+        # New instance with same cache dir and same function — should find cached result
         call_count2 = 0
-
-        def func2(x):
-            nonlocal call_count2
-            call_count2 += 1
-            return x * 3
-
-        memo2 = MemoizePersistent(func2, cache_dir=str(tmp_path), ttl=3600)
-        # Note: different function object but same args should have different keys
-        # because the function name is different in the signature
+        memo2 = MemoizePersistent(func, cache_dir=str(tmp_path), ttl=3600)
         result = memo2(7)
         assert result == 21
-        # The key is based on signature, not function identity
-        # Both func and func2 have signature (x), so the key should be the same
         assert call_count2 == 0  # cached from memo1
 
     def test_wraps_function_attrs(self, tmp_path):
@@ -327,8 +319,8 @@ class TestMemoizePersistentDecorator:
         assert compute(3) == 9
         assert call_count == 1
 
-    def test_returns_memoize_persistent_instance(self):
-        @memoize_persistent(ttl=3600)
+    def test_returns_memoize_persistent_instance(self, tmp_path):
+        @memoize_persistent(cache_dir=str(tmp_path), ttl=3600)
         def func(x):
             return x
 

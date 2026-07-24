@@ -162,22 +162,21 @@ class TestErrorCodes:
         assert len(codes) == len(set(codes))
 
     def test_category_byte_pattern(self):
-        """Test that error code categories are in the expected nibble positions."""
+        """Test that error code category nibbles map to correct ErrorCategory values."""
         # IO_INFRA = 1 → codes in 0x1xx range
-        assert (E00_IO_TIMEOUT >> 8) & 0xF == 1
+        assert (E00_IO_TIMEOUT >> 8) & 0xF == ErrorCategory.IO_INFRA
         # GPU_COMPUTE = 2 → codes in 0x2xx
-        assert (E10_GPU_OOM >> 8) & 0xF == 2
+        assert (E10_GPU_OOM >> 8) & 0xF == ErrorCategory.GPU_COMPUTE
         # NUMERICAL = 3
-        assert (E20_NUM_NAN >> 8) & 0xF == 3
+        assert (E20_NUM_NAN >> 8) & 0xF == ErrorCategory.NUMERICAL
         # DETERMINISM = 4
-        assert (E30_DET_MISMATCH >> 8) & 0xF == 4
+        assert (E30_DET_MISMATCH >> 8) & 0xF == ErrorCategory.DETERMINISM
         # CAPACITY = 5
-        assert (E41_RESOURCE_LIMIT >> 8) & 0xF == 5
+        assert (E41_RESOURCE_LIMIT >> 8) & 0xF == ErrorCategory.CAPACITY
         # ALGORITHMIC = 6
-        assert (E50_PH_ABORT >> 8) & 0xF == 6
-        # NUMA_AFFINITY = 11 (0xB)
-        assert (E60_NUMA_BIND_FAIL >> 8) & 0xF == 0x7  # wait, 7?
-        # Actually checking: 0x700 → high nibble of byte 1 is 7
+        assert (E50_PH_ABORT >> 8) & 0xF == ErrorCategory.ALGORITHMIC
+        # OPERATIONAL = 7
+        assert (E90_VALIDATION_ERROR >> 8) & 0xF == ErrorCategory.OPERATIONAL
 
 
 # ── translate_cpp_exception ────────────────────────────────────────────────

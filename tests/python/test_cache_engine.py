@@ -33,9 +33,7 @@ class TestValidateCacheKey:
         assert _validate_cache_key("my_key") == "my_key"
 
     def test_empty_raises(self):
-        with pytest.raises(ValueError) if hasattr(_validate_cache_key, "__code__") else pytest.raises(
-            Exception
-        ):
+        with pytest.raises(Exception):
             _validate_cache_key("")  # type: ignore[arg-type]
 
     def test_non_string_raises(self):

@@ -152,18 +152,18 @@ class TestPersistenceComputer:
 
 class TestAsyncIterable:
     def test_is_runtime_checkable(self):
-        from typing import runtime_checkable
         assert hasattr(AsyncIterable, "__instancecheck__")
 
-    @pytest.mark.asyncio
-    async def test_isinstance_with_async_iterable(self):
+    def test_isinstance_with_async_iterable(self):
         class AsyncGen:
-            async def __aiter__(self):
+            def __aiter__(self):
                 return self
 
             async def __anext__(self):
                 raise StopAsyncIteration
 
+        # isinstance check for runtime_checkable protocols is structural;
+        # it checks for __aiter__ without needing to actually iterate.
         assert isinstance(AsyncGen(), AsyncIterable)
 
     def test_not_isinstance_with_regular_iterable(self):
