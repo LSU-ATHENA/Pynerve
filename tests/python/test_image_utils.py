@@ -34,13 +34,13 @@ class TestToDiagramArray:
         result = _to_diagram_array([])
         assert result.shape == (0, 3)
 
-    def test_scalar_converted(self):
-        result = _to_diagram_array(42)
-        assert isinstance(result, np.ndarray)
+    def test_scalar_raises(self):
+        with pytest.raises(Exception):
+            _to_diagram_array(42)
 
-    def test_none_converted(self):
-        result = _to_diagram_array(None)
-        assert isinstance(result, np.ndarray)
+    def test_none_raises(self):
+        with pytest.raises(Exception):
+            _to_diagram_array(None)
 
 
 class TestNormalizeImageResolution:
