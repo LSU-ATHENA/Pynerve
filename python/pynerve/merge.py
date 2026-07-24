@@ -47,7 +47,7 @@ def _filter_by_dim(diagram: np.ndarray, dim: int) -> np.ndarray:
     if diagram.shape[1] < 3:
         return diagram
     mask = diagram[:, 2].astype(int) == dim
-    return diagram[mask]
+    return diagram[mask]  # type: ignore[no-any-return]
 
 
 def _bottleneck_match(ref: np.ndarray, target: np.ndarray, threshold: float) -> np.ndarray:
@@ -55,9 +55,9 @@ def _bottleneck_match(ref: np.ndarray, target: np.ndarray, threshold: float) -> 
     tgt_finite = target[np.isfinite(target[:, 1]) & (target[:, 1] > target[:, 0])]
 
     if len(ref_finite) == 0:
-        return tgt_finite
+        return tgt_finite  # type: ignore[no-any-return]
     if len(tgt_finite) == 0:
-        return ref_finite
+        return ref_finite  # type: ignore[no-any-return]
 
     cost = np.zeros((len(ref_finite), len(tgt_finite)))
     for i in range(len(ref_finite)):

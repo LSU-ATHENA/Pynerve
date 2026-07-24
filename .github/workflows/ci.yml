@@ -461,7 +461,7 @@ jobs:
       - run: python tools/cpp_install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
       - run: python tools/install_smoke.py --prefix "$RUNNER_TEMP/pynerve-install"
       - if: matrix.python == '3.11'
-        run: cp README.md python/README.md
+        run: rm -f python/README.md && cp README.md python/README.md
       - if: matrix.python == '3.11'
         run: python -m build --sdist python --outdir "$RUNNER_TEMP/pynerve-dist"
       - if: matrix.python == '3.11'

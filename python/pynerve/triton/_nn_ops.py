@@ -1,3 +1,4 @@
+# mypy: disallow-untyped-defs=False, disallow-incomplete-defs=False
 """Triton activation-fusion kernels for diagram-convolution layers.
 
 Inline PTX notes:
@@ -204,9 +205,7 @@ def diagram_conv1d(
         bias_c = bias.contiguous()
         stride_f_b, stride_f_c_raw, _ = features_c.stride()
         stride_k_o, stride_k_c, _ = kernel_c.stride()
-        stride_f_c = (
-            stride_f_c_raw[0] if isinstance(stride_f_c_raw, tuple) else stride_f_c_raw
-        )
+        stride_f_c = stride_f_c_raw[0] if isinstance(stride_f_c_raw, tuple) else stride_f_c_raw
         out = torch.empty(
             batch_size,
             out_channels,

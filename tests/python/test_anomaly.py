@@ -53,12 +53,15 @@ class TestMarketAnomalyDetector:
         detector = nerve_extras.anomaly.MarketAnomalyDetector(cfg)
         assert detector is not None
 
-    @pytest.mark.parametrize("field", [
-        "price_change_threshold",
-        "volume_spike_threshold",
-        "topology_anomaly_threshold",
-        "lookback_window",
-    ])
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "price_change_threshold",
+            "volume_spike_threshold",
+            "topology_anomaly_threshold",
+            "lookback_window",
+        ],
+    )
     def test_config_fields(self, field: str) -> None:
         cfg = _make_market_config()
         assert hasattr(cfg, field)
@@ -134,9 +137,7 @@ class TestMarketAnomalyDetector:
         """Combined anomaly should aggregate factor scores."""
         cfg = _make_market_config()
         detector = nerve_extras.anomaly.MarketAnomalyDetector(cfg)
-        event = detector.detect_combined_anomaly(
-            [1.0, 2.0, 3.0], ["price", "volume", "topology"]
-        )
+        event = detector.detect_combined_anomaly([1.0, 2.0, 3.0], ["price", "volume", "topology"])
 
         assert event.anomaly_type == "combined"
         assert event.anomaly_score > 0.0
@@ -155,9 +156,7 @@ class TestMarketAnomalyDetector:
                 0, 10.0 + rng.gauss(0, 0.1), 100.0 + rng.gauss(0, 5), [0.0, 0.0]
             )
 
-        event = detector.detect_single_anomaly(
-            999, 20.0, 500.0, [5.0, 5.0]
-        )
+        event = detector.detect_single_anomaly(999, 20.0, 500.0, [5.0, 5.0])
         assert event.timestamp_ns == 999
         assert event.anomaly_score > 0.0
         assert isinstance(event.contributing_factors, list)
@@ -407,7 +406,9 @@ class TestOnlinePValueCalculator:
 # RegimeChangeDetector
 
 
-def _make_regime_config(num_regimes: int = 3, min_duration: int = 2) -> nerve_extras.anomaly.RegimeConfig:
+def _make_regime_config(
+    num_regimes: int = 3, min_duration: int = 2
+) -> nerve_extras.anomaly.RegimeConfig:
     cfg = nerve_extras.anomaly.RegimeConfig()
     cfg.num_regimes = num_regimes
     cfg.min_regime_duration = min_duration
@@ -587,9 +588,7 @@ class TestRegimeChangeDetector:
         """RegimeChange struct fields should be accessible."""
         cfg = _make_regime_config(num_regimes=2, min_duration=1)
         detector = nerve_extras.anomaly.RegimeChangeDetector(cfg)
-        changes = detector.detect_regime_changes(
-            [[0.1, 0.2], [10.0, 20.0]], [0, 1]
-        )
+        changes = detector.detect_regime_changes([[0.1, 0.2], [10.0, 20.0]], [0, 1])
 
         if changes:
             rc = changes[0]
@@ -721,8 +720,7 @@ class TestAnomalyDetectionManager:
         topo_features = [[rng.gauss(0, 0.1) for _ in range(2)] for __ in range(n)]
 
         report = mgr.detect_all_anomalies(
-            timestamps, prices, volumes,
-            betti_seqs, lifetime_seqs, topo_features
+            timestamps, prices, volumes, betti_seqs, lifetime_seqs, topo_features
         )
 
         assert hasattr(report, "betti_changes")
@@ -762,8 +760,6 @@ class TestAnomalyDetectionManager:
         market_cfg.price_change_threshold = 10.0
         mgr.set_market_detector_config(market_cfg)
 
-        report = mgr.detect_all_anomalies(
-            [0], [10.0], [1.0], [], [], [[0.0]]
-        )
+        report = mgr.detect_all_anomalies([0], [10.0], [1.0], [], [], [[0.0]])
         assert report.overall_anomaly_score >= 0
         assert isinstance(report.summary_report, str)

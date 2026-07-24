@@ -41,9 +41,7 @@ def _warn_cpu_fallback(name: str) -> None:
 def _use_triton(tensor: Any) -> bool:
     import torch  # noqa: PLC0415
 
-    return bool(
-        tensor.device.type == "cuda" and torch.cuda.is_available() and _check_triton()
-    )
+    return bool(tensor.device.type == "cuda" and torch.cuda.is_available() and _check_triton())
 
 
 __all__ = ["_check_triton", "_use_triton"]

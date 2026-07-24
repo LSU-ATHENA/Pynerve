@@ -108,7 +108,7 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "ARG", "PTH", "PLC", "PLE", "PLR", "PLW"]
-ignore = ["E501", "PLR0913", "PLR2004", "PLW2901", "UP040", "UP043"]
+ignore = ["E501", "PLR0913", "PLR0917", "PLR2004", "PLW2901", "UP040", "UP043"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "PLC0415", "PLR2004", "SIM108", "N806", "ARG001", "ARG005", "E741", "B017", "E402", "N803", "ARG002"]
@@ -170,8 +170,8 @@ no_implicit_reexport = false
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
-mypy_path = ["python/pynerve/", "tools/", "tests/"]
-exclude = ['\.pyi$']
+mypy_path = ["python/", "tools/", "tests/"]
+exclude = ['\.pyi$', '^build/', '^_skbuild/', '^dist/', '^python/build/']
 
 [tool.coverage.run]
 source = ["python/pynerve"]

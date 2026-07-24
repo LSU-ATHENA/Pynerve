@@ -15,7 +15,7 @@ build-backend = "scikit_build_core.build"
 name = "pynerve"
 version = "1.0.4"
 description = "Fast TDA library"
-readme = "../README.md"
+readme = "README.md"
 license = {text = "MIT"}
 authors = [
     {name = "Nerve contributors"}
@@ -52,6 +52,9 @@ dependencies = [
     "scipy>=1.7.0",
 ]
 
+[project.optional-dependencies]
+torch = ["torch>=2.4"]
+
 [project.urls]
 Homepage = "https://github.com/LSU-ATHENA/Pynerve"
 Repository = "https://github.com/LSU-ATHENA/Pynerve"
@@ -66,6 +69,8 @@ cmake.args = [
     "-DENABLE_CUDA=OFF",
     "-DENABLE_MPI=OFF",
 ]
+install.components = ["python"]
+wheel.packages = ["pynerve"]
 sdist.include = [
     "../src/**",
     "../tools/**",

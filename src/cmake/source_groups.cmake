@@ -576,4 +576,3 @@ set(NERVE_AVX512_SOURCES
     metrics/matrix/matrix_distance_avx512_ops.cpp
     persistence/utils/avx512_optimizer.cpp
 )
-

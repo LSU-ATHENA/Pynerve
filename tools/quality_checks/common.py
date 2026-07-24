@@ -90,7 +90,7 @@ def _load_tool_module(name: str) -> ModuleType:
 def _public_python_all(path: Path = PYTHON_API_PATH) -> set[str]:
     if not path.exists():
         return set()
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename = str(path))
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     exports: set[str] = set()
     for node in tree.body:
         if isinstance(node, ast.Assign):
@@ -108,7 +108,7 @@ def _public_python_all(path: Path = PYTHON_API_PATH) -> set[str]:
 def _module_defined_names(path: Path) -> set[str]:
     if not path.exists():
         return set()
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename = str(path))
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     names: set[str] = set()
 
     def visit_statements(statements: list[ast.stmt]) -> None:
@@ -527,7 +527,7 @@ def _detect_cycles(graph: dict[str, set[str]]) -> list[list[str]]:
             cycle = visiting[visiting.index(module) :]
             rotated = min(
                 (tuple(cycle[index:] + cycle[:index]) for index in range(len(cycle))),
-                default = tuple(cycle),
+                default=tuple(cycle),
             )
             if rotated not in emitted:
                 emitted.add(rotated)

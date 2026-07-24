@@ -7,7 +7,7 @@ try:
 
     HAS_CUPY = True
 except ImportError:
-    cp = None  # type: ignore[assignment]
+    cp = None
     HAS_CUPY = False
 
 

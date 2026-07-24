@@ -80,9 +80,7 @@ def print_report(report_path: str) -> dict:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Flaky test report generator for pynerve CI"
-    )
+    parser = argparse.ArgumentParser(description="Flaky test report generator for pynerve CI")
     parser.add_argument("report_path", help="Path to pytest --flaky-report JSON file")
     parser.add_argument(
         "--fail-above",

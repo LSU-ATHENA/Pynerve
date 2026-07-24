@@ -192,7 +192,7 @@
 2026-07-15T02:21:15.1986037Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 ccache amd64 4.9.1-1 [592 kB]
 2026-07-15T02:21:15.5686059Z Fetched 633 kB in 0s (2369 kB/s)
 2026-07-15T02:21:15.5942718Z Selecting previously unselected package libhiredis1.1.0:amd64.
-2026-07-15T02:21:15.6208700Z (Reading database ... 
+2026-07-15T02:21:15.6208700Z (Reading database ...
 2026-07-15T02:21:15.6209330Z (Reading database ... 5%
 2026-07-15T02:21:15.6209915Z (Reading database ... 10%
 2026-07-15T02:21:15.6210451Z (Reading database ... 15%
@@ -225,17 +225,17 @@
 2026-07-15T02:21:17.0485449Z Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
 2026-07-15T02:21:17.0821031Z Processing triggers for man-db (2.12.0-4build2) ...
 2026-07-15T02:21:17.0842215Z Not building database; man-db/auto-update is not 'true'.
-2026-07-15T02:21:17.7427008Z 
+2026-07-15T02:21:17.7427008Z
 2026-07-15T02:21:17.7427594Z Running kernel seems to be up-to-date.
-2026-07-15T02:21:17.7427946Z 
+2026-07-15T02:21:17.7427946Z
 2026-07-15T02:21:17.7428114Z No services need to be restarted.
-2026-07-15T02:21:17.7428400Z 
+2026-07-15T02:21:17.7428400Z
 2026-07-15T02:21:17.7429875Z No containers need to be restarted.
-2026-07-15T02:21:17.7430173Z 
+2026-07-15T02:21:17.7430173Z
 2026-07-15T02:21:17.7430362Z No user sessions are running outdated binaries.
-2026-07-15T02:21:17.7430700Z 
+2026-07-15T02:21:17.7430700Z
 2026-07-15T02:21:17.7431005Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
-2026-07-15T02:21:18.7110651Z 
+2026-07-15T02:21:18.7110651Z
 2026-07-15T02:21:18.7122838Z ##[endgroup]
 2026-07-15T02:21:18.7123275Z ##[group]Restore cache
 2026-07-15T02:21:18.8166481Z Cache hit for restore-key: ccache-2026-07-15T01:38:41.289Z
@@ -258,49 +258,49 @@
 2026-07-15T02:21:20.4276230Z [command]/usr/bin/sh -xc ccache -p
 2026-07-15T02:21:20.4307889Z + ccache -p
 2026-07-15T02:21:20.4323471Z (default) absolute_paths_in_stderr = false
-2026-07-15T02:21:20.4323943Z (default) base_dir = 
+2026-07-15T02:21:20.4323943Z (default) base_dir =
 2026-07-15T02:21:20.4324625Z (/home/runner/.config/ccache/ccache.conf) cache_dir = /home/runner/work/Pynerve/Pynerve/.ccache
-2026-07-15T02:21:20.4325836Z (default) compiler = 
+2026-07-15T02:21:20.4325836Z (default) compiler =
 2026-07-15T02:21:20.4326214Z (default) compiler_check = mtime
 2026-07-15T02:21:20.4326674Z (default) compiler_type = auto
 2026-07-15T02:21:20.4327186Z (/home/runner/.config/ccache/ccache.conf) compression = true
 2026-07-15T02:21:20.4328002Z (default) compression_level = 0
-2026-07-15T02:21:20.4328418Z (default) cpp_extension = 
+2026-07-15T02:21:20.4328418Z (default) cpp_extension =
 2026-07-15T02:21:20.4328806Z (default) debug = false
-2026-07-15T02:21:20.4329180Z (default) debug_dir = 
+2026-07-15T02:21:20.4329180Z (default) debug_dir =
 2026-07-15T02:21:20.4329535Z (default) debug_level = 2
 2026-07-15T02:21:20.4329921Z (default) depend_mode = false
 2026-07-15T02:21:20.4330339Z (default) direct_mode = true
 2026-07-15T02:21:20.4330738Z (default) disable = false
-2026-07-15T02:21:20.4331151Z (default) extra_files_to_hash = 
+2026-07-15T02:21:20.4331151Z (default) extra_files_to_hash =
 2026-07-15T02:21:20.4331564Z (default) file_clone = false
 2026-07-15T02:21:20.4331969Z (default) hard_link = false
 2026-07-15T02:21:20.4332353Z (default) hash_dir = true
-2026-07-15T02:21:20.4332754Z (default) ignore_headers_in_manifest = 
-2026-07-15T02:21:20.4333238Z (default) ignore_options = 
+2026-07-15T02:21:20.4332754Z (default) ignore_headers_in_manifest =
+2026-07-15T02:21:20.4333238Z (default) ignore_options =
 2026-07-15T02:21:20.4333635Z (default) inode_cache = true
 2026-07-15T02:21:20.4334049Z (default) keep_comments_cpp = false
-2026-07-15T02:21:20.4334477Z (default) log_file = 
+2026-07-15T02:21:20.4334477Z (default) log_file =
 2026-07-15T02:21:20.4335019Z (default) max_files = 0
 2026-07-15T02:21:20.4335684Z (/home/runner/.config/ccache/ccache.conf) max_size = 500.0 MB
 2026-07-15T02:21:20.4336316Z (default) msvc_dep_prefix = Note: including file:
-2026-07-15T02:21:20.4336858Z (default) namespace = 
-2026-07-15T02:21:20.4337194Z (default) path = 
+2026-07-15T02:21:20.4336858Z (default) namespace =
+2026-07-15T02:21:20.4337194Z (default) path =
 2026-07-15T02:21:20.4337559Z (default) pch_external_checksum = false
-2026-07-15T02:21:20.4337964Z (default) prefix_command = 
-2026-07-15T02:21:20.4338226Z (default) prefix_command_cpp = 
+2026-07-15T02:21:20.4337964Z (default) prefix_command =
+2026-07-15T02:21:20.4338226Z (default) prefix_command_cpp =
 2026-07-15T02:21:20.4338483Z (default) read_only = false
 2026-07-15T02:21:20.4338727Z (default) read_only_direct = false
 2026-07-15T02:21:20.4339007Z (default) recache = false
 2026-07-15T02:21:20.4339276Z (default) remote_only = false
-2026-07-15T02:21:20.4339532Z (default) remote_storage = 
+2026-07-15T02:21:20.4339532Z (default) remote_storage =
 2026-07-15T02:21:20.4339786Z (default) reshare = false
 2026-07-15T02:21:20.4340037Z (default) run_second_cpp = true
-2026-07-15T02:21:20.4340404Z (default) sloppiness = 
+2026-07-15T02:21:20.4340404Z (default) sloppiness =
 2026-07-15T02:21:20.4340762Z (default) stats = true
-2026-07-15T02:21:20.4341129Z (default) stats_log = 
+2026-07-15T02:21:20.4341129Z (default) stats_log =
 2026-07-15T02:21:20.4341568Z (default) temporary_dir = /run/user/1001/ccache-tmp
-2026-07-15T02:21:20.4342072Z (default) umask = 
+2026-07-15T02:21:20.4342072Z (default) umask =
 2026-07-15T02:21:20.4345001Z [command]/usr/bin/sh -xc ccache -z
 2026-07-15T02:21:20.4376962Z + ccache -z
 2026-07-15T02:21:20.4839472Z Statistics zeroed
@@ -374,7 +374,7 @@
 2026-07-15T02:21:25.5745483Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 libomp-dev amd64 1:18.0-59~exp2 [5366 B]
 2026-07-15T02:21:25.8292832Z Fetched 2767 kB in 0s (15.4 MB/s)
 2026-07-15T02:21:25.8486085Z Selecting previously unselected package libomp5-18:amd64.
-2026-07-15T02:21:25.8552215Z (Reading database ... 
+2026-07-15T02:21:25.8552215Z (Reading database ...
 2026-07-15T02:21:25.8552695Z (Reading database ... 5%
 2026-07-15T02:21:25.8553056Z (Reading database ... 10%
 2026-07-15T02:21:25.8553435Z (Reading database ... 15%
@@ -418,15 +418,15 @@
 2026-07-15T02:21:26.3297389Z Processing triggers for man-db (2.12.0-4build2) ...
 2026-07-15T02:21:26.3314148Z Not building database; man-db/auto-update is not 'true'.
 2026-07-15T02:21:26.3326198Z Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
-2026-07-15T02:21:26.8845104Z 
+2026-07-15T02:21:26.8845104Z
 2026-07-15T02:21:26.8846011Z Running kernel seems to be up-to-date.
-2026-07-15T02:21:26.8846289Z 
+2026-07-15T02:21:26.8846289Z
 2026-07-15T02:21:26.8846409Z No services need to be restarted.
-2026-07-15T02:21:26.8846644Z 
+2026-07-15T02:21:26.8846644Z
 2026-07-15T02:21:26.8846762Z No containers need to be restarted.
-2026-07-15T02:21:26.8846944Z 
+2026-07-15T02:21:26.8846944Z
 2026-07-15T02:21:26.8847084Z No user sessions are running outdated binaries.
-2026-07-15T02:21:26.8847306Z 
+2026-07-15T02:21:26.8847306Z
 2026-07-15T02:21:26.8847506Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
 2026-07-15T02:21:27.8470518Z ##[group]Run cmake -S . -B build -G Ninja \
 2026-07-15T02:21:27.8470915Z [36;1mcmake -S . -B build -G Ninja \[0m
@@ -463,17 +463,17 @@
 2026-07-15T02:21:29.5333212Z -- Found Threads: TRUE
 2026-07-15T02:21:29.5368941Z -- Eigen3 found - Enabling Eigen-backed gradient and sheaf Laplacian components
 2026-07-15T02:21:29.5531273Z CMake Warning at CMakeLists.txt:252 (message):
-2026-07-15T02:21:29.5531629Z -- 
+2026-07-15T02:21:29.5531629Z --
 2026-07-15T02:21:29.5531859Z -- Nerve Feature Summary:
 2026-07-15T02:21:29.5532134Z --   CUDA support:          OFF
 2026-07-15T02:21:29.5532409Z --   PyTorch support:       ON
 2026-07-15T02:21:29.5532677Z --   MPI support:           OFF
 2026-07-15T02:21:29.5532941Z --   Eigen3 support:        ON
 2026-07-15T02:21:29.5533190Z --   NUMA support:          OFF
-2026-07-15T02:21:29.5533422Z -- 
+2026-07-15T02:21:29.5533422Z --
 2026-07-15T02:21:29.5533709Z   NUMA library not found, disabling NUMA features
-2026-07-15T02:21:29.5533933Z 
-2026-07-15T02:21:29.5533938Z 
+2026-07-15T02:21:29.5533933Z
+2026-07-15T02:21:29.5533938Z
 2026-07-15T02:21:29.5586674Z -- PyTorch not found - Building without ML integration
 2026-07-15T02:21:29.5587208Z -- CUDA disabled by ENABLE_CUDA=OFF
 2026-07-15T02:21:29.5587579Z -- MPI disabled - Building without distributed support
@@ -509,8 +509,8 @@
 2026-07-15T02:21:31.1641897Z   (/opt/hostedtoolcache/Python/3.11.15/x64/bin/python3.11).  Install pytest
 2026-07-15T02:21:31.1642610Z   or set Python3_EXECUTABLE to an interpreter with pytest.  Set
 2026-07-15T02:21:31.1643312Z   NERVE_ALLOW_MISSING_PYTEST=ON only for explicit C++-only test jobs.
-2026-07-15T02:21:31.1643766Z 
-2026-07-15T02:21:31.1643772Z 
+2026-07-15T02:21:31.1643766Z
+2026-07-15T02:21:31.1643772Z
 2026-07-15T02:21:31.1649372Z -- Configuring incomplete, errors occurred!
 2026-07-15T02:21:31.1792134Z ##[error]Process completed with exit code 1.
 2026-07-15T02:21:31.1898188Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
@@ -524,12 +524,12 @@
 2026-07-15T02:21:31.3214186Z [command]/usr/bin/ccache --version
 2026-07-15T02:21:31.3264216Z ccache version 4.9.1
 2026-07-15T02:21:31.3265257Z Features: file-storage http-storage redis+unix-storage redis-storage
-2026-07-15T02:21:31.3266000Z 
+2026-07-15T02:21:31.3266000Z
 2026-07-15T02:21:31.3266185Z Copyright (C) 2002-2007 Andrew Tridgell
 2026-07-15T02:21:31.3266770Z Copyright (C) 2009-2024 Joel Rosdahl and other contributors
-2026-07-15T02:21:31.3267197Z 
+2026-07-15T02:21:31.3267197Z
 2026-07-15T02:21:31.3267584Z See <https://ccache.dev/credits.html> for a complete list of contributors.
-2026-07-15T02:21:31.3268087Z 
+2026-07-15T02:21:31.3268087Z
 2026-07-15T02:21:31.3268408Z This program is free software; you can redistribute it and/or modify it under
 2026-07-15T02:21:31.3269597Z the terms of the GNU General Public License as published by the Free Software
 2026-07-15T02:21:31.3270341Z Foundation; either version 3 of the License, or (at your option) any later

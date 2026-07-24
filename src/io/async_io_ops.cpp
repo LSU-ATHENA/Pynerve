@@ -21,6 +21,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef _WIN32
+#include <sys/stat.h>
+#endif
+
 namespace nerve::io
 {
 
@@ -61,7 +65,10 @@ Size preadFull(int fd, void *buffer, Size size, Size offset)
     }
     return size - remaining;
 #else
-    (void)fd; (void)buffer; (void)size; (void)offset;
+    (void)fd;
+    (void)buffer;
+    (void)size;
+    (void)offset;
     return 0;
 #endif
 }
@@ -89,7 +96,10 @@ Size pwriteFull(int fd, const void *buffer, Size size, Size offset)
     }
     return size - remaining;
 #else
-    (void)fd; (void)buffer; (void)size; (void)offset;
+    (void)fd;
+    (void)buffer;
+    (void)size;
+    (void)offset;
     return 0;
 #endif
 }

@@ -1,3 +1,4 @@
+# mypy: disallow-untyped-defs=False, disallow-incomplete-defs=False
 """Triton persistence-image kernels.
 
 Two strategies:
@@ -126,9 +127,7 @@ def _select_strategy(n_pairs: int, resolution: int) -> str:
 def _bounds_and_valid(
     births_f: torch.Tensor,
     deaths_f: torch.Tensor,
-) -> tuple[
-    torch.Tensor, torch.Tensor, float, float, float, float, float, float, float, float
-]:
+) -> tuple[torch.Tensor, torch.Tensor, float, float, float, float, float, float, float, float]:
     finite_mask = torch.isfinite(deaths_f) & (deaths_f > births_f)
     valid = finite_mask.nonzero(as_tuple=False).squeeze(-1)
     b_valid = births_f[valid]
@@ -177,9 +176,7 @@ def _persistence_image_cpu(
         * y_range
         / resolution
     )
-    image = torch.zeros(
-        resolution, resolution, dtype=torch.float32, device=b_valid.device
-    )
+    image = torch.zeros(resolution, resolution, dtype=torch.float32, device=b_valid.device)
     for i in range(n):
         b = b_valid[i]
         p = d_valid[i] - b
@@ -200,25 +197,20 @@ def persistence_image_from_diagram(
     """Rasterise a persistence diagram to a weighted Gaussian image."""
     n = min(births.size(0), deaths.size(0))
     if n == 0:
-        return torch.zeros(
-            resolution, resolution, dtype=torch.float32, device=births.device
-        )
+        return torch.zeros(resolution, resolution, dtype=torch.float32, device=births.device)
     births_f = births[:n].float().contiguous()
     deaths_f = deaths[:n].float().contiguous()
-    b_valid, d_valid, x_min, x_max, y_min, y_max, _xr, _yr, _bm, _pm = (
-        _bounds_and_valid(births_f, deaths_f)
+    b_valid, d_valid, x_min, x_max, y_min, y_max, _xr, _yr, _bm, _pm = _bounds_and_valid(
+        births_f, deaths_f
     )
     if b_valid.numel() == 0:
-        return torch.zeros(
-            resolution, resolution, dtype=torch.float32, device=births.device
-        )
+        return torch.zeros(resolution, resolution, dtype=torch.float32, device=births.device)
 
     if _use_triton(births):
-        image = torch.zeros(
-            resolution, resolution, dtype=torch.float32, device=births.device
-        )
+        image = torch.zeros(resolution, resolution, dtype=torch.float32, device=births.device)
         stride_img_y = image.stride(0)
         strategy = _select_strategy(int(b_valid.numel()), resolution)
+        grid: tuple[int, ...] | tuple[int, int]
         if strategy == "pixel":
             grid = (triton.cdiv(resolution, 16), triton.cdiv(resolution, 16))
             _pixel_kernel[grid](
@@ -255,6 +247,4 @@ def persistence_image_from_diagram(
         return image
 
     _warn_cpu_fallback("persistence_image_from_diagram")
-    return _persistence_image_cpu(
-        b_valid, d_valid, resolution, sigma, x_min, x_max, y_min, y_max
-    )
+    return _persistence_image_cpu(b_valid, d_valid, resolution, sigma, x_min, x_max, y_min, y_max)

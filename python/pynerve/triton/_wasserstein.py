@@ -1,3 +1,4 @@
+# mypy: disallow-untyped-defs=False, disallow-incomplete-defs=False
 """Triton Wasserstein-distance kernels.
 
 Implements:
@@ -119,9 +120,7 @@ def sinkhorn_kernel_matrix(
     return torch.exp(-cost / reg)
 
 
-def _sinkhorn_row_normalise(
-    kernel: torch.Tensor, u: torch.Tensor, v: torch.Tensor
-) -> torch.Tensor:
+def _sinkhorn_row_normalise(kernel: torch.Tensor, u: torch.Tensor, v: torch.Tensor) -> torch.Tensor:
     """Row-scale kernel by 1/(K v), update u."""
     kv = kernel @ v
     inv_kv = torch.where(kv > 0, 1.0 / kv, torch.zeros_like(kv))
@@ -174,4 +173,4 @@ def sinkhorn_distance(
 
     transport = u[:, None] * kernel * v[None, :]
     total = float((transport * cost).sum())
-    return max(0.0, total) ** (1.0 / p)
+    return float(max(0.0, total) ** (1.0 / p))
