@@ -78,13 +78,13 @@ class TestDiagramVisualizationCallback:
     def test_invalid_batch_idx_raises(self):
         d = torch.tensor([[0.0, 1.0, 0]], dtype=torch.float32)
         cb = DiagramVisualizationCallback()
-        with pytest.raises((ValueError, TypeError)):
+        with pytest.raises(ValueError, match="non-negative"):
             cb.on_batch_end(d, batch_idx=-1)
 
     def test_invalid_epoch_raises(self):
         d = torch.tensor([[0.0, 1.0, 0]], dtype=torch.float32)
         cb = DiagramVisualizationCallback()
-        with pytest.raises((ValueError, TypeError)):
+        with pytest.raises(ValueError, match="non-negative"):
             cb.on_epoch_end(epoch=-1, diagram=d)
 
 

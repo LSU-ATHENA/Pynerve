@@ -57,7 +57,7 @@ class TestDiagramMetric:
         assert set(metric.track_stats) == {"total", "count"}
 
     def test_construction_invalid_dim_raises(self):
-        with pytest.raises((ValueError, TypeError)):
+        with pytest.raises(ValueError, match="non-negative"):
             DiagramMetric(dim=-1)
 
     def test_construction_invalid_track_stats_raises(self):

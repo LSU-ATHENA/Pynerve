@@ -209,7 +209,7 @@ class TestDiagramToHistogramData:
 
     def test_invalid_num_bins_raises(self):
         d = torch.tensor([[0.0, 1.0, 0]], dtype=torch.float32)
-        with pytest.raises((ValueError, TypeError)):
+        with pytest.raises(ValueError, match="positive"):
             diagram_to_histogram_data(d, num_bins=0)
 
 
@@ -250,7 +250,7 @@ class TestDiagramToLandscapeData:
 
     def test_invalid_num_samples_raises(self):
         d = torch.tensor([[0.0, 1.0, 0]], dtype=torch.float32)
-        with pytest.raises((ValueError, TypeError)):
+        with pytest.raises(ValueError, match="positive"):
             diagram_to_landscape_data(d, num_samples=0)
 
 
@@ -290,5 +290,5 @@ class TestDiagramToHeatmapData:
 
     def test_invalid_grid_size_raises(self):
         d = torch.tensor([[0.0, 1.0, 0]], dtype=torch.float32)
-        with pytest.raises((ValueError, TypeError)):
+        with pytest.raises(ValueError, match="positive"):
             diagram_to_heatmap_data(d, grid_size=0)

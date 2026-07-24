@@ -303,8 +303,20 @@ class TestRemoveOutliers:
 
     def test_negative_threshold_raises(self):
         d = torch.tensor([[0.0, 1.0, 0]], dtype=torch.float32)
-        with pytest.raises((ValueError, TypeError)):
+        with pytest.raises(ValueError, match="non-negative"):
             remove_outliers(d, threshold=-1.0)
+
+    def test_single_point_diagram(self):
+        """IQR with a single point should not crash."""
+        d = torch.tensor([[0.0, 1.0, 0]], dtype=torch.float32)
+        result = remove_outliers(d, method="iqr")
+        assert result.shape[0] <= 1
+
+    def test_two_point_diagram(self):
+        """Z-score with two points should compute normally."""
+        d = torch.tensor([[0.0, 1.0, 0], [1.0, 2.0, 0]], dtype=torch.float32)
+        result = remove_outliers(d, method="zscore", threshold=3.0)
+        assert result.shape[0] >= 1
 
 
 # ── clean_diagram ──────────────────────────────────────────────────────────
@@ -361,3 +373,62 @@ class TestCleanDiagram:
         d = torch.tensor([1.0, 2.0, 3.0], dtype=torch.float32)
         with pytest.raises(ValueError, match="2D or 3D"):
             clean_diagram(d)
+
+    def test_all_options_combined(self):
+        """Pipeline with all options enabled simultaneously."""
+        d = torch.tensor(
+            [[0.0, 1.0, 0], [1.0, float("inf"), 0], [2.0, 3.0, 0], [0.0, 0.01, 0]],
+            dtype=torch.float32,
+        )
+        result = clean_diagram(
+            d,
+            handle_inf=True,
+            min_persistence=0.1,
+            max_features=2,
+            normalize=True,
+            remove_outliers_flag=True,
+        )
+        assert result.dim() == 2
+        assert torch.isfinite(result[:, 1]).all()
+        assert result.shape[0] <= 2
+
+    def test_single_point_clean(self):
+        """Clean a single-point diagram."""
+        d = torch.tensor([[0.0, 5.0, 0]], dtype=torch.float32)
+        result = clean_diagram(d, handle_inf=True, normalize=True)
+        assert result.shape[0] == 1
+        assert result[0, 0] == 0.0  # minmax: min birth goes to 0
+
+    def test_large_value_factor_validation(self):
+        d = torch.tensor([[0.0, 1.0, 0]], dtype=torch.float32)
+        with pytest.raises(ValueError, match="positive"):
+            handle_infinite_deaths(d, strategy="max", large_value_factor=-1.0)
+
+    def test_handle_inf_strategy_remove_all_infinite(self):
+        """When all deaths are infinite and strategy=remove, result is empty."""
+        d = torch.tensor([[0.0, float("inf"), 0], [2.0, float("inf"), 0]], dtype=torch.float32)
+        result = handle_infinite_deaths(d, strategy="remove")
+        assert result.shape[0] == 0
+
+    def test_subsample_uniform_clustered_births(self):
+        """Uniform subsample on diagrams with clustered births."""
+        d = torch.tensor(
+            [[0.0, 1.0, 0], [0.1, 2.0, 0], [0.2, 1.5, 0], [5.0, 10.0, 0]],
+            dtype=torch.float32,
+        )
+        result = subsample_diagram(d, max_features=2, strategy="uniform")
+        assert result.shape[0] >= 1
+
+    def test_normalize_single_point_standard(self):
+        """Standard normalization on a single-point diagram."""
+        d = torch.tensor([[5.0, 10.0, 0]], dtype=torch.float32)
+        result = normalize_diagram(d, method="standard")
+        # With a single point, std clamped to EPS, so result is near 0
+        assert torch.allclose(result, torch.zeros_like(result), atol=1e-5)
+
+    def test_normalize_extreme_values(self):
+        """Minmax normalization with extreme birth/death values."""
+        d = torch.tensor([[0.0, 1.0, 0], [1e6, 2e6, 0]], dtype=torch.float32)
+        result = normalize_diagram(d, method="minmax")
+        assert result[0, 0] == 0.0
+        assert result[1, 0] == 1.0

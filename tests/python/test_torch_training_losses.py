@@ -169,7 +169,8 @@ class TestTopologicalRegularization:
             target_complexity={"h0_count": 100.0}, weights={"h0_count": 1.0}
         )
         result = reg(d)
-        assert result.item() > 0  # penalty for being far from target
+        # 2 features vs target 100 → l2 penalty: (2-100)^2 = 9604
+        assert result.item() == pytest.approx(9604.0)
 
 
 # ── PersistenceCrossEntropy ────────────────────────────────────────────────
