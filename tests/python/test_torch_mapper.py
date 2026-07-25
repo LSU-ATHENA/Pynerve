@@ -173,37 +173,106 @@ class TestMapperTransformer:
             t.transform(_make_points(5))
 
     def test_transform_after_fit(self):
-        from pynerve.torch.mapper import MapperTransformer
+        """Test transform() assignment logic with manually constructed nodes.
 
-        t = MapperTransformer(filter_function="pca_2d", cover_resolution=5)
-        # Use well-separated clusters so nodes are non-empty
-        pts = torch.cat([
-            torch.randn(30, 2) + torch.tensor([0.0, 0.0]),
-            torch.randn(30, 2) + torch.tensor([10.0, 10.0]),
-        ])
-        t.fit(pts)
-        if t.mapper_result_ and t.mapper_result_["nodes"]:
-            new_pts = torch.tensor([[0.5, 0.5], [9.5, 9.5]])
-            assignments = t.transform(new_pts)
-            assert assignments.shape == (2,)
-            assert assignments.dtype == torch.long
-        else:
-            pytest.skip("Python fallback produced no nodes")
-
-    def test_transform_identity_filter(self):
+        Uses identity filter so filter values are exactly X[:, :2],
+        making nearest-node assignments predictable.
+        """
         from pynerve.torch.mapper import MapperTransformer
 
         t = MapperTransformer(filter_function="identity", cover_resolution=5)
-        pts = torch.cat([
-            torch.randn(30, 2) + torch.tensor([0.0, 0.0]),
-            torch.randn(30, 2) + torch.tensor([10.0, 10.0]),
-        ])
-        t.fit(pts)
-        if t.mapper_result_ and t.mapper_result_["nodes"]:
-            assignments = t.transform(_make_points(5, 2))
-            assert assignments.shape == (5,)
-        else:
-            pytest.skip("Python fallback produced no nodes")
+        # Manually construct mapper_result_ with 3 nodes at known filter positions
+        t.mapper_result_ = {
+            "nodes": [
+                {"id": 0, "point_indices": [0], "filter_centroid": torch.tensor([0.0, 0.0])},
+                {"id": 1, "point_indices": [1], "filter_centroid": torch.tensor([5.0, 5.0])},
+                {"id": 2, "point_indices": [2], "filter_centroid": torch.tensor([10.0, 10.0])},
+            ],
+            "edges": [],
+            "filter_values": torch.tensor([[0.0, 0.0], [5.0, 5.0], [10.0, 10.0]]),
+        }
+        t.training_filter_values_ = t.mapper_result_["filter_values"]
+
+        # With identity filter, filter_vals = X[:, :2], so assignments are
+        # determined by Euclidean distance to each node's filter_centroid.
+        new_pts = torch.tensor([[0.1, 0.1], [4.9, 5.1], [10.2, 9.8]])
+        assignments = t.transform(new_pts)
+        assert assignments.shape == (3,)
+        assert assignments.dtype == torch.long
+        assert assignments[0] == 0  # [0.1,0.1] closest to node 0 at [0,0]
+        assert assignments[1] == 1  # [4.9,5.1] closest to node 1 at [5,5]
+        assert assignments[2] == 2  # [10.2,9.8] closest to node 2 at [10,10]
+
+    def test_transform_identity_filter(self):
+        """Test transform() with identity filter — filter values are X[:, :2] directly."""
+        from pynerve.torch.mapper import MapperTransformer
+
+        t = MapperTransformer(filter_function="identity", cover_resolution=5)
+        t.mapper_result_ = {
+            "nodes": [
+                {"id": 10, "point_indices": [0], "filter_centroid": torch.tensor([0.0, 0.0])},
+                {"id": 20, "point_indices": [1], "filter_centroid": torch.tensor([1.0, 1.0])},
+            ],
+            "edges": [],
+            "filter_values": torch.tensor([[0.0, 0.0], [1.0, 1.0]]),
+        }
+        t.training_filter_values_ = t.mapper_result_["filter_values"]
+
+        # With identity filter, filter_vals = X[:, :2], so [0.1, 0.1] is closest
+        # to node 10 at [0,0], and [0.9, 0.9] is closest to node 20 at [1,1]
+        new_pts = torch.tensor([[0.1, 0.1, 5.0], [0.9, 0.9, 3.0]])
+        assignments = t.transform(new_pts)
+        assert assignments.shape == (2,)
+        assert assignments[0] == 10
+        assert assignments[1] == 20
+
+    def test_transform_pca_1d_filter(self):
+        """Test transform() with pca_1d filter — 1D filter values."""
+        from pynerve.torch.mapper import MapperTransformer
+
+        t = MapperTransformer(filter_function="pca_1d", cover_resolution=5)
+        t.mapper_result_ = {
+            "nodes": [
+                {"id": 0, "point_indices": [0], "filter_centroid": torch.tensor([0.0, 0.0])},
+                {"id": 1, "point_indices": [1], "filter_centroid": torch.tensor([3.0, 0.0])},
+            ],
+            "edges": [],
+            "filter_values": torch.tensor([[0.0, 0.0], [3.0, 0.0]]),
+        }
+        t.training_filter_values_ = t.mapper_result_["filter_values"]
+
+        new_pts = torch.tensor([[0.0, 0.0], [3.0, 0.0]])
+        assignments = t.transform(new_pts)
+        assert assignments.shape == (2,)
+
+    def test_transform_eccentricity_filter(self):
+        """Test transform() with eccentricity filter."""
+        from pynerve.torch.mapper import MapperTransformer
+
+        t = MapperTransformer(filter_function="eccentricity", cover_resolution=5)
+        t.mapper_result_ = {
+            "nodes": [
+                {"id": 0, "point_indices": [0], "filter_centroid": torch.tensor([0.0, 0.0])},
+                {"id": 1, "point_indices": [1], "filter_centroid": torch.tensor([2.0, 0.0])},
+            ],
+            "edges": [],
+            "filter_values": torch.tensor([[0.0, 0.0], [2.0, 0.0]]),
+        }
+        t.training_filter_values_ = t.mapper_result_["filter_values"]
+
+        new_pts = torch.tensor([[0.0, 0.0], [1.0, 0.0]])
+        assignments = t.transform(new_pts)
+        assert assignments.shape == (2,)
+
+    def test_transform_empty_nodes_raises(self):
+        """transform() raises ValidationError when mapper_result_ has no nodes."""
+        from pynerve.torch.mapper import MapperTransformer
+        from pynerve.exceptions import ValidationError
+
+        t = MapperTransformer(filter_function="pca_2d")
+        t.mapper_result_ = {"nodes": [], "edges": [], "filter_values": torch.empty(0, 2)}
+        with pytest.raises(ValidationError, match="no nodes"):
+            t.transform(_make_points(5, 2))
 
     def test_transform_unknown_filter(self):
         from pynerve.torch.mapper import MapperTransformer
