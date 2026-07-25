@@ -290,8 +290,12 @@ def benchmark_witness_complex(
                 idx = rng.choice(n_samples, n_landmarks, replace=False)
                 landmark_idx = idx
             lm = data[landmark_idx]
-            wc = gudhi.witness_complex.WitnessComplex(landmarks=lm, witnesses=data)  # pyright: ignore[reportAttributeAccessIssue]
-            st = wc.create_simplex_tree(max_alpha_square=1e10, limit_dimension=1)
+            # Use EuclideanWitnessComplex which accepts point arrays directly.
+            # The plain WitnessComplex requires a precomputed nearest_landmark_table.
+            ewc = gudhi.euclidean_witness_complex.EuclideanWitnessComplex(  # pyright: ignore[reportAttributeAccessIssue]
+                landmarks=lm, witnesses=data
+            )
+            st = ewc.create_simplex_tree(max_alpha_square=1e10, limit_dimension=1)
             return st.persistence()
 
         gudhi_times = _time_runs(n_runs, _run_gudhi)
@@ -299,7 +303,7 @@ def benchmark_witness_complex(
         warnings.warn("GUDHI not installed for witness comparison", stacklevel=2)
         gudhi_times = nerve_times
     except AttributeError:
-        warnings.warn("GUDHI witness_complex module not available", stacklevel=2)
+        warnings.warn("GUDHI euclidean_witness_complex module not available", stacklevel=2)
         gudhi_times = nerve_times
 
     mean_nerve_val = float(np.mean(nerve_times)) if any(t > 0 for t in nerve_times) else 0.0

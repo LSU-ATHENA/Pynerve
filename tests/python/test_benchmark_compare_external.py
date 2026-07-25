@@ -113,15 +113,9 @@ class TestBenchmarkDistanceMatrix:
 class TestBenchmarkWitnessComplex:
     def test_basic(self):
         from pynerve.benchmark._compare_external import benchmark_witness_complex
-        # GUDHI's WitnessComplex API differs across versions — the benchmark
-        # function may raise TypeError from gudhi. Wrap in try/except since
-        # this is an external library API issue, not our code.
-        try:
-            result = benchmark_witness_complex(dataset="spheres", n_samples=50, n_landmarks=10, n_runs=1)
-            assert result.library2 == "GUDHI (witness)"
-            assert result.n_samples == 50
-        except TypeError:
-            pytest.skip("GUDHI WitnessComplex API mismatch — external library issue")
+        result = benchmark_witness_complex(dataset="spheres", n_samples=50, n_landmarks=10, n_runs=1)
+        assert result.library2 == "GUDHI (witness)"
+        assert result.n_samples == 50
 
     def test_invalid_n_landmarks(self):
         from pynerve.benchmark._compare_external import benchmark_witness_complex
