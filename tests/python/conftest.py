@@ -30,7 +30,7 @@ if str(TOOLS_ROOT) not in sys.path:
     sys.path.insert(0, str(TOOLS_ROOT))
 
 
-@pytest.fixture(scope="module", autouse=False)
+@pytest.fixture(scope="function", autouse=False)
 def mock_gpu_deps(request):
     """Inject MagicMock replacements for GPU/CuPy/triton/numba/C++ deps.
 
@@ -39,13 +39,16 @@ def mock_gpu_deps(request):
 
     To control whether ``cupy.cuda.is_available()`` returns True or False, set the
     module-level variable ``_GPU_MOCK_CUDA_AVAILABLE = True``.
+
+    Scope is ``function`` so each test gets a clean mock state;
+    no shared global state is carried between tests.
     """
     cuda_available = getattr(request.module, "_GPU_MOCK_CUDA_AVAILABLE", False)
-    install_gpu_mocks(cuda_available=cuda_available)
+    saved_state = install_gpu_mocks(cuda_available=cuda_available)
     try:
         yield
     finally:
-        restore_gpu_mocks()
+        restore_gpu_mocks(saved_state)
 
 
 def _nerve_core_available() -> bool:

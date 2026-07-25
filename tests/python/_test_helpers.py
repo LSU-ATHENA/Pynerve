@@ -34,18 +34,17 @@ _MOCK_MODULES = [
     "h5py",
 ]
 
-_saved: dict[str, object] = {}
 
-
-def install_gpu_mocks(*, cuda_available: bool = False) -> None:
+def install_gpu_mocks(*, cuda_available: bool = False) -> dict[str, object]:
     """Inject MagicMock replacements for all GPU/CuPy/triton/numba/C++ deps.
 
+    Returns a saved-state dict to pass to :func:`restore_gpu_mocks`.
     Call :func:`restore_gpu_mocks` in a ``finally`` block or fixture teardown
     to undo the injection.
     """
-    _saved.clear()
+    saved: dict[str, object] = {}
     for mod in _MOCK_MODULES:
-        _saved[mod] = sys.modules.get(mod)
+        saved[mod] = sys.modules.get(mod)
         sys.modules[mod] = MagicMock()
 
     # ── CuPy ────────────────────────────────────────────────────────────
@@ -81,16 +80,20 @@ def install_gpu_mocks(*, cuda_available: bool = False) -> None:
     _pt.MapperConfig = MagicMock()
     _pt.Mapper = MagicMock()
     _pt.ClustererType = MagicMock()
+    return saved
 
 
-def restore_gpu_mocks() -> None:
-    """Restore original ``sys.modules`` state after :func:`install_gpu_mocks`."""
-    for mod, orig in _saved.items():
+def restore_gpu_mocks(saved: dict[str, object]) -> None:
+    """Restore original ``sys.modules`` state after :func:`install_gpu_mocks`.
+
+    Args:
+        saved: The dict returned by :func:`install_gpu_mocks`.
+    """
+    for mod, orig in saved.items():
         if orig is None:
             sys.modules.pop(mod, None)
         else:
             sys.modules[mod] = orig
-    _saved.clear()
 
 
 # ── Persistence-diagram factory functions ─────────────────────────────────

@@ -46,6 +46,7 @@ class TestValidatePointCloudCupy:
         from pynerve import _cupy_compat
 
         with patch.object(_cupy_compat, "HAS_CUPY", True), \
+             patch.object(api_mod, "HAS_CUPY", True), \
              patch.object(api_mod, "cp") as mock_cp:
             mock_cp.isfinite.return_value.all.return_value.item.return_value = True
             mock_cp.asarray.return_value = MagicMock()
@@ -68,6 +69,7 @@ class TestValidatePointCloudCupy:
         from pynerve import _cupy_api as api_mod
 
         with patch.object(_cupy_compat, "HAS_CUPY", True), \
+             patch.object(api_mod, "HAS_CUPY", True), \
              patch.object(api_mod, "cp") as mock_cp:
             mock_cp.isfinite.return_value.all.return_value.item.return_value = True
 
@@ -88,6 +90,7 @@ class TestValidatePointCloudCupy:
         from pynerve import _cupy_api as api_mod
 
         with patch.object(_cupy_compat, "HAS_CUPY", True), \
+             patch.object(api_mod, "HAS_CUPY", True), \
              patch.object(api_mod, "cp") as mock_cp:
             mock_cp.isfinite.return_value.all.return_value.item.return_value = False
 

@@ -262,8 +262,22 @@ class TestBackendDispatcher:
     def test_get_torch_c_backend(self):
         from pynerve.torch._backend import backend
 
-        result = backend.get_torch_c_backend()
-        assert result is None or hasattr(result, "__module__")
+        original_torch = backend._torch_c
+        original_core = backend._core_c
+        original_initialized = backend._initialized
+        try:
+            # Reset cached singleton state so prior test modules
+            # cannot leak stale mock backends into this assertion.
+            backend._torch_c = None
+            backend._core_c = None
+            backend._initialized = False
+
+            result = backend.get_torch_c_backend()
+            assert result is None or hasattr(result, "__module__")
+        finally:
+            backend._torch_c = original_torch
+            backend._core_c = original_core
+            backend._initialized = original_initialized
 
 
 class TestBackendContext:
