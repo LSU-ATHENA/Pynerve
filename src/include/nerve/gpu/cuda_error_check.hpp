@@ -6,6 +6,16 @@
 #include <source_location>
 #include <string>
 
+// NVCC 12.x cannot evaluate std::source_location::current() as a consteval
+// default argument inside .cu files.
+#ifndef NERVE_CURRENT_LOCATION
+#ifdef __CUDACC__
+#define NERVE_CURRENT_LOCATION std::source_location{}
+#else
+#define NERVE_CURRENT_LOCATION std::source_location::current()
+#endif
+#endif
+
 #if __has_include(<cuda_runtime.h>)
 #include <cuda_runtime.h>
 #define NERVE_GPU_HAS_CUDA_HEADERS 1
@@ -28,12 +38,12 @@ public:
     // Checking with context.
     static errors::ErrorResult<void>
     check_cuda_operation(cudaError_t result, const std::string &operation,
-                         const std::source_location &loc = std::source_location::current());
+                         const std::source_location &loc = NERVE_CURRENT_LOCATION);
 
     // Kernel launch validation
     static errors::ErrorResult<void>
     validateKernelLaunch(const std::string &kernel_name,
-                         const std::source_location &loc = std::source_location::current());
+                         const std::source_location &loc = NERVE_CURRENT_LOCATION);
 
     // Memory pressure detection
     static errors::ErrorResult<bool> checkMemoryPressure();

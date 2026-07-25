@@ -16,6 +16,16 @@
 #include <unordered_map>
 #include <vector>
 
+// NVCC 12.x cannot evaluate std::source_location::current() as a consteval
+// default argument inside .cu files.
+#ifndef NERVE_CURRENT_LOCATION
+#ifdef __CUDACC__
+#define NERVE_CURRENT_LOCATION std::source_location{}
+#else
+#define NERVE_CURRENT_LOCATION std::source_location::current()
+#endif
+#endif
+
 namespace nerve::persistence::accelerated
 {
 
@@ -62,11 +72,11 @@ namespace cuda_error_handling
 
 errors::ErrorResult<void>
 check_cuda_operation(cudaError_t result, const std::string &operation,
-                     const std::source_location &loc = std::source_location::current());
+                     const std::source_location &loc = NERVE_CURRENT_LOCATION);
 
 errors::ErrorResult<void>
 validateKernelLaunch(const std::string &kernel_name,
-                     const std::source_location &loc = std::source_location::current());
+                     const std::source_location &loc = NERVE_CURRENT_LOCATION);
 
 errors::ErrorResult<void> attemptRecovery(cudaError_t error_code, const std::string &context);
 
@@ -270,7 +280,7 @@ inline SyncGuard createSyncGuard(const std::string &operation)
         if (cuda_result != cudaSuccess)                                                            \
         {                                                                                          \
             auto error_result = cuda_error_handling::check_cuda_operation(                         \
-                cuda_result, (operation), std::source_location::current());                        \
+                cuda_result, (operation), NERVE_CURRENT_LOCATION);                        \
             if (error_result.isError())                                                            \
             {                                                                                      \
                 std::cerr << "CUDA Error in " << (operation) << ": "                               \
@@ -286,7 +296,7 @@ inline SyncGuard createSyncGuard(const std::string &operation)
         if (cuda_result != cudaSuccess)                                                            \
         {                                                                                          \
             auto error_result = cuda_error_handling::check_cuda_operation(                         \
-                cuda_result, (operation), std::source_location::current());                        \
+                cuda_result, (operation), NERVE_CURRENT_LOCATION);                        \
             if (error_result.isError())                                                            \
             {                                                                                      \
                 std::cerr << "CUDA Error in " << (operation) << ": "                               \
@@ -300,7 +310,7 @@ inline SyncGuard createSyncGuard(const std::string &operation)
     {                                                                                              \
         kernel<<<grid, block>>>(__VA_ARGS__);                                                      \
         auto launch_result =                                                                       \
-            cuda_error_handling::validateKernelLaunch(#kernel, std::source_location::current());   \
+            cuda_error_handling::validateKernelLaunch(#kernel, NERVE_CURRENT_LOCATION);   \
         if (launch_result.isError())                                                               \
         {                                                                                          \
             std::cerr << "CUDA Kernel launch failed: " << launch_result.error().message            \
@@ -313,14 +323,14 @@ inline SyncGuard createSyncGuard(const std::string &operation)
     {                                                                                              \
         kernel<<<grid, block>>>(__VA_ARGS__);                                                      \
         auto launch_result =                                                                       \
-            cuda_error_handling::validateKernelLaunch(#kernel, std::source_location::current());   \
+            cuda_error_handling::validateKernelLaunch(#kernel, NERVE_CURRENT_LOCATION);   \
         if (launch_result.isError())                                                               \
         {                                                                                          \
             std::cerr << "CUDA Kernel launch failed: " << launch_result.error().message            \
                       << std::endl;                                                                \
         }                                                                                          \
         auto sync_result = cuda_error_handling::check_cuda_operation(                              \
-            cudaDeviceSynchronize(), #kernel " synchronization", std::source_location::current()); \
+            cudaDeviceSynchronize(), #kernel " synchronization", NERVE_CURRENT_LOCATION); \
         if (sync_result.isError())                                                                 \
         {                                                                                          \
             std::cerr << "CUDA synchronization failed: " << sync_result.error().message            \
@@ -333,7 +343,7 @@ inline SyncGuard createSyncGuard(const std::string &operation)
     {                                                                                              \
         kernel<<<1, 1>>>(__VA_ARGS__);                                                             \
         auto sync_result = cuda_error_handling::check_cuda_operation(                              \
-            cudaDeviceSynchronize(), #kernel " synchronization", std::source_location::current()); \
+            cudaDeviceSynchronize(), #kernel " synchronization", NERVE_CURRENT_LOCATION); \
         if (sync_result.isError())                                                                 \
         {                                                                                          \
             std::cerr << "CUDA synchronization failed: " << sync_result.error().message            \
