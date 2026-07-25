@@ -11,6 +11,17 @@
 #include <string>
 #include <type_traits>
 
+// NVCC 12.x cannot evaluate std::source_location::current() as a consteval
+// default argument inside .cu files.  Provide a safe fallback that compiles
+// under both nvcc and regular C++20 host compilers.
+#ifndef NERVE_CURRENT_LOCATION
+#ifdef __CUDACC__
+#define NERVE_CURRENT_LOCATION std::source_location{}
+#else
+#define NERVE_CURRENT_LOCATION std::source_location::current()
+#endif
+#endif
+
 namespace nerve::gpu
 {
 
@@ -35,7 +46,7 @@ struct CudaError
     std::source_location where;
 
     static CudaError from(cudaError_t code, std::string call,
-                          std::source_location loc = std::source_location::current())
+                          std::source_location loc = NERVE_CURRENT_LOCATION)
     {
         return {.raw_code = code,
                 .kind = classify(code),
@@ -85,7 +96,7 @@ template <typename T>
 using CudaResult = nerve::error::Result<T>;
 
 inline CudaResult<void> cuda_check(cudaError_t code, const char *expr,
-                                   std::source_location loc = std::source_location::current())
+                                   std::source_location loc = NERVE_CURRENT_LOCATION)
 {
     if (code == cudaSuccess)
         return CudaResult<void>::ok();
@@ -115,7 +126,7 @@ inline CudaResult<void> cuda_check(cudaError_t code, const char *expr,
 
 inline CudaResult<void>
 cuda_check_kernel(const char *kernel_name,
-                  std::source_location loc = std::source_location::current())
+                  std::source_location loc = NERVE_CURRENT_LOCATION)
 {
     cudaError_t launch_err = cudaGetLastError();
     if (launch_err != cudaSuccess)
@@ -139,7 +150,7 @@ cuda_check_kernel(const char *kernel_name,
 
 inline CudaResult<void>
 cuda_check_kernel_async(const char *kernel_name, cudaStream_t stream = nullptr,
-                        std::source_location loc = std::source_location::current())
+                        std::source_location loc = NERVE_CURRENT_LOCATION)
 {
     cudaError_t launch_err = cudaGetLastError();
     if (launch_err != cudaSuccess)
@@ -254,7 +265,7 @@ public:
                       .kind = CudaErrorKind::OutOfMemory,
                       .message = "OOM after " + std::to_string(max_retries) + " retries",
                       .call_expr = std::string(),
-                      .where = std::source_location::current()});
+                      .where = NERVE_CURRENT_LOCATION});
     }
 };
 

@@ -7,6 +7,15 @@
 #include <system_error>
 #include <unordered_map>
 
+// NVCC 12.x cannot evaluate std::source_location::current() as a consteval
+// default argument inside .cu files.  Provide a safe fallback that compiles
+// under both nvcc and regular C++20 host compilers.
+#ifdef __CUDACC__
+#define NERVE_CURRENT_LOCATION std::source_location{}
+#else
+#define NERVE_CURRENT_LOCATION std::source_location::current()
+#endif
+
 namespace nerve::error
 {
 
@@ -188,7 +197,7 @@ public:
     static Result ok(T value) { return Result(std::move(value)); }
 
     static Result err(TDAErrorCode code, std::string detail = {},
-                      std::source_location loc = std::source_location::current())
+                      std::source_location loc = NERVE_CURRENT_LOCATION)
     {
         return Result(makeErrorCode(code), std::move(detail), loc);
     }
@@ -266,7 +275,7 @@ public:
     static Result ok() { return Result(); }
 
     static Result err(TDAErrorCode code, std::string detail = {},
-                      std::source_location loc = std::source_location::current())
+                      std::source_location loc = NERVE_CURRENT_LOCATION)
     {
         return Result(makeErrorCode(code), std::move(detail), loc);
     }
