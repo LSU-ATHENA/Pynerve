@@ -14,12 +14,15 @@ from __future__ import annotations
 
 import torch
 
-from . import _check_triton, _use_triton, _warn_cpu_fallback
+from . import _check_triton, _use_triton, _warn_cpu_fallback, _is_jit_function
 
 if _check_triton():
     import triton
     import triton.language as tl
-    from triton.language import inline_asm_elementwise as _asm
+    try:
+        from triton.language import inline_asm_elementwise as _asm
+    except ImportError:
+        _asm = None
 
     @triton.jit
     def _density_kernel(
@@ -203,23 +206,27 @@ else:
 def density_filter(points: torch.Tensor, k_neighbors: int = 10) -> torch.Tensor:
     """Per-point density: count / mean_pairwise_distance."""
     n_points, dim = points.shape
-    if _use_triton(points):
+    if _use_triton(points) and _is_jit_function(_density_kernel):
         points_c = points.contiguous()
         stride_m, stride_d = points_c.stride()
         out = torch.empty(n_points, dtype=torch.float32, device=points.device)
         grid = (triton.cdiv(n_points, 256),)
-        _density_kernel[grid](
-            points_c,
-            out,
-            n_points,
-            dim,
-            k_neighbors,
-            stride_m,
-            stride_d,
-            BLOCK_SIZE=256,
-        )
-        return out
-    _warn_cpu_fallback("density_filter")
+        try:
+            _density_kernel[grid](
+                points_c,
+                out,
+                n_points,
+                dim,
+                k_neighbors,
+                stride_m,
+                stride_d,
+                BLOCK_SIZE=256,
+            )
+            return out
+        except (TypeError, RuntimeError):
+            _warn_cpu_fallback("density_filter")
+    else:
+        _warn_cpu_fallback("density_filter")
     dists = torch.cdist(points, points)
     mean_dists = dists.sum(dim=1) / (n_points - 1)
     return torch.where(
@@ -232,14 +239,18 @@ def density_filter(points: torch.Tensor, k_neighbors: int = 10) -> torch.Tensor:
 def eccentricity_filter(points: torch.Tensor) -> torch.Tensor:
     """Per-point eccentricity: sqrt(max_pairwise_sq_distance)."""
     n_points, dim = points.shape
-    if _use_triton(points):
+    if _use_triton(points) and _is_jit_function(_eccentricity_kernel):
         points_c = points.contiguous()
         stride_m, stride_d = points_c.stride()
         out = torch.empty(n_points, dtype=torch.float32, device=points.device)
         grid = (triton.cdiv(n_points, 256),)
-        _eccentricity_kernel[grid](points_c, out, n_points, dim, stride_m, stride_d, BLOCK_SIZE=256)
-        return out
-    _warn_cpu_fallback("eccentricity_filter")
+        try:
+            _eccentricity_kernel[grid](points_c, out, n_points, dim, stride_m, stride_d, BLOCK_SIZE=256)
+            return out
+        except (TypeError, RuntimeError):
+            _warn_cpu_fallback("eccentricity_filter")
+    else:
+        _warn_cpu_fallback("eccentricity_filter")
     return torch.cdist(points, points).max(dim=1).values
 
 
@@ -273,15 +284,20 @@ def kmeans_assign(points: torch.Tensor, centroids: torch.Tensor) -> torch.Tensor
     """Assign each point to its nearest centroid."""
     n_points, dim = points.shape
     k = centroids.size(0)
-    if _use_triton(points):
+    if _use_triton(points) and _is_jit_function(_kmeans_assign_kernel):
         points_c = points.contiguous()
         labels = torch.empty(n_points, dtype=torch.int32, device=points.device)
         stride_m, stride_d = points_c.stride()
         grid = (triton.cdiv(n_points, 512),)
-        _kmeans_assign_kernel[grid](
-            points_c, centroids, labels, n_points, dim, k, stride_m, stride_d
-        )
-        return labels
+        try:
+            _kmeans_assign_kernel[grid](
+                points_c, centroids, labels, n_points, dim, k, stride_m, stride_d
+            )
+            return labels
+        except (TypeError, RuntimeError):
+            _warn_cpu_fallback("kmeans_assign")
+    else:
+        _warn_cpu_fallback("kmeans_assign")
     return torch.cdist(points, centroids).argmin(dim=1).to(torch.int32)
 
 
@@ -320,23 +336,26 @@ def build_cover(
         n_points, max_cover_size, dtype=torch.int32, device=filter_values.device
     )
 
-    if _use_triton(filter_values):
+    if _use_triton(filter_values) and _is_jit_function(_build_cover_kernel):
         grid = (triton.cdiv(n_points, 256),)
-        _build_cover_kernel[grid](
-            filter_values,
-            cover_sizes,
-            cover_indices,
-            n_points,
-            n_filter_dims,
-            resolution,
-            overlap,
-            max_cover_size,
-            int(filter_values.stride(0)),
-            BLOCK_SIZE=256,
-        )
-        return cover_sizes, cover_indices
-
-    _warn_cpu_fallback("build_cover")
+        try:
+            _build_cover_kernel[grid](
+                filter_values,
+                cover_sizes,
+                cover_indices,
+                n_points,
+                n_filter_dims,
+                resolution,
+                overlap,
+                max_cover_size,
+                int(filter_values.stride(0)),
+                BLOCK_SIZE=256,
+            )
+            return cover_sizes, cover_indices
+        except (TypeError, RuntimeError):
+            _warn_cpu_fallback("build_cover")
+    else:
+        _warn_cpu_fallback("build_cover")
     interval = (1.0 + 2.0 * overlap) / resolution
     for i in range(n_points):
         write_pos = 0
@@ -364,27 +383,30 @@ def compute_nerve_edges(
 ) -> torch.Tensor:
     """Compute Mapper nerve graph edges. Returns [n_edges, 2]."""
     n_nodes = node_cover_sizes.size(0)
-    if _use_triton(node_cover_sets):
+    if _use_triton(node_cover_sets) and _is_jit_function(_nerve_edges_kernel):
         edge_src = torch.full((max_edges,), -1, dtype=torch.int32, device=node_cover_sets.device)
         edge_dst = torch.full((max_edges,), -1, dtype=torch.int32, device=node_cover_sets.device)
         edge_count = torch.zeros(1, dtype=torch.int32, device=node_cover_sets.device)
         n_pairs = n_nodes * (n_nodes - 1) // 2
         grid = (triton.cdiv(n_pairs, 256),)
-        _nerve_edges_kernel[grid](
-            node_cover_sets,
-            node_cover_starts,
-            node_cover_sizes,
-            edge_src,
-            edge_dst,
-            edge_count,
-            n_nodes,
-            max_edges,
-            BLOCK_SIZE=256,
-        )
-        count = int(edge_count.item())
-        return torch.stack([edge_src[:count], edge_dst[:count]], dim=1)
-
-    _warn_cpu_fallback("compute_nerve_edges")
+        try:
+            _nerve_edges_kernel[grid](
+                node_cover_sets,
+                node_cover_starts,
+                node_cover_sizes,
+                edge_src,
+                edge_dst,
+                edge_count,
+                n_nodes,
+                max_edges,
+                BLOCK_SIZE=256,
+            )
+            count = int(edge_count.item())
+            return torch.stack([edge_src[:count], edge_dst[:count]], dim=1)
+        except (TypeError, RuntimeError):
+            _warn_cpu_fallback("compute_nerve_edges")
+    else:
+        _warn_cpu_fallback("compute_nerve_edges")
     edges: list[tuple[int, int]] = []
     for i in range(n_nodes):
         for j in range(i + 1, n_nodes):

@@ -11,12 +11,15 @@ from __future__ import annotations
 
 import torch
 
-from . import _check_triton, _use_triton, _warn_cpu_fallback
+from . import _check_triton, _use_triton, _warn_cpu_fallback, _is_jit_function
 
 if _check_triton():
     import triton
     import triton.language as tl
-    from triton.language import inline_asm_elementwise as _asm
+    try:
+        from triton.language import inline_asm_elementwise as _asm
+    except ImportError:
+        _asm = None
 
     @triton.autotune(
         configs=[
@@ -200,44 +203,48 @@ def diagram_conv1d(
     total = batch_size * out_channels * output_len
 
     if _use_triton(features):
-        features_c = features.contiguous()
-        kernel_c = kernel.contiguous()
-        bias_c = bias.contiguous()
-        stride_f_b, stride_f_c_raw, _ = features_c.stride()
-        stride_k_o, stride_k_c, _ = kernel_c.stride()
-        stride_f_c = stride_f_c_raw[0] if isinstance(stride_f_c_raw, tuple) else stride_f_c_raw
-        out = torch.empty(
-            batch_size,
-            out_channels,
-            output_len,
-            dtype=features.dtype,
-            device=features.device,
-        )
-        grid = (triton.cdiv(total, 512),)
         kernel_fn = {
             "none": _diagram_conv1d_kernel,
             "relu": _diagram_conv1d_relu_kernel,
             "sigmoid": _diagram_conv1d_sigmoid_kernel,
         }[activation]
-        kernel_fn[grid](
-            features_c,
-            kernel_c,
-            bias_c,
-            out,
-            batch_size,
-            n_pairs,
-            in_channels,
-            out_channels,
-            kernel_size,
-            total,
-            stride_f_b,
-            stride_f_c,
-            stride_k_o,
-            stride_k_c,
-        )
-        return out
-
-    _warn_cpu_fallback("diagram_conv1d")
+        if _is_jit_function(kernel_fn):
+            features_c = features.contiguous()
+            kernel_c = kernel.contiguous()
+            bias_c = bias.contiguous()
+            stride_f_b, stride_f_c_raw, _ = features_c.stride()
+            stride_k_o, stride_k_c, _ = kernel_c.stride()
+            stride_f_c = stride_f_c_raw[0] if isinstance(stride_f_c_raw, tuple) else stride_f_c_raw
+            out = torch.empty(
+                batch_size,
+                out_channels,
+                output_len,
+                dtype=features.dtype,
+                device=features.device,
+            )
+            grid = (triton.cdiv(total, 512),)
+            try:
+                kernel_fn[grid](
+                    features_c,
+                    kernel_c,
+                    bias_c,
+                    out,
+                    batch_size,
+                    n_pairs,
+                    in_channels,
+                    out_channels,
+                    kernel_size,
+                    total,
+                    stride_f_b,
+                    stride_f_c,
+                    stride_k_o,
+                    stride_k_c,
+                )
+                return out
+            except (TypeError, RuntimeError):
+                _warn_cpu_fallback("diagram_conv1d")
+    else:
+        _warn_cpu_fallback("diagram_conv1d")
     return _diagram_conv1d_cpu(features, kernel, bias, activation)
 
 

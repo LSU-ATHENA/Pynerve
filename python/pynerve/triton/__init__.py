@@ -30,6 +30,17 @@ def _check_triton() -> bool:
     return _TRITON_AVAILABLE
 
 
+def _is_jit_function(fn: Any) -> bool:
+    """Return True if *fn* is a compiled triton JITFunction (supports [grid] subscript)."""
+    try:
+        # triton 2.x: JITFunction,  triton 3.x: JITFunction
+        from triton.runtime.jit import JITFunction
+
+        return isinstance(fn, JITFunction)
+    except ImportError:
+        return False
+
+
 def _warn_cpu_fallback(name: str) -> None:
     warnings.warn(
         f"Triton is unavailable or tensor is on CPU; {name} will use PyTorch fallback.",

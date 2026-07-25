@@ -17,12 +17,15 @@ from __future__ import annotations
 
 import torch
 
-from . import _check_triton, _use_triton, _warn_cpu_fallback
+from . import _check_triton, _use_triton, _warn_cpu_fallback, _is_jit_function
 
 if _check_triton():
     import triton
     import triton.language as tl
-    from triton.language import inline_asm_elementwise as _asm
+    try:
+        from triton.language import inline_asm_elementwise as _asm
+    except ImportError:
+        _asm = None
 
     @triton.jit
     def _pixel_kernel(
@@ -213,41 +216,49 @@ def persistence_image_from_diagram(
         image = torch.zeros(resolution, resolution, dtype=torch.float32, device=births.device)
         stride_img_y = image.stride(0)
         strategy = _select_strategy(int(b_valid.numel()), resolution)
+        kernel_fn = _pixel_kernel if strategy == "pixel" else _pair_kernel
+        if not _is_jit_function(kernel_fn):
+            _warn_cpu_fallback("persistence_image_from_diagram")
+            return _persistence_image_cpu(b_valid, d_valid, resolution, sigma, x_min, x_max, y_min, y_max)
         grid: tuple[int, ...] | tuple[int, int]
-        if strategy == "pixel":
-            grid = (triton.cdiv(resolution, 16), triton.cdiv(resolution, 16))
-            _pixel_kernel[grid](
-                b_valid,
-                d_valid,
-                image,
-                int(b_valid.numel()),
-                resolution,
-                sigma,
-                x_min,
-                x_max,
-                y_min,
-                y_max,
-                stride_img_y,
-                BLOCK_X=16,
-                BLOCK_Y=16,
-            )
-        else:
-            grid = (triton.cdiv(int(b_valid.numel()), 256),)
-            _pair_kernel[grid](
-                b_valid,
-                d_valid,
-                image,
-                int(b_valid.numel()),
-                resolution,
-                sigma,
-                x_min,
-                x_max,
-                y_min,
-                y_max,
-                stride_img_y,
-                BLOCK_SIZE=256,
-            )
-        return image
+        try:
+            if strategy == "pixel":
+                grid = (triton.cdiv(resolution, 16), triton.cdiv(resolution, 16))
+                _pixel_kernel[grid](
+                    b_valid,
+                    d_valid,
+                    image,
+                    int(b_valid.numel()),
+                    resolution,
+                    sigma,
+                    x_min,
+                    x_max,
+                    y_min,
+                    y_max,
+                    stride_img_y,
+                    BLOCK_X=16,
+                    BLOCK_Y=16,
+                )
+            else:
+                grid = (triton.cdiv(int(b_valid.numel()), 256),)
+                _pair_kernel[grid](
+                    b_valid,
+                    d_valid,
+                    image,
+                    int(b_valid.numel()),
+                    resolution,
+                    sigma,
+                    x_min,
+                    x_max,
+                    y_min,
+                    y_max,
+                    stride_img_y,
+                    BLOCK_SIZE=256,
+                )
+            return image
+        except (TypeError, RuntimeError):
+            _warn_cpu_fallback("persistence_image_from_diagram")
+            return _persistence_image_cpu(b_valid, d_valid, resolution, sigma, x_min, x_max, y_min, y_max)
 
     _warn_cpu_fallback("persistence_image_from_diagram")
     return _persistence_image_cpu(b_valid, d_valid, resolution, sigma, x_min, x_max, y_min, y_max)
