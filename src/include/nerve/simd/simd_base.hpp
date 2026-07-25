@@ -9,10 +9,16 @@ namespace nerve::simd
 
 // Float16 type -- mapped to compiler-supported _Float16.
 // MSVC does not support _Float16; fall back to float as a compatible superset.
-#if defined(_MSC_VER)
+// CUDA (nvcc) provides its own __half type via cuda_fp16.h; do not redefine.
+#if defined(__CUDACC__)
+// nvcc compiles both host and device code; CUDA provides __half.
+// No redefinition needed -- half is available from CUDA headers.
+#elif defined(_MSC_VER)
 using half = float;
-#else
+#elif defined(__FLT16_MAX__) || (defined(__GNUC__) && __GNUC__ >= 12)
 using half = _Float16;
+#else
+using half = float;  // fallback: no native FP16 support on this compiler
 #endif
 
 // Helper: convert float to half using round-to-nearest-even

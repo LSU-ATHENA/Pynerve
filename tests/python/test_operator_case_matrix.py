@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import math
+import os
 import random
+import sys
 
 import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "tools"))
 import test_matrix
 
 
