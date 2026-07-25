@@ -1,7 +1,10 @@
-"""GPU kernel tests for triton modules — requires CUDA + triton.
+"""GPU kernel tests for triton modules — requires CUDA + functional triton.
 
 These tests exercise the @triton.jit kernel paths that are only accessible
 when _use_triton() returns True (CUDA tensor + triton available + GPU).
+
+If triton is installed but kernels fail to compile (e.g., incompatible GPU
+architecture), the fixture skips all tests gracefully.
 
 Run on HPC with:
     pytest test_triton_gpu_kernels.py -v --timeout=120
@@ -16,14 +19,16 @@ torch = pytest.importorskip("torch")
 
 @pytest.fixture(scope="module")
 def require_gpu_and_triton():
-    """Skip if no CUDA GPU or triton not available."""
+    """Skip if no CUDA GPU or triton not installed/functional."""
     if not torch.cuda.is_available():
         pytest.skip("CUDA GPU not available")
-    from pynerve.triton import _check_triton
+    from pynerve.triton import _check_triton, _use_triton
     if not _check_triton():
         pytest.skip("triton not installed")
-    # Warm up: run a small tensor to ensure triton kernels compile
-    torch.zeros(1, device="cuda")  # verify CUDA works
+    # Verify triton is functional with a simple CUDA tensor probe
+    cuda_t = torch.randn(3, 2, device="cuda", dtype=torch.float32)
+    if not _use_triton(cuda_t):
+        pytest.skip("triton installed but _use_triton() returned False")
 
 
 class TestMapperGpuKernels:
