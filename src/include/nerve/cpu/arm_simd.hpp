@@ -1358,6 +1358,8 @@ inline void clamp_f32(float *data, float lo, float hi, std::size_t n)
 } // namespace nerve::simd::sve
 
 // Float16 NEON primitives (inside nerve::simd::neon namespace)
+// CUDA (nvcc) provides __half — these CPU f16 wrappers are excluded.
+#if !defined(__CUDACC__)
 
 namespace nerve::simd::neon
 {
@@ -1902,8 +1904,11 @@ inline float sqdiff_sum_f16(const half *a, const half *b, std::size_t n)
 }
 
 } // namespace nerve::simd::neon
+#endif // !defined(__CUDACC__)
 
 // Float16 SVE primitives (inside nerve::simd::sve namespace)
+// CUDA (nvcc) provides __half — these CPU f16 wrappers are excluded.
+#if !defined(__CUDACC__)
 
 namespace nerve::simd::sve
 {
@@ -2282,3 +2287,4 @@ inline float sqdiff_sum_f16(const half *a, const half *b, std::size_t n)
 #endif // NERVE_HAS_SVE
 
 } // namespace nerve::simd::sve
+#endif // !defined(__CUDACC__)

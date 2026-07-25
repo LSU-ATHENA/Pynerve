@@ -22,6 +22,7 @@ using half = float;  // fallback: no native FP16 support on this compiler
 #endif
 
 // Helper: convert float to half using round-to-nearest-even
+#if !defined(__CUDACC__)
 inline float half_to_float(half v)
 {
     return static_cast<float>(v);
@@ -34,6 +35,7 @@ inline half float_to_half(float v)
 // Constants for float16
 constexpr half kHalfZero = static_cast<half>(0.0f);
 constexpr half kHalfOne = static_cast<half>(1.0f);
+#endif // !defined(__CUDACC__)
 
 // Alignment
 constexpr std::size_t kCacheLineBytes = 64;
@@ -134,6 +136,7 @@ struct SimdDispatchTable
                     std::size_t n);
 
     // Float16 primitives
+#if !defined(__CUDACC__)
     void (*add_f16)(half *a, const half *b, std::size_t n);
     void (*sub_f16)(half *a, const half *b, std::size_t n);
     void (*mul_f16)(half *a, const half *b, std::size_t n);
@@ -167,6 +170,7 @@ struct SimdDispatchTable
     // Float16 quantize / dequantize
     void (*quantize_f16)(const half *input, std::size_t n, int bits, std::uint8_t *output);
     void (*dequantize_f16)(const std::uint8_t *input, std::size_t n, int bits, half *output);
+#endif // !defined(__CUDACC__)
 
     // BLAS level 1/2
     void (*gemv)(double alpha, const double *A, const double *x, double beta, double *y,
@@ -523,6 +527,7 @@ inline void simd_clamp_f32(float *data, float lo, float hi, std::size_t n)
 }
 
 // Float16 convenience wrappers
+#if !defined(__CUDACC__)
 
 inline void simd_add_f16(half *a, const half *b, std::size_t n)
 {
@@ -687,6 +692,7 @@ inline void simd_dequantize_f16(const std::uint8_t *input, std::size_t n, int bi
     simd_init();
     SIMD.dequantize_f16(input, n, bits, output);
 }
+#endif // !defined(__CUDACC__)
 
 inline void simd_gemv(double alpha, const double *A, const double *x, double beta, double *y,
                       std::size_t m, std::size_t n)

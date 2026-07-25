@@ -77,6 +77,8 @@ inline float simd_manhattan_f32(const float *a, const float *b, std::size_t n)
 }
 
 // Float16 composite wrappers (compose dispatch primitives, no dedicated dispatch entries)
+// CUDA (nvcc) provides its own __half type — these CPU f16 wrappers are excluded.
+#if !defined(__CUDACC__)
 inline float simd_manhattan_f16(const half *a, const half *b, std::size_t n)
 {
     float sum = 0.0f;
@@ -109,5 +111,6 @@ inline float simd_cosine_f16(const half *a, const half *b, std::size_t dim)
         cos_sim = 1.0f;
     return 1.0f - cos_sim;
 }
+#endif // !defined(__CUDACC__)
 
 } // namespace nerve::simd

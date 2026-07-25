@@ -5,7 +5,7 @@
 #include <cuda_fp16.h>
 #include <cuda_runtime.h>
 
-#if defined(NERVE_CUDA_FP16_AVAILABLE) && !NERVE_CUDA_FP16_AVAILABLE
+#if defined(__CUDACC__)
 using half = __half;
 #endif
 

@@ -27,6 +27,8 @@ inline void simd_softmax(double *data, std::size_t n)
 }
 
 // Float16 NN primitives
+// CUDA (nvcc) provides __half — these CPU f16 wrappers are excluded.
+#if !defined(__CUDACC__)
 
 inline void simd_batchnorm_f16(half *data, std::size_t n, float mean, float std_inv)
 {
@@ -45,5 +47,7 @@ inline void simd_softmax_f16(half *data, std::size_t n)
     half inv_sum = float_to_half(1.0f / sum);
     simd_scale_f16(data, inv_sum, n);
 }
+
+#endif // !defined(__CUDACC__)
 
 } // namespace nerve::simd
