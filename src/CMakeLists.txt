@@ -195,6 +195,18 @@ if(NERVE_HAS_CUDA AND NOT NERVE_ENABLE_CUDA_COMPONENTS)
     message(STATUS "NERVE_ENABLE_CUDA_COMPONENTS auto-enabled (required when ENABLE_CUDA=ON)")
 endif()
 
+# nlohmann_json is a header-only JSON library required by GPU tuning code.
+if(NERVE_HAS_CUDA AND NERVE_ENABLE_CUDA_COMPONENTS)
+    find_package(nlohmann_json CONFIG QUIET)
+    if(nlohmann_json_FOUND)
+        message(STATUS "nlohmann_json found")
+    else()
+        message(WARNING
+            "nlohmann_json not found; GPU tuning cache will be disabled. "
+            "Install with: conda install -c conda-forge nlohmann_json")
+    endif()
+endif()
+
 option(NERVE_ENABLE_EXTENDED_CUDA_COMPONENTS
     "Build extended CUDA graph/filtration/encoder components in nerve_core"
     OFF)
