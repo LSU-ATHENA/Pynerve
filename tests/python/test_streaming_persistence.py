@@ -218,10 +218,12 @@ class TestStreamingFormatResults:
         from pynerve._streaming_persistence import StreamingPersistence
 
         sp = StreamingPersistence()
-        result = {"pairs": np.array([[0.0, 1e9, 0.0], [0.0, 0.5, 1.0]])}
+        # Use float('inf') so the infinite-death branch (dth > 1e9) is hit
+        result = {"pairs": np.array([[0.0, float("inf"), 0.0], [0.0, 0.5, 1.0]])}
         betti = sp._format_result(result, "betti")
         assert "betti_0" in betti
         assert "betti_1" in betti
+        assert betti["betti_0"] == 1  # inf death counts as infinite feature
 
     def test_format_stats(self):
         from pynerve._streaming_persistence import StreamingPersistence

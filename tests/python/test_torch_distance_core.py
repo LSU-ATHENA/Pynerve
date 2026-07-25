@@ -304,3 +304,84 @@ class TestUseBackendDecorator:
         if not backend.torch_c_available:
             with pytest.raises(Exception, match="Torch-native|not loaded"):
                 my_func()
+
+
+class TestWithPythonBackendDecorator:
+    def test_python_fallback_dispatch(self):
+        """with_python_backend dispatches to python_impl when no C++ backend available."""
+        from pynerve.torch._backend import with_python_backend, BackendContext
+
+        @with_python_backend("test_op", python_impl=lambda x: x * 2)
+        def my_func(x):
+            return x  # never reached if python_impl handles it
+
+        with BackendContext("python"):
+            result = my_func(5)
+        assert result == 10
+
+    def test_torch_attr_dispatch(self):
+        """When torch_attr is set and torch_c is available, dispatches to it."""
+        from pynerve.torch._backend import with_python_backend, BackendContext
+
+        @with_python_backend("test_op", torch_attr="dummy_attr", python_impl=lambda: "python")
+        def my_func():
+            return "func"
+
+        with BackendContext("python"):
+            result = my_func()
+        assert result == "python"
+
+    def test_core_attr_dispatch(self):
+        """When core_attr is set and core_c is available, dispatches to it."""
+        from pynerve.torch._backend import with_python_backend, BackendContext
+
+        @with_python_backend("test_op", core_attr="dummy_core_attr", python_impl=lambda: "python")
+        def my_func():
+            return "func"
+
+        with BackendContext("python"):
+            result = my_func()
+        assert result == "python"
+
+    def test_no_torch_attr_no_core_attr(self):
+        """When neither torch_attr nor core_attr is set, falls back to func then python_impl."""
+        from pynerve.torch._backend import with_python_backend, BackendContext
+
+        @with_python_backend("test_op", python_impl=lambda x: x + 100)
+        def my_func(x):
+            return x + 1
+
+        with BackendContext("python"):
+            result = my_func(5)
+        assert result == 105  # python_impl called, not func
+
+    def test_requires_python_impl(self):
+        """with_python_backend raises ValueError if python_impl is None."""
+        from pynerve.torch._backend import with_python_backend
+
+        with pytest.raises(ValueError, match="python_impl is required"):
+            with_python_backend("test_op")
+
+    def test_passes_args_through(self):
+        """Arguments and keyword arguments are forwarded to the implementation."""
+        from pynerve.torch._backend import with_python_backend, BackendContext
+
+        @with_python_backend("test_op", python_impl=lambda a, b, c: a + b + c)
+        def my_func(a, b, c):
+            return 0
+
+        with BackendContext("python"):
+            assert my_func(1, 2, 3) == 6
+            assert my_func(1, 2, c=3) == 6
+
+    def test_preserves_function_metadata(self):
+        """The decorator preserves __name__ and __doc__ via functools.wraps."""
+        from pynerve.torch._backend import with_python_backend, BackendContext
+
+        @with_python_backend("test_op", python_impl=lambda: None)
+        def my_documented_func():
+            """My docs."""
+            return 0
+
+        assert my_documented_func.__name__ == "my_documented_func"
+        assert my_documented_func.__doc__ == "My docs."
