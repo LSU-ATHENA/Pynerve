@@ -18,6 +18,11 @@ from ._common import (
 )
 from ._comparison_types import BenchmarkComparison
 
+# Map user-facing metric names to SciPy's pdist metric names.
+_SCIPY_METRIC_MAP: dict[str, str] = {
+    "manhattan": "cityblock",
+}
+
 
 def benchmark_vs_ripser(
     dataset: str = "spheres", n_samples: int = 1000, max_dim: int = 2, n_runs: int = 3
@@ -182,6 +187,9 @@ def benchmark_distance_matrix(
     if metric == "precomputed":
         data = squareform(pdist(data, metric="euclidean"))
 
+    # Map user-facing metric names to SciPy-compatible names (e.g. "manhattan" -> "cityblock").
+    scipy_metric = _SCIPY_METRIC_MAP.get(metric, metric)
+
     nerve_times = []
     try:
         from .._fast_distance import pairwise_distances_fast  # noqa: PLC0415
@@ -189,7 +197,7 @@ def benchmark_distance_matrix(
         def _run_nerve() -> Any:
             if metric == "precomputed":
                 return None
-            return pairwise_distances_fast(data, metric=metric)
+            return pairwise_distances_fast(data, metric=scipy_metric)
 
         nerve_times = _time_runs(n_runs, _run_nerve)
     except ImportError:
@@ -204,7 +212,7 @@ def benchmark_distance_matrix(
                 np.ndarray,
                 squareform(
                     pdist(
-                        data, metric=cast(Any, metric if metric != "precomputed" else "euclidean")
+                        data, metric=cast(Any, scipy_metric if metric != "precomputed" else "euclidean")
                     )
                 ),
             ),

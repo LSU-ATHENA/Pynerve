@@ -85,16 +85,9 @@ class TestBenchmarkDistanceMatrix:
 
     def test_manhattan(self):
         from pynerve.benchmark._compare_external import benchmark_distance_matrix
-        # scipy's pdist uses "cityblock" not "manhattan", so this may fail
-        # on the nerve side but the function should still return a result
-        # since the scipy side uses the same metric name
-        try:
-            result = benchmark_distance_matrix(dataset="spheres", n_samples=50, metric="manhattan", n_runs=1)
-            assert "manhattan" in result.dataset
-        except (ValueError, TypeError):
-            # scipy doesn't support "manhattan" — the nerve side fails too
-            # This is a known issue with the benchmark function, not a test bug
-            pytest.skip("scipy pdist doesn't support 'manhattan' metric name")
+        result = benchmark_distance_matrix(dataset="spheres", n_samples=50, metric="manhattan", n_runs=1)
+        assert result.library2 == "SciPy"
+        assert "manhattan" in result.dataset
 
     def test_cosine(self):
         from pynerve.benchmark._compare_external import benchmark_distance_matrix
