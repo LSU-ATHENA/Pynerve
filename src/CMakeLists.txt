@@ -202,7 +202,7 @@ if(NERVE_HAS_CUDA AND NERVE_ENABLE_CUDA_COMPONENTS)
         message(STATUS "nlohmann_json found")
     else()
         message(WARNING
-            "nlohmann_json not found; GPU tuning cache will be disabled. "
+            "nlohmann_json not found; GPU tuning cache source excluded. "
             "Install with: conda install -c conda-forge nlohmann_json")
     endif()
 endif()
@@ -251,6 +251,10 @@ if(NOT NERVE_HAS_CUDA OR NOT NERVE_HAS_MPI)
     )
 endif()
 if(NERVE_HAS_CUDA AND NERVE_ENABLE_CUDA_COMPONENTS)
+    # Exclude GPU tuning cache if nlohmann_json is not available.
+    if(NOT nlohmann_json_FOUND)
+        list(REMOVE_ITEM NERVE_CUDA_SOURCES gpu/tuning/tuning_cache_ops.cpp)
+    endif()
     list(APPEND NERVE_ALL_SOURCES ${NERVE_CUDA_SOURCES})
     list(LENGTH NERVE_CUDA_SOURCES NERVE_CUDA_SOURCE_COUNT)
     message(STATUS "Added ${NERVE_CUDA_SOURCE_COUNT} CUDA source files")
