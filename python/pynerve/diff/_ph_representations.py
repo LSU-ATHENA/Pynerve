@@ -25,10 +25,10 @@ def compute_persistence_landscape(
     midpoints = (births + deaths) / 2
     heights = (deaths - births) / 2
 
-    x_min = births.min()
-    x_max = deaths.max()
+    x_min = births.min().item()
+    x_max = deaths.max().item()
     if x_max <= x_min:
-        x_max = x_min + diagram.new_tensor(EPS_1e_6)
+        x_max = x_min + EPS_1e_6
     t = torch.linspace(
         x_min,
         x_max,
@@ -75,12 +75,12 @@ def persistence_image(
     deaths = diagram[:, 1]
     persistence = deaths - births
 
-    b_min, b_max = births.min(), births.max()
-    d_min, d_max = deaths.min(), deaths.max()
+    b_min, b_max = births.min().item(), births.max().item()
+    d_min, d_max = deaths.min().item(), deaths.max().item()
     if b_max <= b_min:
-        b_max = b_min + diagram.new_tensor(EPS_1e_6)
+        b_max = b_min + EPS_1e_6
     if d_max <= d_min:
-        d_max = d_min + diagram.new_tensor(EPS_1e_6)
+        d_max = d_min + EPS_1e_6
     b_range = torch.linspace(b_min, b_max, resolution, device=diagram.device, dtype=diagram.dtype)
     d_range = torch.linspace(d_min, d_max, resolution, device=diagram.device, dtype=diagram.dtype)
     birth_grid, death_grid = torch.meshgrid(b_range, d_range, indexing="ij")
