@@ -9,11 +9,16 @@ from scipy.spatial.distance import cdist, pdist, squareform
 from ._validation import validate_nonnegative_finite, validate_points, validate_positive_int
 
 # Map user-facing metric names to scipy-compatible names.
-# Scipy's pdist/cdist does not accept "manhattan" — it uses "cityblock" instead.
-# Centralising the mapping here protects every caller of pairwise_distances_fast
-# and nearest_neighbors_fast from having to know about scipy's naming quirks.
+# Scipy's pdist/cdist rejects several common aliases that the C++ backend and
+# user-facing API accept (e.g. "manhattan", "l1", "l2", "linf").  Centralising
+# the mapping here protects every caller of pairwise_distances_fast and
+# nearest_neighbors_fast from having to know about scipy's naming quirks.
 _METRIC_ALIASES: dict[str, str] = {
     "manhattan": "cityblock",
+    "l1": "cityblock",
+    "l2": "euclidean",
+    "linf": "chebyshev",
+    "l_inf": "chebyshev",
 }
 
 

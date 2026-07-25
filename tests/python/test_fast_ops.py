@@ -122,7 +122,16 @@ class TestPairwiseDistancesFast:
         with pytest.raises(ValueError):
             pairwise_distances_fast(points, metric="")
 
-    @pytest.mark.parametrize("metric,scipy_name", [("manhattan", "cityblock")])
+    @pytest.mark.parametrize(
+        "metric,scipy_name",
+        [
+            ("manhattan", "cityblock"),
+            ("l1", "cityblock"),
+            ("l2", "euclidean"),
+            ("linf", "chebyshev"),
+            ("l_inf", "chebyshev"),
+        ],
+    )
     def test_metric_alias_mapped(self, metric: str, scipy_name: str) -> None:
         """User-facing metric names like 'manhattan' are mapped to scipy names
         (e.g. 'cityblock') inside _validate_metric so callers don't need to
