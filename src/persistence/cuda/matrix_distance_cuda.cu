@@ -347,7 +347,7 @@ errors::ErrorResult<void> launchDistanceMatrixKernel(const double *points, doubl
     if (result != cudaSuccess)
     {
         return cuda_error_handling::check_cuda_operation(result, "cudaGetDevice",
-                                                         std::source_location::current());
+                                                         NERVE_CURRENT_LOCATION);
     }
 
     cudaDeviceProp prop{};
@@ -355,7 +355,7 @@ errors::ErrorResult<void> launchDistanceMatrixKernel(const double *points, doubl
     if (result != cudaSuccess)
     {
         return cuda_error_handling::check_cuda_operation(result, "cudaGetDeviceProperties",
-                                                         std::source_location::current());
+                                                         NERVE_CURRENT_LOCATION);
     }
 
     const bool use_streaming =
@@ -373,7 +373,7 @@ errors::ErrorResult<void> launchDistanceMatrixKernel(const double *points, doubl
         if (result != cudaSuccess)
         {
             return cuda_error_handling::check_cuda_operation(
-                result, "computeDistanceMatrixOptimized", std::source_location::current());
+                result, "computeDistanceMatrixOptimized", NERVE_CURRENT_LOCATION);
         }
     }
     else
@@ -409,7 +409,7 @@ errors::ErrorResult<void> launchDistanceMatrixKernel(const double *points, doubl
         if (result != cudaSuccess)
         {
             return cuda_error_handling::validateKernelLaunch("distance_matrix_kernel",
-                                                             std::source_location::current());
+                                                             NERVE_CURRENT_LOCATION);
         }
     }
 
@@ -417,7 +417,7 @@ errors::ErrorResult<void> launchDistanceMatrixKernel(const double *points, doubl
     if (result != cudaSuccess)
     {
         return cuda_error_handling::check_cuda_operation(result, "cudaDeviceSynchronize",
-                                                         std::source_location::current());
+                                                         NERVE_CURRENT_LOCATION);
     }
     return errors::ErrorResult<void>::ok();
 }

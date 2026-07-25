@@ -74,7 +74,7 @@ launchMatrixReductionKernel(const int *d_columns, const Size *d_column_sizes,
             if (launch_err != cudaSuccess)
             {
                 return cuda_error_handling::validateKernelLaunch(
-                    "matrix_reduction_streaming_kernel", std::source_location::current());
+                    "matrix_reduction_streaming_kernel", NERVE_CURRENT_LOCATION);
             }
             processed_columns += chunk_cols;
         }
@@ -89,7 +89,7 @@ launchMatrixReductionKernel(const int *d_columns, const Size *d_column_sizes,
         if (launch_err != cudaSuccess)
         {
             return cuda_error_handling::validateKernelLaunch("matrix_reduction_accelerated_kernel",
-                                                             std::source_location::current());
+                                                             NERVE_CURRENT_LOCATION);
         }
     }
 
@@ -97,7 +97,7 @@ launchMatrixReductionKernel(const int *d_columns, const Size *d_column_sizes,
     if (sync_err != cudaSuccess)
     {
         return cuda_error_handling::check_cuda_operation(sync_err, "cudaDeviceSynchronize",
-                                                         std::source_location::current());
+                                                         NERVE_CURRENT_LOCATION);
     }
 
     return errors::ErrorResult<void>::ok();

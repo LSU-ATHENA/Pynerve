@@ -110,7 +110,7 @@ errors::ErrorResult<void> allocateDeviceDoubles(Size elements, const std::string
     if (status != cudaSuccess)
     {
         return cuda_error_handling::check_cuda_operation(status, "cudaMalloc:" + label,
-                                                         std::source_location::current());
+                                                         NERVE_CURRENT_LOCATION);
     }
     out.reset(ptr);
     return errors::ErrorResult<void>::ok();
@@ -134,7 +134,7 @@ errors::ErrorResult<void> copyHostToDevice(DeviceBuffer &dst, const double *src,
     if (status != cudaSuccess)
     {
         return cuda_error_handling::check_cuda_operation(status, "cudaMemcpyH2D:" + label,
-                                                         std::source_location::current());
+                                                         NERVE_CURRENT_LOCATION);
     }
     return errors::ErrorResult<void>::ok();
 }
@@ -157,7 +157,7 @@ errors::ErrorResult<void> copyDeviceToHost(double *dst, const DeviceBuffer &src,
     if (status != cudaSuccess)
     {
         return cuda_error_handling::check_cuda_operation(status, "cudaMemcpyD2H:" + label,
-                                                         std::source_location::current());
+                                                         NERVE_CURRENT_LOCATION);
     }
     return errors::ErrorResult<void>::ok();
 }
