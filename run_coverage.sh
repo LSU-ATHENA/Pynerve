@@ -51,7 +51,6 @@ cmake ../python \
     -Dpybind11_DIR=$(python -c 'import pybind11; print(pybind11.get_cmake_dir())') \
     -DENABLE_CUDA=ON \
     -DNERVE_ENABLE_CUDA_COMPONENTS=ON \
-    -DNERVE_ENABLE_EXTENDED_CUDA_COMPONENTS=ON \
     -DENABLE_PYTORCH=ON \
     -DNERVE_GPU_BASE_ARCHS=80 \
     -DENABLE_EIGEN=ON \
