@@ -440,11 +440,11 @@ set(NERVE_CUDA_SOURCES
     cuda/kernels/gpu_persistence_launcher.cu
     cuda/kernels/gpu_persistence_reduction.cu
     cuda/kernels/specseq_reduction.cu
+    cuda/kernels/distance_fasted.cu
 )
 
 # Extended CUDA sources
 set(NERVE_CUDA_EXTENDED_SOURCES
-    cuda/kernels/distance_fasted.cu
     cuda/kernels/mapper_gpu.cu
     persistence/reduction/reduction_hypha_ops.cpp
     encoders/encoder_gpu_kernels.cu
