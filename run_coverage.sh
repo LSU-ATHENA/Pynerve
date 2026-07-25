@@ -34,7 +34,12 @@ fi
 # Ensure Eigen3 and missing packages are available (may have been added after initial env creation)
 conda list eigen 2>/dev/null | grep -q eigen || conda install -c conda-forge eigen -y 2>/dev/null || true
 conda list nlohmann_json 2>/dev/null | grep -q nlohmann_json || conda install -c conda-forge nlohmann_json -y 2>/dev/null || true
-pip install -q scipy scikit-learn numba hypothesis matplotlib pytest-cov triton psutil ripser gudhi dionysus 2>/dev/null || true
+# Re-install core deps silently; skip triton (leave the pre-installed version alone)
+pip install -q scipy scikit-learn numba hypothesis matplotlib pytest-cov 2>/dev/null || true
+# psutil is required for diagnostics tests — fail if it can't install
+pip install -q psutil
+# Optional benchmark comparison packages (may fail on some systems)
+pip install -q ripser gudhi dionysus 2>/dev/null || echo "Warning: some benchmark deps could not be installed"
 
 python -c "import torch; print('Torch:', torch.__version__, 'CUDA:', torch.cuda.is_available())"
 
