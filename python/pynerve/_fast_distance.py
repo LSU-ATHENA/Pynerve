@@ -8,11 +8,19 @@ from scipy.spatial.distance import cdist, pdist, squareform
 
 from ._validation import validate_nonnegative_finite, validate_points, validate_positive_int
 
+# Map user-facing metric names to scipy-compatible names.
+# Scipy's pdist/cdist does not accept "manhattan" — it uses "cityblock" instead.
+# Centralising the mapping here protects every caller of pairwise_distances_fast
+# and nearest_neighbors_fast from having to know about scipy's naming quirks.
+_METRIC_ALIASES: dict[str, str] = {
+    "manhattan": "cityblock",
+}
+
 
 def _validate_metric(metric: str) -> str:
     if not isinstance(metric, str) or not metric:
         raise ValueError(f"metric must be a non-empty string, got {metric!r}")
-    return metric
+    return _METRIC_ALIASES.get(metric, metric)
 
 
 def pairwise_distances_fast(points: np.ndarray, metric: str = "euclidean") -> np.ndarray:

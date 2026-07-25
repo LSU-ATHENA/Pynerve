@@ -11,17 +11,13 @@ from .._validation import (
     validate_nonnegative_int,
     validate_positive_int,
 )
+from .._fast_distance import _METRIC_ALIASES
 from ._common import (
     _benchmark_dataset,
     _compute_nerve_persistence,
     _time_runs,
 )
 from ._comparison_types import BenchmarkComparison
-
-# Map user-facing metric names to SciPy's pdist metric names.
-_SCIPY_METRIC_MAP: dict[str, str] = {
-    "manhattan": "cityblock",
-}
 
 
 def benchmark_vs_ripser(
@@ -187,8 +183,11 @@ def benchmark_distance_matrix(
     if metric == "precomputed":
         data = squareform(pdist(data, metric="euclidean"))
 
-    # Map user-facing metric names to SciPy-compatible names (e.g. "manhattan" -> "cityblock").
-    scipy_metric = _SCIPY_METRIC_MAP.get(metric, metric)
+    # pairwise_distances_fast maps user-facing metric names (e.g. "manhattan"
+    # -> "cityblock") via _METRIC_ALIASES in _fast_distance.py, so we pass the
+    # raw metric through.  For the direct scipy call below we still need the
+    # mapped name.
+    scipy_metric = _METRIC_ALIASES.get(metric, metric)
 
     nerve_times = []
     try:
@@ -197,7 +196,7 @@ def benchmark_distance_matrix(
         def _run_nerve() -> Any:
             if metric == "precomputed":
                 return None
-            return pairwise_distances_fast(data, metric=scipy_metric)
+            return pairwise_distances_fast(data, metric=metric)
 
         nerve_times = _time_runs(n_runs, _run_nerve)
     except ImportError:

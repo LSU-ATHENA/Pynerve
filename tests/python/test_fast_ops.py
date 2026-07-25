@@ -122,6 +122,16 @@ class TestPairwiseDistancesFast:
         with pytest.raises(ValueError):
             pairwise_distances_fast(points, metric="")
 
+    @pytest.mark.parametrize("metric,scipy_name", [("manhattan", "cityblock")])
+    def test_metric_alias_mapped(self, metric: str, scipy_name: str) -> None:
+        """User-facing metric names like 'manhattan' are mapped to scipy names
+        (e.g. 'cityblock') inside _validate_metric so callers don't need to
+        know about scipy's naming quirks."""
+        points = np.array([[0.0, 0.0], [3.0, 4.0], [6.0, 8.0]])
+        dists = pairwise_distances_fast(points, metric=metric)
+        expected = cdist(points, points, metric=scipy_name)
+        np.testing.assert_allclose(dists, expected, rtol=1e-12)
+
 
 class TestPairwiseDistancesBroadcast:
     """Correctness tests for pairwise_distances_broadcast (NumPy broadcasting)."""
