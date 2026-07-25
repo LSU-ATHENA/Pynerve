@@ -132,6 +132,9 @@ def _bounds_and_valid(
     valid = finite_mask.nonzero(as_tuple=False).squeeze(-1)
     b_valid = births_f[valid]
     d_valid = deaths_f[valid]
+    if b_valid.numel() == 0:
+        # placeholder bounds; caller must check b_valid.numel() == 0
+        return b_valid, d_valid, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0
     pers = d_valid - b_valid
     b_min = float(b_valid.min())
     b_max = float(b_valid.max())
