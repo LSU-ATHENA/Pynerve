@@ -5,6 +5,13 @@ from pathlib import Path
 
 import pytest
 
+# Make _test_helpers.py importable from conftest and test modules.
+_TEST_DIR = Path(__file__).resolve().parent
+if str(_TEST_DIR) not in sys.path:
+    sys.path.insert(0, str(_TEST_DIR))
+
+from _test_helpers import install_gpu_mocks, restore_gpu_mocks
+
 ROOT = Path(__file__).resolve().parents[2]
 PYTHON_ROOT = ROOT / "python"
 TOOLS_ROOT = ROOT / "tools"
@@ -21,6 +28,24 @@ if not _nerve_installed and str(PYTHON_ROOT) not in sys.path:
     sys.path.insert(0, str(PYTHON_ROOT))
 if str(TOOLS_ROOT) not in sys.path:
     sys.path.insert(0, str(TOOLS_ROOT))
+
+
+@pytest.fixture(scope="module", autouse=False)
+def mock_gpu_deps(request):
+    """Inject MagicMock replacements for GPU/CuPy/triton/numba/C++ deps.
+
+    Test files can opt in by placing ``pytestmark = pytest.mark.usefixtures("mock_gpu_deps")``
+    at module level, or by using the fixture explicitly in a test function signature.
+
+    To control whether ``cupy.cuda.is_available()`` returns True or False, set the
+    module-level variable ``_GPU_MOCK_CUDA_AVAILABLE = True``.
+    """
+    cuda_available = getattr(request.module, "_GPU_MOCK_CUDA_AVAILABLE", False)
+    install_gpu_mocks(cuda_available=cuda_available)
+    try:
+        yield
+    finally:
+        restore_gpu_mocks()
 
 
 def _nerve_core_available() -> bool:

@@ -2,46 +2,14 @@
 
 from __future__ import annotations
 
-import sys
-from unittest.mock import MagicMock
 
 import pytest
 import torch
+from _test_helpers import make_diag_batched
+
+pytestmark = pytest.mark.usefixtures("mock_gpu_deps")
 
 torch = pytest.importorskip("torch")
-
-
-@pytest.fixture(scope="module", autouse=True)
-def _mock_gpu_deps():
-    saved = {}
-    for mod in [
-        "cupy", "cupy.cuda", "cupyx", "cupyx.scipy",
-        "numba", "numba.cuda",
-        "triton", "triton.language",
-        "pynerve_torch_internal", "pynerve_internal", "nerve_torch_internal",
-        "h5py",
-    ]:
-        saved[mod] = sys.modules.get(mod)
-        sys.modules[mod] = MagicMock()
-    sys.modules["cupy"].cuda = MagicMock()
-    sys.modules["cupy"].cuda.is_available = MagicMock(return_value=False)
-    sys.modules["cupy"].ndarray = torch.Tensor
-    sys.modules["numba"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].language = MagicMock()
-    yield
-    for mod, orig in saved.items():
-        if orig is None:
-            sys.modules.pop(mod, None)
-        else:
-            sys.modules[mod] = orig
-
-
-def _diag(n=5, batch=1):
-    """Create valid batched persistence diagrams (batch, n, 2)."""
-    births = torch.rand(batch, n) * 0.5
-    deaths = births + torch.rand(batch, n) * 0.5 + 0.01
-    return torch.stack([births, deaths], dim=-1)
 
 
 class TestValidateProbability:
@@ -69,11 +37,11 @@ class TestValidateProbability:
 class TestValidateDiagram:
     def test_valid_2d(self):
         from pynerve.nn._diagram_attention import _validate_diagram
-        _validate_diagram(_diag(5).squeeze(0))
+        _validate_diagram(make_diag_batched(5).squeeze(0))
 
     def test_valid_3d(self):
         from pynerve.nn._diagram_attention import _validate_diagram
-        _validate_diagram(_diag(5, batch=2))
+        _validate_diagram(make_diag_batched(5, batch=2))
 
     def test_death_before_birth(self):
         from pynerve.nn._diagram_attention import _validate_diagram
@@ -126,7 +94,7 @@ class TestDiagramMultiHeadAttention:
     def test_forward(self):
         from pynerve.nn._diagram_attention import DiagramMultiHeadAttention
         mha = DiagramMultiHeadAttention(d_model=16, num_heads=4, dropout=0.0)
-        d = _diag(5, batch=2)
+        d = make_diag_batched(5, batch=2)
         feats = torch.rand(2, 5, 16)
         result = mha(d, feats)
         assert result.shape == (2, 5, 16)
@@ -134,7 +102,7 @@ class TestDiagramMultiHeadAttention:
     def test_forward_without_positional(self):
         from pynerve.nn._diagram_attention import DiagramMultiHeadAttention
         mha = DiagramMultiHeadAttention(d_model=16, num_heads=4, dropout=0.0, use_birth_death_positional=False)
-        d = _diag(5, batch=2)
+        d = make_diag_batched(5, batch=2)
         feats = torch.rand(2, 5, 16)
         result = mha(d, feats)
         assert result.shape == (2, 5, 16)
@@ -148,14 +116,14 @@ class TestDiagramMultiHeadAttention:
     def test_forward_wrong_features_shape(self):
         from pynerve.nn._diagram_attention import DiagramMultiHeadAttention
         mha = DiagramMultiHeadAttention(d_model=16, num_heads=4, dropout=0.0)
-        d = _diag(5, batch=2)
+        d = make_diag_batched(5, batch=2)
         with pytest.raises(ValueError, match="features"):
             mha(d, torch.rand(2, 5, 8))
 
     def test_forward_same_device(self):
         from pynerve.nn._diagram_attention import DiagramMultiHeadAttention
         mha = DiagramMultiHeadAttention(d_model=16, num_heads=4, dropout=0.0)
-        d = _diag(5, batch=2)
+        d = make_diag_batched(5, batch=2)
         feats = torch.rand(2, 5, 16)
         # Both on CPU — should work, not raise
         result = mha(d, feats)
@@ -164,7 +132,7 @@ class TestDiagramMultiHeadAttention:
     def test_forward_with_2d_mask(self):
         from pynerve.nn._diagram_attention import DiagramMultiHeadAttention
         mha = DiagramMultiHeadAttention(d_model=16, num_heads=4, dropout=0.0)
-        d = _diag(5, batch=2)
+        d = make_diag_batched(5, batch=2)
         feats = torch.rand(2, 5, 16)
         mask = torch.ones(2, 5)
         result = mha(d, feats, mask=mask)
@@ -173,7 +141,7 @@ class TestDiagramMultiHeadAttention:
     def test_forward_with_3d_mask(self):
         from pynerve.nn._diagram_attention import DiagramMultiHeadAttention
         mha = DiagramMultiHeadAttention(d_model=16, num_heads=4, dropout=0.0)
-        d = _diag(5, batch=2)
+        d = make_diag_batched(5, batch=2)
         feats = torch.rand(2, 5, 16)
         mask = torch.ones(2, 5, 5)
         result = mha(d, feats, mask=mask)
@@ -182,7 +150,7 @@ class TestDiagramMultiHeadAttention:
     def test_forward_with_bad_mask(self):
         from pynerve.nn._diagram_attention import DiagramMultiHeadAttention
         mha = DiagramMultiHeadAttention(d_model=16, num_heads=4, dropout=0.0)
-        d = _diag(5, batch=2)
+        d = make_diag_batched(5, batch=2)
         feats = torch.rand(2, 5, 16)
         # All-zero mask — no attention target per row
         mask = torch.zeros(2, 5)
@@ -209,7 +177,7 @@ class TestDiagramTransformerBlock:
     def test_forward(self):
         from pynerve.nn._diagram_attention import DiagramTransformerBlock
         block = DiagramTransformerBlock(d_model=16, num_heads=4, d_ff=32, dropout=0.0)
-        d = _diag(5, batch=2)
+        d = make_diag_batched(5, batch=2)
         feats = torch.rand(2, 5, 16)
         result = block(d, feats)
         assert result.shape == (2, 5, 16)
@@ -217,7 +185,7 @@ class TestDiagramTransformerBlock:
     def test_forward_with_mask(self):
         from pynerve.nn._diagram_attention import DiagramTransformerBlock
         block = DiagramTransformerBlock(d_model=16, num_heads=4, d_ff=32, dropout=0.0)
-        d = _diag(5, batch=2)
+        d = make_diag_batched(5, batch=2)
         feats = torch.rand(2, 5, 16)
         mask = torch.ones(2, 5)
         result = block(d, feats, mask=mask)

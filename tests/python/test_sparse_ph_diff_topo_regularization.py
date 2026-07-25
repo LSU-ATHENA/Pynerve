@@ -9,64 +9,16 @@ and DiagramMatchingLoss.
 
 from __future__ import annotations
 
-import sys
-from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
 import torch
 import torch.nn as nn
+from _test_helpers import make_diag_2d, make_diag_3d
+
+pytestmark = pytest.mark.usefixtures("mock_gpu_deps")
 
 torch = pytest.importorskip("torch")
-
-
-@pytest.fixture(scope="module", autouse=True)
-def _mock_gpu_deps():
-    """Inject mocks for GPU/CuPy/triton/numba/C++ deps, restore after."""
-    saved = {}
-    for mod in [
-        "cupy", "cupy.cuda", "cupyx", "cupyx.scipy",
-        "numba", "numba.cuda",
-        "triton", "triton.language",
-        "pynerve_torch_internal", "pynerve_internal", "nerve_torch_internal",
-        "h5py",
-    ]:
-        saved[mod] = sys.modules.get(mod)
-        sys.modules[mod] = MagicMock()
-
-    sys.modules["cupy"].cuda = MagicMock()
-    sys.modules["cupy"].cuda.is_available = MagicMock(return_value=False)
-    sys.modules["cupy"].ndarray = torch.Tensor
-    sys.modules["cupy"].asarray = lambda x, **kw: torch.as_tensor(x)
-    sys.modules["numba"].jit = lambda *a, **k: lambda f: f
-    sys.modules["numba"].cuda = MagicMock()
-    sys.modules["triton"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].language = MagicMock()
-    sys.modules["triton"].autotune = lambda *a, **k: lambda f: f
-    sys.modules["h5py"].File = MagicMock()
-
-    yield
-
-    for mod, orig in saved.items():
-        if orig is None:
-            sys.modules.pop(mod, None)
-        else:
-            sys.modules[mod] = orig
-
-
-def _diag(n=5):
-    """Create a valid persistence diagram tensor (N, 2) with birth<death."""
-    births = torch.rand(n) * 0.5
-    deaths = births + torch.rand(n) * 0.5 + 0.01
-    return torch.stack([births, deaths], dim=1)
-
-
-def _diag3(n=5):
-    """Create a valid persistence diagram tensor (N, 3) with birth<death."""
-    births = torch.rand(n) * 0.5
-    deaths = births + torch.rand(n) * 0.5 + 0.01
-    dims = torch.randint(0, 2, (n,)).float()
-    return torch.stack([births, deaths, dims], dim=1)
 
 
 class TestFarthestPointSampling:
@@ -507,16 +459,16 @@ class TestDiagramMatchingLoss:
     def test_forward_matching(self):
         from pynerve.nn.topo_regularization import DiagramMatchingLoss
         loss = DiagramMatchingLoss(distance_metric="wasserstein", p=2.0, weight=1.0)
-        pred = [[_diag(3), _diag(2)]]
-        target = [[_diag(4), _diag(1)]]
+        pred = [[make_diag_2d(3), make_diag_2d(2)]]
+        target = [[make_diag_2d(4), make_diag_2d(1)]]
         result = loss.forward(pred, target)
         assert result >= 0
 
     def test_forward_bottleneck(self):
         from pynerve.nn.topo_regularization import DiagramMatchingLoss
         loss = DiagramMatchingLoss(distance_metric="bottleneck", weight=1.0)
-        pred = [[_diag(3), _diag(2)]]
-        target = [[_diag(4), _diag(1)]]
+        pred = [[make_diag_2d(3), make_diag_2d(2)]]
+        target = [[make_diag_2d(4), make_diag_2d(1)]]
         result = loss.forward(pred, target)
         assert result >= 0
 
@@ -532,14 +484,14 @@ class TestDiagramMatchingLoss:
         from pynerve.nn.topo_regularization import DiagramMatchingLoss
         loss = DiagramMatchingLoss()
         pred = [[torch.empty(0, 2)]]
-        target = [[_diag(3)]]
+        target = [[make_diag_2d(3)]]
         result = loss.forward(pred, target)
         assert result >= 0
 
     def test_forward_target_empty(self):
         from pynerve.nn.topo_regularization import DiagramMatchingLoss
         loss = DiagramMatchingLoss()
-        pred = [[_diag(3)]]
+        pred = [[make_diag_2d(3)]]
         target = [[torch.empty(0, 2)]]
         result = loss.forward(pred, target)
         assert result >= 0
@@ -548,7 +500,7 @@ class TestDiagramMatchingLoss:
         from pynerve.nn.topo_regularization import DiagramMatchingLoss
         loss = DiagramMatchingLoss()
         with pytest.raises(ValueError, match="Batch sizes"):
-            loss.forward([[_diag(3)]], [[_diag(3)], [_diag(2)]])
+            loss.forward([[make_diag_2d(3)]], [[make_diag_2d(3)], [make_diag_2d(2)]])
 
     def test_forward_empty_batch(self):
         from pynerve.nn.topo_regularization import DiagramMatchingLoss
@@ -560,7 +512,7 @@ class TestDiagramMatchingLoss:
         from pynerve.nn.topo_regularization import DiagramMatchingLoss
         loss = DiagramMatchingLoss()
         with pytest.raises(ValueError, match="dimensions must match"):
-            loss.forward([[_diag(3), _diag(2)]], [[_diag(3)]])
+            loss.forward([[make_diag_2d(3), make_diag_2d(2)]], [[make_diag_2d(3)]])
 
 
 class TestHelperFunctions:
@@ -568,7 +520,7 @@ class TestHelperFunctions:
 
     def test_finite_birth_death_valid(self):
         from pynerve.nn.topo_regularization import _finite_birth_death
-        d = _diag(5)
+        d = make_diag_2d(5)
         result = _finite_birth_death(d)
         assert result.shape[1] == 2
 
@@ -607,7 +559,7 @@ class TestHelperFunctions:
 
     def test_finite_persistence(self):
         from pynerve.nn.topo_regularization import _finite_persistence
-        d = _diag(5)
+        d = make_diag_2d(5)
         result = _finite_persistence(d)
         assert result.shape == (5,)
 

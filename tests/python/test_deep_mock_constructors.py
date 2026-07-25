@@ -2,53 +2,14 @@
 
 from __future__ import annotations
 
-import sys
-from unittest.mock import MagicMock
 
 import pytest
 
+pytestmark = pytest.mark.usefixtures("mock_gpu_deps")
+_GPU_MOCK_CUDA_AVAILABLE = True
+
 torch = pytest.importorskip("torch")
 nn = torch.nn
-
-
-@pytest.fixture(autouse=True, scope="module")
-def _mock_gpu_deps():
-    saved = {}
-    mock_modules = {
-        "cupy": MagicMock(), "cupy.cuda": MagicMock(), "cupyx": MagicMock(),
-        "cupyx.scipy": MagicMock(), "cupyx.scipy.sparse": MagicMock(),
-        "numba": MagicMock(), "numba.cuda": MagicMock(),
-        "triton": MagicMock(), "triton.language": MagicMock(),
-        "pynerve_torch_internal": MagicMock(), "pynerve_internal": MagicMock(),
-        "nerve_torch_internal": MagicMock(), "h5py": MagicMock(),
-    }
-    for name, mock in mock_modules.items():
-        saved[name] = sys.modules.get(name)
-        sys.modules[name] = mock
-    sys.modules["cupy"].cuda = MagicMock()
-    sys.modules["cupy"].cuda.is_available = MagicMock(return_value=True)
-    sys.modules["cupy"].ndarray = torch.Tensor
-    sys.modules["cupy"].asarray = lambda x, **kw: torch.as_tensor(x)
-    sys.modules["cupyx"].scipy = MagicMock()
-    sys.modules["cupyx"].scipy.sparse = MagicMock()
-    sys.modules["numba"].cuda = MagicMock()
-    sys.modules["numba"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].language = MagicMock()
-    sys.modules["triton"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].autotune = lambda *a, **k: lambda f: f
-    sys.modules["pynerve_torch_internal"].MapperConfig = MagicMock()
-    sys.modules["pynerve_torch_internal"].Mapper = MagicMock()
-    sys.modules["pynerve_torch_internal"].ClustererType = MagicMock()
-    sys.modules["pynerve_internal"].PersistenceOptions = MagicMock()
-    sys.modules["pynerve_internal"].PersistenceMode = MagicMock()
-    sys.modules["pynerve_internal"].PersistenceBackend = MagicMock()
-    sys.modules["h5py"].File = MagicMock()
-    yield
-    for name, original in saved.items():
-        if original is None:
-            sys.modules.pop(name, None)
-        else:
-            sys.modules[name] = original
 
 
 def C(fn):

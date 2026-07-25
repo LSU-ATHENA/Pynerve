@@ -2,58 +2,26 @@
 
 from __future__ import annotations
 
-import sys
-from unittest.mock import MagicMock
 
 import pytest
 import torch
 import torch.nn as nn
+from _test_helpers import make_diag_batched
+
+pytestmark = pytest.mark.usefixtures("mock_gpu_deps")
 
 torch = pytest.importorskip("torch")
-
-
-@pytest.fixture(scope="module", autouse=True)
-def _mock_gpu_deps():
-    saved = {}
-    for mod in [
-        "cupy", "cupy.cuda", "cupyx", "cupyx.scipy",
-        "numba", "numba.cuda",
-        "triton", "triton.language",
-        "pynerve_torch_internal", "pynerve_internal", "nerve_torch_internal",
-        "h5py",
-    ]:
-        saved[mod] = sys.modules.get(mod)
-        sys.modules[mod] = MagicMock()
-    sys.modules["cupy"].cuda = MagicMock()
-    sys.modules["cupy"].cuda.is_available = MagicMock(return_value=False)
-    sys.modules["cupy"].ndarray = torch.Tensor
-    sys.modules["numba"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].language = MagicMock()
-    yield
-    for mod, orig in saved.items():
-        if orig is None:
-            sys.modules.pop(mod, None)
-        else:
-            sys.modules[mod] = orig
-
-
-def _diag(n=5, batch=1):
-    """Create valid batched persistence diagrams (batch, n, 2)."""
-    births = torch.rand(batch, n) * 0.5
-    deaths = births + torch.rand(batch, n) * 0.5 + 0.01
-    return torch.stack([births, deaths], dim=-1)
 
 
 class TestValidateDiagram:
     def test_valid_2d(self):
         from pynerve.nn._diagram_conv_layers import _validate_diagram
-        d = _diag(5).squeeze(0)
+        d = make_diag_batched(5).squeeze(0)
         _validate_diagram(d)  # should not raise
 
     def test_valid_3d(self):
         from pynerve.nn._diagram_conv_layers import _validate_diagram
-        _validate_diagram(_diag(5, batch=2))
+        _validate_diagram(make_diag_batched(5, batch=2))
 
     def test_death_before_birth(self):
         from pynerve.nn._diagram_conv_layers import _validate_diagram
@@ -113,7 +81,7 @@ class TestDiagramConv1D:
     def test_forward_no_features(self):
         from pynerve.nn._diagram_conv_layers import DiagramConv1D
         layer = DiagramConv1D(in_channels=0, out_channels=8, kernel_size=3)
-        d = _diag(10, batch=2)
+        d = make_diag_batched(10, batch=2)
         result = layer(d)
         assert result.dim() == 3
         assert result.shape[0] == 2
@@ -122,7 +90,7 @@ class TestDiagramConv1D:
     def test_forward_with_features(self):
         from pynerve.nn._diagram_conv_layers import DiagramConv1D
         layer = DiagramConv1D(in_channels=3, out_channels=8, kernel_size=3)
-        d = _diag(10, batch=2)
+        d = make_diag_batched(10, batch=2)
         feats = torch.rand(2, 10, 3)
         result = layer(d, features=feats)
         assert result.dim() == 3
@@ -131,14 +99,14 @@ class TestDiagramConv1D:
     def test_forward_features_required(self):
         from pynerve.nn._diagram_conv_layers import DiagramConv1D
         layer = DiagramConv1D(in_channels=3, out_channels=8, kernel_size=3)
-        d = _diag(10, batch=2)
+        d = make_diag_batched(10, batch=2)
         with pytest.raises(ValueError, match="features are required"):
             layer(d)
 
     def test_forward_features_wrong_shape(self):
         from pynerve.nn._diagram_conv_layers import DiagramConv1D
         layer = DiagramConv1D(in_channels=3, out_channels=8, kernel_size=3)
-        d = _diag(10, batch=2)
+        d = make_diag_batched(10, batch=2)
         with pytest.raises(ValueError, match="features"):
             layer(d, features=torch.rand(2, 5, 3))
 
@@ -181,14 +149,14 @@ class TestDiagramDeepSet:
     def test_forward_no_features(self):
         from pynerve.nn._diagram_conv_layers import DiagramDeepSet
         ds = DiagramDeepSet(in_channels=0, hidden_channels=[16], out_channels=4, pooling="sum")
-        d = _diag(10, batch=2)
+        d = make_diag_batched(10, batch=2)
         result = ds(d)
         assert result.shape == (2, 4)
 
     def test_forward_with_features(self):
         from pynerve.nn._diagram_conv_layers import DiagramDeepSet
         ds = DiagramDeepSet(in_channels=3, hidden_channels=[16], out_channels=4, pooling="mean")
-        d = _diag(10, batch=2)
+        d = make_diag_batched(10, batch=2)
         feats = torch.rand(2, 10, 3)
         result = ds(d, features=feats)
         assert result.shape == (2, 4)
@@ -196,7 +164,7 @@ class TestDiagramDeepSet:
     def test_forward_features_required(self):
         from pynerve.nn._diagram_conv_layers import DiagramDeepSet
         ds = DiagramDeepSet(in_channels=3, hidden_channels=[16], out_channels=4)
-        d = _diag(10, batch=2)
+        d = make_diag_batched(10, batch=2)
         with pytest.raises(ValueError, match="features are required"):
             ds(d)
 
@@ -209,6 +177,6 @@ class TestDiagramDeepSet:
     def test_forward_persistence_weighted(self):
         from pynerve.nn._diagram_conv_layers import DiagramDeepSet
         ds = DiagramDeepSet(in_channels=0, hidden_channels=[16], out_channels=4, pooling="persistence_weighted")
-        d = _diag(10, batch=2)
+        d = make_diag_batched(10, batch=2)
         result = ds(d)
         assert result.shape == (2, 4)

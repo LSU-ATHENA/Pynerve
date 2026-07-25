@@ -2,45 +2,12 @@
 
 from __future__ import annotations
 
-import sys
-from unittest.mock import MagicMock
 
 import pytest
 
 import numpy as np
 
-
-@pytest.fixture(scope="module", autouse=True)
-def _mock_gpu_deps():
-    saved = {}
-    for mod in [
-        "cupy", "cupy.cuda", "cupyx", "cupyx.scipy",
-        "numba", "numba.cuda",
-        "triton", "triton.language",
-        "pynerve_torch_internal", "pynerve_internal", "nerve_torch_internal",
-        "h5py",
-    ]:
-        saved[mod] = sys.modules.get(mod)
-        sys.modules[mod] = MagicMock()
-    sys.modules["cupy"].cuda = MagicMock()
-    sys.modules["cupy"].cuda.is_available = MagicMock(return_value=False)
-    sys.modules["cupy"].ndarray = MagicMock()
-    sys.modules["numba"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].language = MagicMock()
-
-    # Mock pynerve_internal for _compute_nerve_persistence
-    pynerve_internal = MagicMock()
-    pynerve_internal.compute_persistence = MagicMock(return_value={"pairs": []})
-    sys.modules["pynerve_internal"] = pynerve_internal
-
-    yield
-
-    for mod, orig in saved.items():
-        if orig is None:
-            sys.modules.pop(mod, None)
-        else:
-            sys.modules[mod] = orig
+pytestmark = pytest.mark.usefixtures("mock_gpu_deps")
 
 
 class TestBenchmarkVsRipser:

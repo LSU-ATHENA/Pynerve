@@ -7,62 +7,14 @@ helper functions (_validate_non_negative_scalar, module imports).
 
 from __future__ import annotations
 
-import sys
-from unittest.mock import MagicMock
 
 import pytest
 import torch
+from _test_helpers import make_diag_2d, make_diag_3d
+
+pytestmark = pytest.mark.usefixtures("mock_gpu_deps")
 
 torch = pytest.importorskip("torch")
-
-
-@pytest.fixture(scope="module", autouse=True)
-def _mock_gpu_deps():
-    """Inject mocks for GPU/CuPy/triton/numba/C++ deps, restore after."""
-    saved = {}
-    for mod in [
-        "cupy", "cupy.cuda", "cupyx", "cupyx.scipy",
-        "numba", "numba.cuda",
-        "triton", "triton.language",
-        "pynerve_torch_internal", "pynerve_internal", "nerve_torch_internal",
-        "h5py",
-    ]:
-        saved[mod] = sys.modules.get(mod)
-        sys.modules[mod] = MagicMock()
-
-    sys.modules["cupy"].cuda = MagicMock()
-    sys.modules["cupy"].cuda.is_available = MagicMock(return_value=False)
-    sys.modules["cupy"].ndarray = torch.Tensor
-    sys.modules["cupy"].asarray = lambda x, **kw: torch.as_tensor(x)
-    sys.modules["numba"].jit = lambda *a, **k: lambda f: f
-    sys.modules["numba"].cuda = MagicMock()
-    sys.modules["triton"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].language = MagicMock()
-    sys.modules["triton"].autotune = lambda *a, **k: lambda f: f
-    sys.modules["h5py"].File = MagicMock()
-
-    yield
-
-    for mod, orig in saved.items():
-        if orig is None:
-            sys.modules.pop(mod, None)
-        else:
-            sys.modules[mod] = orig
-
-
-def _diag(n=5):
-    """Create a valid persistence diagram tensor (N, 2) with birth<death."""
-    births = torch.rand(n) * 0.5
-    deaths = births + torch.rand(n) * 0.5 + 0.01
-    return torch.stack([births, deaths], dim=1)
-
-
-def _diag3(n=5):
-    """Create a valid persistence diagram tensor (N, 3) with birth<death and dim column."""
-    births = torch.rand(n) * 0.5
-    deaths = births + torch.rand(n) * 0.5 + 0.01
-    dims = torch.randint(0, 2, (n,)).float()
-    return torch.stack([births, deaths, dims], dim=1)
 
 
 class TestTopologyLoss:
@@ -85,8 +37,8 @@ class TestTopologyLoss:
     def test_forward(self):
         from pynerve.diff._composite_loss import TopologyLoss
         loss = TopologyLoss(wasserstein_weight=1.0, complexity_weight=0.01)
-        pred = _diag(5)
-        target = _diag(4)
+        pred = make_diag_2d(5)
+        target = make_diag_2d(4)
         result = loss.forward(pred, target)
         assert "total" in result
         assert result["total"] >= 0
@@ -95,8 +47,8 @@ class TestTopologyLoss:
         from pynerve.diff._composite_loss import TopologyLoss
         loss = TopologyLoss(wasserstein_weight=0.0, betti_weight=0.1)
         # BettiNumberLoss requires 3-column diagrams (birth, death, dim)
-        pred = _diag3(5)
-        target = _diag3(4)
+        pred = make_diag_3d(5)
+        target = make_diag_3d(4)
         betti = torch.tensor([2.0, 1.0])
         result = loss.forward(pred, target, target_betti=betti)
         assert "betti" in result
@@ -109,8 +61,8 @@ class TestTopologyLoss:
             complexity_weight=0.01, stability_weight=0.0
         )
         # BettiNumberLoss requires 3-column diagrams (birth, death, dim)
-        pred = _diag3(5)
-        target = _diag3(4)
+        pred = make_diag_3d(5)
+        target = make_diag_3d(4)
         betti = torch.tensor([2.0, 1.0])
         result = loss.forward(pred, target, target_betti=betti)
         assert "wasserstein" in result
@@ -124,8 +76,8 @@ class TestTopologyLoss:
             wasserstein_weight=0.0, betti_weight=0.0,
             complexity_weight=0.0, stability_weight=0.0
         )
-        pred = _diag(3)
-        target = _diag(3)
+        pred = make_diag_2d(3)
+        target = make_diag_2d(3)
         result = loss.forward(pred, target)
         assert result["total"].item() == 0.0
 

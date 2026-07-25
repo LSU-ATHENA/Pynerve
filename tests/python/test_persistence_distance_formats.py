@@ -8,59 +8,17 @@ curriculum trainer using real PyTorch tensors and CPU operations.
 from __future__ import annotations
 
 import os
-import sys
 import tempfile
-from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
+from _test_helpers import make_diag_3d
+
+pytestmark = pytest.mark.usefixtures("mock_gpu_deps")
+_GPU_MOCK_CUDA_AVAILABLE = True
 
 torch = pytest.importorskip("torch")
 
-
-@pytest.fixture(scope="module", autouse=True)
-def _mock_gpu_deps():
-    """Inject mocks for GPU/CuPy/triton/numba/C++ deps, restore after."""
-    saved = {}
-    for mod in [
-        "cupy", "cupy.cuda", "cupyx", "cupyx.scipy",
-        "numba", "numba.cuda",
-        "triton", "triton.language",
-        "pynerve_torch_internal", "pynerve_internal", "nerve_torch_internal",
-        "h5py",
-    ]:
-        saved[mod] = sys.modules.get(mod)
-        sys.modules[mod] = MagicMock()
-
-    sys.modules["cupy"].cuda = MagicMock()
-    sys.modules["cupy"].cuda.is_available = MagicMock(return_value=True)
-    sys.modules["cupy"].ndarray = torch.Tensor
-    sys.modules["cupy"].asarray = lambda x, **kw: torch.as_tensor(x)
-    sys.modules["numba"].jit = lambda *a, **k: lambda f: f
-    sys.modules["numba"].cuda = MagicMock()
-    sys.modules["triton"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].language = MagicMock()
-    sys.modules["triton"].autotune = lambda *a, **k: lambda f: f
-    sys.modules["h5py"].File = MagicMock()
-
-    yield
-
-    for mod, orig in saved.items():
-        if orig is None:
-            sys.modules.pop(mod, None)
-        else:
-            sys.modules[mod] = orig
-
-
-def _diag(n=5):
-    """Create a valid persistence diagram tensor (N, 3) with birth<death."""
-    births = torch.rand(n) * 0.5
-    deaths = births + torch.rand(n) * 0.5 + 0.01
-    dims = torch.randint(0, 2, (n,)).float()
-    return torch.stack([births, deaths, dims], dim=1)
-
-
-# ── Persistence Core Impl ────────────────────────────────────────────────
 
 class TestPersistenceCoreImpl:
     """Covers torch/_persistence_core_impl.py — 123 missed, 24%."""
@@ -438,26 +396,26 @@ class TestStratifiedSampler:
 
     def test_construct(self):
         from pynerve.training._stratified import PersistenceStratifiedSampler
-        diagrams = [_diag(5) for _ in range(20)]
+        diagrams = [make_diag_3d(5) for _ in range(20)]
         sampler = PersistenceStratifiedSampler(diagrams, num_strata=3, batch_size=8)
         assert sampler.num_strata == 3
         assert len(sampler) == 20
 
     def test_construct_invalid_strata(self):
         from pynerve.training._stratified import PersistenceStratifiedSampler
-        diagrams = [_diag(5) for _ in range(10)]
+        diagrams = [make_diag_3d(5) for _ in range(10)]
         with pytest.raises(ValueError, match="positive"):
             PersistenceStratifiedSampler(diagrams, num_strata=0, batch_size=8)
 
     def test_construct_invalid_batch(self):
         from pynerve.training._stratified import PersistenceStratifiedSampler
-        diagrams = [_diag(5) for _ in range(10)]
+        diagrams = [make_diag_3d(5) for _ in range(10)]
         with pytest.raises(ValueError, match="positive"):
             PersistenceStratifiedSampler(diagrams, num_strata=3, batch_size=0)
 
     def test_iter(self):
         from pynerve.training._stratified import PersistenceStratifiedSampler
-        diagrams = [_diag(5) for _ in range(15)]
+        diagrams = [make_diag_3d(5) for _ in range(15)]
         sampler = PersistenceStratifiedSampler(diagrams, num_strata=3, batch_size=5, seed=42)
         indices = list(sampler)
         assert len(indices) == 15
@@ -465,7 +423,7 @@ class TestStratifiedSampler:
 
     def test_drop_last(self):
         from pynerve.training._stratified import PersistenceStratifiedSampler
-        diagrams = [_diag(5) for _ in range(12)]
+        diagrams = [make_diag_3d(5) for _ in range(12)]
         sampler = PersistenceStratifiedSampler(
             diagrams, num_strata=3, batch_size=5, drop_last=True, seed=42
         )
@@ -483,31 +441,31 @@ class TestMultiscaleSampler:
 
     def test_construct(self):
         from pynerve.training._multiscale import MultiScaleTopologySampler
-        diagrams = [_diag(5) for _ in range(20)]
+        diagrams = [make_diag_3d(5) for _ in range(20)]
         sampler = MultiScaleTopologySampler(diagrams, scales=[0.1, 0.5, 1.0], batch_size=12)
         assert len(sampler) == 20
 
     def test_construct_default_scales(self):
         from pynerve.training._multiscale import MultiScaleTopologySampler
-        diagrams = [_diag(5) for _ in range(10)]
+        diagrams = [make_diag_3d(5) for _ in range(10)]
         sampler = MultiScaleTopologySampler(diagrams)
         assert sampler.scales == [0.01, 0.1, 0.5, 1.0]
 
     def test_invalid_scales(self):
         from pynerve.training._multiscale import MultiScaleTopologySampler
-        diagrams = [_diag(5) for _ in range(10)]
+        diagrams = [make_diag_3d(5) for _ in range(10)]
         with pytest.raises(ValueError, match="positive"):
             MultiScaleTopologySampler(diagrams, scales=[-1, 0.5])
 
     def test_invalid_batch(self):
         from pynerve.training._multiscale import MultiScaleTopologySampler
-        diagrams = [_diag(5) for _ in range(10)]
+        diagrams = [make_diag_3d(5) for _ in range(10)]
         with pytest.raises(ValueError, match="positive"):
             MultiScaleTopologySampler(diagrams, batch_size=0)
 
     def test_iter(self):
         from pynerve.training._multiscale import MultiScaleTopologySampler
-        diagrams = [_diag(5) for _ in range(20)]
+        diagrams = [make_diag_3d(5) for _ in range(20)]
         sampler = MultiScaleTopologySampler(
             diagrams, scales=[0.1, 0.5, 1.0], batch_size=9, samples_per_scale=3, seed=42
         )

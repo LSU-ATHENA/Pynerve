@@ -7,47 +7,14 @@ ssl/curriculum modules to push coverage from 48% toward 80%.
 
 from __future__ import annotations
 
-import sys
-from unittest.mock import MagicMock
 
 import pytest
 
+pytestmark = pytest.mark.usefixtures("mock_gpu_deps")
+_GPU_MOCK_CUDA_AVAILABLE = True
+
 torch = pytest.importorskip("torch")
 nn = torch.nn
-
-
-@pytest.fixture(scope="module", autouse=True)
-def _mock_gpu_deps():
-    """Inject mocks for GPU/CuPy/triton/numba/C++ deps, restore after."""
-    saved = {}
-    for mod in [
-        "cupy", "cupy.cuda", "cupyx", "cupyx.scipy",
-        "numba", "numba.cuda",
-        "triton", "triton.language",
-        "pynerve_torch_internal", "pynerve_internal", "nerve_torch_internal",
-        "h5py",
-    ]:
-        saved[mod] = sys.modules.get(mod)
-        sys.modules[mod] = MagicMock()
-
-    sys.modules["cupy"].cuda = MagicMock()
-    sys.modules["cupy"].cuda.is_available = MagicMock(return_value=True)
-    sys.modules["cupy"].ndarray = torch.Tensor
-    sys.modules["cupy"].asarray = lambda x, **kw: torch.as_tensor(x)
-    sys.modules["numba"].jit = lambda *a, **k: lambda f: f
-    sys.modules["numba"].cuda = MagicMock()
-    sys.modules["triton"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].language = MagicMock()
-    sys.modules["triton"].autotune = lambda *a, **k: lambda f: f
-    sys.modules["h5py"].File = MagicMock()
-
-    yield
-
-    for mod, orig in saved.items():
-        if orig is None:
-            sys.modules.pop(mod, None)
-        else:
-            sys.modules[mod] = orig
 
 
 def _try_construct(fn):

@@ -9,57 +9,17 @@ ComplexityMeasure, CurriculumConfig, and complexity computation functions.
 
 from __future__ import annotations
 
-import sys
 from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
 import torch
 import torch.nn as nn
+from _test_helpers import make_diag_3d
+
+pytestmark = pytest.mark.usefixtures("mock_gpu_deps")
 
 torch = pytest.importorskip("torch")
-
-
-@pytest.fixture(scope="module", autouse=True)
-def _mock_gpu_deps():
-    """Inject mocks for GPU/CuPy/triton/numba/C++ deps, restore after."""
-    saved = {}
-    for mod in [
-        "cupy", "cupy.cuda", "cupyx", "cupyx.scipy",
-        "numba", "numba.cuda",
-        "triton", "triton.language",
-        "pynerve_torch_internal", "pynerve_internal", "nerve_torch_internal",
-        "h5py",
-    ]:
-        saved[mod] = sys.modules.get(mod)
-        sys.modules[mod] = MagicMock()
-
-    sys.modules["cupy"].cuda = MagicMock()
-    sys.modules["cupy"].cuda.is_available = MagicMock(return_value=False)
-    sys.modules["cupy"].ndarray = torch.Tensor
-    sys.modules["cupy"].asarray = lambda x, **kw: torch.as_tensor(x)
-    sys.modules["numba"].jit = lambda *a, **k: lambda f: f
-    sys.modules["numba"].cuda = MagicMock()
-    sys.modules["triton"].jit = lambda *a, **k: lambda f: f
-    sys.modules["triton"].language = MagicMock()
-    sys.modules["triton"].autotune = lambda *a, **k: lambda f: f
-    sys.modules["h5py"].File = MagicMock()
-
-    yield
-
-    for mod, orig in saved.items():
-        if orig is None:
-            sys.modules.pop(mod, None)
-        else:
-            sys.modules[mod] = orig
-
-
-def _diag(n=5):
-    """Create a valid persistence diagram tensor (N, 3) with birth<death."""
-    births = torch.rand(n) * 0.5
-    deaths = births + torch.rand(n) * 0.5 + 0.01
-    dims = torch.randint(0, 2, (n,)).float()
-    return torch.stack([births, deaths, dims], dim=1)
 
 
 class TestFeaturePersistenceTracker:
@@ -753,7 +713,7 @@ class TestBettiConstraintLayer:
 
     def test_construct(self):
         from pynerve.regularization._topology_regularizers import BettiConstraintLayer
-        mock_fn = MagicMock(return_value=_diag(5))
+        mock_fn = MagicMock(return_value=make_diag_3d(5))
         layer = BettiConstraintLayer(target_betti=[2, 1], persistence_fn=mock_fn)
         assert layer.lambda_constraint == 0.1
 
@@ -774,7 +734,7 @@ class TestBettiConstraintLayer:
 
     def test_forward(self):
         from pynerve.regularization._topology_regularizers import BettiConstraintLayer
-        mock_fn = MagicMock(return_value=_diag(5))
+        mock_fn = MagicMock(return_value=make_diag_3d(5))
         layer = BettiConstraintLayer(target_betti=[2, 1], persistence_fn=mock_fn)
         x = torch.rand(5, 3)
         result_x, result_loss = layer.forward(x)
@@ -808,7 +768,7 @@ class TestTopologicalSmoothness:
         from pynerve.regularization._topology_regularizers import TopologicalSmoothness
         reg = TopologicalSmoothness(lambda_smooth=0.1, neighborhood_size=2)
         features = torch.rand(4, 5)
-        diagrams = [_diag(3) for _ in range(4)]
+        diagrams = [make_diag_3d(3) for _ in range(4)]
         result = reg.forward(features, diagrams)
         assert result >= 0
 
@@ -816,7 +776,7 @@ class TestTopologicalSmoothness:
         from pynerve.regularization._topology_regularizers import TopologicalSmoothness
         reg = TopologicalSmoothness()
         features = torch.rand(1, 5)
-        diagrams = [_diag(3)]
+        diagrams = [make_diag_3d(3)]
         result = reg.forward(features, diagrams)
         assert result.item() == 0.0
 
@@ -824,13 +784,13 @@ class TestTopologicalSmoothness:
         from pynerve.regularization._topology_regularizers import TopologicalSmoothness
         reg = TopologicalSmoothness()
         with pytest.raises(ValueError, match="shape"):
-            reg.forward(torch.rand(5), [_diag(3) for _ in range(5)])
+            reg.forward(torch.rand(5), [make_diag_3d(3) for _ in range(5)])
 
     def test_forward_mismatched_length(self):
         from pynerve.regularization._topology_regularizers import TopologicalSmoothness
         reg = TopologicalSmoothness()
         with pytest.raises(ValueError, match="length"):
-            reg.forward(torch.rand(4, 5), [_diag(3) for _ in range(3)])
+            reg.forward(torch.rand(4, 5), [make_diag_3d(3) for _ in range(3)])
 
 
 class TestCurriculumConfig:
@@ -899,7 +859,7 @@ class TestRobustTopologyTraining:
     def test_construct(self):
         from pynerve.training._stability_training import RobustTopologyTraining
         model = nn.Linear(10, 2)
-        persistence_fn = MagicMock(return_value=[_diag(5)])
+        persistence_fn = MagicMock(return_value=[make_diag_3d(5)])
         trainer = RobustTopologyTraining(
             model=model, persistence_fn=persistence_fn, stability_weight=0.1, num_perturbations=2
         )
@@ -938,7 +898,7 @@ class TestRobustTopologyTraining:
 
         model = DiagramModel()
         # persistence_fn returns valid diagrams (birth < death) as a list
-        persistence_fn = lambda points: [_diag(5)]
+        persistence_fn = lambda points: [make_diag_3d(5)]
         trainer = RobustTopologyTraining(
             model=model, persistence_fn=persistence_fn, stability_weight=0.01, num_perturbations=1
         )
