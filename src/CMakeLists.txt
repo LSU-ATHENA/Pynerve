@@ -183,6 +183,18 @@ option(NERVE_ENABLE_CUDNN_COMPONENTS
 option(NERVE_ENABLE_CUDA_COMPONENTS
     "Build CUDA kernel/component sources in nerve_core"
     OFF)
+
+# Core persistence code (reduction_clearing_ops, reduction_control_ops,
+# vr_medium_hybrid_ops) references GPU kernel symbols (GpuPersistenceReducer)
+# inside `#ifdef NERVE_HAS_CUDA` guards.  The GPU kernel .cu files must
+# therefore be compiled whenever CUDA is enabled, otherwise the linker will
+# fail with undefined-symbol errors.
+if(NERVE_HAS_CUDA AND NOT NERVE_ENABLE_CUDA_COMPONENTS)
+    set(NERVE_ENABLE_CUDA_COMPONENTS ON CACHE BOOL
+        "Build CUDA kernel/component sources in nerve_core" FORCE)
+    message(STATUS "NERVE_ENABLE_CUDA_COMPONENTS auto-enabled (required when ENABLE_CUDA=ON)")
+endif()
+
 option(NERVE_ENABLE_EXTENDED_CUDA_COMPONENTS
     "Build extended CUDA graph/filtration/encoder components in nerve_core"
     OFF)
