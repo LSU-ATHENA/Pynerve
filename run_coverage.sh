@@ -25,7 +25,7 @@ if [ ! -d "$ENV_DIR" ]; then
     conda create -p "$ENV_DIR" python=3.11 -y
     source activate "$ENV_DIR"
     pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
-    pip install pybind11 numpy scipy scikit-learn numba hypothesis matplotlib pytest pytest-timeout pytest-xdist pytest-benchmark coverage pytest-cov ninja triton psutil ripser gudhi dionysus
+    pip install pybind11 numpy scipy scikit-learn numba hypothesis matplotlib pytest pytest-timeout pytest-xdist pytest-benchmark coverage pytest-cov pytest-asyncio ninja triton psutil ripser gudhi dionysus
     conda install -c conda-forge eigen nlohmann_json -y
 else
     source activate "$ENV_DIR"
@@ -35,7 +35,7 @@ fi
 conda list eigen 2>/dev/null | grep -q eigen || conda install -c conda-forge eigen -y 2>/dev/null || true
 conda list nlohmann_json 2>/dev/null | grep -q nlohmann_json || conda install -c conda-forge nlohmann_json -y 2>/dev/null || true
 # Re-install core deps silently; skip triton (leave the pre-installed version alone)
-pip install -q scipy scikit-learn numba hypothesis matplotlib pytest-cov 2>/dev/null || true
+pip install -q scipy scikit-learn numba hypothesis matplotlib pytest-cov pytest-asyncio 2>/dev/null || true
 # psutil is required for diagnostics tests — fail if it can't install
 pip install -q psutil
 # Optional benchmark comparison packages (may fail on some systems)
