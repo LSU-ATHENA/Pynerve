@@ -15,6 +15,13 @@ try:
 except ModuleNotFoundError:
     pytest.skip("hypothesis not available", allow_module_level=True)
 
+try:
+    from pynerve.torch._distance_core_impl import _linear_sum_assignment
+
+    _HAS_EXACT_SOLVER = _linear_sum_assignment() is not None
+except (ImportError, ModuleNotFoundError):
+    _HAS_EXACT_SOLVER = False
+
 # strategy: valid diagram tensors with birth < death
 _diagram_strategy = st.lists(
     st.tuples(
@@ -107,6 +114,8 @@ class TestWassersteinMetricAxioms:
     ) -> None:
         from pynerve.torch import diagram_wasserstein
 
+        assume(_HAS_EXACT_SOLVER)
+
         d12 = diagram_wasserstein(d1, d2)
         d23 = diagram_wasserstein(d2, d3)
         d13 = diagram_wasserstein(d1, d3)
@@ -167,6 +176,8 @@ class TestBottleneckMetricAxioms:
         self, d1: torch.Tensor, d2: torch.Tensor, d3: torch.Tensor
     ) -> None:
         from pynerve.torch import diagram_bottleneck
+
+        assume(_HAS_EXACT_SOLVER)
 
         d12 = diagram_bottleneck(d1, d2)
         d23 = diagram_bottleneck(d2, d3)
