@@ -53,8 +53,3 @@ venv/
 build*/
 python/README.md
 python/LICENSE
-python/*.so
-python/pynerve/*.so
-python/pynerve/torch/*.so
-build/
-build-python/
