@@ -101,8 +101,15 @@ python -m pytest tests/python/ \
     -n 4 --dist=loadscope \
     --ignore=tests/python/test_memory_spectral_sheaf.py \
     --ignore=tests/python/test_memory_pool.py \
+    --ignore=tests/python/test_triton_gpu_kernels.py \
     --cov=python/pynerve --cov-branch --cov-report= \
     2>&1 | tee /work/pradip0/Comp/Pynerve/coverage_test_results.log
+# Run triton GPU kernel tests serially (needs exclusive GPU access)
+python -m pytest tests/python/test_triton_gpu_kernels.py \
+    -q --tb=line -p no:warnings \
+    --timeout=120 \
+    --cov=python/pynerve --cov-branch --cov-append --cov-report= \
+    2>&1 | tee -a /work/pradip0/Comp/Pynerve/coverage_test_results.log
 
 echo "=== Generating coverage report ==="
 python -m coverage report --show-missing --skip-covered 2>&1 | tee /work/pradip0/Comp/Pynerve/coverage_report.log || true
