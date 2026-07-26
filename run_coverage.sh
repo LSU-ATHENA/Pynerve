@@ -95,7 +95,7 @@ echo "=== Running full test suite with coverage ==="
 # --continue-on-collection-errors prevents missing-dep aborts.
 rm -f .coverage .coverage.*
 python -m pytest tests/python/ \
-    -q --tb=line -p no:warnings \
+    -q --tb=short -p no:warnings \
     --timeout=120 \
     --continue-on-collection-errors \
     -n 4 --dist=loadscope \
