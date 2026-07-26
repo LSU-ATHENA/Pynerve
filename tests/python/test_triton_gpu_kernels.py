@@ -31,6 +31,7 @@ def require_gpu_and_triton():
         pytest.skip("triton installed but _use_triton() returned False")
 
 
+@pytest.mark.xdist_group("triton_gpu")
 class TestMapperGpuKernels:
     """Tests that exercise _density_kernel, _eccentricity_kernel,
     _kmeans_assign_kernel, _build_cover_kernel, and _nerve_edges_kernel."""
@@ -113,6 +114,7 @@ class TestMapperGpuKernels:
         assert (labels_gpu.cpu() == labels_cpu).all()
 
 
+@pytest.mark.xdist_group("triton_gpu")
 class TestNnOpsGpuKernels:
     """Tests that exercise _diagram_conv1d_kernel,
     _diagram_conv1d_relu_kernel, and _diagram_conv1d_sigmoid_kernel."""
@@ -167,6 +169,7 @@ class TestNnOpsGpuKernels:
         assert torch.allclose(out_gpu.cpu(), out_cpu, atol=1e-5)
 
 
+@pytest.mark.xdist_group("triton_gpu")
 class TestPersistenceGpuKernels:
     """Tests that exercise _pixel_kernel and _pair_kernel."""
 
