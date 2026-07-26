@@ -167,6 +167,6 @@ Pynerve implements two parallel persistence reducers that trade determinism for 
 
 Both parallel reducers produce **valid persistence diagrams** -- the (birth, death, dim) pairs are topologically correct for the filtration -- but the specific pairings differ from the sequential algorithm's output and may differ across runs. This is a known property of parallel persistence reduction (Morozov & Nigmetov 2019): racing pivot claims produce different but valid pairings.
 
-The lockfree reducer achieves perfect count-level accuracy because its post-pass works on **shared mutable final state** (all workers join before the cascade). The GPU reducer has a ~0.22% count-level residual because `d_reduced` contains **mid-reduction snapshots** captured while other warps were still racing, making the cascade non-deterministic. See [GPU Determinism](../reference/correctness_detail/gpu_determinism.md) for details.
+The lockfree reducer achieves perfect count-level accuracy because its post-pass works on **shared mutable final state** (all workers join before the cascade). The GPU reducer has a ~0.22% count-level residual because `d_reduced` contains **mid-reduction snapshots** captured while other warps were still racing, making the cascade non-deterministic. See [GPU Determinism](../../reference/correctness_detail/gpu_determinism.md) for details.
 
 <- [Standard Reduction Overview](index.md)
