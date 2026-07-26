@@ -102,10 +102,17 @@ python -m pytest tests/python/ \
     --ignore=tests/python/test_memory_spectral_sheaf.py \
     --ignore=tests/python/test_memory_pool.py \
     --ignore=tests/python/test_triton_gpu_kernels.py \
+    --ignore=tests/python/test_triton_cpu_fallback.py \
+    --ignore=tests/python/test_triton_mapper_edge.py \
+    --ignore=tests/python/test_triton_persistence_edge.py \
     --cov=python/pynerve --cov-branch --cov-report= \
     2>&1 | tee /work/pradip0/Comp/Pynerve/coverage_test_results.log
-# Run triton GPU kernel tests serially (needs exclusive GPU access)
+# Run triton tests serially (GPU kernels need exclusive GPU access,
+# and triton module imports must not race with xdist workers)
 python -m pytest tests/python/test_triton_gpu_kernels.py \
+    tests/python/test_triton_cpu_fallback.py \
+    tests/python/test_triton_mapper_edge.py \
+    tests/python/test_triton_persistence_edge.py \
     -q --tb=line -p no:warnings \
     --timeout=120 \
     --cov=python/pynerve --cov-branch --cov-append --cov-report= \
