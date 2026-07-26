@@ -1,4 +1,4 @@
-"""Tests for pynerve/random.py — PRNGKey, global RNG state, reproducible context, samplers."""
+"""Tests for pynerve/random.py -- PRNGKey, global RNG state, reproducible context, samplers."""
 
 from __future__ import annotations
 

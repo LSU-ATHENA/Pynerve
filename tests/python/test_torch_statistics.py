@@ -1,4 +1,4 @@
-"""Tests for torch/_statistics_core.py — statistical descriptors for persistence diagrams."""
+"""Tests for torch/_statistics_core.py -- statistical descriptors for persistence diagrams."""
 
 from __future__ import annotations
 

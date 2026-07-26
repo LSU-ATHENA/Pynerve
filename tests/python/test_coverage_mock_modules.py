@@ -1,4 +1,4 @@
-"""Mock-based coverage tests — exercises module imports, class definitions, constructors for 0% modules.
+"""Mock-based coverage tests -- exercises module imports, class definitions, constructors for 0% modules.
 
 Uses unittest.mock to bypass GPU/CuPy/triton/numba/C++ extension dependencies.
 Fixtures are scoped to this module only to prevent polluting other tests.

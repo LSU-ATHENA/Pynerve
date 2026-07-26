@@ -51,7 +51,7 @@ def _mock_persistence_fn(diagrams):
 # ── StabilityRegularizer ────────────────────────────────────────────────
 
 class TestStabilityRegularizer:
-    """Covers training/_stability_regularizer.py — 116 missed, 18%."""
+    """Covers training/_stability_regularizer.py -- 116 missed, 18%."""
 
     def test_construct_defaults(self):
         from pynerve.training._stability_regularizer import StabilityRegularizer
@@ -135,7 +135,7 @@ class TestStabilityRegularizer:
 # ── BettiNumberLoss / DiagramComplexityLoss ──────────────────────────────
 
 class TestDiffLossModules:
-    """Covers diff/_loss_modules.py — 78 missed, 26%."""
+    """Covers diff/_loss_modules.py -- 78 missed, 26%."""
 
     def test_betti_number_loss_construct(self):
         from pynerve.diff._loss_modules import BettiNumberLoss
@@ -215,7 +215,7 @@ class TestDiffLossModules:
 # ── Curriculum ───────────────────────────────────────────────────────────
 
 class TestCurriculum:
-    """Covers training/curriculum.py — 85 missed, 35%."""
+    """Covers training/curriculum.py -- 85 missed, 35%."""
 
     def test_config_defaults(self):
         from pynerve.training.curriculum import CurriculumConfig
@@ -317,7 +317,7 @@ class TestCurriculum:
 # ── MultiTaskTopologySSL ─────────────────────────────────────────────────
 
 class TestMultitaskSSL:
-    """Covers ssl/_multitask.py — 53 missed, 27%."""
+    """Covers ssl/_multitask.py -- 53 missed, 27%."""
 
     def test_construct_simple_encoder(self):
         from pynerve.ssl._multitask import MultiTaskTopologySSL
@@ -365,7 +365,7 @@ class TestMultitaskSSL:
 # ── Additional torch module edge coverage ────────────────────────────────
 
 class TestTorchBackendEdge:
-    """Edge coverage for torch/_backend.py — 60 missed, 52%."""
+    """Edge coverage for torch/_backend.py -- 60 missed, 52%."""
 
     def test_import(self):
         import pynerve.torch._backend as mod
@@ -399,7 +399,7 @@ class TestTorchBackendEdge:
 
 
 class TestTorchPersistenceCoreEdge:
-    """Edge coverage for torch/_persistence_core_impl.py — 123 missed, 24%."""
+    """Edge coverage for torch/_persistence_core_impl.py -- 123 missed, 24%."""
 
     def test_import(self):
         import pynerve.torch._persistence_core_impl as mod
@@ -420,7 +420,7 @@ class TestTorchPersistenceCoreEdge:
 
 
 class TestTorchDistanceCoreEdge:
-    """Edge coverage for torch/_distance_core_impl.py — 80 missed, 59%."""
+    """Edge coverage for torch/_distance_core_impl.py -- 80 missed, 59%."""
 
     def test_import(self):
         import pynerve.torch._distance_core_impl as mod
@@ -450,7 +450,7 @@ class TestTorchDistanceCoreEdge:
 
 
 class TestTorchPersistenceVrEdge:
-    """Edge coverage for torch/_persistence_vr.py — 45 missed, 56%."""
+    """Edge coverage for torch/_persistence_vr.py -- 45 missed, 56%."""
 
     def test_import(self):
         import pynerve.torch._persistence_vr as mod
@@ -472,7 +472,7 @@ class TestTorchPersistenceVrEdge:
 
 
 class TestTorchMapperEdge:
-    """Edge coverage for torch/mapper.py — 56 missed, 62%."""
+    """Edge coverage for torch/mapper.py -- 56 missed, 62%."""
 
     def test_import(self):
         import pynerve.torch.mapper as mod

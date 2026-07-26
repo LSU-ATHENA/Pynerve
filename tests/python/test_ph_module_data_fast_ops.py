@@ -21,7 +21,7 @@ torch = pytest.importorskip("torch")
 
 
 class TestPersistentHomologyModule:
-    """Covers nn/_ph_module.py — PersistentHomology."""
+    """Covers nn/_ph_module.py -- PersistentHomology."""
 
     def test_construct(self):
         from pynerve.nn.persistent_homology import PersistentHomology
@@ -137,7 +137,7 @@ class TestPersistentHomologyModule:
 
 
 class TestFastOps:
-    """Covers fast_ops.py — NumPy-based topology operations."""
+    """Covers fast_ops.py -- NumPy-based topology operations."""
 
     def test_pairwise_distances(self):
         from pynerve.fast_ops import pairwise_distances
@@ -342,7 +342,7 @@ class TestFastOps:
 
 
 class TestTorchData:
-    """Covers torch/data.py — datasets, collation, dataloader."""
+    """Covers torch/data.py -- datasets, collation, dataloader."""
 
     def test_collate_diagrams_empty(self):
         from pynerve.torch.data import collate_diagrams
@@ -456,7 +456,7 @@ class TestTorchData:
 
 
 class TestBuildingBlocks:
-    """Covers nn/building_blocks.py — import and basic construction."""
+    """Covers nn/building_blocks.py -- import and basic construction."""
 
     def test_import(self):
         import pynerve.nn.building_blocks as mod

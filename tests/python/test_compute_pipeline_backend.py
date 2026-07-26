@@ -1,4 +1,4 @@
-"""Tests for pynerve/_compute_pipeline.py and _compute_backend.py — pipeline helpers, backend dispatch."""
+"""Tests for pynerve/_compute_pipeline.py and _compute_backend.py -- pipeline helpers, backend dispatch."""
 
 from __future__ import annotations
 

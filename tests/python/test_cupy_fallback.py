@@ -1,4 +1,4 @@
-"""Tests for cupy modules — validation, no-cupy fallback, and error handling.
+"""Tests for cupy modules -- validation, no-cupy fallback, and error handling.
 
 When HAS_CUPY is False (no GPU/cupy installed), all cupy modules
 raise RuntimeError or fall back to NumPy/host computation.
@@ -36,7 +36,7 @@ def _force_no_cupy():
 
 class TestCuPyPersistenceInit:
     def test_init_no_cupy_succeeds(self):
-        """CuPyPersistence.__init__ does not raise when cupy is absent —
+        """CuPyPersistence.__init__ does not raise when cupy is absent --
         it just skips the GPU device setup.  The RuntimeError is raised
         by individual methods, not the constructor."""
         from pynerve._cupy_persistence import CuPyPersistence

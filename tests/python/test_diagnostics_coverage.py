@@ -1,4 +1,4 @@
-"""Tests for diagnostics.py — DiagnosticsCollector, DiagnosticInfo, verbose."""
+"""Tests for diagnostics.py -- DiagnosticsCollector, DiagnosticInfo, verbose."""
 
 from __future__ import annotations
 

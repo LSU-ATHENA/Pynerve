@@ -1,4 +1,4 @@
-"""Tests for torch/viz_impl.py and torch/_viz_data.py — viz data converters."""
+"""Tests for torch/viz_impl.py and torch/_viz_data.py -- viz data converters."""
 
 from __future__ import annotations
 

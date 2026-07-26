@@ -1,4 +1,4 @@
-"""Edge case tests for _validation/_geometric.py — validate_shape, validate_device_spec, validate_shape_tuple."""
+"""Edge case tests for _validation/_geometric.py -- validate_shape, validate_device_spec, validate_shape_tuple."""
 
 from __future__ import annotations
 

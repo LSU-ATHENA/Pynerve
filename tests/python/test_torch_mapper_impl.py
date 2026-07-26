@@ -1,4 +1,4 @@
-"""Tests for torch/_mapper_impl.py — pure-Python Mapper filters, clustering, cover, edges."""
+"""Tests for torch/_mapper_impl.py -- pure-Python Mapper filters, clustering, cover, edges."""
 
 from __future__ import annotations
 

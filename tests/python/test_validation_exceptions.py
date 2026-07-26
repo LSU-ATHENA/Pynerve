@@ -1,4 +1,4 @@
-"""Tests for exceptions/_validation.py — ValidationError hierarchy."""
+"""Tests for exceptions/_validation.py -- ValidationError hierarchy."""
 
 from __future__ import annotations
 

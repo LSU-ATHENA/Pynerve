@@ -1,4 +1,4 @@
-"""Tests for pynerve/_formats_files.py — CSV, JSON, OFF, PLY loaders/savers."""
+"""Tests for pynerve/_formats_files.py -- CSV, JSON, OFF, PLY loaders/savers."""
 
 from __future__ import annotations
 

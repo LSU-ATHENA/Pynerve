@@ -1,4 +1,4 @@
-"""Additional tests for _utils.py — tensor validation, device matching, dtype checks."""
+"""Additional tests for _utils.py -- tensor validation, device matching, dtype checks."""
 
 from __future__ import annotations
 

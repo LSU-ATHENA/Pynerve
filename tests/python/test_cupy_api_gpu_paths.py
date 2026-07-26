@@ -1,4 +1,4 @@
-"""Tests for _cupy_api.py — HAS_CUPY=True GPU paths.
+"""Tests for _cupy_api.py -- HAS_CUPY=True GPU paths.
 
 Complements test_cupy_fallback.py (which tests HAS_CUPY=False).
 Tests the cupy-enabled branches in _validate_point_cloud, compute_diagrams_cupy,
@@ -39,7 +39,7 @@ class TestValidatePointCloudCupy:
         cupy_arr.ndim = 2
         cupy_arr.shape = (3, 2)
         cupy_arr.dtype = np.float32
-        del cupy_arr.get  # no .get() method → falls through to cp.asarray branch
+        del cupy_arr.get  # no .get() method -> falls through to cp.asarray branch
 
         # The cupy branch needs HAS_CUPY=True and cp.isfinite to return True
         from pynerve import _cupy_api as api_mod
@@ -104,7 +104,7 @@ class TestValidatePointCloudsCupy:
         from pynerve._cupy_api import _validate_point_clouds
         from pynerve.exceptions import ValidationError
 
-        bad_cloud = np.empty((0, 2))  # empty → rejected
+        bad_cloud = np.empty((0, 2))  # empty -> rejected
         with pytest.raises(ValidationError, match="non-empty"):
             _validate_point_clouds([bad_cloud])
 

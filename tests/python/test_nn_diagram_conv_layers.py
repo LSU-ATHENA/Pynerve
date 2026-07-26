@@ -1,4 +1,4 @@
-"""Tests for nn/_diagram_conv_layers.py — DiagramConv1D, DiagramDeepSet, validators."""
+"""Tests for nn/_diagram_conv_layers.py -- DiagramConv1D, DiagramDeepSet, validators."""
 
 from __future__ import annotations
 

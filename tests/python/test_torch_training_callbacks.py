@@ -1,4 +1,4 @@
-"""Tests for torch/_training_callbacks.py — TopologicalEarlyStopping and DiagramVisualizationCallback."""
+"""Tests for torch/_training_callbacks.py -- TopologicalEarlyStopping and DiagramVisualizationCallback."""
 
 from __future__ import annotations
 
@@ -139,7 +139,7 @@ class TestTopologicalEarlyStopping:
         es = TopologicalEarlyStopping(patience=3, mode="increase", min_delta=100.0)
         for _ in range(5):
             stop = es(d)
-        assert stop  # no increase → counter grows
+        assert stop  # no increase -> counter grows
 
     def test_decrease_mode(self):
         d = torch.tensor([[0.0, 1.0, 0]], dtype=torch.float32)

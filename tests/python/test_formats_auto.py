@@ -1,4 +1,4 @@
-"""Tests for _formats_auto.py — auto-detection of diagram and point-cloud file formats."""
+"""Tests for _formats_auto.py -- auto-detection of diagram and point-cloud file formats."""
 
 from __future__ import annotations
 

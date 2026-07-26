@@ -1,4 +1,4 @@
-# Actions Runner Controller (ARC) — GPU Runner Scale Set
+# Actions Runner Controller (ARC) -- GPU Runner Scale Set
 # Deploy with:
 #   helm repo add actions-runner-controller https://actions-runner-controller.github.io/helm-charts
 #   helm upgrade --install arc-runner-set \
@@ -58,7 +58,7 @@ template:
           - name: CTEST_PARALLEL_LEVEL
             value: "4"
 
-    # Ephemeral runner — self-destructs after one job for security and clean state
+    # Ephemeral runner -- self-destructs after one job for security and clean state
     ephemeral: true
 
 # Docker-in-Docker for containerized builds (optional)

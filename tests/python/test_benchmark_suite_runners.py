@@ -1,4 +1,4 @@
-"""Tests for benchmark/_suite.py — run_full_benchmark_suite, run_full_cross_comparison, and helpers.
+"""Tests for benchmark/_suite.py -- run_full_benchmark_suite, run_full_cross_comparison, and helpers.
 
 All benchmark functions are mocked so tests verify orchestration logic, not real computations.
 """

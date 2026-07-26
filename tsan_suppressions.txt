@@ -14,7 +14,7 @@
 # Pattern format: tsan substring-matches against demangled function names.
 # Use * for wildcard matching to cover template instantiations.
 
-# ── Distance matrix / KNN computations ──────────────────────────────
+# -- Distance matrix / KNN computations ------------------------------
 # OpenMP-parallel Euclidean distance matrix (DistanceMatrixComputer::compute_euclidean)
 # OpenMP-parallel SIMD distance matrix (DistanceMatrixComputer::compute_euclidean_simd)
 # Each thread computes distances for a distinct row/query, writing to non-overlapping regions.
@@ -33,21 +33,21 @@ race:computeBatchDistances
 race:computeCrossDistances
 race:computeDistanceMatrix
 
-# Tile streaming merge — hash-based dedup (single-threaded via future collection)
+# Tile streaming merge -- hash-based dedup (single-threaded via future collection)
 race:mergeResults
 
-# ── Mapper filter computations ──────────────────────────────────────
+# -- Mapper filter computations --------------------------------------
 # OpenMP-parallel DensityFilter::apply, EccentricityFilter::apply,
 # and PCAFilter::apply (algorithms/mapper_filters.cpp)
 # Each thread evaluates the filter on a distinct point range.
 race:*Filter*apply*
 
-# ── DMT / Morse theory ─────────────────────────────────────────────
+# -- DMT / Morse theory ---------------------------------------------
 # OpenMP-parallel Morse pair finding (ParallelMorsePairFinder::Impl::findMorsePairs)
 # Each thread processes a distinct simplex range.
 race:*findMorsePairs*
 
-# ── Sheaf construction ─────────────────────────────────────────────
+# -- Sheaf construction ---------------------------------------------
 # OpenMP-parallel stalk initialization (ParallelSheafBuilder::initializeStalks)
 # OpenMP-parallel edge counting (ParallelSheafBuilder::countRestrictionEdges)
 # Threads operate on disjoint stalk indices.
@@ -55,7 +55,7 @@ race:*countRestrictionEdges*
 race:*initializeStalks*
 race:*StalkSpatialHash*
 
-# ── Vietoris-Rips filtration ───────────────────────────────────────
+# -- Vietoris-Rips filtration ---------------------------------------
 # OpenMP-parallel edge detection (parallelEdgeDetection)
 # OpenMP-parallel VR complex construction (buildParallelVRComplex)
 # Threads operate on disjoint vertex ranges and use per-thread edge lists.
@@ -65,19 +65,19 @@ race:*buildParallelVRComplex*
 # Legacy patterns for filtration construction
 race:constructVietorisRipsParallel
 
-# ── Tile streaming PH ──────────────────────────────────────────────
+# -- Tile streaming PH ----------------------------------------------
 # OpenMP-parallel tile PH computation (computeTiledPH)
 # Each tile is processed independently.
 race:*computeTiledPH*
 
-# ── Thread pool ────────────────────────────────────────────────────
+# -- Thread pool ----------------------------------------------------
 # ThreadPool destructor races with worker threads on shutdown.
 # The vector<std::function> is cleaned up while workers may still
-# access it. This is benign — the pool ensures all tasks complete
+# access it. This is benign -- the pool ensures all tasks complete
 # before teardown, but tsan can't track the implicit synchronization.
 race:*ThreadPool*~*
 
-# ── Other OpenMP-parallel computations ──────────────────────────────
+# -- Other OpenMP-parallel computations ------------------------------
 # Bottleneck distance (metrics/bottleneck/)
 race:computeBottleneckDistance
 

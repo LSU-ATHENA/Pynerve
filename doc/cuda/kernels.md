@@ -103,7 +103,7 @@ Cross-warp column accumulation uses a fixed-order shared-memory tree rather
 than atomicCAS, ensuring bitwise reproducibility:
 
 ```
-Phase 1: Each warp writes its partial result to shared memory
+Each warp writes its partial result to shared memory
 
  Warp 0 ──-> [ shmem[0] ]
  Warp 1 ──-> [ shmem[1] ]
@@ -111,15 +111,15 @@ Phase 1: Each warp writes its partial result to shared memory
  Warp 3 ──-> [ shmem[3] ]
   ...           ...
 
-Phase 2: Synchronize; tree-reduce pairs in shared memory
+Synchronize; tree-reduce pairs in shared memory
 
- shmem[0] ──╮
-             ├──-> pair reduce ──╮
- shmem[1] ──╯                   │
+ shmem[0] ──+
+             ├──-> pair reduce ──+
+ shmem[1] ──+                   │
                                 ├──-> Final Reduction Result
- shmem[2] ──╮                   │
-             ├──-> pair reduce ──╯
- shmem[3] ──╯
+ shmem[2] ──+                   │
+             ├──-> pair reduce ──+
+ shmem[3] ──+
 
 Bitwise reproducible  --  fixed reduction tree, no atomicCAS
 ```

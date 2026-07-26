@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-# No mock_gpu_deps — numba tests need real numba or the fallback shim, not a MagicMock
+# No mock_gpu_deps -- numba tests need real numba or the fallback shim, not a MagicMock
 
 
 class TestNumbaCompat:

@@ -18,7 +18,7 @@ torch = pytest.importorskip("torch")
 
 
 class TestTopologyLoss:
-    """Covers diff/_composite_loss.py — TopologyLoss."""
+    """Covers diff/_composite_loss.py -- TopologyLoss."""
 
     def test_construct(self):
         from pynerve.diff._composite_loss import TopologyLoss
@@ -83,7 +83,7 @@ class TestTopologyLoss:
 
 
 class TestPipeline:
-    """Covers _pipeline_core.py — Pipeline."""
+    """Covers _pipeline_core.py -- Pipeline."""
 
     def test_construct_empty(self):
         from pynerve._pipeline_core import Pipeline
@@ -238,7 +238,7 @@ class TestPipeline:
 
 
 class TestValidateRepresentations:
-    """Covers _pipeline_core.py — _validate_representations."""
+    """Covers _pipeline_core.py -- _validate_representations."""
 
     def test_valid(self):
         from pynerve._pipeline_core import _validate_representations

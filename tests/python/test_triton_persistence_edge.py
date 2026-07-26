@@ -133,7 +133,7 @@ class TestPersistenceImageEdge:
         from pynerve.triton._persistence import persistence_image_from_diagram
 
         births = torch.tensor([1.0], dtype=torch.float32)
-        deaths = torch.tensor([0.5], dtype=torch.float32)  # death < birth → invalid
+        deaths = torch.tensor([0.5], dtype=torch.float32)  # death < birth -> invalid
         img = persistence_image_from_diagram(births, deaths, resolution=8)
         assert img.shape == (8, 8)
         assert img.sum() == 0.0
@@ -158,9 +158,9 @@ class TestPersistenceImageEdge:
     def test_select_strategy_boundary(self):
         from pynerve.triton._persistence import _select_strategy
 
-        # n_pairs == resolution^2 → pair strategy
+        # n_pairs == resolution^2 -> pair strategy
         assert _select_strategy(4096, 64) == "pair"  # 64*64 = 4096
-        # n_pairs > resolution^2 → pixel strategy
+        # n_pairs > resolution^2 -> pixel strategy
         assert _select_strategy(4097, 64) == "pixel"
 
     def test_falls_back_with_warning(self):

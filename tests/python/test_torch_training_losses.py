@@ -1,4 +1,4 @@
-"""Tests for torch/training_utils_impl.py — loss functions and validators."""
+"""Tests for torch/training_utils_impl.py -- loss functions and validators."""
 
 from __future__ import annotations
 
@@ -169,7 +169,7 @@ class TestTopologicalRegularization:
             target_complexity={"h0_count": 100.0}, weights={"h0_count": 1.0}
         )
         result = reg(d)
-        # 2 features vs target 100 → l2 penalty: (2-100)^2 = 9604
+        # 2 features vs target 100 -> l2 penalty: (2-100)^2 = 9604
         assert result.item() == pytest.approx(9604.0)
 
 

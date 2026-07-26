@@ -1,4 +1,4 @@
-"""Tests for _validation/_geometric.py — remaining edge cases."""
+"""Tests for _validation/_geometric.py -- remaining edge cases."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Tests for nn/_diagram_attention.py — DiagramMultiHeadAttention, DiagramTransformerBlock."""
+"""Tests for nn/_diagram_attention.py -- DiagramMultiHeadAttention, DiagramTransformerBlock."""
 
 from __future__ import annotations
 
@@ -125,7 +125,7 @@ class TestDiagramMultiHeadAttention:
         mha = DiagramMultiHeadAttention(d_model=16, num_heads=4, dropout=0.0)
         d = make_diag_batched(5, batch=2)
         feats = torch.rand(2, 5, 16)
-        # Both on CPU — should work, not raise
+        # Both on CPU -- should work, not raise
         result = mha(d, feats)
         assert result.shape == (2, 5, 16)
 
@@ -152,7 +152,7 @@ class TestDiagramMultiHeadAttention:
         mha = DiagramMultiHeadAttention(d_model=16, num_heads=4, dropout=0.0)
         d = make_diag_batched(5, batch=2)
         feats = torch.rand(2, 5, 16)
-        # All-zero mask — no attention target per row
+        # All-zero mask -- no attention target per row
         mask = torch.zeros(2, 5)
         with pytest.raises(ValueError, match="at least one"):
             mha(d, feats, mask=mask)

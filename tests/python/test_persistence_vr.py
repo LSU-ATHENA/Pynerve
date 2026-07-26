@@ -1,4 +1,4 @@
-"""Tests for pynerve/torch/_persistence_vr.py — VR persistence validation and autograd function."""
+"""Tests for pynerve/torch/_persistence_vr.py -- VR persistence validation and autograd function."""
 
 from __future__ import annotations
 

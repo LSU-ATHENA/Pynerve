@@ -27,7 +27,7 @@ def _try(fn):
 # ── Cache Engine Deep Tests ──────────────────────────────────────────────
 
 class TestCacheEngineDeep:
-    """Covers cache/_engine.py — 163 stmts, 26% (push to 60%+)."""
+    """Covers cache/_engine.py -- 163 stmts, 26% (push to 60%+)."""
 
     def test_import(self):
         import pynerve.cache._engine as mod

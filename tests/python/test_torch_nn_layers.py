@@ -1,4 +1,4 @@
-"""Tests for torch/nn_layers_impl.py — pure-CPU nn.Module classes.
+"""Tests for torch/nn_layers_impl.py -- pure-CPU nn.Module classes.
 
 Tests modules that don't require C++ extensions: DiagramPooling,
 PersistenceReadout, and their validation helpers.

@@ -1,4 +1,4 @@
-"""Tests for torch/mapper.py — mapper, MapperTransformer, validators."""
+"""Tests for torch/mapper.py -- mapper, MapperTransformer, validators."""
 
 from __future__ import annotations
 
@@ -204,7 +204,7 @@ class TestMapperTransformer:
         assert assignments[2] == 2  # [10.2,9.8] closest to node 2 at [10,10]
 
     def test_transform_identity_filter(self):
-        """Test transform() with identity filter — filter values are X[:, :2] directly."""
+        """Test transform() with identity filter -- filter values are X[:, :2] directly."""
         from pynerve.torch.mapper import MapperTransformer
 
         t = MapperTransformer(filter_function="identity", cover_resolution=5)
@@ -227,7 +227,7 @@ class TestMapperTransformer:
         assert assignments[1] == 20
 
     def test_transform_pca_1d_filter(self):
-        """Test transform() with pca_1d filter — 1D filter values."""
+        """Test transform() with pca_1d filter -- 1D filter values."""
         from pynerve.torch.mapper import MapperTransformer
 
         t = MapperTransformer(filter_function="pca_1d", cover_resolution=5)

@@ -1,4 +1,4 @@
-"""Tests for benchmark/_compare_external.py — external benchmark comparison functions."""
+"""Tests for benchmark/_compare_external.py -- external benchmark comparison functions."""
 
 from __future__ import annotations
 

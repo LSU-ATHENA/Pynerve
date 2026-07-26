@@ -23,7 +23,7 @@ torch = pytest.importorskip("torch")
 
 
 class TestFeaturePersistenceTracker:
-    """Covers regularization/persistent_dropout.py — FeaturePersistenceTracker."""
+    """Covers regularization/persistent_dropout.py -- FeaturePersistenceTracker."""
 
     def test_construct(self):
         from pynerve.regularization.persistent_dropout import FeaturePersistenceTracker
@@ -91,7 +91,7 @@ class TestFeaturePersistenceTracker:
 
 
 class TestAdaptivePersistentDropout:
-    """Covers regularization/persistent_dropout.py — AdaptivePersistentDropout."""
+    """Covers regularization/persistent_dropout.py -- AdaptivePersistentDropout."""
 
     def test_construct(self):
         from pynerve.regularization.persistent_dropout import AdaptivePersistentDropout
@@ -157,7 +157,7 @@ class TestAdaptivePersistentDropout:
 
 
 class TestMultiScalePersistentDropout:
-    """Covers regularization/persistent_dropout.py — MultiScalePersistentDropout."""
+    """Covers regularization/persistent_dropout.py -- MultiScalePersistentDropout."""
 
     def test_construct(self):
         from pynerve.regularization.persistent_dropout import MultiScalePersistentDropout
@@ -205,7 +205,7 @@ class TestMultiScalePersistentDropout:
 
 
 class TestStructuredPersistentDropout:
-    """Covers regularization/persistent_dropout.py — StructuredPersistentDropout."""
+    """Covers regularization/persistent_dropout.py -- StructuredPersistentDropout."""
 
     def test_construct(self):
         from pynerve.regularization.persistent_dropout import StructuredPersistentDropout
@@ -235,7 +235,7 @@ class TestStructuredPersistentDropout:
 
 
 class TestCurricularPersistentDropout:
-    """Covers regularization/persistent_dropout.py — CurricularPersistentDropout."""
+    """Covers regularization/persistent_dropout.py -- CurricularPersistentDropout."""
 
     def test_construct(self):
         from pynerve.regularization.persistent_dropout import CurricularPersistentDropout
@@ -299,7 +299,7 @@ class TestCurricularPersistentDropout:
 
 
 class TestPRNGKey:
-    """Covers random.py — PRNGKey, seed, manual_seed, split, etc."""
+    """Covers random.py -- PRNGKey, seed, manual_seed, split, etc."""
 
     def test_construct(self):
         from pynerve.random import PRNGKey
@@ -428,7 +428,7 @@ class TestPRNGKey:
 
 
 class TestGlobalRNG:
-    """Covers random.py — seed, manual_seed, key, split, next_key, ReproducibleContext."""
+    """Covers random.py -- seed, manual_seed, key, split, next_key, ReproducibleContext."""
 
     def test_seed(self):
         from pynerve.random import seed, key
@@ -479,7 +479,7 @@ class TestGlobalRNG:
 
 
 class TestPersistenceStabilityLoss:
-    """Covers training/_stability_training.py — PersistenceStabilityLoss."""
+    """Covers training/_stability_training.py -- PersistenceStabilityLoss."""
 
     def test_construct(self):
         from pynerve.training._stability_training import PersistenceStabilityLoss
@@ -517,7 +517,7 @@ class TestPersistenceStabilityLoss:
 
 
 class TestInterleavingRegularizer:
-    """Covers training/_stability_training.py — InterleavingRegularizer."""
+    """Covers training/_stability_training.py -- InterleavingRegularizer."""
 
     def test_construct(self):
         from pynerve.training._stability_training import InterleavingRegularizer
@@ -545,7 +545,7 @@ class TestInterleavingRegularizer:
 
 
 class TestCoherentPerturbationSampler:
-    """Covers training/_stability_training.py — CoherentPerturbationSampler."""
+    """Covers training/_stability_training.py -- CoherentPerturbationSampler."""
 
     def test_construct_default(self):
         from pynerve.training._stability_training import CoherentPerturbationSampler
@@ -629,7 +629,7 @@ class TestCoherentPerturbationSampler:
 
 
 class TestMorseRegularizer:
-    """Covers regularization/_topology_regularizers.py — MorseRegularizer."""
+    """Covers regularization/_topology_regularizers.py -- MorseRegularizer."""
 
     def test_construct(self):
         from pynerve.regularization._topology_regularizers import MorseRegularizer
@@ -675,7 +675,7 @@ class TestMorseRegularizer:
 
 
 class TestHomotopyRegularizer:
-    """Covers regularization/_topology_regularizers.py — HomotopyRegularizer."""
+    """Covers regularization/_topology_regularizers.py -- HomotopyRegularizer."""
 
     def test_construct(self):
         from pynerve.regularization._topology_regularizers import HomotopyRegularizer
@@ -709,7 +709,7 @@ class TestHomotopyRegularizer:
 
 
 class TestBettiConstraintLayer:
-    """Covers regularization/_topology_regularizers.py — BettiConstraintLayer."""
+    """Covers regularization/_topology_regularizers.py -- BettiConstraintLayer."""
 
     def test_construct(self):
         from pynerve.regularization._topology_regularizers import BettiConstraintLayer
@@ -751,7 +751,7 @@ class TestBettiConstraintLayer:
 
 
 class TestTopologicalSmoothness:
-    """Covers regularization/_topology_regularizers.py — TopologicalSmoothness."""
+    """Covers regularization/_topology_regularizers.py -- TopologicalSmoothness."""
 
     def test_construct(self):
         from pynerve.regularization._topology_regularizers import TopologicalSmoothness
@@ -794,7 +794,7 @@ class TestTopologicalSmoothness:
 
 
 class TestCurriculumConfig:
-    """Covers training/curriculum.py — CurriculumConfig and ComplexityMeasure."""
+    """Covers training/curriculum.py -- CurriculumConfig and ComplexityMeasure."""
 
     def test_default_config(self):
         from pynerve.training.curriculum import CurriculumConfig
@@ -854,7 +854,7 @@ class TestCurriculumConfig:
 
 
 class TestRobustTopologyTraining:
-    """Covers training/_stability_training.py — RobustTopologyTraining."""
+    """Covers training/_stability_training.py -- RobustTopologyTraining."""
 
     def test_construct(self):
         from pynerve.training._stability_training import RobustTopologyTraining

@@ -21,7 +21,7 @@ torch = pytest.importorskip("torch")
 
 
 class TestPersistenceCoreImpl:
-    """Covers torch/_persistence_core_impl.py — 123 missed, 24%."""
+    """Covers torch/_persistence_core_impl.py -- 123 missed, 24%."""
 
     def test_persistence_result_dataclass(self):
         from pynerve.torch._persistence_core_impl import PersistenceResult
@@ -169,7 +169,7 @@ class TestPersistenceCoreImpl:
 # ── Distance Core Impl ────────────────────────────────────────────────────
 
 class TestDistanceCoreImpl:
-    """Covers torch/_distance_core_impl.py — 80 missed, 59%."""
+    """Covers torch/_distance_core_impl.py -- 80 missed, 59%."""
 
     def test_wasserstein_construct(self):
         from pynerve.torch._distance_core_impl import WassersteinDistance
@@ -295,7 +295,7 @@ class TestDistanceCoreImpl:
 # ── Formats ────────────────────────────────────────────────────────────────
 
 class TestFormatsLoadSave:
-    """Covers formats.py — 33 missed, 19%."""
+    """Covers formats.py -- 33 missed, 19%."""
 
     def test_load_diagrams_csv(self):
         from pynerve.formats import load_diagrams
@@ -392,7 +392,7 @@ class TestFormatsLoadSave:
 # ── Stratified & Multiscale Samplers ──────────────────────────────────────
 
 class TestStratifiedSampler:
-    """Covers training/_stratified.py — 43 missed, 18%."""
+    """Covers training/_stratified.py -- 43 missed, 18%."""
 
     def test_construct(self):
         from pynerve.training._stratified import PersistenceStratifiedSampler
@@ -437,7 +437,7 @@ class TestStratifiedSampler:
 
 
 class TestMultiscaleSampler:
-    """Covers training/_multiscale.py — 37 missed, 20%."""
+    """Covers training/_multiscale.py -- 37 missed, 20%."""
 
     def test_construct(self):
         from pynerve.training._multiscale import MultiScaleTopologySampler
@@ -514,7 +514,7 @@ class TestSSLModules:
 # ── Mapper GNN & Curriculum Trainer ────────────────────────────────────────
 
 class TestMapperGNN:
-    """Covers mapper/_gnn_classifier.py — 56 missed, 15%."""
+    """Covers mapper/_gnn_classifier.py -- 56 missed, 15%."""
 
     def test_import(self):
         import pynerve.mapper._gnn_classifier as mod
@@ -527,7 +527,7 @@ class TestMapperGNN:
 
 
 class TestCurriculumTrainer:
-    """Covers training/_curriculum_trainer.py — 71 missed, 13%."""
+    """Covers training/_curriculum_trainer.py -- 71 missed, 13%."""
 
     def test_import(self):
         import pynerve.training._curriculum_trainer as mod
@@ -542,7 +542,7 @@ class TestCurriculumTrainer:
 # ── Diff ph_layer_module ───────────────────────────────────────────────────
 
 class TestDiffPhLayer:
-    """Covers diff/ph_layer_module.py — 50 missed, 38%."""
+    """Covers diff/ph_layer_module.py -- 50 missed, 38%."""
 
     def test_import(self):
         import pynerve.diff.ph_layer_module as mod

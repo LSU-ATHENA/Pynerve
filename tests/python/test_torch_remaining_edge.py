@@ -10,7 +10,7 @@ from torch import Tensor
 
 
 class TestBackendDispatch:
-    """torch/_backend.py — 33%, get basic dispatcher and context."""
+    """torch/_backend.py -- 33%, get basic dispatcher and context."""
 
     def test_import(self):
         from pynerve.torch._backend import BackendDispatcher, BackendContext, backend
@@ -44,7 +44,7 @@ class TestBackendDispatch:
 
 
 class TestKernelsPairwise:
-    """torch/_kernels_pairwise.py — 77%, test additional kernel types."""
+    """torch/_kernels_pairwise.py -- 77%, test additional kernel types."""
 
     def test_linear_kernel(self):
         from pynerve.torch._kernels_pairwise import linear_kernel
@@ -66,7 +66,7 @@ class TestKernelsPairwise:
 
 
 class TestPreprocessingEdge:
-    """torch/preprocessing.py — 97%, cover remaining paths."""
+    """torch/preprocessing.py -- 97%, cover remaining paths."""
 
     def test_handle_infinite_deaths(self):
         from pynerve.torch.preprocessing import handle_infinite_deaths
@@ -106,7 +106,7 @@ class TestPreprocessingEdge:
 
 
 class TestVizDataEdge:
-    """torch/_viz_data.py — 98%, cover remaining paths."""
+    """torch/_viz_data.py -- 98%, cover remaining paths."""
 
     def test_diagram_to_scatter(self):
         from pynerve.torch._viz_data import diagram_to_scatter_data
@@ -146,7 +146,7 @@ class TestVizDataEdge:
 
 
 class TestTensorboardEdge:
-    """torch/tensorboard.py — 96%, cover remaining branches."""
+    """torch/tensorboard.py -- 96%, cover remaining branches."""
 
     def test_log_diagram(self):
         from pynerve.torch.tensorboard import log_diagram
@@ -154,7 +154,7 @@ class TestTensorboardEdge:
 
 
 class TestTrainingCallbacks:
-    """torch/_training_callbacks.py — 95%, exercise callback classes."""
+    """torch/_training_callbacks.py -- 95%, exercise callback classes."""
 
     def test_early_stopping_construct(self):
         from pynerve.torch._training_callbacks import TopologicalEarlyStopping
@@ -168,7 +168,7 @@ class TestTrainingCallbacks:
 
 
 class TestStatisticsCoreEdge:
-    """torch/_statistics_core.py — 96%, cover betti curve and entropy."""
+    """torch/_statistics_core.py -- 96%, cover betti curve and entropy."""
 
     def test_betti_numbers_at_scale(self):
         from pynerve.torch._statistics_core import betti_numbers_at_scale
@@ -192,7 +192,7 @@ class TestStatisticsCoreEdge:
 
 
 class TestNNLayersImplEdge:
-    """torch/nn_layers_impl.py — 90%, construct additional layer types."""
+    """torch/nn_layers_impl.py -- 90%, construct additional layer types."""
 
     def test_topological_feature_extractor(self):
         from pynerve.torch.nn_layers_impl import TopologicalFeatureExtractor
@@ -211,7 +211,7 @@ class TestNNLayersImplEdge:
 
 
 class TestTrainingUtilsEdge:
-    """torch/training_utils_impl.py — 81%, test remaining loss/metric classes."""
+    """torch/training_utils_impl.py -- 81%, test remaining loss/metric classes."""
 
     def test_persistence_cross_entropy(self):
         from pynerve.torch.training_utils_impl import PersistenceCrossEntropy
@@ -234,7 +234,7 @@ class TestTrainingUtilsEdge:
 
 
 class TestDataEdge:
-    """torch/data.py — 97%, cover remaining paths."""
+    """torch/data.py -- 97%, cover remaining paths."""
 
     def test_collate_diagrams(self):
         from pynerve.torch.data import collate_diagrams
@@ -255,7 +255,7 @@ class TestDataEdge:
 
 
 class TestValidationEdge:
-    """_validation modules — push remaining uncovered paths."""
+    """_validation modules -- push remaining uncovered paths."""
 
     def test_validate_bool_false(self):
         from pynerve._validation._scalars import validate_bool

@@ -1,4 +1,4 @@
-"""Tests for torch/_training_metrics.py — DiagramMetric and TopologicalComplexityMetric."""
+"""Tests for torch/_training_metrics.py -- DiagramMetric and TopologicalComplexityMetric."""
 
 from __future__ import annotations
 

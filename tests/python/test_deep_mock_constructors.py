@@ -1,4 +1,4 @@
-"""Deep mock tests — construct NN/training/regularization/diff objects with mocked GPU deps."""
+"""Deep mock tests -- construct NN/training/regularization/diff objects with mocked GPU deps."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ def F(obj, *args):
         return None
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 class TestNnModules:
     def test_diagram_pooling(self):

@@ -1,4 +1,4 @@
-"""Tests for torch/_persistence_helpers.py — edge sorting and diagram assembly."""
+"""Tests for torch/_persistence_helpers.py -- edge sorting and diagram assembly."""
 
 from __future__ import annotations
 

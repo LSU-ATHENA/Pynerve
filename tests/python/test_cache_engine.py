@@ -1,4 +1,4 @@
-"""Tests for cache/_engine.py — DiagramCache and PersistentDiagramCache."""
+"""Tests for cache/_engine.py -- DiagramCache and PersistentDiagramCache."""
 
 from __future__ import annotations
 
@@ -183,7 +183,7 @@ class TestDiagramCacheEviction:
         cache.set_by_key("b", "val_b")
         # Access 'a' to make it recently used
         assert cache.get_by_key("a") == "val_a"
-        # Add third entry — should evict 'b' (LRU)
+        # Add third entry -- should evict 'b' (LRU)
         cache.set_by_key("c", "val_c")
         assert cache.get_by_key("a") == "val_a"
         assert cache.get_by_key("c") == "val_c"

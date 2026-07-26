@@ -1,4 +1,4 @@
-"""Tests for _streaming_persistence.py — StreamingPersistence class."""
+"""Tests for _streaming_persistence.py -- StreamingPersistence class."""
 
 from __future__ import annotations
 

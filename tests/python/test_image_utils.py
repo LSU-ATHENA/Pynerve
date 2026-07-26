@@ -1,4 +1,4 @@
-"""Tests for _image_utils.py — persistence image computation."""
+"""Tests for _image_utils.py -- persistence image computation."""
 
 from __future__ import annotations
 

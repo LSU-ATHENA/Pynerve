@@ -1,4 +1,4 @@
-"""Additional tests for _formats_files.py — file I/O edge cases and error paths."""
+"""Additional tests for _formats_files.py -- file I/O edge cases and error paths."""
 
 from __future__ import annotations
 

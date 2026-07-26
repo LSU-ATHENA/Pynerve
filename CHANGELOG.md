@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.4] — 2026-07-19
+## [1.0.4] -- 2026-07-19
 
 ### Added
 - PyPI platform wheels for Linux (manylinux_2_28), macOS (arm64), and Windows (amd64)
@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Branch protection: CODEOWNERS review required on `main` and `development`
 - CI coverage threshold raised from `--fail-under=5` to `--fail-under=80`
 
-## [1.0.0] — 2026-07-18
+## [1.0.0] -- 2026-07-18
 
 ### Added
 - Initial public release

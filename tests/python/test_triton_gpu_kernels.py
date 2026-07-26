@@ -1,4 +1,4 @@
-"""GPU kernel tests for triton modules — requires CUDA + functional triton.
+"""GPU kernel tests for triton modules -- requires CUDA + functional triton.
 
 These tests exercise the @triton.jit kernel paths that are only accessible
 when _use_triton() returns True (CUDA tensor + triton available + GPU).

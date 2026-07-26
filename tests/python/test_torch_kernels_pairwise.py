@@ -1,4 +1,4 @@
-"""Tests for torch/_kernels_pairwise.py — kernel functions for persistence diagrams."""
+"""Tests for torch/_kernels_pairwise.py -- kernel functions for persistence diagrams."""
 
 from __future__ import annotations
 

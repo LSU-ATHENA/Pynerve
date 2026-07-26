@@ -1,4 +1,4 @@
-"""Tests for pynerve/__init__.py — package init, __getattr__, __version__, cublas config."""
+"""Tests for pynerve/__init__.py -- package init, __getattr__, __version__, cublas config."""
 
 from __future__ import annotations
 

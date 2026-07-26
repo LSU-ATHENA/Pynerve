@@ -1,4 +1,4 @@
-"""Tests for torch/_vectorization_basis.py — persistence images, landscapes, silhouettes."""
+"""Tests for torch/_vectorization_basis.py -- persistence images, landscapes, silhouettes."""
 
 from __future__ import annotations
 

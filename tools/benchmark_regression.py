@@ -45,7 +45,7 @@ def _run(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
 
 
 def _parse_ctest_timing(build_dir: str) -> dict[str, float]:
-    """Extract test name → wall-clock time (seconds) from CTest Test.xml."""
+    """Extract test name -> wall-clock time (seconds) from CTest Test.xml."""
     tag_file = Path(build_dir) / "Testing" / "TAG"
     if not tag_file.exists():
         print(f"TAG file not found at {tag_file}; running ctest first...", flush=True)
@@ -60,7 +60,7 @@ def _parse_ctest_timing(build_dir: str) -> dict[str, float]:
             ]
         )
         if result.returncode != 0 or not tag_file.exists():
-            print("No benchmark-labeled tests found — skipping benchmark regression check.", flush=True)
+            print("No benchmark-labeled tests found -- skipping benchmark regression check.", flush=True)
             return {}
 
     # Find the most recent Test.xml
@@ -108,7 +108,7 @@ def record_baseline(build_dir: str) -> int:
         "tests": timing,
     }
     BASELINE_PATH.write_text(json.dumps(baseline, indent=2), encoding="utf-8")
-    print(f"Baseline recorded: {len(timing)} benchmarks → {BASELINE_PATH}")
+    print(f"Baseline recorded: {len(timing)} benchmarks -> {BASELINE_PATH}")
     return 0
 
 
@@ -116,7 +116,7 @@ def check_regressions(build_dir: str) -> int:
     """Compare current benchmark results against baseline, flag regressions."""
     timing = _parse_ctest_timing(build_dir)
     if not timing:
-        print("No benchmark timing data found — nothing to check.", flush=True)
+        print("No benchmark timing data found -- nothing to check.", flush=True)
         return 0
 
     if not BASELINE_PATH.exists():
@@ -197,7 +197,7 @@ def check_regressions(build_dir: str) -> int:
         for r in sorted(regressions, key=lambda x: x["pct_change"], reverse=True):
             print(
                 f"  {r['name']}: "
-                f"{r['baseline_s']:.3f}s → {r['current_s']:.3f}s "
+                f"{r['baseline_s']:.3f}s -> {r['current_s']:.3f}s "
                 f"(+{r['pct_change']:.1f}%)"
             )
 
@@ -206,7 +206,7 @@ def check_regressions(build_dir: str) -> int:
         for imp in sorted(improvements, key=lambda x: x["pct_change"]):
             print(
                 f"  {imp['name']}: "
-                f"{imp['baseline_s']:.3f}s → {imp['current_s']:.3f}s "
+                f"{imp['baseline_s']:.3f}s -> {imp['current_s']:.3f}s "
                 f"({imp['pct_change']:.1f}%)"
             )
 
@@ -235,7 +235,7 @@ def generate_report(report_path: str) -> int:
         for r in sorted(regressions, key=lambda x: float(x["pct_change"]), reverse=True):
             print(
                 f"  {r['name']}: "
-                f"{r['baseline_s']:.3f}s → {r['current_s']:.3f}s "
+                f"{r['baseline_s']:.3f}s -> {r['current_s']:.3f}s "
                 f"(+{r['pct_change']}%)"
             )
     return 0

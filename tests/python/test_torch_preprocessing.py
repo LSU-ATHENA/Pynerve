@@ -1,4 +1,4 @@
-"""Tests for torch/preprocessing.py — diagram preprocessing utilities."""
+"""Tests for torch/preprocessing.py -- diagram preprocessing utilities."""
 
 from __future__ import annotations
 
@@ -171,8 +171,8 @@ class TestNormalizeDiagram:
     def test_minmax_normalization(self):
         d = torch.tensor([[0.0, 1.0, 0], [2.0, 5.0, 0]], dtype=torch.float32)
         result = normalize_diagram(d, method="minmax")
-        assert result[0, 0] == 0.0  # min birth → 0
-        assert result[1, 0] == 1.0  # max birth → 1
+        assert result[0, 0] == 0.0  # min birth -> 0
+        assert result[1, 0] == 1.0  # max birth -> 1
 
     def test_standard_normalization(self):
         d = torch.tensor([[0.0, 1.0, 0], [2.0, 5.0, 0]], dtype=torch.float32)
@@ -222,7 +222,7 @@ class TestSubsampleDiagram:
         d = torch.tensor([[0.0, 1.0, 0], [1.0, 10.0, 0], [2.0, 3.0, 0]], dtype=torch.float32)
         result = subsample_diagram(d, max_features=2, strategy="most_persistent")
         assert result.shape[0] == 2
-        # Most persistent is [1, 10] → persistence 9
+        # Most persistent is [1, 10] -> persistence 9
         assert torch.any((result[:, 1] - result[:, 0]) > 5.0)
 
     def test_uniform(self):

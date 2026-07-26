@@ -1,4 +1,4 @@
-"""Tests for merge.py — persistence diagram merging and matching."""
+"""Tests for merge.py -- persistence diagram merging and matching."""
 
 from __future__ import annotations
 

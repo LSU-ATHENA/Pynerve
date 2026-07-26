@@ -11,7 +11,7 @@ pytestmark = pytest.mark.usefixtures("mock_gpu_deps")
 
 
 class TestDataQuality:
-    """Covers _diagnostics_data.py — check_data_quality and helpers."""
+    """Covers _diagnostics_data.py -- check_data_quality and helpers."""
 
     def test_valid_data(self):
         from pynerve._diagnostics_data import check_data_quality
@@ -129,7 +129,7 @@ class TestDataQuality:
 
 
 class TestFailureDiagnosis:
-    """Covers _diagnostics_failure.py — diagnose_failure and FailureDiagnosis."""
+    """Covers _diagnostics_failure.py -- diagnose_failure and FailureDiagnosis."""
 
     def test_diagnose_value_error(self):
         from pynerve._diagnostics_failure import diagnose_failure
@@ -266,7 +266,7 @@ class TestFailureDiagnosis:
 
 
 class TestSystemDiagnostics:
-    """Covers _diagnostics_system.py — profile_memory, DebugMode, check_gpu_availability, system_info."""
+    """Covers _diagnostics_system.py -- profile_memory, DebugMode, check_gpu_availability, system_info."""
 
     def test_profile_memory(self):
         from pynerve._diagnostics_system import profile_memory

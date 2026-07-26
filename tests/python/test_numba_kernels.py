@@ -1,11 +1,11 @@
-"""Tests for numba kernels — graph, reduction, simplices, distance, representations."""
+"""Tests for numba kernels -- graph, reduction, simplices, distance, representations."""
 
 from __future__ import annotations
 
 import numpy as np
 import pytest
 
-# Do NOT use mock_gpu_deps — numba must be real for these tests
+# Do NOT use mock_gpu_deps -- numba must be real for these tests
 
 
 class TestNumbaConnectedComponents:

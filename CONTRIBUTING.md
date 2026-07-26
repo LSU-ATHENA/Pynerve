@@ -144,20 +144,20 @@ Pynerve follows [Semantic Versioning](https://semver.org). Until 2.0, the follow
 
 ### Public API
 
-These modules are covered by the stability guarantee — breaking changes require a major version bump:
+These modules are covered by the stability guarantee -- breaking changes require a major version bump:
 
 - `pynerve.compute_persistence()` and top-level functions
 - `pynerve.PersistenceResult` and data classes
-- `pynerve.fast_ops` — vectorized NumPy-backed operations
-- `pynerve.torch` — PyTorch interoperability
+- `pynerve.fast_ops` -- vectorized NumPy-backed operations
+- `pynerve.torch` -- PyTorch interoperability
 
 ### Semi-Public API
 
 These modules may receive additions but breaking changes will be announced one minor version in advance:
 
-- `pynerve.nn` — neural network layers
-- `pynerve.mapper` — Mapper algorithm
-- `pynerve.diff` — differentiable topology (experimental)
+- `pynerve.nn` -- neural network layers
+- `pynerve.mapper` -- Mapper algorithm
+- `pynerve.diff` -- differentiable topology (experimental)
 
 ### Internal API
 

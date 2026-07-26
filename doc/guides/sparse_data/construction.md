@@ -22,18 +22,18 @@ diagram = wc(torch.tensor(points))
 Input: point cloud P = {p_1, ..., p_n}, landmark ratio r, max radius R
 Output: sparse VR filtration
 
-Step 1: Landmark selection
+Landmark selection
   k = max(ceil(r * n), max_dim + 2)  // minimum landmarks
   L = select_landmarks(P, k, strategy)
 
-Step 2: Distance to landmarks
+Distance to landmarks
   For each p in P, compute d(p, L) = min_{l in L} dist(p, l)
   Store witness_distance[p] = d(p, L)
 
-Step 3: Landmark distance matrix
+Landmark distance matrix
   D_L = matrix of pairwise distances between landmarks (k x k)
 
-Step 4: Edge inclusion
+Edge inclusion
   For each pair (l_i, l_j) of landmarks:
       edge_distance = D_L[i][j]
       If edge_distance <= R:
@@ -43,14 +43,14 @@ Step 4: Edge inclusion
           // OR simply if edge_distance <= R (standard VR on landmarks)
           include_edge(l_i, l_j, edge_distance)
 
-Step 5: Simplex construction
+Simplex construction
   Build flag complex on landmark graph:
   For d = 2 to max_dim:
       For each (d-1)-simplex in the complex:
           For each landmark l that forms a (d-1)-clique with all vertices:
               Add d-simplex at filtration value = max(edge_values)
 
-Step 6: Filtration sorting
+Filtration sorting
   Sort all simplices by (filtration_value, dimension, vertices)
 ```
 

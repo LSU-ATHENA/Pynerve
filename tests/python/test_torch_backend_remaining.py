@@ -1,4 +1,4 @@
-"""Tests for torch/_backend.py — remaining uncovered paths.
+"""Tests for torch/_backend.py -- remaining uncovered paths.
 
 Covers: dispatch_simple, dispatch with backend_errors, get_backend_info
 with version attributes, BackendContext torch_c/core_c variants, and

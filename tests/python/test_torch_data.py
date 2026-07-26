@@ -1,4 +1,4 @@
-"""Tests for torch/data.py — datasets, collation, padding, validation."""
+"""Tests for torch/data.py -- datasets, collation, padding, validation."""
 
 from __future__ import annotations
 

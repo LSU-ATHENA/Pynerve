@@ -1,4 +1,4 @@
-"""Tests for _types.py — type aliases, protocols, and runtime checkable types."""
+"""Tests for _types.py -- type aliases, protocols, and runtime checkable types."""
 
 from __future__ import annotations
 

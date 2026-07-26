@@ -1,4 +1,4 @@
-"""Tests for pynerve/torch/_persistence_helpers.py — sorted edges, distance matrix diagrams, backend assembly."""
+"""Tests for pynerve/torch/_persistence_helpers.py -- sorted edges, distance matrix diagrams, backend assembly."""
 
 from __future__ import annotations
 

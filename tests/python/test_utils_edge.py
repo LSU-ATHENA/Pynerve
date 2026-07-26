@@ -1,4 +1,4 @@
-"""Edge case tests for _utils.py — remaining uncovered paths."""
+"""Edge case tests for _utils.py -- remaining uncovered paths."""
 
 from __future__ import annotations
 

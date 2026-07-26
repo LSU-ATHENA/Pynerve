@@ -1,4 +1,4 @@
-"""Tests for __main__.py — CLI entry point."""
+"""Tests for __main__.py -- CLI entry point."""
 
 from __future__ import annotations
 

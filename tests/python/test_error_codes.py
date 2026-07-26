@@ -164,9 +164,9 @@ class TestErrorCodes:
 
     def test_category_byte_pattern(self):
         """Test that error code category nibbles map to correct ErrorCategory values."""
-        # IO_INFRA = 1 → codes in 0x1xx range
+        # IO_INFRA = 1 -> codes in 0x1xx range
         assert (E00_IO_TIMEOUT >> 8) & 0xF == ErrorCategory.IO_INFRA
-        # GPU_COMPUTE = 2 → codes in 0x2xx
+        # GPU_COMPUTE = 2 -> codes in 0x2xx
         assert (E10_GPU_OOM >> 8) & 0xF == ErrorCategory.GPU_COMPUTE
         # NUMERICAL = 3
         assert (E20_NUM_NAN >> 8) & 0xF == ErrorCategory.NUMERICAL

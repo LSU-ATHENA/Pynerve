@@ -400,7 +400,7 @@ jobs:
     # hardware may not support all instructions emitted by -march=native,
     # causing intermittent SIGILL.  ARM runners have consistent hardware
     # so -march=native is safe there.
-    # continue-on-error: true — ARM runners may not be available or
+    # continue-on-error: true -- ARM runners may not be available or
     # may lack required instruction sets for native-arch builds.
     continue-on-error: true
     runs-on: ${{ matrix.os }}
@@ -506,7 +506,7 @@ jobs:
       - run: ctest --test-dir build -L "distributed|build|cpu" --output-on-failure --parallel 2
 
   gpu-smoke:
-    # Fast GPU availability check — runs on every PR/push (~2 min).
+    # Fast GPU availability check -- runs on every PR/push (~2 min).
     # Gates the full CUDA matrix behind a successful smoke test.
     # On schedule runs, skip smoke and go directly to full matrix.
     if: github.event_name != 'schedule'
@@ -619,7 +619,7 @@ jobs:
         run: python -m pip install torch --index-url https://download.pytorch.org/whl/${{ env.CUDA_TAG }}
       - run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DENABLE_CUDA=ON -DENABLE_PYTORCH=ON -DBUILD_PYTHON=ON
       - run: cmake --build build --parallel
-      # Phase 1: Full correctness suite with flaky test tracking
+      # Full correctness suite with flaky test tracking
       - name: Run GPU tests with flaky tracking
         run: |
           python tools/run_tests.py --build-dir build --label cuda --label benchmark --retries 2
@@ -628,11 +628,11 @@ jobs:
             --nerve-shard-index 0 --nerve-shard-count 4 \
             -p no:warnings \
             || echo "GPU pytest completed (check flaky report for details)"
-      # Phase 2: Flaky test analysis (soft-fail — non-blocking)
+      # Flaky test analysis (soft-fail -- non-blocking)
       - name: Analyze flaky tests
         run: python tools/flaky_report.py --ci-mode build/flaky-report-gpu.json
         continue-on-error: true
-      # Phase 3: Benchmark regression detection
+      # Benchmark regression detection
       - name: Record benchmark baseline (first run)
         if: github.event_name == 'schedule'
         run: |

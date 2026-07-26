@@ -1,4 +1,4 @@
-"""Tests for torch/_persistence_image.py — persistence_image function and helpers.
+"""Tests for torch/_persistence_image.py -- persistence_image function and helpers.
 
 Covers weight_fn variants (constant, linear, persistence), batched/empty/inf-death
 diagrams, validation errors, and the PersistenceDiagram wrapper path.

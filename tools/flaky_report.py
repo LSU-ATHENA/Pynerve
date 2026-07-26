@@ -12,9 +12,9 @@ Usage:
     python tools/flaky_report.py --fail-above 5 build/flaky-report.json
 
 Exit codes:
-    0 — flaky rate within threshold
-    1 — flaky rate exceeds threshold or report not found
-    2 — CI flag set and failures detected (soft-fail for awareness)
+    0 -- flaky rate within threshold
+    1 -- flaky rate exceeds threshold or report not found
+    2 -- CI flag set and failures detected (soft-fail for awareness)
 """
 
 from __future__ import annotations
@@ -106,7 +106,7 @@ def main() -> int:
     if args.ci_mode and failures > 0:
         print(
             f"\nCI mode: {failures} flaky test failures detected. "
-            "This is a soft-fail for awareness — "
+            "This is a soft-fail for awareness -- "
             "the CI pipeline should not be blocked by pre-existing flaky tests.",
             file=sys.stderr,
         )

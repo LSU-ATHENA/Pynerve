@@ -140,7 +140,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     # sm90 = Hopper (H100). Tests auto-skip if the GPU is below the required tier.
     cc = _cuda_compute_capability()
     if cc is not None:
-        cc_value = cc[0] * 10 + cc[1]  # e.g. (8, 6) → 86
+        cc_value = cc[0] * 10 + cc[1]  # e.g. (8, 6) -> 86
         for item in items:
             _apply_sm_skip(item, cc_value)
 

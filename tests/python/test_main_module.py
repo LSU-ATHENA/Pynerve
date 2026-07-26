@@ -1,4 +1,4 @@
-"""Tests for pynerve/__main__.py — CLI entry point.
+"""Tests for pynerve/__main__.py -- CLI entry point.
 
 Tests all command branches through main() with necessary mocking.
 """

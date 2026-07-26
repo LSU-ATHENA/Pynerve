@@ -1,4 +1,4 @@
-"""Tests for _formats_interop.py — third-party TDA library format converters."""
+"""Tests for _formats_interop.py -- third-party TDA library format converters."""
 
 from __future__ import annotations
 

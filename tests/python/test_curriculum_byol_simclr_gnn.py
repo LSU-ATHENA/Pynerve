@@ -14,7 +14,7 @@ torch = pytest.importorskip("torch")
 
 
 class TestCurriculumTrainerDeep:
-    """Covers training/_curriculum_trainer.py — 71 missed, 13%."""
+    """Covers training/_curriculum_trainer.py -- 71 missed, 13%."""
 
     def test_construct_epoch(self):
         from pynerve.training._curriculum_trainer import TopologicalCurriculumTrainer
@@ -130,7 +130,7 @@ class TestCurriculumTrainerDeep:
 
 
 class TestBYOLDeep:
-    """Covers ssl/_byol.py — 41 missed, 27%."""
+    """Covers ssl/_byol.py -- 41 missed, 27%."""
 
     def test_construct(self):
         from pynerve.ssl._byol import BYOLTopology
@@ -176,7 +176,7 @@ class TestBYOLDeep:
 
 
 class TestSimCLRDeep:
-    """Covers ssl/_simclr.py — 24 missed, 33%."""
+    """Covers ssl/_simclr.py -- 24 missed, 33%."""
 
     def test_construct(self):
         from pynerve.ssl._simclr import SimCLRTopology
@@ -214,7 +214,7 @@ class TestSimCLRDeep:
 
 
 class TestMapperGNNClassifier:
-    """Covers mapper/_gnn_classifier.py — 56 missed, 15%."""
+    """Covers mapper/_gnn_classifier.py -- 56 missed, 15%."""
 
     def test_construct(self):
         from pynerve.mapper._gnn_classifier import MapperGNNClassifier
@@ -257,7 +257,7 @@ class TestMapperGNNClassifier:
 
 
 class TestSklearnTransformersDeep:
-    """Covers torch/sklearn_transformers.py — 58 missed, 64%."""
+    """Covers torch/sklearn_transformers.py -- 58 missed, 64%."""
 
     def test_import_all_classes(self):
         import pynerve.torch.sklearn_transformers as mod
@@ -295,7 +295,7 @@ class TestSklearnTransformersDeep:
 
 
 class TestDiffLossDeep:
-    """Covers diff/_loss_modules.py — 38 missed, 61%."""
+    """Covers diff/_loss_modules.py -- 38 missed, 61%."""
 
     def test_stability_loss_forward(self):
         from pynerve.diff._loss_modules import StabilityLoss
@@ -346,7 +346,7 @@ class TestDiffLossDeep:
 
 
 class TestPersistenceVRDeep:
-    """Covers torch/_persistence_vr.py — 45 missed, 56%."""
+    """Covers torch/_persistence_vr.py -- 45 missed, 56%."""
 
     def test_import(self):
         import pynerve.torch._persistence_vr as mod
@@ -362,7 +362,7 @@ class TestPersistenceVRDeep:
 
 
 class TestInitModule:
-    """Covers torch/__init__.py — 14 missed, 67%."""
+    """Covers torch/__init__.py -- 14 missed, 67%."""
 
     def test_diagram_wasserstein_public(self):
         from pynerve.torch import diagram_wasserstein

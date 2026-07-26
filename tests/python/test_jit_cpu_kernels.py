@@ -1,11 +1,11 @@
-"""Tests for jit/_cpu_kernels.py — JIT-compiled CPU topology kernels."""
+"""Tests for jit/_cpu_kernels.py -- JIT-compiled CPU topology kernels."""
 
 from __future__ import annotations
 
 import numpy as np
 import pytest
 
-# Do NOT use mock_gpu_deps — numba must be real for JIT compilation
+# Do NOT use mock_gpu_deps -- numba must be real for JIT compilation
 
 
 class TestJitPairwiseDistances:

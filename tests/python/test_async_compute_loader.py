@@ -1,4 +1,4 @@
-"""Tests for _async_compute.py and _async_loader.py — async persistence and diagram loading."""
+"""Tests for _async_compute.py and _async_loader.py -- async persistence and diagram loading."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ pytestmark = pytest.mark.usefixtures("mock_gpu_deps")
 
 
 class TestAsyncPersistenceComputer:
-    """Covers _async_compute.py — AsyncPersistenceComputer."""
+    """Covers _async_compute.py -- AsyncPersistenceComputer."""
 
     def test_construct(self):
         from pynerve._async_compute import AsyncPersistenceComputer
@@ -153,7 +153,7 @@ class TestAsyncPersistenceComputer:
 
 
 class TestAsyncDiagramLoader:
-    """Covers _async_loader.py — AsyncDiagramLoader."""
+    """Covers _async_loader.py -- AsyncDiagramLoader."""
 
     def test_construct(self):
         from pynerve._async_loader import AsyncDiagramLoader

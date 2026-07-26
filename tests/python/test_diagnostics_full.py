@@ -1,4 +1,4 @@
-"""Tests for diagnostics modules — data quality, failure diagnosis, system profiling."""
+"""Tests for diagnostics modules -- data quality, failure diagnosis, system profiling."""
 
 from __future__ import annotations
 

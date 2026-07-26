@@ -1,4 +1,4 @@
-"""Tests for _async_loader.py — AsyncDiagramLoader and helpers."""
+"""Tests for _async_loader.py -- AsyncDiagramLoader and helpers."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Tests for torch/tensorboard.py — log functions and DiagramSummaryWriter."""
+"""Tests for torch/tensorboard.py -- log functions and DiagramSummaryWriter."""
 
 from __future__ import annotations
 

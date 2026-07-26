@@ -1,4 +1,4 @@
-"""Edge case tests for pynerve/_image_utils.py — persistence image computation."""
+"""Edge case tests for pynerve/_image_utils.py -- persistence image computation."""
 
 from __future__ import annotations
 

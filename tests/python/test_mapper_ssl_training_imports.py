@@ -60,7 +60,7 @@ class TestMapperModules:
 
 
 class TestSSLModules:
-    """Covers ssl modules — augmentation, persistence prediction, completion, etc."""
+    """Covers ssl modules -- augmentation, persistence prediction, completion, etc."""
 
     def test_import_augmentation(self):
         from pynerve.ssl._augmentation import TopologyAugmentation

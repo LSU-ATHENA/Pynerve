@@ -1,4 +1,4 @@
-"""Tests for pynerve/torch/sklearn_transformers.py — sklearn-compatible TDA transformers."""
+"""Tests for pynerve/torch/sklearn_transformers.py -- sklearn-compatible TDA transformers."""
 
 from __future__ import annotations
 

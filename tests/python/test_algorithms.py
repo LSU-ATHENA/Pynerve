@@ -1,4 +1,4 @@
-"""Tests for pynerve/algorithms/__init__.py — TDA algorithmic primitives."""
+"""Tests for pynerve/algorithms/__init__.py -- TDA algorithmic primitives."""
 
 from __future__ import annotations
 

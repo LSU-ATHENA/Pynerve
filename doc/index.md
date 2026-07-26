@@ -13,7 +13,7 @@ result = pynerve.compute_persistence(points, max_dim=2, max_radius=1.0)
 print(result.pairs)
 ```
 
-!!! note "Version 1.0.0 — Windows native support"
+!!! note "Version 1.0.0 -- Windows native support"
     Windows native support via the `nerve::sys` platform abstraction layer (MSVC, Clang-cl). Full platform support: Linux, macOS, and Windows.
 
 ## When to use Pynerve

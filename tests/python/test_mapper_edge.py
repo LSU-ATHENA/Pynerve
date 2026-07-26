@@ -1,4 +1,4 @@
-"""Tests for pynerve/torch/mapper.py — Mapper algorithm API and transformer."""
+"""Tests for pynerve/torch/mapper.py -- Mapper algorithm API and transformer."""
 
 from __future__ import annotations
 

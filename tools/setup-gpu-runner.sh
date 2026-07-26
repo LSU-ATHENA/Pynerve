@@ -136,11 +136,11 @@ if [ ! -d "$RUNNER_DIR" ]; then
 fi
 
 echo ""
-echo "=== [6/6] Runner downloaded — now register it ==="
+echo "=== [6/6] Runner downloaded -- now register it ==="
 echo ""
 echo "1. Get a runner registration token:"
 echo "   Go to: https://github.com/LSU-ATHENA/Pynerve/settings/actions/runners/new"
-echo "   Select 'New self-hosted runner' → Linux → x64"
+echo "   Select 'New self-hosted runner' -> Linux -> x64"
 echo ""
 echo "2. Register the runner:"
 echo "   cd ${RUNNER_DIR}"

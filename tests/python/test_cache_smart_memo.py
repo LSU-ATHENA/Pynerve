@@ -259,7 +259,7 @@ class TestMemoizePersistent:
         assert memo1(7) == 21
         assert call_count == 1
 
-        # New instance with same cache dir and same function — should find cached result
+        # New instance with same cache dir and same function -- should find cached result
         call_count2 = 0
         memo2 = MemoizePersistent(func, cache_dir=str(tmp_path), ttl=3600)
         result = memo2(7)

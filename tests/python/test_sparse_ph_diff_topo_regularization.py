@@ -22,7 +22,7 @@ torch = pytest.importorskip("torch")
 
 
 class TestFarthestPointSampling:
-    """Covers nn/sparse_ph.py — farthest_point_sampling."""
+    """Covers nn/sparse_ph.py -- farthest_point_sampling."""
 
     def test_basic(self):
         from pynerve.nn.sparse_ph import farthest_point_sampling
@@ -61,7 +61,7 @@ class TestFarthestPointSampling:
 
 
 class TestComputeWitnessPersistence:
-    """Covers nn/sparse_ph.py — compute_witness_persistence."""
+    """Covers nn/sparse_ph.py -- compute_witness_persistence."""
 
     def test_dim_mismatch(self):
         from pynerve.nn.sparse_ph import compute_witness_persistence
@@ -84,7 +84,7 @@ class TestComputeWitnessPersistence:
 
 
 class TestSparsePH:
-    """Covers nn/sparse_ph.py — SparsePH."""
+    """Covers nn/sparse_ph.py -- SparsePH."""
 
     def test_construct(self):
         from pynerve.nn.sparse_ph import SparsePH
@@ -141,7 +141,7 @@ class TestSparsePH:
 
 
 class TestWindowedPH:
-    """Covers nn/sparse_ph.py — WindowedPH."""
+    """Covers nn/sparse_ph.py -- WindowedPH."""
 
     def test_construct(self):
         from pynerve.nn.sparse_ph import WindowedPH
@@ -191,7 +191,7 @@ class TestWindowedPH:
 
 
 class TestTopologyAttention:
-    """Covers nn/sparse_ph.py — TopologyAttention."""
+    """Covers nn/sparse_ph.py -- TopologyAttention."""
 
     def test_construct(self):
         from pynerve.nn.sparse_ph import TopologyAttention
@@ -239,7 +239,7 @@ class TestTopologyAttention:
 
 
 class TestDifferentiableVietorisRips:
-    """Covers diff/ph_layer.py — DifferentiableVietorisRips."""
+    """Covers diff/ph_layer.py -- DifferentiableVietorisRips."""
 
     def test_construct(self):
         from pynerve.diff.ph_layer import DifferentiableVietorisRips
@@ -260,7 +260,7 @@ class TestDifferentiableVietorisRips:
 
 
 class TestDifferentiableAlphaComplex:
-    """Covers diff/ph_layer.py — DifferentiableAlphaComplex."""
+    """Covers diff/ph_layer.py -- DifferentiableAlphaComplex."""
 
     def test_construct(self):
         from pynerve.diff.ph_layer import DifferentiableAlphaComplex
@@ -280,7 +280,7 @@ class TestDifferentiableAlphaComplex:
 
 
 class TestDifferentiableCubical:
-    """Covers diff/ph_layer.py — DifferentiableCubical."""
+    """Covers diff/ph_layer.py -- DifferentiableCubical."""
 
     def test_construct(self):
         from pynerve.diff.ph_layer import DifferentiableCubical
@@ -301,7 +301,7 @@ class TestDifferentiableCubical:
 
 
 class TestFiltrationLearningLayer:
-    """Covers diff/ph_layer.py — FiltrationLearningLayer."""
+    """Covers diff/ph_layer.py -- FiltrationLearningLayer."""
 
     def test_construct(self):
         from pynerve.diff.ph_layer import FiltrationLearningLayer
@@ -338,7 +338,7 @@ class TestFiltrationLearningLayer:
 
 
 class TestLearnableFiltrationPersistence:
-    """Covers diff/ph_layer.py — LearnableFiltrationPersistence."""
+    """Covers diff/ph_layer.py -- LearnableFiltrationPersistence."""
 
     def test_construct(self):
         from pynerve.diff.ph_layer import LearnableFiltrationPersistence
@@ -353,7 +353,7 @@ class TestLearnableFiltrationPersistence:
 
 
 class TestTopologicalRegularizationLoss:
-    """Covers nn/topo_regularization.py — TopologicalRegularizationLoss."""
+    """Covers nn/topo_regularization.py -- TopologicalRegularizationLoss."""
 
     def test_construct(self):
         from pynerve.nn.topo_regularization import TopologicalRegularizationLoss
@@ -386,7 +386,7 @@ class TestTopologicalRegularizationLoss:
 
 
 class TestPersistenceEntropyLoss:
-    """Covers nn/topo_regularization.py — PersistenceEntropyLoss."""
+    """Covers nn/topo_regularization.py -- PersistenceEntropyLoss."""
 
     def test_construct(self):
         from pynerve.nn.topo_regularization import PersistenceEntropyLoss
@@ -406,7 +406,7 @@ class TestPersistenceEntropyLoss:
 
 
 class TestTopologicalComplexityLoss:
-    """Covers nn/topo_regularization.py — TopologicalComplexityLoss."""
+    """Covers nn/topo_regularization.py -- TopologicalComplexityLoss."""
 
     def test_construct(self):
         from pynerve.nn.topo_regularization import TopologicalComplexityLoss
@@ -428,7 +428,7 @@ class TestTopologicalComplexityLoss:
 
 
 class TestDiagramMatchingLoss:
-    """Covers nn/topo_regularization.py — DiagramMatchingLoss."""
+    """Covers nn/topo_regularization.py -- DiagramMatchingLoss."""
 
     def test_construct_wasserstein(self):
         from pynerve.nn.topo_regularization import DiagramMatchingLoss

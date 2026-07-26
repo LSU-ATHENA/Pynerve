@@ -1,4 +1,4 @@
-"""Tests for pynerve/torch/_distance_core_impl.py — distance metrics, Wasserstein, bottleneck."""
+"""Tests for pynerve/torch/_distance_core_impl.py -- distance metrics, Wasserstein, bottleneck."""
 
 from __future__ import annotations
 

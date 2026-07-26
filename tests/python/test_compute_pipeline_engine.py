@@ -1,4 +1,4 @@
-"""Tests for _compute_pipeline.py and _compute_engine.py — validation, tensor conversion, engine selection."""
+"""Tests for _compute_pipeline.py and _compute_engine.py -- validation, tensor conversion, engine selection."""
 
 from __future__ import annotations
 
