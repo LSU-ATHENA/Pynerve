@@ -643,7 +643,7 @@ jobs:
         run: python tools/benchmark_regression.py --check --build-dir build
       - name: Upload benchmark results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-results
           path: |
@@ -728,7 +728,7 @@ jobs:
         run: python tools/benchmark_regression.py --check --build-dir build
       - name: Upload benchmark results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-results-${{ matrix.simd }}
           path: benchmarks/benchmark-results.json
